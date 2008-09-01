@@ -89,7 +89,6 @@ sub h_char_names {
     if ($p->in_element('site')) {
 	$sitename = $a;
     } elsif ($p->in_element('cms') and $sitename) {
-#	print "cacca\n";
 	$site2cms{$sitename} = $a;
     }
 }
