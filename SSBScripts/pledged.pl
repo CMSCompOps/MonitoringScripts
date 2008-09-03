@@ -36,16 +36,25 @@ $p->parse($doc_p) or die "Cannot parse XML\n";
 $p = new XML::Parser(Handlers => {Char  => \&h_char_names});
 $p->parse($doc_s) or die "Cannot parse XML\n";
 
+%data = ();
 foreach (keys %sites) {
     my $name = $sites{$_}->{NAME};
     my $cms = $site2cms{$name};
     my $slots = $sites{$_} ->{SLOTS};
     my $quarter = $sites{$_} ->{QUARTER};
+    next if (&gt($quarter, &curr_quarter()));
+    $data{$cms} = [$quarter, $slots] if (!defined $data{$cms} or
+					 &gt($quarter, ${$data{$cms}}[0]));
+}
+foreach my $cms (sort keys %data){
     my $timestamp = &timestamp();
+    my $quarter = ${$data{$cms}}[0];
+    my $slots = ${$data{$cms}}[1];
     my $colour = 'green';
+    $colour = "yellow" if (&gt(&curr_quarter(), $quarter));
     my $pledge_url = 'https://cmsweb.cern.ch/sitedb/reports/showReport?reportid=quarterly_pledges.ini';
     printf "%s\t%s\t%s\t%s\t%s\n", $timestamp, $cms, $slots,
-    $colour, $pledge_url if ($quarter eq &quarter());
+    $quarter, $pledge_url;
 }
 
 # Handler routines
@@ -107,10 +116,23 @@ sub timestamp {
     return $timestamp;
 }
 
-sub quarter {
+sub curr_quarter {
 
     my @time = localtime(time);
     my $year = 1900 + $time[5];
     my $q = int(($time[4] / 3) + 1);
     return "$year.$q";
+}
+
+sub gt {
+    my ($q1, $q2) = @_;
+    my @a = split /\./, $q1;
+    my $a = $a[0]*10 + $a[1];
+    @a = split /\./, $q2;
+    my $b = $a[0]*10 + $a[1];
+    if ($a > $b) {
+	return 1;
+    } else {
+	return 0;
+    }
 }
