@@ -54,7 +54,7 @@ foreach my $cms (sort keys %data){
     $colour = "yellow" if (&gt(&curr_quarter(), $quarter));
     my $pledge_url = 'https://cmsweb.cern.ch/sitedb/reports/showReport?reportid=quarterly_pledges.ini';
     printf "%s\t%s\t%s\t%s\t%s\n", $timestamp, $cms, $slots,
-    $quarter, $pledge_url;
+    $colour, $pledge_url;
 }
 
 # Handler routines
