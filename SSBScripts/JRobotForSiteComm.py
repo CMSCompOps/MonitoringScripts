@@ -113,8 +113,8 @@ def build_info():
         jabo=tSummary[i][2]
         jerr=tSummary[i][3]
         jsuc=tSummary[i][4]
-        if site[0:2] == "T0" or site[0:2] == "T1": thrs = 95
-        if site[0:2] == "T2": thrs = 90
+        if site[0:2] == "T0" or site[0:2] == "T1": thrs = 90
+        if site[0:2] == "T2": thrs = 80
         if site[0:2] == "T3": thrs = 0
         if jsub < 100:
             for yi in range (0,len(ySummary)):
@@ -126,7 +126,7 @@ def build_info():
                     jsuc+=ySummary[yi][4]
         if (jabo+jerr+jsuc) > 0:   # some jobs completed
             effic= jsuc *100 / (jabo+jerr+jsuc)
-            value=str(effic) + '%'
+            value=str(effic) + '%' + '(' + str(jabo+jerr+jsuc) + ')'
             if effic>=thrs: status="ok"
             else:
                 status="err"
@@ -144,7 +144,7 @@ def build_info():
 
         if status=="ok": color="green"
         if status=="err": color="red"
-        if status=="warn":color="yellow"
+        if status=="warn":color="green"
         print ("%s\t%s\t%s\t%s\t%s\t%s") % (timestamp, site, value, color, link, status)
     
     return
