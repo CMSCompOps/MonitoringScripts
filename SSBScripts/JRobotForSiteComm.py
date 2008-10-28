@@ -14,14 +14,14 @@ def summary_info(date, option):
 #                     1 for finding them in the internet
     
     if (option == 0):
-        filename = '/afs/cern.ch/cms/LCG/SiteComm/JobRobot/html/summary_' + date + '.html'       
+        filename = '/afs/cern.ch/user/b/belforte/www/JobRobot/summary_' + date + '.html'       
         if (not os.path.isfile(filename)):    # Forget about extracting info from the file if it doesn't exist.
             print filename, ': Not Found'
             return []
 #       print "will open : ", filename
         file = open(filename, 'r')    
     else:
-        filename = 'http://cmsweb.cern.ch/jobrobot/summary_' + date + '.html'
+        filename = 'http://cern.ch/JobRobot/summary_' + date + '.html'
         try:
             file = urllib2.urlopen(filename)
         except IOError, detail:               # Forget the info if the page doesn't exist. 
