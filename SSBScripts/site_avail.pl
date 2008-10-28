@@ -57,6 +57,7 @@ foreach my $s ( values %sites ) {
     next if ($s->{CMS} eq 'T1_CH_CERN');
     my $timestamp = &timestamp;
     my $avail = &get_avail($s->{CMS});
+    next if ( $avail eq 'NA' );
     my $colour = 'green';
     if ( $t == 0 or $t == 1 ) {
 	$colour = 'red' if ( $avail ne 'NA' and $avail < .90 );
@@ -109,7 +110,7 @@ sub h_char {
 
 sub timestamp {
 
-    my @time = localtime(time);
+    my @time = gmtime(time);
     my $timestamp = sprintf("%s-%02d-%02d %02d:%02d:%02d",
 			    1900 + $time[5],
 			    1 + $time[4],
