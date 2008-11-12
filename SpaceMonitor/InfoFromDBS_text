@@ -1,0 +1,330 @@
+#!/usr/local/bin/perl -w
+#####################################################################
+#
+# - geting space information from DBS 
+#
+# $Id: InfoFromDBS_text,v 1.1 2008/11/12 07:13:58 xmzhang Exp $
+#
+#####################################################################
+
+use warnings;
+
+use File::stat;
+use File::Find;
+use Time::localtime;
+use Time::gmtime;
+
+my ($sum, $sumall, $FHSITE, $FHSE, $FHPHE);
+my ($linePHE);
+my (@T0, @T1, @T2, @T3);
+my ($sitetemp_sub, $sitetemp);
+my ($nameS, $nameP, $nameC, $nameN);
+my ($Vpledge, $Vsubscription);
+$Vpledge=0;
+
+system("wget --no-check-certificate https://cmsweb.cern.ch/sitedb/sitedb/xml/index/SitetoCMSName?name -O sitename -q");
+open(FHSITE, "sitename");
+open(FHTXT_pl, " > /var/www/html/pledge.txt");
+open(FHTXT_sub, " > /var/www/html/subscription.txt");
+open(FHTXT_ph, " > /var/www/html/phedex.txt");
+open(FHTXT_dbs, " > /var/www/html/dbs.txt");
+#$tm=localtime;
+$tm=gmtime;
+
+
+$T1c = 0;
+$T2c = 0;
+$T3c = 0;
+$done = 0;
+
+while ($lineT = <FHSITE>) {
+  if ($lineT =~ m"<name>(.*)</name>") {
+    #print "InfoFromDBS DEBUG: CMS SITENAME--$1****************************************************************************\n";
+    my $sitetemp = $1;
+    if ($sitetemp =~ m"T0(.*)") {
+      $T0[0] = "CERN Tier-0";
+      $T0[0][0] = $sitetemp;
+      $T0[0][0][0] = $sitetemp."_MSS";
+      #print "InfoFromDBS DEBUG: T0 site--$T0[0]; CMS--$T0[0][0]; PhEDEX--$T0[0][0][0]**********************************\n";
+    }
+    elsif ($sitetemp =~ m"T1_(.*)_(.*)") {
+      $sitetemp_sub = $2;
+      if ($sitetemp =~ m"T1_FR_CCIN2P3") {
+         $T1[$T1c] = "CC-IN2P3";
+      }
+      else {
+         $T1[$T1c] = $sitetemp_sub;
+      }
+      $T1[$T1c][$T1c] = $sitetemp;
+      $T1[$T1c][$T1c][$T1c] = $sitetemp."_MSS";
+      $T1c = $T1c + 1;
+    }
+    elsif ($sitetemp =~ m"T2_(.*)_(.*)") {
+      if ($1 =~ m"BE") {
+         $T2[$T2c] = "Belgium";
+      }
+      elsif ($2 =~ m"CCIN2P3") { 
+        $T2[$T2c] = "CCIN2P3 AF";
+      }
+      elsif ($2 =~ m"GRIF") {
+        $T2[$T2c] = "GRIF";
+      }
+      elsif ($2 =~ m"UERJ") {
+        $T2[$T2c] = "HEPGRID_UERJ";
+      }
+      elsif ($2 =~ m"HIP") {
+        $T2[$T2c] = "Helsinki Institute of Physics";
+      }
+      elsif ($2 =~ m"Vienna") {
+        $T2[$T2c] = "Hephy-Vienna";
+      }
+      elsif ($2 =~ m"T2_HU_Budapest") {
+        $T2[$T2c] = "Hungary";
+      }
+      elsif ($1 =~ m"London") {
+        $T2[$T2c] = "London";
+      }
+      elsif ($1 =~ m"RU") {
+        $T2[$T2c] = "Russia";
+      }
+      elsif ($2 =~ m"SouthGrid") {
+        $T2[$T2c] = "Rutherford PPD";
+      }
+      else {
+        $T2[$T2c] = $2;
+      }
+      $T2[$T2c][$T2c] = $sitetemp;
+      $T2[$T2c][$T2c][$T2c] = $sitetemp;
+      if ($sitetemp =~ m"T2_RU_IHEP"){
+        $T2[$T2c][$T2c][$T2c] = "T2_RU_IHEP_Disk";
+      }
+      $T2c = $T2c + 1;
+    }
+    elsif ($sitetemp =~ m"T3_(.*)_(.*)") {
+      if ($2 =~ m"UCR") {
+        $T3[$T3c] = "UC Riverside";
+      }
+      elsif ($2 =~ m"PKU") {
+        $T3[$T3c] = "CN_PKU";
+      }
+      elsif ($2 =~ m"UCLA") {
+        $T3[$T3c] = "UCLA Saxon";
+      }
+      elsif ($2 =~ m"Vanderbilt") {
+        $done = $done + 1;
+        if ($done != 2) {
+           $T3[$T3c] = "Vanderbilt";
+        }
+      }
+      else {
+        $T3[$T3c] = $2;
+      }
+      if ($done <=1 ) {
+        $T3[$T3c][$T3c] = $sitetemp;
+        $T3[$T3c][$T3c][$T3c] = $sitetemp;
+        $T3c = $T3c + 1;
+      }
+    }
+  }
+}
+
+#for ($counter = 0; $counter < $T1c; $counter++) {
+#   print "InfoFromDBS DEBUG: T1 site--$T1[$counter]; $T1[$counter][$counter]; $T1[$counter][$counter][$counter]**********************************\n";
+#}
+#for ($counter = 0; $counter < $T2c; $counter++) {
+#   print "InfoFromDBS DEBUG: T2 site--$T2[$counter]; $T2[$counter][$counter]; $T2[$counter][$counter][$counter]**********************************\n";
+#}
+#for ($counter = 0; $counter < $T3c; $counter++) {
+#   print "InfoFromDBS DEBUG: T3 site--$T3[$counter]; $T3[$counter][$counter]; $T3[$counter][$counter][$counter]**********************************\n";
+#}
+
+
+#TO space monitoring
+getInfo("T0", 1, @T0);
+
+#T1 space monitoring
+getInfo("T1", $T1c, @T1);
+
+#T2 space monitoring
+getInfo("T2", $T2c, @T2);
+
+#T3 space monitoring
+getInfo("T3", $T3c, @T3);
+
+
+sub getInfo
+{
+   my ($tier, $Tc, @tiers)=@_;
+   for ($counter = 0; $counter < $Tc; $counter++) {
+     printf FHTXT_pl ("%04d-%02d-%02d %02d:%02d     ",$tm->year+1900,($tm->mon)+1,$tm->mday,$tm->hour,$tm->min);
+     printf FHTXT_sub ("%04d-%02d-%02d %02d:%02d     ",$tm->year+1900,($tm->mon)+1,$tm->mday,$tm->hour,$tm->min);
+     printf FHTXT_ph ("%04d-%02d-%02d %02d:%02d     ",$tm->year+1900,($tm->mon)+1,$tm->mday,$tm->hour,$tm->min);
+     printf FHTXT_dbs ("%04d-%02d-%02d %02d:%02d     ",$tm->year+1900,($tm->mon)+1,$tm->mday,$tm->hour,$tm->min);
+     $nameS = $tiers[$counter];
+     $nameC = $tiers[$counter][$counter];
+     $nameP = $tiers[$counter][$counter][$counter];
+     print "the phedex name is: $nameP\n";
+     print FHTXT_pl "$nameC      ";
+     print FHTXT_sub "$nameC      ";
+     print FHTXT_ph "$nameC      ";
+     print FHTXT_dbs "$nameC      ";
+
+     # get the pledge resource of each site
+     open(FHPLEDGE, "pledge");
+     while ($linePLEDGE = <FHPLEDGE>) {
+        if ($linePLEDGE =~ m"(\d+)\s+$nameC\s+(\d+)\s+(\d+)\s+(\d+)") {
+            $nameN = $1;
+            $disk = $3;
+            #print "disk:$disk\n";
+            $tape = $4;
+            #print "tape:$tape\n";
+            #if ($tier =~ m"T0" || $tier =~ m"T1") {
+            #  $Vpledge = $tape;
+            #}
+            #else {
+            $Vpledge = $disk;
+            #}
+        }
+     }
+     print FHTXT_pl "$Vpledge     ";
+     if ($Vpledge == 0) {
+       print FHTXT_pl "red     ";
+     }
+     else {
+       print FHTXT_pl "green     ";
+     }
+     print FHTXT_pl "https://cmsweb.cern.ch/sitedb/sitedb/xml/index/Pledge?site=$nameN\n";
+
+     # count the space of subscription and on-site
+     #system("wget --no-check-certificate https://cmsdoc.cern.ch:8443/cms/aprom/phedex/debug/Activity::TransferDetails -O pheInfo -q");
+     #system("wget --no-check-certificate https://cmsdoc.cern.ch:8443/cms/aprom/phedex/prod/Activity::TransferDetails?tofilter=&andor=or&fromfilter= --quiet -O pheInfo");
+     #system("wget --no-check-certificate --quiet -O pheInfo 'https://cmsdoc.cern.ch:8443/cms/aprom/phedex/prod/Activity::TransferDetails?tofilter=&andor=or&fromfilter=$nameP'");
+     system("wget --no-check-certificate --quiet -O pheInfo 'http://cmsweb.cern.ch/phedex/prod/Activity::TransferDetails?tofilter=&andor=or&fromfilter=$nameP'");
+     open(FHPHE, "pheInfo");
+     $after1=0;
+     $after2=0;
+     $after3=0;
+     $Vsubscription = 0;
+     $Vphedex = 0;
+     while ($linePHE = <FHPHE>) {
+        if ($linePHE =~ m"Destined Data"s) {
+           $after1 = 1;
+        }
+        if ($after1 == 1 && $linePHE =~ m"$nameP") {
+           $after2 = 1;
+        }
+        if ($after1 == 1 && $after2 == 1 && $after3 == 0 && $linePHE =~ m"<td align='right'>(.*)B</td>") {
+           $Vsubscription_TB = $1;
+           #print "Vsubscription_TB:$Vsubscription_TB\n";
+           if ($Vsubscription_TB =~ m"(.*)T") {
+             $Vsubscription = $1;
+           }
+           elsif ($Vsubscription_TB =~ m"(.*)M") {
+             $Vsubscription = $1/1000000;
+           }
+           elsif ($Vsubscription_TB =~ m"(.*)G") {
+             $Vsubscription = $1/1000;
+           }
+           elsif ($Vsubscription_TB =~ m"(.*)P") {
+             $Vsubscription = $1*1000;
+           }
+           else {
+             $Vsubscription = 0;
+           }
+           print "Vsubscription_TB:$Vsubscription_TB\n";
+           $after3 = 1;
+           next;
+        }
+       if ($after1 == 1 && $after2 == 1 && $after3 == 1 && $linePHE =~ m"<td(.*)>(.*)B</td>") {
+           $Vphedex_TB = $2;
+            #print "Vphedex_TB:$Vphedex_TB\n";
+           if ($Vphedex_TB =~ m"(.*)T") {
+             $Vphedex = $1;
+           }
+           elsif ($Vphedex_TB =~ m"(.*)M") {
+             $Vphedex = $1/1000000;
+           }
+           elsif ($Vphedex_TB =~ m"(.*)G") {
+             $Vphedex = $1/1000;
+           }
+           elsif ($Vphedex_TB =~ m"(.*)P") {
+             $Vphedex = $1*1000;
+           }
+           else {
+             $Vphedex = 0;
+           }
+           print "Vphedex:$Vphedex_TB\n";
+           goto USED;
+        }
+     }
+USED:if ($Vsubscription < 0.0000001) {
+       print FHTXT_sub "n/a       white       n/a\n";
+     }
+     else {
+       print FHTXT_sub "$Vsubscription      ";
+       if ($Vsubscription > $Vpledge) {
+         print FHTXT_sub "red      ";
+       }
+       else {
+         print FHTXT_sub "green     ";
+       }
+       #print FHTXT_sub "https://cmsdoc.cern.ch:8443/cms/aprom/phedex/prod/Activity::TransferDetails?tofilter=&andor=or&fromfilter=$nameP \n";
+       print FHTXT_sub "http://cmsweb.cern.ch/phedex/prod/Activity::TransferDetails?tofilter=&andor=or&fromfilter=$nameP \n";
+    }
+    if ($Vphedex < 0.0000001) {
+      print FHTXT_ph "n/a       white       n/a\n";
+    }
+    else {
+      print FHTXT_ph "$Vphedex     ";
+      if ($Vphedex > $Vsubscription) {
+        print FHTXT_ph "yellow     ";
+      }
+      else {
+        print FHTXT_ph "green     ";
+      }
+      #print FHTXT_ph "https://cmsdoc.cern.ch:8443/cms/aprom/phedex/prod/Activity::TransferDetails?tofilter=&andor=or&fromfilter=$nameP \n";
+      print FHTXT_ph "http://cmsweb.cern.ch/phedex/prod/Activity::TransferDetails?tofilter=&andor=or&fromfilter=$nameP \n";
+    }
+
+     # count the space used
+   system("wget --no-check-certificate https://cmsweb.cern.ch/phedex/datasvc/xml/prod/nodes?node=$nameP -O sename -q");
+   open(FHSE, "sename");
+   $sumall = 0;
+   while ($lineSE = <FHSE>) {
+     if ($lineSE =~ m"node se='(.*)'\s+id") {
+       $nameSE = $1;    
+       open(BLOCKS, "python /home/sgmcms01/slc4_ia32_gcc345/cms/dbs-client/DBS_1_0_8/lib/Clients/Python/DBSAPI/dbsCommandLine.py -c lsb --report --sepattern=$nameSE|");
+       $sum = 0;
+       while ($lineB = <BLOCKS>) {
+         if ($lineB =~ m"BlockSize") {
+           $lineB =~ m"^\D+(\d+)$";
+           $sum = $sum + $1;
+         }
+       }
+       $sumall = $sumall + $sum;
+     }
+   }
+   $Vdbs = $sumall;
+   $sumall = $sumall/1000000000000;
+   #printf ("InfoFromDBS DEBUG: %.2fTB\n", $sumall);
+   if ($Vdbs == 0) {
+     print FHTXT_dbs "n/a       white       n/a\n";  
+   }
+   else {
+     printf FHTXT_dbs ("%.2f      ", $sumall);
+     $rate = 100*abs($sumall - $Vphedex)/$sumall;
+     if ($rate >= 10) {
+       print FHTXT_dbs "yellow      ";
+     }
+     else {
+       print FHTXT_dbs "green     ";
+     }
+     print FHTXT_dbs "https://cmsweb.cern.ch/dbs_discovery/getData?dbsInst=cms_dbs_prod_global&site=$nameSE&group=*&app=*&primD=*&tier=*&proc=*&primType=*&date=*&_idx=0&ajax=0&userMode=user&pagerStep=10\n";
+   }
+  }
+}
+close(FHTXT_pl);
+close(FHTXT_sub);
+close(FHTXT_ph);
+close(FHTXT_dbs);
+exit 0;

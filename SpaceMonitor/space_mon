@@ -1,0 +1,4 @@
+#!/bin/sh
+source /home/sgmcms01/slc4_ia32_gcc345/cms/dbs-client/DBS_1_0_8/lib/Clients/Python/setuppython.sh
+/home/sgmcms01/slc4_ia32_gcc345/cms/dbs-client/DBS_1_0_8/lib/Clients/Python/DBSAPI/pledge_parse.py > pledge
+/home/sgmcms01/slc4_ia32_gcc345/cms/dbs-client/DBS_1_0_8/lib/Clients/Python/DBSAPI/InfoFromDBS_text
