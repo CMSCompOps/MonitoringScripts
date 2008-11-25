@@ -18,14 +18,12 @@ def summary_info(date, option):
         if (not os.path.isfile(filename)):    # Forget about extracting info from the file if it doesn't exist.
             print filename, ': Not Found'
             return []
-#       print "will open : ", filename
         file = open(filename, 'r')    
     else:
         filename = 'http://cern.ch/JobRobot/summary_' + date + '.html'
         try:
             file = urllib2.urlopen(filename)
         except IOError, detail:               # Forget the info if the page doesn't exist. 
-            #print filename, ': ', detail 
             return []
     
     file_lines = []
@@ -52,9 +50,7 @@ def summary_info(date, option):
     
     info_list = []
     for n in range(ini, end, step):
-#        print file_lines[n+1]
         site = ((file_lines[n+1].split('>')[2]).split('<')[0])[1:-1]
-#        print site
         subm = int(((file_lines[n+2].split('>')[1]).split('<')[0])[1:-1])
         
         isit = wordInStr('</a>',file_lines[n+3])
@@ -73,7 +69,6 @@ def summary_info(date, option):
         info_list.append([site,subm,abor,erro,succ])
     
     info_list.sort()
-#    print info_list
     if (option == 0):
         file.close()
     return info_list
@@ -84,12 +79,19 @@ def summary_info(date, option):
 # {site : {datetime.datetime(year, month, day, 0, 0): quality value, datetime(...)}}
 
 
-def build_info():
+def build_info(sitelist):
 
     # option =  Procedure for finding the info files: 0 for using the local ones.
     #                     1 for finding them in the internet
 
-#    [day_str, day] = date_calc(to)
+    # read file with list of sites
+    sites = []
+    f = open(sitelist)
+    for line in f.readlines():
+        sites.append(line.strip())
+    f.close()
+
+    output=[]
     today=datetime.datetime.utcnow()
     yesterday=today-datetime.timedelta(1)
     todayString=today.strftime("%y%m%d")
@@ -100,12 +102,7 @@ def build_info():
 
     
     tSummary = summary_info(todayString, 0)
-#    l=len(tSummary)
-#    print l
-#    print tSummary[0][0]
-#    print tSummary[l-1][0]
     ySummary = summary_info(yesterdayString,0)
-#    print ySummary
 
     for i in range(0,len(tSummary)):
         site=tSummary[i][0]
@@ -145,9 +142,13 @@ def build_info():
         if status=="ok": color="green"
         if status=="err": color="red"
         if status=="warn":color="green"
-        print ("%s\t%s\t%s\t%s\t%s\t%s") % (timestamp, site, value, color, link, status)
+        output.append(("%s\t%s\t%s\t%s\t%s") % (timestamp, site, value, color, link))
+        sites.remove(site)
+
+    for site in sites:
+        output.append(("%s\t%s\t%s\t%s\t%s") % (timestamp, site, 'n/a', 'white', link))        
     
-    return
+    return output
 
 #_______________________________________________________________________________
 # Function that looks for the ocurrence of a word in a character string (it is
@@ -174,30 +175,45 @@ def main(argv) :
     """
     """
 
+    header = """
+# JobRobot efficiency by site computed from JR summary of
+# current day, plus previous day if there are less than
+# 100 submitted jobs.
+# JR summaries are at http://cmsweb.cern.ch/JobRobot/
+# efficiency = Nok/(Nok+Nabo+Nerr)
+# site is OK if efficiency >= 90% (tier 0/1), 80% (tier 2),
+# 0% (tier 3)
+# if Nsub=0 consider it error (sites who can not get JR jobs
+# for good reason must be removed from JR list).
+# If Nsub>0 but no ok/err/abo call it pending and warn
+#
+# for each site efficiency is reported
+#
+"""
 
-    print "# JobRobot efficiency by site computed from JR summary of"
-    print "# current day, plus previous day if there are less than"
-    print "# 100 submitted jobs."
-    print "# JR summaries are at http://jobrobot.web.cern.ch/JobRobot/"
-    print "# efficiency = Nok/(Nok+Nabo+Nerr)"
-    print "# site is OK if efficiency > 95% (tier 0/1), 90% (tier 2)"
-    print "# if Nsub=0 consider it error (sites who can not get JR jobs"
-    print "# for good reason must be removed from JR list)."
-    print "# If Nsub>0 but no ok/err/abo call it pending and warn"
-    print "#"
-    print "# for each site efficiency is reported"
-    print "#"
-    print "# this page is created by a acrontab running on lxplus.cern.ch"
-    print "# which runs the script"
-    print "# /afs/cern.ch/user/a/asciaba/jobrobot/JRobotForSiteComm.sh"
-    print "# the code that actually writes this page is a python script"
-    print "# directly linked at"
-    print "# /afs/cern.ch/user/a/asciaba/jobrobot/JRobotForSiteComm.py"
-    print "#"
+    sites = argv[1]
+    now = datetime.datetime.utcnow()
+    print 'START: ' + now.ctime()
+    
+    status = build_info(sites)
 
-    status = build_info()
+    if status:
+        print 'Site status retrieved!'
+        outfile = argv[0]
+        file = open(outfile, 'w')
+        file.write(header)
+        
+        for line in status:
+            file.write(line+'\n')
+            print line
 
+        file.close()
+            
+    else:
+        print 'ERROR: Site status not retrieved!'
 
+    print
+    
 if __name__ == '__main__' :
 
     main(sys.argv[1:])
