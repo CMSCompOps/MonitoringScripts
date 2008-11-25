@@ -1,2 +1,8 @@
 #!/bin/sh
-/afs/cern.ch/user/a/asciaba/jobrobot/JRobotForSiteComm.py > /afs/cern.ch/cms/LCG/SiteComm/JobRobotForSiteComm.txt
+OUTDIR=/afs/cern.ch/cms/LCG/SiteComm
+LOGDIR=$OUTDIR/log
+tmpfile=`mktemp`
+dir=`dirname $0`
+$dir/sites.pl > $tmpfile
+$dir/JRobotForSiteComm.py $OUTDIR/JobRobotForSiteComm.txt $tmpfile >> $LOGDIR/JRobotForSiteComm.log 2>&1
+rm -f $tmpfile
