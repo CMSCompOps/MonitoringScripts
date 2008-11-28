@@ -126,6 +126,7 @@ foreach my $site ( sort keys %quality ) {
     }
     $site =~ s/_Export//;
     $site =~ s/_Buffer//;
+    $site =~ s/_Disk//;
     printf SSB "%s\t%s\t%s\t%s\t%s\n", $timestamp, $site, $status, $color,
     $url_report;
 }
