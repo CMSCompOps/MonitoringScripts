@@ -9,7 +9,7 @@ $t1ft0 = 1;
 $t1ft1 = 2;
 $t1tt1 = 2;
 $t1tt2 = 10;
-$t1ft2 = 1;
+$t1ft2 = 0;
 $t2ft1 = 2;
 $t2tt1 = 1;
 
@@ -22,6 +22,7 @@ $base_url_prod = "http://cmsweb.cern.ch/phedex/production/Reports::DailyReport?r
 
 # Input is the day, otherwise today by default
 my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday) = gmtime(time);
+$mday = "0$mday" if (length($mday) == 1);
 $year += 1900;
 $mon += 1;
 $date = $year . $mon . $mday;
@@ -46,8 +47,10 @@ $url_debug = $base_url_debug;
 $url_debug =~ s/__date__/$date/;
 
 # Parsing and combination production+debug
-%quality_debug = &get_quality($url_debug);
-%quality_prod  = &get_quality($url_prod);
+($dbgtime, $ref1) = &get_quality($url_debug);
+%quality_debug = %$ref1;
+($prdtime, $ref2) = &get_quality($url_prod);
+%quality_prod  = %$ref2;
 %quality       = &quality_combine(\%quality_debug, \%quality_prod);
 foreach ( keys %quality ) {
     $lup{$_} = $hup{$_} = $ldown{$_} = $hdown{$_} = $outcross{$_} = $incross{$_} = 0;
@@ -62,7 +65,7 @@ foreach my $site ( keys %quality ) {
 	my $q = $quality{$site}{$dest}[0];
 
 # No data means ok
-	$q = 100 if ( $q eq 'N/A' );
+#	$q = 100 if ( $q eq 'N/A' );
 
 # Uplinks
 	if ( $tier > $dtier ) {
@@ -95,15 +98,15 @@ if ( $debug ) {
     foreach ( sort keys %quality ) {
 	my $tier = substr($_, 1, 1);
 	if ( $tier == 1 ) {
-	    system ("echo $lup{$_} >> t1up.vec");
-	    system ("echo $hdown{$_} >> t1downt2.vec");
-	    system ("echo $hup{$_} >> t1upt2.vec");
-	    system ("echo $outcross{$_} >> t1outt1.vec");
-	    system ("echo $incross{$_} >> t1int1.vec");
+#	    system ("echo $lup{$_} >> t1up.vec");
+#	    system ("echo $hdown{$_} >> t1downt2.vec");
+#	    system ("echo $hup{$_} >> t1upt2.vec");
+#	    system ("echo $outcross{$_} >> t1outt1.vec");
+#	    system ("echo $incross{$_} >> t1int1.vec");
 	    print HTML &site_report($_);
 	} elsif ( $tier == 2 ) {
-	    system ("echo $lup{$_} >> t2up.vec");
-	    system ("echo $ldown{$_} >> t2down.vec");
+#	    system ("echo $lup{$_} >> t2up.vec");
+#	    system ("echo $ldown{$_} >> t2down.vec");
 	    print HTML &site_report($_);
 	}
 #	my $status = &site_status($_);
@@ -156,7 +159,7 @@ sub site_status {
 sub color {
     my $s = shift;
     my $c = 'red';
-    $c = 'green' if ( $s );
+    $c = 'white' if ( $s );
     return $c;
 }
 
@@ -205,7 +208,12 @@ sub get_quality {
     my $url = shift;
     my $report = get($url) or die "Cannot retrieve PhEDEx report\n";
     my $parse = 0;
+    my $gentime;
+    my %quality = ();
     foreach ( split /\n/, $report ) {
+	if ( /generated at (.*) by/ ) {
+	    $gentime = $1;
+	}
 	$parse = 1 if ( /1-day period/ );
 	$parse = 0 if ( /7-day period/ );
 	if ( $parse ) {
@@ -219,6 +227,7 @@ sub get_quality {
 		my @data = split /\s+/, $_;
 		my $succ = $data[5];
 		$succ =~ s/%//;
+		$succ = 0 if ( $succ eq 'N/A' );
 		my $ftot = $data[4];
 		if ( $debug ) {
 		    system("echo $succ >> quality.vec");
@@ -227,7 +236,7 @@ sub get_quality {
 	    }
 	}
     }
-    return %quality;
+    return ($gentime, \%quality);
 }
 
 sub quality_combine {
@@ -235,12 +244,12 @@ sub quality_combine {
     my %q1 = %$hashref1;
     my %q2 = %$hashref2;
     my %q;
-    my @sites;
+    my @sites = ();
     foreach my $s (keys %q1, keys %q2) {
 	push @sites, $s if ( ! grep(/$s/, @sites) );
     }
     foreach my $s ( @sites ) {
-	my @dests;
+	my @dests = ();
 	foreach my $d ( keys %{$q1{$s}}, keys %{$q2{$s}} ) {
 	    push @dests, $d if ( ! grep(/$d/, @dests) );
 	}
@@ -251,14 +260,20 @@ sub quality_combine {
 	    my $t2 = (defined ${$q2{$s}{$d}}[1])?${$q2{$s}{$d}}[1]:-1;
 	    my $q;
 	    my $t;
-	    if ( $t1 <= 0 ) {
+	    if ( $t1 < 0 ) {
 		$q = $q2;
 		$t = $t2;
-	    } elsif ( $t2 <= 0 ) {
+	    } elsif ( $t2 < 0 ) {
+		$q = $q1;
+		$t = $t1;
+	    } elsif ( $t1 == 0 ) {
+		$q = $q2;
+		$t = $t2;
+	    } elsif ( $t2 == 0 ) {
 		$q = $q1;
 		$t = $t1;
 	    } else {
-		$q = ($q1*$t1+$q2*$t2)/($t1+$t2);
+		$q = 1/((1/$q1*$t1+1/$q2*$t2)/($t1+$t2));
 		$t = $t1+$t2;
 	    }
 	    $q{$s}{$d} = [$q, $t];
@@ -307,14 +322,14 @@ sub phedex_link {
 sub header {
     my $string = 
 	"<html><body>\n" .
-	"<title>Site link quality</title>\n" .
+	"<title>Site link quality report $date</title>\n" .
 	"<h1>Number of good links per site</h1>\n" .
 	"<p>Links are classified as follows:</p>\n" .
 	"<table border=\"1\">\n" .
 	"<tr><td>link from T0</td><td>the downlink from CERN</td></tr>\n" .
 	"<tr><td>links from T1</td><td>for Tier-1 sites, the incoming links from other Tier-1 sites; for Tier-2 sites, the downlinks from Tier-1 sites</td></tr>\n" .
 	"<tr><td>links to T1</td><td>for Tier-1 sites, the outgoing links to other Tier-1 sites; for Tier-2 sites, the uplinks to Tier-1 sites</td><tr>\n" .
-	"<tr><td>links from T2</td><td>for Tier-1 sites, the uplinks from Tier-2 sites</td></tr>\n" .
+#	"<tr><td>links from T2</td><td>for Tier-1 sites, the uplinks from Tier-2 sites</td></tr>\n" .
 	"<tr><td>links to T2</td><td>for Tier-1 sites, the downlinks to Tier-2 sites</td><tr>\n" .
 	"</table>\n" .
 	"<p>Links are counted only if they have a quality better than <b>$thrsh%</b> in the previous day. These are the minimum numbers of links per type:</p>\n" .
@@ -323,10 +338,12 @@ sub header {
 	"<tr><td>link from T0</td><td>$t1ft0</td><td>&nbsp;</td></tr>\n" .
 	"<tr><td>links from T1</td><td>$t1ft1</td><td>$t2ft1</td></tr>\n" .
 	"<tr><td>links to T1</td><td>$t1tt1</td><td>$t2tt1</td></tr>\n" .
-	"<tr><td>links from T2</td>&nbsp;<td>$t1ft2</td><td>&nbsp;</td></tr>\n" .
+#	"<tr><td>links from T2</td>&nbsp;<td>$t1ft2</td><td>&nbsp;</td></tr>\n" .
 	"<tr><td>links to T2</td><td>$t1tt2</td><td>&nbsp;</td></tr>\n" .
 	"</table>\n" .
 	"<h2>Site status vs. good links</h2>\n" .
+	"<p>PhEDEx <a href=\"$url_debug\">debug report</a> generated at $dbgtime.</p>\n" .
+	"<p>PhEDEx <a href=\"$url_prod\">production report</a> generated at $prdtime.</p>\n" .
 	"<table border=\"1\">\n" .
 	"<colgroup span=\"6\">\n" .
 	"<col></col>\n" .
