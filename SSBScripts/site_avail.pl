@@ -122,6 +122,14 @@ sub timestamp {
     return $timestamp;
 }
 
+sub ptime {
+
+    my @time = @_;
+    my $t = sprintf("%s-%02d-%02d",
+			1900 + $time[5], 1 + $time[4], $time[3]);
+    return $t;
+}
+
 sub get_avail {
 
     my $site = shift;
@@ -142,6 +150,8 @@ sub get_avail {
 sub avail_url {
 
     my $site = shift;
-    my $url = "http://lxarda16.cern.ch/dashboard/request.py/historicalsiteavailability?siteSelect3=All%20Sites&sites=${site}&timeRange=last24";
+    my $start = &ptime(gmtime(time));
+    my $end = &ptime(gmtime(time+86400));
+    my $url = "http://dashb-cms-sam.cern.ch/dashboard/request.py/historicalsiteavailability?siteSelect3=All%20Sites&sites=${site}&timeRange=individual&start=${start}&end=${end}";
     return $url;
 }
