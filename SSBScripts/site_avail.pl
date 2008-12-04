@@ -66,12 +66,12 @@ foreach my $s ( values %sites ) {
     }
     $colour = 'red' if ( $avail eq 'NA' );
     my $comm_url = &avail_url($s->{CMS});
-    printf LIST "%s\t%s\t%s\t%s\t%s\n", $timestamp, $s->{CMS}, $avail,
+    printf LIST "%s\t%s\t%s\t%s\t%s\n", $timestamp, $s->{CMS}, "${avail}%",
     $colour, $comm_url;
 # Use T0_CH_CERN for T1_CH_CERN
     if ( $s->{CMS} eq 'T0_CH_CERN' ) {
-	printf LIST "%s\t%s\t%s\t%s\t%s\n", $timestamp, 'T1_CH_CERN', $avail,
-    $colour, $comm_url;
+	printf LIST "%s\t%s\t%s\t%s\t%s\n", $timestamp, 'T1_CH_CERN',
+        "${avail}%", $colour, $comm_url;
     }
 } 
 close LIST;
@@ -139,9 +139,8 @@ sub get_avail {
     my $output = `$cmd`;
     if ( defined $output ) {
 	if ($output =~ /<num>(.+)<\/num>/) {
-	    $avail = $1 / 100;
+	    $avail = $1;
 	} else {
-#	    print "$output\n";
 	}
     }
     return $avail;
