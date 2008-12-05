@@ -60,9 +60,9 @@ foreach my $s ( values %sites ) {
     next if ( $avail eq 'NA' );
     my $colour = 'green';
     if ( $t == 0 or $t == 1 ) {
-	$colour = 'red' if ( $avail ne 'NA' and $avail < .90 );
-    } else {
-	$colour = 'red' if ( $avail ne 'NA' and $avail < .80 );
+	$colour = 'red' if ( $avail ne 'NA' and $avail < 90 );
+    } elsif ( $t == 2 ) {
+	$colour = 'red' if ( $avail ne 'NA' and $avail < 80 );
     }
     $colour = 'red' if ( $avail eq 'NA' );
     my $comm_url = &avail_url($s->{CMS});
