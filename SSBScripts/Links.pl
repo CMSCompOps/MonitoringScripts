@@ -58,14 +58,15 @@ foreach ( keys %quality ) {
 
 
 # Calculate number of good links per site
+$totlinks = 0;
+$goodlinks = 0;
 foreach my $site ( keys %quality ) {
     my $tier = substr($site, 1, 1);
     foreach my $dest ( keys %{$quality{$site}} ) {
 	my $dtier = substr($dest, 1, 1);
 	my $q = $quality{$site}{$dest}[0];
-
-# No data means ok
-#	$q = 100 if ( $q eq 'N/A' );
+	$totlinks++;
+	$goodlinks++ if ( $q >= $thrsh );
 
 # Uplinks
 	if ( $tier > $dtier ) {
@@ -87,6 +88,8 @@ foreach my $site ( keys %quality ) {
 	}
     }
 }
+
+print "Tot links: $totlinks  Good links: $goodlinks\n";
 
 # Correction for CERN
 $ldown{'T1_CH_CERN_Buffer'}++;
@@ -260,16 +263,16 @@ sub quality_combine {
 	    my $t2 = (defined ${$q2{$s}{$d}}[1])?${$q2{$s}{$d}}[1]:-1;
 	    my $q;
 	    my $t;
-	    if ( $t1 < 0 ) {
+	    if ( $q1 < 0 ) {
 		$q = $q2;
 		$t = $t2;
-	    } elsif ( $t2 < 0 ) {
+	    } elsif ( $q2 < 0 ) {
 		$q = $q1;
 		$t = $t1;
-	    } elsif ( $t1 == 0 ) {
+	    } elsif ( $q1 == 0 ) {
 		$q = $q2;
 		$t = $t2;
-	    } elsif ( $t2 == 0 ) {
+	    } elsif ( $q2 == 0 ) {
 		$q = $q1;
 		$t = $t1;
 	    } else {
