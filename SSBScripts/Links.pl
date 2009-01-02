@@ -25,6 +25,7 @@ my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday) = gmtime(time);
 $mday = "0$mday" if (length($mday) == 1);
 $year += 1900;
 $mon += 1;
+$mon = "0$mon" if (length($mon) == 1);
 $date = $year . $mon . $mday;
 die "Usage: Links.pl [date]\n" if (@ARGV > 1);
 $date = $ARGV[0] if ( $ARGV[0] );
