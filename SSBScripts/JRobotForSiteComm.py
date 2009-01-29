@@ -98,7 +98,7 @@ def build_info(sitelist):
     yesterdayString=yesterday.strftime("%y%m%d")
     
     timestamp=today.strftime("%Y-%m-%d %H:%M:%S")
-    link='http://jobrobot.web.cern.ch/JobRobot/summary_' + todayString + '.html'
+    link='http://cmsdoc.cern.ch/cms/LCG/SiteComm/JobRobot/html/summary_' + todayString + '.html'
 
     
     tSummary = summary_info(todayString, 0)
