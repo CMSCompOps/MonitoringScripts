@@ -99,7 +99,7 @@ $ldown{'T1_CH_CERN_Buffer'}++;
 
 # Generate HTML report
 if ( $debug ) {
-    open(HTML, ">$dir/link_qual_$date.html") or die "Cannot write HTML report\n";
+    open(HTML, ">$dir/$file") or die "Cannot write HTML report\n";
     print HTML &header;
     foreach ( sort keys %quality ) {
 	my $tier = substr($_, 1, 1);
@@ -119,6 +119,8 @@ if ( $debug ) {
     }
     print HTML &footer;
     close HTML;
+    unlink "$dir/link_qual_latest.html";
+    symlink "$dir/$file", "$dir/link_qual_latest.html";
 }
 
 # Generate input file for SSB
