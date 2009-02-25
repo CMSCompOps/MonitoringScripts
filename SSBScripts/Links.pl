@@ -4,14 +4,14 @@ use LWP::Simple;
 use Time::Local;
 
 # Commissioning criteria
-$thrsh = 50;
-$t1ft0 = 1;
-$t1ft1 = 2;
-$t1tt1 = 2;
-$t1tt2 = 10;
-$t1ft2 = 0;
-$t2ft1 = 2;
-$t2tt1 = 1;
+$thrsh = 50;   # Minimum quality
+$t1ft0 = 1;    # Minimum number of links from T0 for T1
+$t1ft1 = 2;    # Minimum number of links from T1 for T1
+$t1tt1 = 2;    # Minimum number of links to T1 for T1
+$t1tt2 = 10;   # Minimum number of links to T2 for T1
+$t1ft2 = 0;    # Minimum number of links from T2 for T1
+$t2ft1 = 2;    # Minimum number of links from T1 for T2
+$t2tt1 = 1;    # Minimum number of links to T1 for T2
 
 $debug = 1;
 
@@ -20,6 +20,8 @@ $base_url_debug = "http://cmsweb.cern.ch/phedex/debug/Reports::DailyReport?repor
 $base_url_prod = "http://cmsweb.cern.ch/phedex/production/Reports::DailyReport?reportfile=__date__.txt";
 %lup = %hup = %outcross = %incross = %ldown = %hdown = ();
 
+die "Usage: Links.pl [date]\n" if (@ARGV > 1);
+
 # Input is the day, otherwise today by default
 my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday) = gmtime(time);
 $mday = "0$mday" if (length($mday) == 1);
@@ -27,7 +29,6 @@ $year += 1900;
 $mon += 1;
 $mon = "0$mon" if (length($mon) == 1);
 $date = $year . $mon . $mday;
-die "Usage: Links.pl [date]\n" if (@ARGV > 1);
 $date = $ARGV[0] if ( $ARGV[0] );
 
 # Time interval for PhEDEx plots
@@ -39,7 +40,8 @@ $file = "link_qual_$date.html";
 $url_report = "http://cern.ch/asciaba/links/$file";
 
 # SSB input file
-$ssbpath = "/afs/cern.ch/cms/LCG/SiteComm/links_quality.txt";
+$ssbdir = "/afs/cern.ch/cms/LCG/SiteComm";
+$ssbpath = "$ssbdir/links_quality.txt";
 
 # URL for PhEDEx reports
 $url_prod = $base_url_prod;
@@ -138,6 +140,45 @@ foreach my $site ( sort keys %quality ) {
     $url_report;
 }
 close SSB;
+
+&generate_ssbfile("$ssbdir/links_quality_t1ft0.txt", 1, 1);
+&generate_ssbfile("$ssbdir/links_quality_t1ft1.txt", 1, 3);
+&generate_ssbfile("$ssbdir/links_quality_t1tt1.txt", 1, 2);
+&generate_ssbfile("$ssbdir/links_quality_t1ft2.txt", 1, 5);
+&generate_ssbfile("$ssbdir/links_quality_t1tt2.txt", 1, 4);
+&generate_ssbfile("$ssbdir/links_quality_t2ft1.txt", 2, 3);
+&generate_ssbfile("$ssbdir/links_quality_t2tt1.txt", 2, 2);
+
+sub generate_ssbfile {
+    my $filename = shift;
+    my $tier = shift;
+    my $index = shift;
+    my @map;
+    if ( $tier == 1 ) {
+	@map = ('ldown', 'outcross', 'incross', 'hdown', 'hup');
+    } else {
+	@map = ('', 'lup', 'ldown');
+    }
+    open(SSBL, ">$filename") or die "Cannot write SSB input file $filename\n";
+    foreach my $site ( sort keys %quality ) {
+	my $t = substr($site, 1, 1);
+	next if ( $site =~ /^T0/ );
+	next if ( $t != $tier );
+	my $timestamp = &timestamp;
+	my $status = ${$map[$index-1]}{$site};
+	my $color = 'red';
+	my @status = &site_status($site);
+	if ( $status[$index] ) {
+	    $color = 'green';
+	}
+	$site =~ s/_Export//;
+	$site =~ s/_Buffer//;
+	$site =~ s/_Disk//;
+	printf SSBL "%s\t%s\t%s\t%s\t%s\n", $timestamp, $site, $status, $color,
+	$url_report;
+    }
+    close SSBL;
+}
 
 # Returns 1 if the site satisfies sitecomm metrics, 0 otherwise
 sub site_status {
