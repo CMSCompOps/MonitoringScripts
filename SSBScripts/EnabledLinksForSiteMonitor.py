@@ -205,7 +205,7 @@ f.write('This page is made by an acrontab on lxplus.cern.ch which executes the s
 f.write('<pre>/afs/cern.ch/user/s/samcms/COMP/SITECOMM/SSBScripts/EnabledLinkForSiteMonitor.sh</pre>\n')
 f.write('Direct link to the python script in CVS that writes this HTML page \n')
 f.write('and the metric page for the Site Status Board \n')
-f.write('is <a href="http://belforte.home.cern.ch/belforte/misc/EnabledLinkForSiteMonitor.py">here</a> .\n')
+f.write('is <a href="http://cmssw.cvs.cern.ch/cgi-bin/cmssw.cgi/COMP/SITECOMM/SSBScripts/EnabledLinkForSiteMonitor.py">here</a> .\n')
 f.write('<p>\n')
 
 f.write('</body>\n')
