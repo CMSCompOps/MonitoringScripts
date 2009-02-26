@@ -1,0 +1,52 @@
+#
+# this file is /afs/cern.ch/user/s/samcms/acrontab.dat
+#
+#   check  the schedule with  'acrontab -l'
+#   update schedule from file with  'acrontab < acrontab.dat'
+#
+# format: minute hour day month day-of-the-week host command
+# see man acrontab
+#  also man -S 5 crontab
+# note that command is executed in /bin/sh shell (not tcsh !!)
+#
+#
+#=========== JOB ROBOT STUFF ===================================
+# JobRobot cleanup
+0 2 * * * vocms07.cern.ch /data/JobRobot/code/reports/crono_clean.py --lag 3 > /data/JobRobot/code/reports/robot_clean.log 2>&1
+#
+# JR reports
+0 * * * * vocms07.cern.ch /data/JobRobot/code/reports/crono_reports.py --lag 0 >> /data/JobRobot/code/reports/robot_post.log 2>&1
+45 1,3,5 * * * vocms07.cern.ch /data/JobRobot/code/reports/crono_reports.py --lag 1 > /data/JobRobot/code/reports/robot_post.log 2>&1
+#10 2,14 * * * vocms07.cern.ch /data/JobRobot/code/reports/crono_reports.py --lag 2 >> /data/JobRobot/code/reports/robot_post.log 2>&1
+#40 2 * * * vocms07.cern.ch /data/JobRobot/code/reports/crono_reports.py --lag 3  >> /data/JobRobot/code/reports/robot_post.log 2>&1
+#
+# JR quality plots
+10 5,9,17 * * * vocms07.cern.ch /data/JobRobot/code/reports/quality_plots.sh week
+15 6,14 * * * vocms07.cern.ch /data/JobRobot/code/reports/quality_plots.sh month
+#
+# this updates JR web pages on cmsweb machine
+5,15,30,45 * * * * vocms44 /afs/cern.ch/user/s/samcms/mybin/JR-Sync.sh > /afs/cern.ch/user/s/samcms/logs/JR-Sync.log
+#
+#
+# renew proxy for running JobRobot
+30 23 * * * vocms07.cern.ch /afs/cern.ch/user/s/samcms/mybin/SAMCMS-p.sh > /afs/cern.ch/user/s/samcms/logs/SAMCMS-p.log
+40 10,22 * * * vocms07.cern.ch /bin/cp -f /data/JobRobot/work/asciaba/.px /data/JobRobot/work/SiteComm/PRN/.PRX/samcms-as; /bin/chmod 0600 /data/JobRobot/work/SiteComm/PRN/.PRX/samcms-as
+#
+# redelegate proxy to WMProxy
+13 12 * * * vocms07.cern.ch cd /data/JobRobot/work/SiteComm; source SETUP.sh; source GetSamcmsProxy.sh; /data/JobRobot/work/SiteComm/delegation.pl
+#
+#============== SITE STATUS BOARD STUFF ==========================
+#== 17 * * * * lxplus /afs/cern.ch/user/b/belforte/SiteMonitor/JRobotForSiteMonitor.sh > /afs/cern.ch/user/b/belforte/SiteMonitor/JRobotForSiteMonitor.log
+10 8,17 * * * lxplus $HOME/COMP/SITECOMM/SSBScripts//EnabledLinksForSiteMonitor.sh > $HOME/COMP/SITECOMM/SSBScripts/EnabledLinksForSiteMonitor.log
+#== 17 * * * * lxplus /afs/cern.ch/user/b/belforte/SiteMonitor/SiteSizeForSiteMonitor.sh > /afs/cern.ch/user/b/belforte/SiteMonitor/SiteSizeForSiteMonitor.log
+18,48 * * * * lxplus $HOME/COMP/SITECOMM/SSBScripts/JRobotForSiteComm.py.old > /afs/cern.ch/cms/LCG/SiteComm/JobRobot.txt
+55 0 * * * lxplus $HOME/COMP/SITECOMM/SSBScripts/JRobotForSiteComm.sh
+55 0 * * * lxplus $HOME/COMP/SITECOMM/SSBScripts/site_avail.pl
+5 0 * * * lxplus $HOME/COMP/SITECOMM/SSBScripts/pledged.pl > /afs/cern.ch/cms/LCG/SiteComm/pledged_slots.txt
+#
+#============== THIS IS FOR SAM TESTS ============================
+#== 30 * * * * lxplus /afs/cern.ch/user/b/belforte/mybin/list-tags.sh > /dev/null
+0 * * * * vocms36 source /data/sam2/ui.sh; $HOME/same-cron/same-cron-srm.sh
+15 * * * * vocms36 source /data/sam2/ui.sh; $HOME/same-cron/same-cron-ce-prod.sh
+20 * * * * vocms36 source /data/sam2/ui.sh; $HOME/same-cron/same-cron-user.sh
+30 * * * * vocms36 source /data/sam2/ui.sh; $HOME/same-cron/same-cron-ce.sh
