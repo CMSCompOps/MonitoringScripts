@@ -40,7 +40,6 @@ linksUrl= 'http://t2.unl.edu/phedex/xml/enabled?conn=Prod/NEBRASKA'
 linksUrl= '"http://t2.unl.edu/phedex/xml/enabled?from_node=.*&excludefrom=MSS&excludeto=MSS&to_node=.*&conn=Prod/NEBRASKA"'
 
 fileN="/tmp/siteviewtext.%i" % pid
-print "fileN ", fileN
 
 fullPage="EnabledLinksStatus.html"
 metricPage="EnabledLinksForSiteMonitor.txt"
