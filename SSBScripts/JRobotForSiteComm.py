@@ -113,7 +113,7 @@ def build_info(sitelist):
         if site[0:2] == "T0" or site[0:2] == "T1": thrs = 90
         if site[0:2] == "T2": thrs = 80
         if site[0:2] == "T3": thrs = 0
-        if jsub < 100:
+        if jsub < 10:
             for yi in range (0,len(ySummary)):
                 ysite=ySummary[yi][0]
                 if ysite==site:
