@@ -24,10 +24,6 @@
 10 5,9,17 * * * vocms07.cern.ch /data/JobRobot/code/reports/quality_plots.sh week
 15 6,14 * * * vocms07.cern.ch /data/JobRobot/code/reports/quality_plots.sh month
 #
-# this updates JR web pages on cmsweb machine
-5,15,30,45 * * * * vocms44 /afs/cern.ch/user/s/samcms/mybin/JR-Sync.sh > /afs/cern.ch/user/s/samcms/logs/JR-Sync.log
-#
-#
 # renew proxy for running JobRobot
 30 23 * * * vocms07.cern.ch /afs/cern.ch/user/s/samcms/mybin/SAMCMS-p.sh > /afs/cern.ch/user/s/samcms/logs/SAMCMS-p.log
 40 10,22 * * * vocms07.cern.ch /bin/cp -f /data/JobRobot/work/asciaba/.px /data/JobRobot/work/SiteComm/PRN/.PRX/samcms-as; /bin/chmod 0600 /data/JobRobot/work/SiteComm/PRN/.PRX/samcms-as
