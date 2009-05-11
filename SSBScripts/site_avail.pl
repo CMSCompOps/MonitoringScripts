@@ -134,7 +134,7 @@ sub get_avail {
 
     my $site = shift;
     my $avail = 'NA';
-    my $url = "http://lxarda16.cern.ch/dashboard/request.py/historicalsiteavailabilityranking.png?siteSelect3=T2T1T0&sites=${site}&timeRange=last24";
+    my $url = "http://dashb-cms-sam.cern.ch/dashboard/request.py/historicalsiteavailabilityranking.png?siteSelect3=T2T1T0&sites=${site}&timeRange=last24";
     my $cmd = "curl -H \'Accept: text/xml\' \'$url\' 2> /dev/null";
     my $output = `$cmd`;
     if ( defined $output ) {
