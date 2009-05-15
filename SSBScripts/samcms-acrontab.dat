@@ -36,13 +36,13 @@
 10 8,17 * * * lxplus $HOME/COMP/SITECOMM/SSBScripts//EnabledLinksForSiteMonitor.sh > $HOME/COMP/SITECOMM/SSBScripts/EnabledLinksForSiteMonitor.log
 #== 17 * * * * lxplus /afs/cern.ch/user/b/belforte/SiteMonitor/SiteSizeForSiteMonitor.sh > /afs/cern.ch/user/b/belforte/SiteMonitor/SiteSizeForSiteMonitor.log
 18,48 * * * * lxplus $HOME/COMP/SITECOMM/SSBScripts/JRobotForSiteComm.py.old > /afs/cern.ch/cms/LCG/SiteComm/JobRobot.txt
-55 0 * * * lxplus $HOME/COMP/SITECOMM/SSBScripts/JRobotForSiteComm.sh
-55 0 * * * lxplus $HOME/COMP/SITECOMM/SSBScripts/site_avail.pl
+55 1 * * * lxplus $HOME/COMP/SITECOMM/SSBScripts/JRobotForSiteComm.sh
+55 1 * * * lxplus $HOME/COMP/SITECOMM/SSBScripts/site_avail.pl
 5 0 * * * lxplus $HOME/COMP/SITECOMM/SSBScripts/pledged.pl > /afs/cern.ch/cms/LCG/SiteComm/pledged_slots.txt
 #
 #============== THIS IS FOR SAM TESTS ============================
 30 * * * * lxplus /afs/cern.ch/user/b/belforte/mybin/list-tags.sh > /dev/null
-0  * * * * vocms36 source /data/sam2/ui.sh; $HOME/same-cron/same-cron-srm.sh
+0 * * * * vocms36 source /data/sam2/ui.sh; $HOME/same-cron/same-cron-srm.sh
 15 * * * * vocms36 source /data/sam2/ui.sh; $HOME/same-cron/same-cron-ce-prod.sh
 20 * * * * vocms36 source /data/sam2/ui.sh; $HOME/same-cron/same-cron-user.sh
 30 * * * * vocms36 source /data/sam2/ui.sh; $HOME/same-cron/same-cron-ce.sh
