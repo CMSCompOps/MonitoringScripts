@@ -41,7 +41,7 @@
 5 0 * * * lxplus $HOME/COMP/SITECOMM/SSBScripts/pledged.pl > /afs/cern.ch/cms/LCG/SiteComm/pledged_slots.txt
 #
 #============== THIS IS FOR SAM TESTS ============================
-30 * * * * lxplus /afs/cern.ch/user/b/belforte/mybin/list-tags.sh > /dev/null
+30 * * * * lxplus /afs/cern.ch/user/s/samcms/mybin/list-tags.sh > /dev/null
 0 * * * * vocms36 source /data/sam2/ui.sh; $HOME/same-cron/same-cron-srm.sh
 15 * * * * vocms36 source /data/sam2/ui.sh; $HOME/same-cron/same-cron-ce-prod.sh
 20 * * * * vocms36 source /data/sam2/ui.sh; $HOME/same-cron/same-cron-user.sh
