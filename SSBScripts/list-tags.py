@@ -108,6 +108,7 @@ def getSW(ceList, bdii='lcg-bdii.cern.ch'):
     return GK_to_SW
     
 if __name__ == '__main__':
+    import string
     from pprint import pprint
 #    bdii = 'uscmsbd2.fnal.gov'
 #    bdii = 'lcg-bdii.cern.ch'
@@ -117,7 +118,8 @@ if __name__ == '__main__':
     swmap = getSW(celist, bdii)
     #pprint(swmap)
     for ce in swmap.keys():
-        fname="./published-tags/%s" % ce
+        ceWithCommas=string.replace(ce,'.',',')
+        fname="./published-tags/%s" % ceWithCommas
         file=open(fname,'w')
         for tag in swmap[ce]:
             file.write("%s\n" % tag)
