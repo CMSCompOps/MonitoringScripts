@@ -20,7 +20,7 @@ the VO-cms- suffix stripped
 
 <p>
 Those files are created by an acrontab job on lxplus.cern.ch
-that runs every hour under "belforte" account and executes
+that runs every hour under "samcms account and executes
 <br>
 <a href="list-tags.sh.txt">/afs/cern.ch/user/s/samcms/mybin/list-tags.sh</a>
 
