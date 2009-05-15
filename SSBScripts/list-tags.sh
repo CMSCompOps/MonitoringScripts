@@ -8,7 +8,7 @@ cat <<EOF > published-tags/AAAReadme.html
 <body>
 <h1> Published Tags for CMS CE's </h1>
 
-This directory afs/cern.ch/cms/LCG/SiteComm/published-tags
+This directory /afs/cern.ch/cms/LCG/SiteComm/published-tags
 contains one file for each CE that
 is published in lcg-bdii.cern.ch and supports CMS VO
 <p>
@@ -23,10 +23,11 @@ Those files are created by an acrontab job on lxplus.cern.ch
 that runs every hour under "samcms account and executes
 <br>
 <a href="list-tags.sh.txt">/afs/cern.ch/user/s/samcms/mybin/list-tags.sh</a>
+which is also in <a href="http://cmssw.cvs.cern.ch/cgi-bin/cmssw.cgi/COMP/SITECOMM/SSBScripts/list-tags.sh?view=markup">CVS</a>
 
 <p>
 all the BDII query work is done by a
-<a href="list-tags.py.txt">python script</a>
+<a href="http://cmssw.cvs.cern.ch/cgi-bin/cmssw.cgi/COMP/SITECOMM/SSBScripts/list-tags.py?view=markup">python script</a>
 kindly provided by Burt Holzman
 
 <p>
