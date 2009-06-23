@@ -38,7 +38,9 @@ do
       link=$goc"#downtimes"
   else
       value="OIM"
-      link="http://oim.grid.iu.edu/pub/maintenance/show.php"
+      link="http://tinyurl.com/nv66gk"
+      link="http://myosg.grid.iu.edu/wizarddowntime/index?datasource=downtime&summary_attrs_showservice=on&summary_attrs_showrsvstatus=on&summary_attrs_showfqdn=on&gip_status_attrs_showtestresults=on&gip_status_attrs_showfqdn=on&account_type=cumulative_hours&ce_account_type=gip_vo&se_account_type=vo_transfer_volume&start_type=7daysago&start_date=06%2F23%2F2009&end_type=now&end_date=06%2F23%2F2009&all_resources=on&gridtype=on&gridtype_1=on&vosup=on&vosup_3=on&active=on&active_value=1&disable_value=1&has_wlcg=on"
+      #link="http://oim.grid.iu.edu/pub/maintenance/show.php"
   fi
 
   if [ "$s" == "T2_FI_HIP" ]
