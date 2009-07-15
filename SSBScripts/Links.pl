@@ -113,9 +113,7 @@ if ( $debug ) {
     print HTML &header;
     foreach ( sort keys %quality ) {
 	my $tier = substr($_, 1, 1);
-	if ( $tier == 1 ) {
-	    print HTML &site_report($_);
-	} elsif ( $tier == 2 ) {
+	if ( $tier == 1 or $tier == 2) {
 	    print HTML &site_report($_);
 	}
     }
@@ -132,7 +130,7 @@ foreach my $site ( sort keys %quality ) {
     my $timestamp = &timestamp;
     my $status = 'no';
     my $color = 'red';
-    my @status = &site_status2($site);
+    my @status = &site_status($site);
     if ( $status[0] ) {
 	$status = 'yes';
 	$color = 'green';
@@ -171,7 +169,8 @@ sub generate_ssbfile {
 	my $timestamp = &timestamp;
 	my $status = ${$map[$index-1]}{$site};
 	my $color = 'red';
-	my @status = &site_status2($site);
+	my $url_report = &phedex_link($site, $index);
+	my @status = &site_status($site);
 	if ( $status[$index] ) {
 	    $color = 'green';
 	}
@@ -184,29 +183,8 @@ sub generate_ssbfile {
     close SSBL;
 }
 
-# Returns 1 if the site satisfies sitecomm metrics, 0 otherwise
-sub site_status {
-    my $site = shift;
-    my @status = (0, 0, 0, 0, 0, 0);
-    my $tier = substr($site, 1, 1);
-    if ( $tier == 1 ) {
-	$status[1] = ($ldown{$site} >= $t1ft0);
-	$status[3] = ($incross{$site} >= $t1ft1);
-	$status[2] = ($outcross{$site} >= $t1tt1);
-	$status[5] = ($hup{$site} >= $t1ft2);
-	$status[4] = ($hdown{$site} >= $t1tt2);
-	$status[0] = $status[1] && $status[2] && $status[3] &&
-	    $status[4] && $status[5];
-    } elsif ( $tier == 2 ) {
-	$status[3] = ($ldown{$site} >= $t2ft1);
-	$status[2] = ($lup{$site} >= $t2tt1);
-	$status[0] = $status[2] && $status[3];
-    }
-    return @status;
-}
-
 # Version using the new metrics (number of good links >= 50% of links)
-sub site_status2 {
+sub site_status {
     my $site = shift;
     my @status = (0, 0, 0, 0, 0, 0);
     my $tier = substr($site, 1, 1);
@@ -237,7 +215,7 @@ sub site_report {
     my $site = $_;
     my $output = "";
     my $tier = substr($site, 1, 1);
-    my @status = &site_status2($site);
+    my @status = &site_status($site);
     if ( $tier == 1 ) {
 	$output =
 	    "<tr><td bgcolor=" . &color($status[0]) . ">$site</td>" .
