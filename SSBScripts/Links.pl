@@ -19,6 +19,7 @@ $debug = 1;
 $base_url_debug = "http://cmsweb.cern.ch/phedex/debug/Reports::DailyReport?reportfile=__date__.txt";
 $base_url_prod = "http://cmsweb.cern.ch/phedex/production/Reports::DailyReport?reportfile=__date__.txt";
 %lup = %hup = %outcross = %incross = %ldown = %hdown = ();
+%t_lup = %t_hup = %t_outcross = %t_incross = %t_ldown = %t_hdown = ();
 
 die "Usage: Links.pl [date]\n" if (@ARGV > 1);
 
@@ -57,6 +58,7 @@ $url_debug =~ s/__date__/$date/;
 %quality       = &quality_combine(\%quality_debug, \%quality_prod);
 foreach ( keys %quality ) {
     $lup{$_} = $hup{$_} = $ldown{$_} = $hdown{$_} = $outcross{$_} = $incross{$_} = 0;
+    $t_lup{$_} = $t_hup{$_} = $t_ldown{$_} = $t_hdown{$_} = $t_outcross{$_} = $t_incross{$_} = 0;
 }
 
 
@@ -75,18 +77,25 @@ foreach my $site ( keys %quality ) {
 	if ( $tier > $dtier ) {
 	    $hup{$dest}++ if ( $q >= $thrsh );
 	    $lup{$site}++ if ( $q >= $thrsh );
+	    $t_hup{$dest}++;
+	    $t_lup{$site}++;
 
 # Links between Tier-1's
 	} elsif ( $tier == $dtier ) {
 	    $outcross{$site} += 1 if ( $q >= $thrsh );
 	    $incross{$dest} += 1 if ( $q >= $thrsh );
+	    $t_outcross{$site}++;
+	    $t_incross{$dest}++;
 
 # Downlinks
 	} elsif ( $tier < $dtier ) {
 	    $ldown{$dest}++ if ( $q >= $thrsh );
 	    $hdown{$site}++ if ( $q >= $thrsh );
+	    $t_ldown{$dest}++;
+	    $t_hdown{$site}++;
 	    if ( $tier == 0 ) {
 		$outcross{'T1_CH_CERN_Buffer'}++ if ( $q >= $thrsh );
+		$t_outcross{'T1_CH_CERN_Buffer'}++;
 	    }
 	}
     }
@@ -96,6 +105,7 @@ print "Tot links: $totlinks  Good links: $goodlinks\n";
 
 # Correction for CERN
 $ldown{'T1_CH_CERN_Buffer'}++;
+$t_ldown{'T1_CH_CERN_Buffer'}++;
 
 # Generate HTML report
 if ( $debug ) {
@@ -104,18 +114,10 @@ if ( $debug ) {
     foreach ( sort keys %quality ) {
 	my $tier = substr($_, 1, 1);
 	if ( $tier == 1 ) {
-#	    system ("echo $lup{$_} >> t1up.vec");
-#	    system ("echo $hdown{$_} >> t1downt2.vec");
-#	    system ("echo $hup{$_} >> t1upt2.vec");
-#	    system ("echo $outcross{$_} >> t1outt1.vec");
-#	    system ("echo $incross{$_} >> t1int1.vec");
 	    print HTML &site_report($_);
 	} elsif ( $tier == 2 ) {
-#	    system ("echo $lup{$_} >> t2up.vec");
-#	    system ("echo $ldown{$_} >> t2down.vec");
 	    print HTML &site_report($_);
 	}
-#	my $status = &site_status($_);
     }
     print HTML &footer;
     close HTML;
@@ -123,14 +125,14 @@ if ( $debug ) {
     symlink "$dir/$file", "$dir/link_qual_latest.html";
 }
 
-# Generate input file for SSB
+# Generate input files for SSB
 open(SSB, ">$ssbpath") or die "Cannot write SSB input file\n";
 foreach my $site ( sort keys %quality ) {
     next if ( $site =~ /^T0/ );
     my $timestamp = &timestamp;
     my $status = 'no';
     my $color = 'red';
-    my @status = &site_status($site);
+    my @status = &site_status2($site);
     if ( $status[0] ) {
 	$status = 'yes';
 	$color = 'green';
@@ -169,7 +171,7 @@ sub generate_ssbfile {
 	my $timestamp = &timestamp;
 	my $status = ${$map[$index-1]}{$site};
 	my $color = 'red';
-	my @status = &site_status($site);
+	my @status = &site_status2($site);
 	if ( $status[$index] ) {
 	    $color = 'green';
 	}
@@ -203,6 +205,27 @@ sub site_status {
     return @status;
 }
 
+# Version using the new metrics (number of good links >= 50% of links)
+sub site_status2 {
+    my $site = shift;
+    my @status = (0, 0, 0, 0, 0, 0);
+    my $tier = substr($site, 1, 1);
+    if ( $tier == 1 ) {
+	$status[1] = ($ldown{$site} >= int(0.5*$t_ldown{$site}));
+	$status[3] = ($incross{$site} >= int(0.5*$t_incross{$site}));
+	$status[2] = ($outcross{$site} >= int(0.5*$t_outcross{$site}));
+	$status[5] = ($hup{$site} >= int(0.5*$t_hup{$site}));
+	$status[4] = ($hdown{$site} >= int(0.5*$t_hdown{$site}));
+	$status[0] = $status[1] && $status[2] && $status[3] &&
+	    $status[4] && $status[5];
+    } elsif ( $tier == 2 ) {
+	$status[3] = ($ldown{$site} >= int(0.5*$t_ldown{$site}));
+	$status[2] = ($lup{$site} >= int(0.5*$t_lup{$site}));
+	$status[0] = $status[2] && $status[3];
+    }
+    return @status;
+}
+
 sub color {
     my $s = shift;
     my $c = 'red';
@@ -214,7 +237,7 @@ sub site_report {
     my $site = $_;
     my $output = "";
     my $tier = substr($site, 1, 1);
-    my @status = &site_status($site);
+    my @status = &site_status2($site);
     if ( $tier == 1 ) {
 	$output =
 	    "<tr><td bgcolor=" . &color($status[0]) . ">$site</td>" .
@@ -376,7 +399,6 @@ sub header {
 	"<tr><td>link from T0</td><td>the downlink from CERN</td></tr>\n" .
 	"<tr><td>links from T1</td><td>for Tier-1 sites, the incoming links from other Tier-1 sites; for Tier-2 sites, the downlinks from Tier-1 sites</td></tr>\n" .
 	"<tr><td>links to T1</td><td>for Tier-1 sites, the outgoing links to other Tier-1 sites; for Tier-2 sites, the uplinks to Tier-1 sites</td><tr>\n" .
-#	"<tr><td>links from T2</td><td>for Tier-1 sites, the uplinks from Tier-2 sites</td></tr>\n" .
 	"<tr><td>links to T2</td><td>for Tier-1 sites, the downlinks to Tier-2 sites</td><tr>\n" .
 	"</table>\n" .
 	"<p>Links are counted only if they have a quality better than <b>$thrsh%</b> in the previous day. These are the minimum numbers of links per type:</p>\n" .
@@ -385,7 +407,6 @@ sub header {
 	"<tr><td>link from T0</td><td>$t1ft0</td><td>&nbsp;</td></tr>\n" .
 	"<tr><td>links from T1</td><td>$t1ft1</td><td>$t2ft1</td></tr>\n" .
 	"<tr><td>links to T1</td><td>$t1tt1</td><td>$t2tt1</td></tr>\n" .
-#	"<tr><td>links from T2</td>&nbsp;<td>$t1ft2</td><td>&nbsp;</td></tr>\n" .
 	"<tr><td>links to T2</td><td>$t1tt2</td><td>&nbsp;</td></tr>\n" .
 	"</table>\n" .
 	"<h2>Site status vs. good links</h2>\n" .
