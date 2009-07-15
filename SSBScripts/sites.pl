@@ -1,5 +1,7 @@
 #!/usr/bin/perl -w
-
+#
+# Prints all the CMS sites by CMS name
+#
 #use strict;
 
 use LWP::Simple;
