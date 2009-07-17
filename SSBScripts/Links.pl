@@ -2,6 +2,7 @@
 
 use LWP::Simple;
 use Time::Local;
+use List::Util qw(max);
 
 # Commissioning criteria
 $thrsh = 50;   # Minimum quality
@@ -167,7 +168,8 @@ sub generate_ssbfile {
 	next if ( $site =~ /^T0/ );
 	next if ( $t != $tier );
 	my $timestamp = &timestamp;
-	my $status = ${$map[$index-1]}{$site};
+	my $goodlinks = ${$map[$index-1]}{$site};
+	my $totlinks = ${"t_" . $map[$index-1]}{$site};
 	my $color = 'red';
 	my $url_report = &phedex_link($site, $index);
 	my @status = &site_status($site);
@@ -177,8 +179,8 @@ sub generate_ssbfile {
 	$site =~ s/_Export//;
 	$site =~ s/_Buffer//;
 	$site =~ s/_Disk//;
-	printf SSBL "%s\t%s\t%s\t%s\t%s\n", $timestamp, $site, $status, $color,
-	$url_report;
+	printf SSBL "%s\t%s\t%s\t%s\t%s\n", $timestamp, $site,
+	"$goodlinks/$totlinks", $color, $url_report;
     }
     close SSBL;
 }
@@ -189,16 +191,16 @@ sub site_status {
     my @status = (0, 0, 0, 0, 0, 0);
     my $tier = substr($site, 1, 1);
     if ( $tier == 1 ) {
-	$status[1] = ($ldown{$site} >= int(0.5*$t_ldown{$site}));
-	$status[3] = ($incross{$site} >= int(0.5*$t_incross{$site}));
-	$status[2] = ($outcross{$site} >= int(0.5*$t_outcross{$site}));
-	$status[5] = ($hup{$site} >= int(0.5*$t_hup{$site}));
-	$status[4] = ($hdown{$site} >= int(0.5*$t_hdown{$site}));
+	$status[1] = ($ldown{$site} >= max(int(0.5*$t_ldown{$site}), 1));
+	$status[3] = ($incross{$site} >= max(int(0.5*$t_incross{$site}), 1));
+	$status[2] = ($outcross{$site} >= max(int(0.5*$t_outcross{$site}), 1));
+	$status[5] = ($hup{$site} >= max(int(0.5*$t_hup{$site}), 1));
+	$status[4] = ($hdown{$site} >= max(int(0.5*$t_hdown{$site}), 1));
 	$status[0] = $status[1] && $status[2] && $status[3] &&
 	    $status[4] && $status[5];
     } elsif ( $tier == 2 ) {
-	$status[3] = ($ldown{$site} >= int(0.5*$t_ldown{$site}));
-	$status[2] = ($lup{$site} >= int(0.5*$t_lup{$site}));
+	$status[3] = ($ldown{$site} >= max(int(0.5*$t_ldown{$site}), 1));
+	$status[2] = ($lup{$site} >= max(int(0.5*$t_lup{$site}), 1));
 	$status[0] = $status[2] && $status[3];
     }
     return @status;
@@ -338,7 +340,7 @@ sub phedex_link {
     my $url = $base_url;
     if ( $tier == 1 ) {
 	if ( $type == 1 ) {              # CERN -> site
-	    $url =~ s/__src__/CERN/;
+	    $url =~ s/__src__/CERN_Export/;
 	    $url =~ s/__dest__/$site/;
 	} elsif ( $type == 2 ) {         # site -> T1
 	    $site = 'CERN' if ( $site =~ /CERN/ );
