@@ -10,7 +10,6 @@ $t1ft0 = 1;    # Minimum number of links from T0 for T1
 $t1ft1 = 2;    # Minimum number of links from T1 for T1
 $t1tt1 = 2;    # Minimum number of links to T1 for T1
 $t1tt2 = 10;   # Minimum number of links to T2 for T1
-$t1ft2 = 0;    # Minimum number of links from T2 for T1
 $t2ft1 = 2;    # Minimum number of links from T1 for T2
 $t2tt1 = 1;    # Minimum number of links to T1 for T2
 
@@ -51,6 +50,9 @@ $url_prod =~ s/__date__/$date/;
 $url_debug = $base_url_debug;
 $url_debug =~ s/__date__/$date/;
 
+$url_prod2 = &datasvc_url('prod', $start, $end);
+$url_debug2 = &datasvc_url('debug', $start, $end);
+
 # Parsing and combination production+debug
 ($dbgtime, $ref1) = &get_quality($url_debug);
 %quality_debug = %$ref1;
@@ -62,6 +64,9 @@ foreach ( keys %quality ) {
     $t_lup{$_} = $t_hup{$_} = $t_ldown{$_} = $t_hdown{$_} = $t_outcross{$_} = $t_incross{$_} = 0;
 }
 
+%quality_debug2 = &get_quality2($url_debug2);
+%quality_prod2 = &get_quality2($url_prod2);
+%quality2 = &quality_combine2(\%quality_debug2, \%quality_prod2);
 
 # Calculate number of good links per site
 $totlinks = 0;
@@ -71,6 +76,15 @@ foreach my $site ( keys %quality ) {
     foreach my $dest ( keys %{$quality{$site}} ) {
 	my $dtier = substr($dest, 1, 1);
 	my $q = $quality{$site}{$dest}[0];
+	my $q2;
+	if ($quality2{$site}{$dest}[0]+$quality2{$site}{$dest}[1] > 0) {
+	    $q2 = 100. *
+		$quality2{$site}{$dest}[0] / ($quality2{$site}{$dest}[0]+
+					      $quality2{$site}{$dest}[1]);
+	} else {
+	    $q2 = 0;
+	}
+	print "$q $q2\n";
 	$totlinks++;
 	$goodlinks++ if ( $q >= $thrsh );
 
@@ -289,6 +303,74 @@ sub get_quality {
     return ($gentime, \%quality);
 }
 
+sub datasvc_url {
+    my $instance = shift;
+    my $start = shift;
+    my $end = shift;
+    my $url = "http://cmsweb.cern.ch/phedex/datasvc/perl/$instance/TransferHistory?starttime=$start&endtime=$end&binwidth=86399";
+    return $url;
+}
+
+sub get_quality2 {
+    my $url = shift;
+    my %quality = ();
+    my $report = get($url) or die "Cannot retrieve PhEDEx statistics\n";
+    my $VAR1;
+    eval $report;
+    my %phedexdata = %$VAR1;
+    my @links = @{$phedexdata{'PHEDEX'}{'LINK'}};
+    foreach my $link (@links) {
+	my %linkdata = %$link;
+	my $source = $linkdata{'FROM'};
+	my $dest = $linkdata{'TO'};
+	next if ( $source =~ /MSS/ || $dest =~ /MSS/ );
+	next if ( $source =~ /^T3/ || $dest =~ /^T3/ );
+	my $transfer = ${$linkdata{'TRANSFER'}}[0];
+	my %transferdata = %$transfer;
+	my $done = $transferdata{'DONE_FILES'};
+	my $fail = $transferdata{'FAIL_FILES'};
+	$quality{$source}{$dest} = [$done, $fail];
+    }
+    return %quality;
+}
+
+sub quality_combine2 {
+    my ($hashref1, $hashref2) = @_;
+    my %q1 = %$hashref1;
+    my %q2 = %$hashref2;
+    my %q;
+    my @sites = ();
+    foreach my $s (keys %q1, keys %q2) {
+	push @sites, $s if ( ! grep(/$s/, @sites) );
+    }
+    foreach my $s ( @sites ) {
+	my @dests = ();
+	foreach my $d ( keys %{$q1{$s}}, keys %{$q2{$s}} ) {
+	    push @dests, $d if ( ! grep(/$d/, @dests) );
+	}
+	foreach my $d ( @dests ) {
+	    my $o1 = (defined ${$q1{$s}{$d}}[0])?${$q1{$s}{$d}}[0]:-1;
+	    my $o2 = (defined ${$q2{$s}{$d}}[0])?${$q2{$s}{$d}}[0]:-1;
+	    my $f1 = (defined ${$q1{$s}{$d}}[1])?${$q1{$s}{$d}}[1]:-1;
+	    my $f2 = (defined ${$q2{$s}{$d}}[1])?${$q2{$s}{$d}}[1]:-1;
+	    my $o;
+	    my $f;
+	    if ( $o1 < 0 ) {
+		$o = $o2;
+		$f = $f2;
+	    } elsif ( $o2 < 0 ) {
+		$o = $o1;
+		$f = $f1;
+	    } else {
+		$o = $o1 + $o2;
+		$f = $f1 + $f2;
+	    }
+	    $q{$s}{$d} = [$o, $f];
+	}
+    }
+    return %q;
+}
+    
 sub quality_combine {
     my ($hashref1, $hashref2) = @_;
     my %q1 = %$hashref1;
