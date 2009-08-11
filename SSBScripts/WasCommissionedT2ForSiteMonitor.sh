@@ -19,6 +19,8 @@ cat <<EOF > $outFile
 #
 # updates:
 # Sep 11 2008: enable Warsaw and Sprace based on good record in last month
+# Jun 10 2009: enable SINP on req. of admins, enable METU based on good record
+# Aug 10 2009: enable UA_KIPT and move to CVS (will have history there)
 #
 # this page is created by an acrontab script running on lxplus.cern.ch
 # which runs the script
@@ -44,20 +46,24 @@ DE_RWTH \
 EE_Estonia \
 ES_CIEMAT \
 ES_IFCA \
+FI_HIP \
 FR_CCIN2P3 \
 FR_GRIF_IRFU \
+FR_IPHC \
+FR_GRIF_LLR \
 HU_Budapest \
+IN_TIFR \
 IT_Bari \
 IT_Legnaro \
 IT_Pisa \
 IT_Rome \
 KR_KNU \
 PL_Warsaw \
-PT_LIP_Coimbra \
 PT_LIP_Lisbon \
-RU_IHEP \
 RU_ITEP \
 RU_JINR \
+RU_SINP \
+TR_METU \
 TW_Taiwan \
 UA_KIPT \
 UK_London_Brunel \
