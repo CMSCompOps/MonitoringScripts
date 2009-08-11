@@ -26,6 +26,7 @@ countryToROC={
     'IN':'ROC_Asia/Pacific',
     'IT':'ROC_Italy',
     'KR':'ROC_Asia/Pacific',
+    'PK':'ROC_Asia/Pacific',
     'PL':'ROC_CE',
     'PT':'ROC_SW',
     'RU':'ROC_Russia',
@@ -43,9 +44,9 @@ timestamp=today.strftime("%Y-%m-%d %H:%M:%S")
 
 ggusBaseUrl="https://gus.fzk.de/pages/ticket_search.php?ticket=&supportunit=%s&vo=all&user=&keyword=&involvedsupporter=&assignto=&specattrib=0&status=all&priority=all&typeofproblem=all&radiotf=1&timeframe=lastweek&orderticketsby=GHD_EXPERIMENT&orderhow=desc"
 
-#savannahBaseUrl="https://savannah.cern.ch/support/index.php?go_report=Apply&group=cmscompinfrasup&func=browse&set=custom&msort=0&report_id=187&advsrch=0&details=LIP&summary=LIP&category_id=0&status_id=0&sumORdet=1&history_search=0&history_field=0&history_event=modified&history_date_dayfd=26&history_date_monthfd=9&history_date_yearfd=2008&chunksz=50&spamscore=5&boxoptionwanted=1#options"
+ggusBaseUrlBySite="https://gus.fzk.de/ws/ticket_search.php?ticket=&affectedsite=%s&vo=all&user=&keyword=&involvedsupporter=&assignto=&specattrib=0&status=all&priority=all&typeofproblem=all&radiotf=1&timeframe=lastweek&orderticketsby=GHD_EXPERIMENT&orderhow=desc"
 
-#savannahBaseUrl="https://savannah.cern.ch/support/index.php?go_report=Apply&group=cmscompinfrasup&func=browse&set=custom&msort=0&report_id=187&advsrch=0&details=LIP&summary=LIP&category_id=0&status_id=0&sumORdet=1&history_search=0&history_field=0&history_event=modified&chunksz=50&spamscore=5&boxoptionwanted=1#options"
+
 
 savannahBaseUrl="https://savannah.cern.ch/support/index.php?go_report=Apply&group=cmscompinfrasup&func=browse&set=custom&msort=0&report_id=187&advsrch=0&details=%s&summary=%s&category_id=0&status_id=0&sumORdet=1&history_search=0&history_field=0&history_event=modified&chunksz=50&spamscore=5&boxoptionwanted=1#options"
 
@@ -67,6 +68,8 @@ sitePageBase+='<ul>\n'
 sitePageBase+='<li>Tickets associated to this site in CMS Site Status Board : '
 sitePageBase+='<a href="%s">link</a>\n'
 sitePageBase+='<li>Computing Infrastructure Savannah (all) : '
+sitePageBase+='<a href="%s">link</a>\n'
+sitePageBase+='<li>GGUS for this site (last week) : '
 sitePageBase+='<a href="%s">link</a>\n'
 sitePageBase+='<li>GGUS for the ROC this site belons to (last week) : '
 sitePageBase+='<a href="%s">link</a>\n'
@@ -103,10 +106,10 @@ for url in xpath.Evaluate('report/result/item', t):
 siteNames=siteList.keys()
 siteNames.sort()
 
-ssbFile=file(fileNameForSSB,'w')
-
 #print siteNames
 
+
+ssbFile=file(fileNameForSSB,'w')
 
 for site in siteNames:
     if site == "T1_CH_CERN": continue
@@ -124,11 +127,14 @@ for site in siteNames:
     bdiiSite=siteList[site]
 
     ggusUrl=ggusBaseUrl % roc
+    ggusUrlBySite=ggusBaseUrlBySite % bdiiSite
     savannahUrl=savannahBaseUrl % (siteString, siteString)
     hnUrl=hnBaseUrl % (siteString)
     ssbTktUrl=ssbTktBaseUrl % (site)
     sitePageUrl=sitePageBaseUrl % (site)
-    sitePage=sitePageBase % (site, ssbTktUrl, savannahUrl, ggusUrl, hnUrl)
+    sitePage=sitePageBase % (site, ssbTktUrl, savannahUrl,
+                             ggusUrlBySite, ggusUrl,
+                             hnUrl)
 
     ssbFile.write('%s\t%s\t%s\t%s\t%s\t%s\n'% (timestamp, site, "info", "white", sitePageUrl, "ok") )
     siteFileName="%s.html" % site
