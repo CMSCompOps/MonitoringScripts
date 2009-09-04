@@ -1,0 +1,43 @@
+How to run space monitoring in your machines
+=======
+
+First, you need to install DBS client.
+eg.  <ROOT_DIR>/slc4_ia32_gcc345/cms/dbs-client/DBS_1_0_8/lib/Clients/Python
+
+Second, set up environments for DBS client
+eg.  source <ROOT_DIR>/slc4_ia32_gcc345/external/python/2.4.2/etc/profile.d/init.sh
+     source <ROOT_DIR>/slc4_ia32_gcc345/cms/dbs-client/DBS_1_0_8/lib/Clients/Python/setup.sh
+
+Third, copy InfoFromDBS_text and pledge_parse.py into somewhere
+
+Fourth, run pledge_parse.py and InforFromDBS_text
+/home/sgmcms01/slc4_ia32_gcc345/cms/dbs-client/DBS_1_0_8/lib/Clients/Python/DBSAPI/pledge_parse.py > pledge
+/home/sgmcms01/slc4_ia32_gcc345/cms/dbs-client/DBS_1_0_8/lib/Clients/Python/DBSAPI/InfoFromDBS_text
+
+The files list output by space monitoring 
+=======
+
+pledge information from siteDB:
+
+>> Pledged, TB(equal to "Pledged disk")         http://vobox.ihep.ac.cn/pledge.txt
+>> Pledged disk, TB(for T1 and T2)              http://vobox.ihep.ac.cn/pledge_disk.txt
+>> Pledged tape, TB(only for T2)                http://vobox.ihep.ac.cn/pledge_tape.txt
+
+phedex information:
+
+>> Phedex custodial, TB(only for T1)            http://vobox.ihep.ac.cn/custodial.txt
+>> Phedex non-custodial, TB(only for T1)        http://vobox.ihep.ac.cn/noncustodial.txt
+>> Phedex coming, TB("subscribed & !onsite")    http://vobox.ihep.ac.cn/subscription.txt
+
+DBS information:
+
+>> DBS, TB                                      http://vobox.ihep.ac.cn/dbs.txt
+
+BDII information:
+
+>> BDII used space, TB(GlueSAStateUsedSpace)         http://vobox.ihep.ac.cn/used.txt
+>> BDII free space, TB(GlueSAStateAvailableSpace)    http://vobox.ihep.ac.cn/available.txt
+>> BDII used disk, TB(GlueSAUsedOnlineSize)          http://vobox.ihep.ac.cn/usedOnline.txt
+>> BDII free disk, TB(GlueSAFreeOnlineSize)          http://vobox.ihep.ac.cn/freeOnline.txt
+>> BDII used tape, TB(GlueSAUsedNearlineSize)        http://vobox.ihep.ac.cn/usedNearline.txt 
+>> BDII free tape, TB(GlueSAFreeNearlineSize)        http://vobox.ihep.ac.cn/freeNearline.txt
