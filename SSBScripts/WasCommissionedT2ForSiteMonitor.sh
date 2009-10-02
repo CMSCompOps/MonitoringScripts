@@ -60,7 +60,7 @@ IT_Rome \
 KR_KNU \
 PL_Warsaw \
 PT_LIP_Lisbon \
-PT_NCGLisbon \
+PT_NCG_Lisbon \
 RU_ITEP \
 RU_JINR \
 RU_SINP \
