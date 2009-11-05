@@ -26,6 +26,7 @@ countryToROC={
     'IN':'ROC_Asia/Pacific',
     'IT':'ROC_Italy',
     'KR':'ROC_Asia/Pacific',
+    'MX':'ROC_CERN',
     'PK':'ROC_Asia/Pacific',
     'PL':'ROC_CE',
     'PT':'ROC_SW',
