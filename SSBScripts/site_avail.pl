@@ -34,7 +34,7 @@ package main;
 
 #Get XML file from SiteDB
 
-my $url = "https://cmsweb.cern.ch/sitedb/sitedb/reports/showXMLReport/?reportid=cms_to_sam.ini";
+my $url = "https://cmsweb.cern.ch/sitedb/sitedb/reports/showXMLReport/?reportid=naming_convention.ini";
 my $doc = get($url) or die "Cannot retrieve XML\n";
 my $filepath = "/afs/cern.ch/cms/LCG/SiteComm/site_avail.txt";
 
@@ -98,11 +98,11 @@ sub h_char {
     my $p = shift;
     my $a = shift;
 
-    if ($p->in_element('cms_name')) {
+    if ($p->in_element('cms')) {
 	my $site = $sites{$lastid};
 	$site->{CMS} = $a; 
     }
-    if ($p->in_element('sam_name')) {
+    if ($p->in_element('sam')) {
 	my $site = $sites{$lastid};
 	$site->{SAM} = $a; 
     }
