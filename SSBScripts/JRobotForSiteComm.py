@@ -145,8 +145,8 @@ def build_info(sitelist):
         output.append(("%s\t%s\t%s\t%s\t%s") % (timestamp, site, value, color, link))
         sites.remove(site)
 
-    for site in sites:
-        output.append(("%s\t%s\t%s\t%s\t%s") % (timestamp, site, 'n/a', 'white', link))        
+#    for site in sites:
+#        output.append(("%s\t%s\t%s\t%s\t%s") % (timestamp, site, 'n/a', 'white', link))        
     
     return output
 
