@@ -139,8 +139,7 @@ sub get_avail {
     my $output = `$cmd`;
     if ( defined $output ) {
 	if ($output =~ /<num>(.+)<\/num>/) {
-	    $avail = $1;
-	} else {
+	    $avail = sprintf "%.0f", $1;
 	}
     }
     return $avail;
