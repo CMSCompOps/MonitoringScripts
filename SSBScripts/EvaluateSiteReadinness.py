@@ -25,7 +25,6 @@ from SiteReadiness import *
 from graphtool.graphs.common_graphs import QualityBarGraph, QualityMap
 from graphtool.tools.common import expand_string
 
-
 todaydate = date.today()
 
 today=datetime.datetime.utcnow()
@@ -143,11 +142,81 @@ MatrixStatusColors["GoodT2linksfromT1s"]={"0":"red", "1":"green"}
 MatrixStatusColors["GoodT2linkstoT1s"]={"0":"red", "1":"green"}
 MatrixStatusColors["IsSiteInSiteDB"]={"5":"green"}
 
+criterias = { "T0": [ 'JobRobot',
+		      'SAMAvailability'],
+	      "T1": [ 'JobRobot',
+		      'SAMAvailability',
+		      'T1linksfromT0',
+		      'T1linksfromtoT1s',
+		      'T1linkstoT2s',
+		      'GoodT1linksfromT0',
+		      'GoodT1linksfromT1s',
+		      'GoodT1linksfromT2s',
+		      'GoodT1linkstoT1s',
+		      'GoodT1linkstoT2s'], 
+	      "T2": [ 'JobRobot',
+		      'SAMAvailability',
+		      'T2linksfromT1s',
+		      'T2linkstoT1s',
+		      'GoodT2linksfromT1s',
+		      'GoodT2linkstoT1s'],
+	      "T3": [ 'JobRobot',
+		      'SAMAvailability']}
+
+colors = { "R":"green",
+	   "NR":"red",
+	   "n/a":"white",
+	   "W":"yellow" ,
+	   "SD":"brown",
+	   "CE-SD":"brown",
+	   "SE-SD":"brown",
+	   "~":"yellow",
+	   "und":"black",
+	   " ":"white",
+	   "E": "red",
+	   "O":"green" ,
+	   "n/a*":"white"}
+	
+metorder = {    "01":"Downtimes_sam",
+		"02":"JobRobot",
+		"03":"SAMAvailability",
+		"04":"GoodT1linksfromT0",
+		"05":"GoodT1linksfromT1s",
+		"06":"GoodT1linksfromT2s",
+		"07":"GoodT1linkstoT1s",
+		"08":"GoodT1linkstoT2s",
+		"09":"GoodT2linksfromT1s",
+		"10":"GoodT2linkstoT1s",
+		"11":"T1linksfromT0",
+		"12":"T1linksfromtoT1s",
+		"13":"T1linkstoT2s",
+		"14":"T2linksfromT1s",
+		"15":"T2linkstoT1s",}
+
+metlegends = {  "Downtimes_sam":"Maintenance", 
+		"SAMAvailability":"SAM Availability", 
+		"JobRobot":"Job Robot", 
+		"T1linksfromT0":"Active T1 links from T0",
+		"T1linksfromtoT1s":"Active T1 links from/to T1s",
+		"T1linkstoT2s":"Active T1 links to T2s",
+		"T2linksfromT1s":"Active T2 links from T1s",
+		"T2linkstoT1s":"Active T2 links to T1s",
+		"GoodT1linksfromT0":"Good T1 links from T0",
+		"GoodT1linksfromT1s":"Good T1 links from T1s",
+		"GoodT1linksfromT2s":"Good T1 links from T2s",
+		"GoodT1linkstoT1s":"Good T1 links to T1s",
+		"GoodT1linkstoT2s":"Good T1 links to T2s",
+		"GoodT2linksfromT1s":"Good T2 links from T1s",
+		"GoodT2linkstoT1s":"Good T2 links to T1s"}
 
 #
 # Functions : these should go soon on a module
 #
 # -----------------------------------------------------------------------------------------------------------
+
+def GetCriteriasList(sitename, criterias):
+	tier=sitename.split("_")[0]	
+	return criterias[tier]
 
 def CorrectGlobalMatrix(sitename,day,value):
 
@@ -424,6 +493,7 @@ def GetDailyMetricStatus(sites, SiteCommMatrix, MatrixStatusColors):
 					infocol['Status'] = 'n/a'
 					infocol['Color'] = 'white'
 					infocol['URL'] = ' '
+					infocol['validity'] = '0'
 					
 					if not SiteCommMatrix[sitename].has_key(dayloopstamp):
 						SiteCommMatrix[sitename][dayloopstamp]={}
@@ -440,6 +510,7 @@ def GetDailyMetricStatus(sites, SiteCommMatrix, MatrixStatusColors):
 					infocol['Status'] = ' '
 					infocol['Color'] = 'white'
 					infocol['URL'] = ' '
+					infocol['validity'] = '0'
 
 					if not SiteCommMatrix[sitename].has_key(dayloopstamp):
 						SiteCommMatrix[sitename][dayloopstamp]={}
@@ -484,12 +555,17 @@ def ShiftOneDayReadiness(SiteCommGlobalMatrix=[]):
 	return matrix
 
 
-def FilterSitesInTablesPlots(sitename, matrixgl=[]):
+def FilterSitesInTablesPlots(sitename, matrix=[], matrixgl=[]):
 
-        #exceptions (show tables for n/a sites)
+        #exceptions (show tables for n/a sites or sites not in SiteDB today)
+
+	if matrix[sitename][yesterdaystamp]['IsSiteInSiteDB']['Color'] == 'white': return 0
+
 	if sitename.find("T1_DE_FZK") == 0 : return 0
 	if sitename.find("T2_CH_CAF") == 0 : return 0
 	if sitename.find("T2_PL_Cracow") == 0 : return 0
+
+	if sitename.find("T3_") == 0 : return 0
 
 	dt = SiteCommGlobalMatrix[sitename].keys()
 	dt.sort()
@@ -497,8 +573,8 @@ def FilterSitesInTablesPlots(sitename, matrixgl=[]):
 	k=0
 	for i in dt:
 		j+=1
-		if matrixgl[sitename][i].find("n/a") == 0 : k+=1
-	if (j-1) == k : return 0
+		if matrixgl[sitename][i].find("n/a") == 0 or matrixgl[sitename][i].find("n/a*") == 0: k+=1
+	if (j) == k : return 0
 	
 	return 1
 
@@ -521,7 +597,7 @@ def SSBXMLParser(sites, ColumnMatrix):
 
 		url=ColumnMatrix[col]
 
-		fileN="/tmp/"+col+"_new"
+		fileN="/tmp/"+col+"_new2"
 
 		if GetURLs == True:
 			print "Column %s - Getting the url %s" % (col, url)
@@ -617,7 +693,6 @@ def GetDailyScheduledDowntimeStatus(sites, SiteCommMatrix, MatrixStatusColors):
 	for sitename in sites:
 
 		iprog+=100./len(sites)
-
 		prog.updateAmount(iprog)
 		sys.stdout.write(str(prog)+'\r')
 		sys.stdout.flush()
@@ -702,6 +777,11 @@ def GetDailyScheduledDowntimeStatus(sites, SiteCommMatrix, MatrixStatusColors):
 	sys.stdout.flush()
 
 def CorrectDailyMetricsFromASCIIFile(sites, SiteCommMatrix, DailyMetricsCorrected):
+	
+	#
+	# Plain text to be used to modify SSB inputs to build SiteReadiness tables
+	# Useful to correct bugs and/or modify daily metric values for a given site or all sites
+	#
 
 	prog = progressBar(0, 100, 77)
 	iprog=0
@@ -733,80 +813,41 @@ def CorrectDailyMetricsFromASCIIFile(sites, SiteCommMatrix, DailyMetricsCorrecte
 		else:	
 			infomod['Status'] = row[4] + '*'
 			infomod['Color'] = row[3]
-			if SiteCommMatrix[row[0]].has_key(row[1]):
-				SiteCommMatrix[row[0]][row[1]][row[2]]=infomod
+			if SiteCommMatrix.has_key(row[0]):
+				if SiteCommMatrix[row[0]].has_key(row[1]):
+					SiteCommMatrix[row[0]][row[1]][row[2]]=infomod
 	sys.stdout.write("\n")
 	sys.stdout.flush()
 
-########################################################
-# Reading data from SSB and perform all actions
-########################################################
 
+def EvaluateDailyStatus(SiteCommMatrix, SiteCommMatrixT1T2, criterias):
+	
+	# Daily Metrics
 
-sites={}
-SiteCommMatrix={}
+	GetCriteriasList("T2_CH_CERN", criterias)
 
-# parse SSB XML data from all relevants columns
+	prog = progressBar(0, 100, 77)
+	iprog=0
 
-print "\nObtaining XML info\n"
-SSBXMLParser(sites, ColumnMatrix)
+	for sitename in SiteCommMatrix:
 
-print "\nEvaluating Daily Metrics\n"
-#GetDailyMetricStatusOrig(sites, SiteCommMatrix, MatrixStatusColors)
-GetDailyMetricStatus(sites, SiteCommMatrix, MatrixStatusColors)
-
-print "\nEvaluating Scheduled Downtime Daily Metrics\n"
-GetDailyScheduledDowntimeStatus(sites, SiteCommMatrix, MatrixStatusColors)
-
-print "\nCorrecting Daily Metrics from external ascii file\n"
-CorrectDailyMetricsFromASCIIFile(sites, SiteCommMatrix, DailyMetricsCorrected)
-
-sys.exit(0)
-
-#
-# Plain text to be used to modify SSB inputs to build SiteReadiness tables
-# Useful to correct bugs and/or modify daily metric values for a given site or all sites
-#
-
-fileHandle = open ( fileSSB , 'w' )    
-
-#pprint.pprint(SiteCommMatrix)
-#sys.exit(0)
-
-########################################################
-# Commissioning Flags for T1 sites
-########################################################
-
-SiteCommGlobalMatrix = {}
-SiteCommMatrixT1T2 = {}
-SiteCommMatrixT1T2_shifted = {}
-
-criteriasT1 = ( 'JobRobot', 'SAMAvailability', 'T1linksfromT0', 'T1linksfromtoT1s', 'T1linkstoT2s', 'GoodT1linksfromT0', 'GoodT1linksfromT1s', 'GoodT1linksfromT2s', 'GoodT1linkstoT1s', 'GoodT1linkstoT2s' )
-
-
-# Daily Metrics
-
-for sitename in SiteCommMatrix:
-
-	if sitename.find('T1_') == 0:
-
-		if not SiteCommGlobalMatrix.has_key(sitename):
-			SiteCommGlobalMatrix[sitename]={}
+		iprog+=100./len(SiteCommMatrix)
+		prog.updateAmount(iprog)
+		sys.stdout.write(str(prog)+'\r')
+		sys.stdout.flush()
 
 		SiteCommMatrixT1T2[sitename]={}
-		SiteCommMatrixT1T2_shifted[sitename]={}
 
 		items = SiteCommMatrix[sitename].keys()
 		items.sort()
 
 		status=' '
+
 		for day in items:
 			
-			SiteCommMatrixT1T2_shifted[sitename][day]=status
-
 			status = 'O'
 			
-			for crit in criteriasT1:
+			for crit in GetCriteriasList(sitename, criterias):
 
 				if not SiteCommMatrix[sitename][day].has_key(crit):
 
@@ -817,7 +858,7 @@ for sitename in SiteCommMatrix:
 
 				if SiteCommMatrix[sitename][day][crit]['Color'] == 'red':
 					status = 'E'
-
+					
 			if SiteCommMatrix[sitename][day]['Downtimes_sam']['Color'] == 'brown':
 				status = 'SD'
 
@@ -833,1282 +874,904 @@ for sitename in SiteCommMatrix:
 
 			SiteCommMatrixT1T2[sitename][day]=status
 
+	sys.stdout.write("\n")
+	sys.stdout.flush()
 
-sitesit2 = SiteCommMatrixT1T2.keys()
-sitesit2.sort()
+
+def EvaluateSiteReadiness(SiteCommMatrixT1T2, SiteCommGlobalMatrix):
+
+	sitesit = SiteCommMatrixT1T2.keys()
+	sitesit.sort()
 	
-for sitename in sitesit2:
+	prog = progressBar(0, 100, 77)
+	iprog=0
 
-	for i in range(0,days-dayssc):
-	
-		d=datetime.timedelta(i);
-		dayloop=today-d	
-		dayloopstamp=dayloop.strftime("%Y-%m-%d")
-		dm1=datetime.timedelta(1)
-		dayloopm1=dayloop-dm1
-		dayloopstampm1=dayloopm1.strftime("%Y-%m-%d")
-		dm2=datetime.timedelta(2)
-		dayloopm2=dayloop-dm2
-		dayloopstampm2=dayloopm2.strftime("%Y-%m-%d")
-		dm3=datetime.timedelta(3)
-		dayloopm3=dayloop-dm3
-		dayloopstampm3=dayloopm3.strftime("%Y-%m-%d")
+	for sitename in sitesit:
 
-		statusE=0
-		
-		for j in range(0,dayssc):
+		iprog+=100./len(sitesit)
+		prog.updateAmount(iprog)
+		sys.stdout.write(str(prog)+'\r')
+		sys.stdout.flush()
 
-			dd=datetime.timedelta(j);
-			dayloop2=dayloop-dd
-			dayloopstamp2=dayloop2.strftime("%Y-%m-%d")
-
-#c			if SiteCommMatrixT1T2_shifted[sitename][dayloopstamp2] == 'E':
-			if SiteCommMatrixT1T2[sitename][dayloopstamp2] == 'E':
-				statusE+=1
-
-		status="n/a"
-		colorst="white"
-
-		sitetest="T1_FR_CCIN2P3x"
-
-		if sitename == sitetest:
-			print sitename, dayloopstamp, statusE, SiteCommMatrixT1T2[sitename][dayloopstamp]
-#c			print sitename, dayloopstamp, statusE, SiteCommMatrixT1T2_shifted[sitename][dayloopstamp]
-
-      		if statusE > 2:
-			if sitename == sitetest:
-				print "statusE > 2"
-			status="NR"
-			colorst="red"
-#c		if SiteCommMatrixT1T2_shifted[sitename][dayloopstamp] == 'E' and statusE <= 2 :
-		if SiteCommMatrixT1T2[sitename][dayloopstamp] == 'E' and statusE <= 2 :
-			if sitename == sitetest:
-				print "SiteCommMatrixT1T2[sitename][dayloopstamp] == 'E' and statusE <= 2"
-#c				print "SiteCommMatrixT1T2_shifted[sitename][dayloopstamp] == 'E' and statusE <= 2"
-			status="W"
-			colorst="yellow"
-#c		if SiteCommMatrixT1T2_shifted[sitename][dayloopstamp] == 'O' and statusE <= 2 :
-		if SiteCommMatrixT1T2[sitename][dayloopstamp] == 'O' and statusE <= 2 :
-			if sitename == sitetest:
-				print "if SiteCommMatrixT1T2[sitename][dayloopstamp] == 'O' and statusE <= 2"
-#c				print "if SiteCommMatrixT1T2_shifted[sitename][dayloopstamp] == 'O' and statusE <= 2"
-			status="R"
-			colorst="green"
-#c		if SiteCommMatrixT1T2_shifted[sitename][dayloopstamp] == 'O' and SiteCommMatrixT1T2_shifted[sitename][dayloopstampm1] == 'O':
-		if SiteCommMatrixT1T2[sitename][dayloopstamp] == 'O' and SiteCommMatrixT1T2[sitename][dayloopstampm1] == 'O':
-			if sitename == sitetest:
-				print "SiteCommMatrixT1T2[sitename][dayloopstamp] == 'O' and SiteCommMatrixT1T2[sitename][dayloopstampm1] == 'O'"
-#c				print "SiteCommMatrixT1T2_shifted[sitename][dayloopstamp] == 'O' and SiteCommMatrixT1T2_shifted[sitename][dayloopstampm1] == 'O'"
-                        status="R"
-			colorst="green"
-
-#c		if SiteCommMatrixT1T2_shifted[sitename][dayloopstamp] == 'SD':
-                if SiteCommMatrixT1T2[sitename][dayloopstamp] == 'SD':
-			status='SD'
-			colorst="brown"
-		
-		SiteCommGlobalMatrix[sitename][dayloopstamp] = status
-		
-#		print dayloopstamp, yesterdaystamp
-		if dayloopstamp == yesterdaystamp:
-#			print "-> ", dayloopstamp, yesterdaystamp
-			tofile=yesterdaystampfileSSB + '\t' + sitename + '\t' + status + '\t' + colorst + '\t' + linkSSB + "#" + sitename + "\n"
-			fileHandle.write(tofile)
-
-#pprint.pprint(SiteCommMatrix['T1_ES_PIC'])
-#pprint.pprint(SiteCommMatrixT1T2['T1_ES_PIC'])
-#pprint.pprint(SiteCommGlobalMatrix['T1_ES_PIC'])
-#sys.exit(0)
-
-######################################################################
-# Comissioning of T2s
-######################################################################
-
-#criteriasT2 = ( 'JobRobot', 'SAMAvailability', 'T2linksfromT1s', 'T2linkstoT1s' )
-criteriasT2 = ( 'JobRobot', 'SAMAvailability', 'T2linksfromT1s', 'T2linkstoT1s', 'GoodT2linksfromT1s', 'GoodT2linkstoT1s')
-
-# Daily Metric
-
-for sitename in SiteCommMatrix:
-
-	if sitename.find('T2_') == 0:
-
-		SiteCommMatrixT1T2[sitename]={}
-		SiteCommMatrixT1T2_shifted[sitename]={}
-
-		items = SiteCommMatrix[sitename].keys()
-		items.sort()
-
-		status=' '
-		for day in items:
-			
-			SiteCommMatrixT1T2_shifted[sitename][day]=status
-
-			status = 'O'
-			
-			for crit in criteriasT2:
-
-				if not SiteCommMatrix[sitename][day].has_key(crit):
-
-					infocol4={}
-					infocol4['Status']='n/a'
-					infocol4['Color']='white'
-					SiteCommMatrix[sitename][day][crit] = infocol4
-
-				if SiteCommMatrix[sitename][day][crit]['Color'] == 'red':
-					status = 'E'
-
-			if SiteCommMatrix[sitename][day]['Downtimes_sam']['Color'] == 'brown':
-				status = 'SD'
-
-			testdate=date(int(day[0:4]),int(day[5:7]),int(day[8:10]))
-			sitedbtimeint = testdate-IsSiteInSiteDB_validsince
-
-			# exclude sites that are not in SiteDB
-			if sitedbtimeint.days >= 0 and SiteCommMatrix[sitename][day]['IsSiteInSiteDB']['Color'] == 'white':
-				status = 'n/a'
-
-			if day == todaystamp:
-				status = ' '
-
-			SiteCommMatrixT1T2[sitename][day]=status
-
-#pprint.pprint(SiteCommMatrix['T2_PT_LIP_Coimbra'])
-#pprint.pprint(SiteCommMatrixT1T2['T2_PT_LIP_Coimbra'])
-#pprint.pprint(SiteCommMatrixT1T2['T2_BE_IIHE'])
-#pprint.pprint(SiteCommMatrixT1T2_shifted['T2_ES_CIEMAT'])
-#sys.exit(0)
-
-for sitename in SiteCommMatrixT1T2:
-
-	if sitename.find('T2_') == 0:
-		
 		if not SiteCommGlobalMatrix.has_key(sitename):
 			SiteCommGlobalMatrix[sitename]={}
-
-			for i in range(0,days-dayssc):
-	
-				d=datetime.timedelta(i);
-				dayloop=today-d	
-				dayloopstamp=dayloop.strftime("%Y-%m-%d")
-				dm1=datetime.timedelta(1)
-				dayloopm1=dayloop-dm1
-				dayloopstampm1=dayloopm1.strftime("%Y-%m-%d")
-				dm2=datetime.timedelta(2)
-				dayloopm2=dayloop-dm2
-				dayloopstampm2=dayloopm2.strftime("%Y-%m-%d")
-				dm3=datetime.timedelta(3)
-				dayloopm3=dayloop-dm3
-				dayloopstampm3=dayloopm3.strftime("%Y-%m-%d")
-				
-				statusE=0
+			
+		tier=sitename.split("_")[0]
 		
-				for j in range(0,dayssc):
-					
-					dd=datetime.timedelta(j);
-					dayloop2=dayloop-dd
-					dayloopstamp2=dayloop2.strftime("%Y-%m-%d")
-					dayofweek2=dayloop2.weekday()
-					
-#c					if SiteCommMatrixT1T2_shifted[sitename][dayloopstamp2] == 'E':
-					if SiteCommMatrixT1T2[sitename][dayloopstamp2] == 'E':
-#c						if dayofweek2 == 6 or dayofweek2 == 0: # id. weekends (ojo, desplazamiento un dia)
-						if dayofweek2 == 5 or dayofweek2 == 6:
-							if CountWeekendsT2 == False: # skip Errors on weekends for T2s
-								continue
-						statusE+=1
-
-				status="n/a"
-				colorst="white"
-
-				sitetest="T2_BR_SPRACEx"
-				
-				if statusE > 2:
-					if sitename == sitetest:
-						print "statusE > 2"
-					status="NR"
-					colorst="red"
-
-#c				if SiteCommMatrixT1T2_shifted[sitename][dayloopstamp] == 'E' and statusE <= 2 :
-				if SiteCommMatrixT1T2[sitename][dayloopstamp] == 'E' and statusE <= 2 :
-					if sitename == sitetest:
-						print "SiteCommMatrixT1T2[sitename][dayloopstamp] == 'E' and statusE <= 2"
-#c						print "SiteCommMatrixT1T2_shifted[sitename][dayloopstamp] == 'E' and statusE <= 2"
-					status="W"
-					colorst="yellow"
-
-#c				if SiteCommMatrixT1T2_shifted[sitename][dayloopstamp] == 'O' and statusE <= 2 :
-				if SiteCommMatrixT1T2[sitename][dayloopstamp] == 'O' and statusE <= 2 :
-					if sitename == sitetest:
-						print "if SiteCommMatrixT1T2[sitename][dayloopstamp] == 'O' and statusE <= 2"
-					status="R"
-					colorst="green"
-#c				if SiteCommMatrixT1T2_shifted[sitename][dayloopstamp] == 'O' and SiteCommMatrixT1T2_shifted[sitename][dayloopstampm1] == 'O':
-				if SiteCommMatrixT1T2[sitename][dayloopstamp] == 'O' and SiteCommMatrixT1T2[sitename][dayloopstampm1] == 'O':
-					if sitename == sitetest:
-#c						print "SiteCommMatrixT1T2_shifted[sitename][dayloopstamp] == 'O' and SiteCommMatrixT1T2_shifted[sitename][dayloopstampm1] == 'O'"
-						print "SiteCommMatrixT1T2[sitename][dayloopstamp] == 'O' and SiteCommMatrixT1T2[sitename][dayloopstampm1] == 'O'"
-					status="R"
-					colorst="green"
-
-#c				if SiteCommMatrixT1T2_shifted[sitename][dayloopstamp] == 'SD':
-				if SiteCommMatrixT1T2[sitename][dayloopstamp] == 'SD':
-					status='SD'
-					colorst="brown"
-		
-			       	SiteCommGlobalMatrix[sitename][dayloopstamp] = status
-		
-				if sitename == sitetest:
-					print "-> ", sitename, dayloopstamp, statusE, SiteCommMatrixT1T2[sitename][dayloopstamp], SiteCommGlobalMatrix[sitename][dayloopstamp]
-#c					print "-> ", sitename, dayloopstamp, statusE, SiteCommMatrixT1T2_shifted[sitename][dayloopstamp]
-
-
-########################################################
-# Correct Results for Weekends for T2s
-########################################################
-
-sitesit3 = SiteCommMatrixT1T2.keys()
-sitesit3.sort()
-
-for sitename in sitesit3:
-
-	if sitename.find('T2_') == 0:
-
 		for i in range(0,days-dayssc):
 	
 			d=datetime.timedelta(i);
-			dsc=datetime.timedelta(days-dayssc-1);
-			dayloop=today-dsc+d
-			dayofweek=dayloop.weekday()
+			dayloop=today-d	
 			dayloopstamp=dayloop.strftime("%Y-%m-%d")
 			dm1=datetime.timedelta(1)
 			dayloopm1=dayloop-dm1
 			dayloopstampm1=dayloopm1.strftime("%Y-%m-%d")
-
-#c			if SiteCommMatrixT1T2_shifted[sitename][dayloopstamp] == 'E':
-			if SiteCommMatrixT1T2[sitename][dayloopstamp] == 'E':
-				if dayofweek == 5 or dayofweek == 6: # id. weekends
-#c				if dayofweek == 6 or dayofweek == 0: # id. weekends (remember one day shift)
-					if CountWeekendsT2 == False: # skip Errors on weekends for T2s
-						if i == 0 or i == 1:
-							SiteCommGlobalMatrix[sitename][dayloopstamp] == 'R'
-							continue
-						if SiteCommGlobalMatrix[sitename][dayloopstampm1] == 'SD':
-							SiteCommGlobalMatrix[sitename][dayloopstamp] = 'R'
-						else:
-							SiteCommGlobalMatrix[sitename][dayloopstamp] = SiteCommGlobalMatrix[sitename][dayloopstampm1]
-						
-		       	if dayloopstamp == yesterdaystamp:
-				if SiteCommGlobalMatrix[sitename][dayloopstamp] == 'W':
-					status="W"
-	       				colorst="yellow"
-				elif SiteCommGlobalMatrix[sitename][dayloopstamp] == 'NR':
-					status="NR"
-	       				colorst="red"
-				elif SiteCommGlobalMatrix[sitename][dayloopstamp] == 'SD':
-					status="SD"
-	       				colorst="brown"
-				elif SiteCommGlobalMatrix[sitename][dayloopstamp] == ' ':
-					status=" "
-	       				colorst="white"
-				else:
-					status="R"
-	       				colorst="green"
-					
-				tofile=yesterdaystampfileSSB + '\t' + sitename + '\t' + status + '\t' + colorst + '\t' + linkSSB + "#" + sitename + "\n"
-				fileHandle.write(tofile)
-
-fileHandle.close()
-
-#pprint.pprint(SiteCommMatrix['T2_BE_IIHE'])
-#pprint.pprint(SiteCommMatrixT1T2['T2_BE_IIHE'])
-#pprint.pprint(SiteCommGlobalMatrix['T2_BE_IIHE'])
-#sys.exit(0)
-
-#pprint.pprint(SiteCommGlobalMatrix['T2_BR_SPRACE'])
-#sys.exit(0)
-
-##############################
-# put in blank current day   #
-##############################
-
-for sitename in SiteCommMatrixT1T2:
-	for col in ColumnMatrix:
-		if SiteCommMatrix[sitename][todaystamp].has_key(col):
-			SiteCommMatrix[sitename][todaystamp][col]['Status'] = ' '
-			SiteCommMatrix[sitename][todaystamp][col]['Color'] = 'white'
-			SiteCommGlobalMatrix[sitename][todaystamp] = ' '
-
-
-####################################################################
-# Correct some known sites metrics
-####################################################################
-
-for sitename in SiteCommGlobalMatrix:
-	for dt in SiteCommGlobalMatrix[sitename]:
-		SiteCommGlobalMatrix[sitename][dt]=CorrectGlobalMatrix(sitename, dt, SiteCommGlobalMatrix[sitename][dt])
-for sitename in SiteCommMatrixT1T2:
-	for dt in SiteCommMatrixT1T2[sitename]:
-		SiteCommMatrixT1T2[sitename][dt]=CorrectGlobalMatrix(sitename, dt, SiteCommMatrixT1T2[sitename][dt])
-
-
-####################################################################
-# Shift one day the Site Readiness value
-####################################################################
-
-#pprint.pprint(SiteCommGlobalMatrix['T1_ES_PIC'])
-#SiteCommGlobalMatrix=ShiftOneDayReadiness(SiteCommGlobalMatrix)
-#pprint.pprint(SiteCommGlobalMatrix['T1_ES_PIC'])
-#sys.exit(0)
-
-
-####################################################################
-# Print Site html view  -- Not all historical data (only 15 days)
-####################################################################
-
-metorder = {    "01":"Downtimes_sam",
-		"02":"JobRobot",
-		"03":"SAMAvailability",
-		"04":"GoodT1linksfromT0",
-		"05":"GoodT1linksfromT1s",
-		"06":"GoodT1linksfromT2s",
-		"07":"GoodT1linkstoT1s",
-		"08":"GoodT1linkstoT2s",
-		"09":"GoodT2linksfromT1s",
-		"10":"GoodT2linkstoT1s",
-		"11":"T1linksfromT0",
-		"12":"T1linksfromtoT1s",
-		"13":"T1linkstoT2s",
-		"14":"T2linksfromT1s",
-		"15":"T2linkstoT1s",}
-
-metlegends = {  "Downtimes_sam":"Maintenance", 
-		"SAMAvailability":"SAM Availability", 
-		"JobRobot":"Job Robot", 
-		"T1linksfromT0":"Active T1 links from T0",
-		"T1linksfromtoT1s":"Active T1 links from/to T1s",
-		"T1linkstoT2s":"Active T1 links to T2s",
-		"T2linksfromT1s":"Active T2 links from T1s",
-		"T2linkstoT1s":"Active T2 links to T1s",
-		"GoodT1linksfromT0":"Good T1 links from T0",
-		"GoodT1linksfromT1s":"Good T1 links from T1s",
-		"GoodT1linksfromT2s":"Good T1 links from T2s",
-		"GoodT1linkstoT1s":"Good T1 links to T1s",
-		"GoodT1linkstoT2s":"Good T1 links to T2s",
-		"GoodT2linksfromT1s":"Good T2 links from T1s",
-		"GoodT2linkstoT1s":"Good T2 links to T1s"}
-
-colors = { "R":"green", "NR":"red", "n/a":"white", "W":"yellow" , "SD":"brown", "CE-SD":"brown", "SE-SD":"brown", "~":"yellow", "und":"black", " ":"white", "E": "red", "O":"green" , "n/a*":"white"}
-
-colspans1 = str(daysshow+1)
-colspans2 = str(daysshow+1)
-colspans22 = str(daysshow+2)
-colspans3 = str(dayssc)
-colspans4 = str(dayssc)
-colspans5 = str(daysshow-dayssc)
-
-dw=45
-mw=325
-
-tablew = str((daysshow)*dw+mw)
-dayw = str(dw)
-metricw = str(mw)
-daysw = str((daysshow)*dw)
-scdaysw1 = str((dayssc)*dw)
-scdaysw = str((dayssc)*dw)
-
-#scdaysw1 = str((days/2+1)*dw)
-#scdaysw = str((days/2)*dw)
-	
-filehtml= path_out + '/SiteReadinessReport_' + timestamphtml +'_new.html'
-fileHandle = open ( filehtml , 'w' )    
-
-fileHandle.write("<html><head><title>CMS Site Readiness</title><link type=\"text/css\" rel=\"stylesheet\" href=\"./style-css-reports.css\"/></head>\n")
-fileHandle.write("<body><center>\n")
-
-sitesit = SiteCommGlobalMatrix.keys()
-sitesit.sort()
-
-
-for sitename in sitesit:
-
-	if FilterSitesInTablesPlots(sitename, SiteCommGlobalMatrix) : 
-
-		fileHandle.write("<a name=\""+ sitename + "\"></a>\n\n")
-		fileHandle.write("<p><br>\n")
-
-		fileHandle.write("<table border=\"0\" cellspacing=\"0\" class=stat>\n")
-
-		fileHandle.write("<tr height=4><td width=" + metricw + "></td>\n")
-		fileHandle.write("<td width=" + daysw + " colspan=" + colspans1 + " bgcolor=black></td></tr>\n")
-
-		fileHandle.write("<tr>\n")
-		fileHandle.write("<td width=\"" + metricw + "\"></td>\n")
-		fileHandle.write("<td width=\"" + daysw + "\" colspan=" + colspans1 + " bgcolor=darkblue><div id=\"site\">" + sitename + "</div></td>\n")
-		fileHandle.write("</tr>\n")
-
-		fileHandle.write("<tr height=4><td width=" + metricw + "></td>\n")
-		fileHandle.write("<td width=" + daysw + " colspan=" + colspans1 + " bgcolor=black></td></tr>\n")
-		
-		fileHandle.write("<tr height=7><td width=" + metricw + "></td>\n")
-		fileHandle.write("<td width=" + daysw + " colspan=" + colspans1 + "></td></tr>\n")
-
-		dates = SiteCommMatrixT1T2[sitename].keys()
-		dates.sort()
-
-		fileHandle.write("<tr height=4><td width=" + metricw + "></td>\n")
-		fileHandle.write("<td width=" + daysw + " colspan=" + colspans1 + " bgcolor=black></td></tr>\n")
-		
-		fileHandle.write("<tr><td width=" + metricw + "></td>\n")
-		fileHandle.write("<td width=" + scdaysw1 + " colspan=" + colspans3 + "><div id=\"daily-metric-header\">Site Readiness Status: </div></td>\n")
-		
-		igdays=0
-
-		for datesgm in dates:
-
-			igdays+=1
-#cjf			if datesgm == todaystamp: continue # do not print current day
-			# ignorar n dias
-			if (days - igdays)>(daysshow-dayssc): continue
-						
-			if not SiteCommGlobalMatrix[sitename].has_key(datesgm):
-				continue
-			state=SiteCommGlobalMatrix[sitename][datesgm]
-			datesgm1 = datesgm[8:10]
-			c = datetime.datetime(*time.strptime(datesgm,"%Y-%m-%d")[0:5])
-			if (c.weekday() == 55 or c.weekday() == 65) and sitename.find('T2_') == 0: # id. weekends
-				fileHandle.write("<td width=\"" + dayw + "\" bgcolor=grey><div id=\"daily-metric\">" + state + "</div></td>\n")
-			else:
-				fileHandle.write("<td width=\"" + dayw + "\" bgcolor=" + colors[state] + "><div id=\"daily-metric\">" + state + "</div></td>\n")
-
-		fileHandle.write("<tr height=4><td width=" + metricw + "></td>\n")
-		fileHandle.write("<td width=" + daysw + " colspan=" + colspans1 + " bgcolor=black></td></tr>\n")
-		
-		fileHandle.write("<tr height=7><td width=" + metricw + "></td>\n")
-		fileHandle.write("<td width=" + daysw + " colspan=" + colspans1 + "></td></tr>\n")
-
-		fileHandle.write("<tr height=4><td width=" + tablew + " colspan=" + colspans2 + " bgcolor=black></td></tr>\n")
-
-
-		fileHandle.write("<td width=\"" + metricw + "\"><div id=\"daily-metric-header\">Daily Metric: </div></td>\n")
-
-		igdays=0
-
-		for datesgm in dates:
-
-			igdays+=1
-#cjf			if datesgm == todaystamp: continue # do not print current day
-			if (days - igdays)>daysshow-1: continue
-
-			state=SiteCommMatrixT1T2[sitename][datesgm]
-
-			datesgm1 = datesgm[8:10]
-			c = datetime.datetime(*time.strptime(datesgm,"%Y-%m-%d")[0:5])
-			if (c.weekday() == 5 or c.weekday() == 6) and sitename.find('T2_') == 0: # id. weekends
-				if state!=" ":
-					fileHandle.write("<td width=\"" + dayw + "\" bgcolor=grey><div id=\"daily-metric\">" + state + "</div></td>\n")
-				else:
-					fileHandle.write("<td width=\"" + dayw + "\" bgcolor=white><div id=\"daily-metric\">" + state + "</div></td>\n")
-			else:
-				fileHandle.write("<td width=\"" + dayw + "\" bgcolor=" + colors[state] + "><div id=\"daily-metric\">" + state + "</div></td>\n")
-
-
-		fileHandle.write("<tr height=4><td width=" + tablew + " colspan=" + colspans2 + " bgcolor=black></td></tr>\n")
-
-
-		fileHandle.write("<tr height=7><td width=" + metricw + "></td>\n")
-		fileHandle.write("<td width=" + daysw + " colspan=" + colspans1 + "></td></tr>\n")
-
-		fileHandle.write("<tr height=4><td width=" + tablew + " colspan=" + colspans2 + " bgcolor=black></td></tr>\n")
-
-                indmetrics = metorder.keys()
-		indmetrics.sort()
-
-		for metnumber in indmetrics:
-
-			met=metorder[metnumber]
+			dm2=datetime.timedelta(2)
+			dayloopm2=dayloop-dm2
+			dayloopstampm2=dayloopm2.strftime("%Y-%m-%d")
+#			dm3=datetime.timedelta(3)
+#			dayloopm3=dayloop-dm3
+#			dayloopstampm3=dayloopm3.strftime("%Y-%m-%d")
 			
-			if not SiteCommMatrix[sitename][datesgm].has_key(met) or met == 'IsSiteInSiteDB': continue # ignore 
-
-			fileHandle.write("<tr><td width=\"" + metricw + "\"><div id=\"metrics-header\">" + metlegends[met] + ": </div></td>\n")
-			igdays=0
-			for datesgm in dates:
-				igdays+=1
-#cjf				if datesgm == todaystamp: continue # do not print current day
-				if (days - igdays)>daysshow-1: continue
-				state=SiteCommMatrix[sitename][datesgm][met]['Status']
-				colorst=SiteCommMatrix[sitename][datesgm][met]['Color']
-				datesgm1 = datesgm[8:10]
-				c = datetime.datetime(*time.strptime(datesgm,"%Y-%m-%d")[0:5])
-				if (c.weekday() == 5 or c.weekday() == 6) and sitename.find('T2_') == 0: # id. weekends
-					if SiteCommMatrix[sitename][datesgm][met].has_key('URL') and SiteCommMatrix[sitename][datesgm][met]['URL'] != ' ' :
-						stateurl=SiteCommMatrix[sitename][datesgm][met]['URL']
-						fileHandle.write("<td width=\"" + dayw + "\" bgcolor=grey><a href=\""+stateurl+"\">"+"<div id=\"metrics2\">" + state + "</div></a></td>\n")
-					else:
-						fileHandle.write("<td width=\"" + dayw + "\" bgcolor=grey><div id=\"metrics2\">" + state + "</div></td>\n")
-				else:
-					if SiteCommMatrix[sitename][datesgm][met].has_key('URL') and SiteCommMatrix[sitename][datesgm][met]['URL'] != ' ' :
-						stateurl=SiteCommMatrix[sitename][datesgm][met]['URL']
-						fileHandle.write("<td width=\"" + dayw + "\" bgcolor=" + colorst + "><a href=\""+stateurl+"\">"+"<div id=\"metrics2\">" + state + "</div></a></td>\n")
-					else:
-						fileHandle.write("<td width=\"" + dayw + "\" bgcolor=" + colorst + "><div id=\"metrics2\">" + state + "</div></td>\n")
-			fileHandle.write("</tr>\n")
-
-		fileHandle.write("<tr height=4><td width=" + tablew + " colspan=" + colspans22 + " bgcolor=black></td></tr>\n")
-
-		fileHandle.write("<tr height=4><td width=" + metricw + "></td>\n")
-
-		igdays=0
-		for datesgm in dates:
-			igdays+=1
-#cjf			if datesgm == todaystamp: continue # do not print current day
-			if (days - igdays)>daysshow-1: continue
-			datesgm1 = datesgm[8:10]
-			c = datetime.datetime(*time.strptime(datesgm,"%Y-%m-%d")[0:5])
-			if c.weekday() == 5 or c.weekday() == 6: # id. weekends
-				fileHandle.write("<td width=" + dayw + " bgcolor=grey> <div id=\"date\">" + datesgm1 + "</div></td>\n")
-			else:
-				fileHandle.write("<td width=" + dayw + " bgcolor=lightgrey> <div id=\"date\">" + datesgm1 + "</div></td>\n")
-		fileHandle.write("</tr>\n")
-
-		fileHandle.write("<tr height=4><td width=" + metricw + "></td>\n")
-		fileHandle.write("<td width=" + daysw + " colspan=" + colspans1 + " bgcolor=black></td></tr>\n")
-
-		fileHandle.write("<tr><td width=" + metricw + "></td>\n")
-
-		lastmonth=""
-		igdays=0
-		for datesgm in dates:
-			igdays+=1
-#cjf			if datesgm == todaystamp: continue # do not print current day
-			if (days - igdays)>daysshow-1: continue
-			c = datetime.datetime(*time.strptime(datesgm,"%Y-%m-%d")[0:5])
-			month = c.strftime("%b")
-			if month != lastmonth:
-				fileHandle.write("<td width=" + dayw + " bgcolor=black> <div id=\"month\">" + month + "</div></td>\n")
-				lastmonth=month
-			else:
-				fileHandle.write("<td width=" + dayw + "></td>\n")
-		fileHandle.write("</tr>\n")
+			statusE=0
 		
-		fileHandle.write("<tr><td width=" + metricw + "></td>\n")
-		fileHandle.write("<td width=" + scdaysw1 + " colspan=" + colspans3 + "></td>\n")
+			for j in range(0,dayssc):
+
+				dd=datetime.timedelta(j);
+				dayloop2=dayloop-dd
+				dayloopstamp2=dayloop2.strftime("%Y-%m-%d")
+
+				dayofweek2=dayloop2.weekday()
+				
+				if SiteCommMatrixT1T2[sitename][dayloopstamp2] == 'E':
+					if ( tier == "T2" or tier == "T3") and (dayofweek2 == 5 or dayofweek2 == 6):
+						if CountWeekendsT2 == False: # skip Errors on weekends for T2s
+							continue
+					statusE+=1
+
+			status="n/a"
+			colorst="white"
+
+			if statusE > 2:
+				status="NR"
+				colorst="red"
+			if SiteCommMatrixT1T2[sitename][dayloopstamp] == 'E' and statusE <= 2 :
+				status="W"
+				colorst="yellow"
+			if SiteCommMatrixT1T2[sitename][dayloopstamp] == 'O' and statusE <= 2 :
+				status="R"
+				colorst="green"
+			if SiteCommMatrixT1T2[sitename][dayloopstamp] == 'O' and SiteCommMatrixT1T2[sitename][dayloopstampm1] == 'O':
+				status="R"
+				colorst="green"
+			if SiteCommMatrixT1T2[sitename][dayloopstamp] == 'SD':
+				status='SD'
+				colorst="brown"
 		
-		fileHandle.write("</table>\n")
+			SiteCommGlobalMatrix[sitename][dayloopstamp] = status
 
-                fileHandle.write("<div id=\"leg1\">" + reptime + "</div>\n")
+		if ( tier == "T2" or tier == "T3") :
 
-		#legends
-
-		lw1="15"
-		lw2="425"
-
-		fileHandle.write("<br>\n")
-		fileHandle.write("<table border=\"0\" cellspacing=\"0\" class=leg>\n")
-
-		fileHandle.write("<tr height=15>\n") 
-		fileHandle.write("<td width=" + lw1 + " bgcolor=white><div id=legflag>*</div></td>\n")
-		fileHandle.write("<td width=" + lw2 + "><div id=\"legend\"> = Due to operational errors, the metric has been corrected manually (!=SSB).</div></td>\n")
-		fileHandle.write("</tr>\n")
-		fileHandle.write("<tr height=10>\n") 
-		fileHandle.write("</tr>\n")
-
-		if sitename.find('T2_') == 0:
-			fileHandle.write("<tr height=15>\n") 
-			fileHandle.write("<td width=" + lw1 + " bgcolor=grey><div id=legflag>--</div></td>\n")
-			fileHandle.write("<td width=" + lw2 + "><div id=\"legend\"> = Errors on weekends are ignored on Site Readiness computation for T2s [<a href=\"https://twiki.cern.ch/twiki/bin/view/CMS/SiteCommRules\">+info</a>]</div></td>\n")
-			fileHandle.write("</tr>\n")
-			fileHandle.write("<tr height=10>\n") 
-			fileHandle.write("</tr>\n")
-
-		fileHandle.write("<tr height=15>\n") 
-		mes="\"Site Readiness Status\" as defined in <a href=\"https://twiki.cern.ch/twiki/bin/view/CMS/SiteCommRules\">Site Commissioning Twiki</a>:" 
-		fileHandle.write("<td width=" + lw2 + " colspan=2><div id=\"legendexp\">" + mes + "</div></td>\n")
-		mes="\"Daily Metric\" as boolean AND of all invidual metrics:" 
-		fileHandle.write("<td width=" + lw2 + " colspan=2><div id=\"legendexp\">" + mes + "</div></td>\n")
-		fileHandle.write("</tr>\n")
-		fileHandle.write("<tr height=15>\n") 
-		fileHandle.write("<td width=" + lw1 + " bgcolor=green><div id=legflag>R</div></td>\n")
-		fileHandle.write("<td width=" + lw2 + "><div id=\"legend\"> = READY </div></td>\n")
-		fileHandle.write("<td width=" + lw1 + " bgcolor=green><div id=legflag>O</div></td>\n")
-		fileHandle.write("<td width=" + lw2 + "><div id=\"legend\"> = OK (All individual metrics above Site Commissioning Thresholds; \"n/a\" ignored)</div></td>\n")
-		fileHandle.write("</tr>\n")
-		fileHandle.write("<tr height=15>\n") 
-		fileHandle.write("<td width=" + lw1 + " bgcolor=yellow><div id=legflag>W</div></td>\n")
-		fileHandle.write("<td width=" + lw2 + "><div id=\"legend\"> = WARNING </div></td>\n")
-		fileHandle.write("<td width=" + lw1 + " bgcolor=red><div id=legflag>E</div></td>\n")
-		fileHandle.write("<td width=" + lw2 + "><div id=\"legend\"> = ERROR (Some individual metrics below Site Commissioning Thresholds)</div></td>\n")
-		fileHandle.write("</tr>\n")
-		fileHandle.write("<tr height=15>\n") 
-		fileHandle.write("<td width=" + lw1 + " bgcolor=red><div id=legflag>NR</div></td>\n")
-		fileHandle.write("<td width=" + lw2 + "><div id=\"legend\"> = NOT-READY </div></td>\n")
-		fileHandle.write("<td width=" + lw1 + " bgcolor=brown><div id=legflag>SD</div></td>\n")
-		fileHandle.write("<td width=" + lw2 + "><div id=\"legend\"> = SCHEDULED-DOWNTIME</div></td>\n")
-		fileHandle.write("</tr>\n")
-		fileHandle.write("<tr height=15>\n") 
-		fileHandle.write("<td width=" + lw1 + " bgcolor=brown><div id=legflag>SD</div></td>\n")
-		fileHandle.write("<td width=" + lw2 + "><div id=\"legend\"> = SCHEDULED-DOWNTIME</div></td>\n")
-		fileHandle.write("</tr>\n")
-
-		fileHandle.write("<tr height=10>\n") 
-		fileHandle.write("</tr>\n")
-
-		fileHandle.write("<tr height=15>\n") 
-
-		mes="- INDIVIDUAL METRICS -"
-		
-		fileHandle.write("<td width=" + lw2 + " colspan=6><div id=\"legendexp2\">" + mes + "</div></td>\n")
-		fileHandle.write("</tr>\n")
-
-		fileHandle.write("<tr height=10>\n") 
-		fileHandle.write("</tr>\n")
-
-		fileHandle.write("<tr height=15>\n") 
-		mes="\"Scheduled Downtimes\": site maintenances" 
-		fileHandle.write("<td width=" + lw2 + " colspan=2><div id=\"legendexp\">" + mes + "</div></td>\n")
-		mes="\"Job Robot\":" 
-		fileHandle.write("<td width=" + lw2 + " colspan=2><div id=\"legendexp\">" + mes + "</div></td>\n")
-		mes="\"Good Links\":" 
-		fileHandle.write("<td width=" + lw2 + " colspan=2><div id=\"legendexp\">" + mes + "</div></td>\n")
-		fileHandle.write("</tr>\n")
-		fileHandle.write("<tr height=15>\n") 
-		fileHandle.write("<td width=" + lw1 + " bgcolor=green><div id=legflag>Up</div></td>\n")
-		fileHandle.write("<td width=" + lw2 + "><div id=\"legend\"> = Site is not declaring Scheduled-downtime </div></td>\n")
-		fileHandle.write("<td width=" + lw1 + " bgcolor=green><div id=legflag></div></td>\n")
-		if sitename.find('T1_') == 0:
-			fileHandle.write("<td width=" + lw2 + "><div id=\"legend\"> = Job success rate is &ge; 90%</div></td>\n")
-		else:
-			fileHandle.write("<td width=" + lw2 + "><div id=\"legend\"> = Job success rate is &ge; 80%</div></td>\n")
-		fileHandle.write("<td width=" + lw1 + " bgcolor=green><div id=legflag></div></td>\n")
-		fileHandle.write("<td width=" + lw2 + "><div id=\"legend\"> = at least half of links have 'good' transfers (i.e. with transfer quality > 50%)</div></td>\n")
-		fileHandle.write("</tr>\n")
-		fileHandle.write("<tr height=15>\n") 
-		fileHandle.write("<td width=" + lw1 + " bgcolor=brown><div id=legflag></div></td>\n")
-		fileHandle.write("<td width=" + lw2 + "><div id=\"legend\"> = SD=full-site; SE-SD: All CMS SE(s) in SD; CE-SD: All CMS CE(s) in SD</div></td>\n")
-		fileHandle.write("<td width=" + lw1 + " bgcolor=red><div id=legflag></div></td>\n")
-		if sitename.find('T1_') == 0:
-			fileHandle.write("<td width=" + lw2 + "><div id=\"legend\"> = Job success rate is < 90%</div></td>\n")
-		else:
-			fileHandle.write("<td width=" + lw2 + "><div id=\"legend\"> = Job success rate is < 80%</div></td>\n")
-		fileHandle.write("<td width=" + lw1 + " bgcolor=red><div id=legflag></div></td>\n")
-		fileHandle.write("<td width=" + lw2 + "><div id=\"legend\"> = Otherwise</div></td>\n")
-		fileHandle.write("</tr>\n")
-		fileHandle.write("<tr height=15>\n") 
-		fileHandle.write("<td width=" + lw1 + " bgcolor=yellow><div id=legflag>~</div></td>\n")
-		fileHandle.write("<td width=" + lw2 + "><div id=\"legend\"> = Some SE or CE services (not all) Downtime</div></td>\n")
-		fileHandle.write("<td width=" + lw1 + " bgcolor=orange><div id=legflag>-</div></td>\n")
-		fileHandle.write("<td width=" + lw2 + "><div id=\"legend\"> = Jobs submitted but not finished</div></td>\n")
-		fileHandle.write("</tr>\n")
-		fileHandle.write("<tr height=15>\n") 
-		fileHandle.write("<td width=" + lw1 + " bgcolor=white><div id=legflag></div></td>\n")
-		fileHandle.write("<td width=" + lw2 + "><div id=\"legend\"></div></td>\n")
-		fileHandle.write("<td width=" + lw1 + " bgcolor=white><div id=legflag>n/a</div></td>\n")
-		fileHandle.write("<td width=" + lw2 + "><div id=\"legend\"> = Job success rate is n/a</div></td>\n")
-		fileHandle.write("</tr>\n")
-
-
-		fileHandle.write("<tr height=10>\n") 
-		fileHandle.write("</tr>\n")
-
-		fileHandle.write("<tr height=15>\n") 
-		mes="\"SAM Availability\":" 
-		fileHandle.write("<td width=" + lw2 + " colspan=2><div id=\"legendexp\">" + mes + "</div></td>\n")
-		if sitename.find('T1_') == 0:
-			mes="\"Active T1 links from T0\":" 
-		else:
-			mes="\"Active T2 links to T1s\":"
-		fileHandle.write("<td width=" + lw2 + " colspan=2><div id=\"legendexp\">" + mes + "</div></td>\n")
-		fileHandle.write("</tr>\n")
-		fileHandle.write("<tr height=15>\n") 
-		fileHandle.write("<td width=" + lw1 + " bgcolor=green><div id=legflag></div></td>\n")
-		if sitename.find('T1_') == 0:
-			fileHandle.write("<td width=" + lw2 + "><div id=\"legend\"> = SAM availability is &ge; 90% </div></td>\n")
-		else:	
-			fileHandle.write("<td width=" + lw2 + "><div id=\"legend\"> = SAM availability is &ge; 80% </div></td>\n")
-		fileHandle.write("<td width=" + lw1 + " bgcolor=green><div id=legflag></div></td>\n")
-		if sitename.find('T1_') == 0:
-			fileHandle.write("<td width=" + lw2 + "><div id=\"legend\"> = Link from T0_CH_CERN is DDT-commissioned </div></td>\n")
-		else:
-			fileHandle.write("<td width=" + lw2 + "><div id=\"legend\"> = Site has &ge; 2 DDT-commissioned links to T1 sites </div></td>\n")			
-		fileHandle.write("</tr>\n")
-		fileHandle.write("<tr height=15>\n") 
-		fileHandle.write("<td width=" + lw1 + " bgcolor=red><div id=legflag></div></td>\n")
-		if sitename.find('T1_') == 0:
-			fileHandle.write("<td width=" + lw2 + "><div id=\"legend\"> = SAM availability is < 90%  <div></td>\n")
-		else:
-			fileHandle.write("<td width=" + lw2 + "><div id=\"legend\"> = SAM availability is < 80%  <div></td>\n")	
-		fileHandle.write("<td width=" + lw1 + " bgcolor=red><div id=legflag></div></td>\n")
-		fileHandle.write("<td width=" + lw2 + "><div id=\"legend\"> = Otherwise</div></td>\n")
-		fileHandle.write("</tr>\n")
-
-		fileHandle.write("<tr height=10>\n") 
-		fileHandle.write("</tr>\n")
-
-		fileHandle.write("<tr height=15>\n") 
-		if sitename.find('T1_') == 0:
-			mes="\"Active T1 links from/to T1s\":" 
-		else:
-			mes="\"Active T2 links from T1s\":"
-		fileHandle.write("<td width=" + lw2 + " colspan=2><div id=\"legendexp\">" + mes + "</div></td>\n")
-
-		if sitename.find('T1_') == 0:
-			mes="\"Active T1 links to T2s\":" 
-		else:
-			mes=""
-		fileHandle.write("<td width=" + lw2 + " colspan=2><div id=\"legendexp\">" + mes + "</div></td>\n")
-		fileHandle.write("</tr>\n")
-		fileHandle.write("<tr height=15>\n") 
-		fileHandle.write("<td width=" + lw1 + " bgcolor=green><div id=legflag></div></td>\n")
-		if sitename.find('T1_') == 0:
-			fileHandle.write("<td width=" + lw2 + "><div id=\"legend\"> = Site has &ge; 4 DDT-commissioned links from and to, respectively, other T1 sites </div></td>\n")
-		else:
-			fileHandle.write("<td width=" + lw2 + "><div id=\"legend\"> = Site has &ge; 4 DDT-commissioned links from T1 sites </div></td>\n")	
+			for i in range(0,days-dayssc):
 	
-		if sitename.find('T1_') == 0:
-			fileHandle.write("<td width=" + lw1 + " bgcolor=green><div id=legflag></div></td>\n")
-			fileHandle.write("<td width=" + lw2 + "><div id=\"legend\"> = Site has &ge; 20 DDT-commissioned links to T2 sites </div></td>\n")
-		else:
-			fileHandle.write("<td width=" + lw1 + " bgcolor=white><div id=legflag></div></td>\n")
-			fileHandle.write("<td width=" + lw2 + "><div id=\"legend\"></div></td>\n")
-		fileHandle.write("</tr>\n")
-		fileHandle.write("<tr height=15>\n") 
-		fileHandle.write("<td width=" + lw1 + " bgcolor=red><div id=legflag></div></td>\n")
-		fileHandle.write("<td width=" + lw2 + "><div id=\"legend\"> = Otherwise <div></td>\n")
-		if sitename.find('T1_') == 0:
-			fileHandle.write("<td width=" + lw1 + " bgcolor=red><div id=legflag></div></td>\n")
-			fileHandle.write("<td width=" + lw2 + "><div id=\"legend\"> = Otherwise </div></td>\n")
-		else:
-			fileHandle.write("<td width=" + lw1 + " bgcolor=white><div id=legflag></div></td>\n")
-			fileHandle.write("<td width=" + lw2 + "><div id=\"legend\"></div></td>\n")
+				d=datetime.timedelta(i);
+				dsc=datetime.timedelta(days-dayssc-1);
+				dayloop=today-dsc+d
+				dayofweek=dayloop.weekday()
+				dayloopstamp=dayloop.strftime("%Y-%m-%d")
+				dm1=datetime.timedelta(1)
+				dayloopm1=dayloop-dm1
+				dayloopstampm1=dayloopm1.strftime("%Y-%m-%d")
 
-		fileHandle.write("</tr>\n")
+				if SiteCommMatrixT1T2[sitename][dayloopstamp] == 'E':
+					if dayofweek == 5 or dayofweek == 6: # id. weekends
+						if CountWeekendsT2 == False: # skip Errors on weekends for T2s
+							if i == 0 or i == 1:
+								SiteCommGlobalMatrix[sitename][dayloopstamp] == 'R'
+								continue
+							if SiteCommGlobalMatrix[sitename][dayloopstampm1] == 'SD':
+								SiteCommGlobalMatrix[sitename][dayloopstamp] = 'R'
+							else:
+								SiteCommGlobalMatrix[sitename][dayloopstamp] = SiteCommGlobalMatrix[sitename][dayloopstampm1]
+						
 
-		fileHandle.write("</table>\n")
-		fileHandle.write("<p>\n")
+	sys.stdout.write("\n")
+	sys.stdout.flush()
 
-		fileHandle.write("<p><br>\n")
+        ##############################
+	# put in blank current day   #
+        ##############################
 
-fileHandle.write("</center></html></body>")
-fileHandle.close()
+        for sitename in SiteCommMatrixT1T2:
+		for col in ColumnMatrix:
+			if SiteCommMatrix[sitename][todaystamp].has_key(col):
+				SiteCommMatrix[sitename][todaystamp][col]['Status'] = ' '
+				SiteCommMatrix[sitename][todaystamp][col]['Color'] = 'white'
+				SiteCommGlobalMatrix[sitename][todaystamp] = ' '
 
+        ####################################################################
+	# Correct some known sites metrics
+        ####################################################################
 
-####################################################################
-# Print Site Commissioning Managers html view
-####################################################################
+	for sitename in SiteCommGlobalMatrix:
+		for dt in SiteCommGlobalMatrix[sitename]:
+			SiteCommGlobalMatrix[sitename][dt]=CorrectGlobalMatrix(sitename, dt, SiteCommGlobalMatrix[sitename][dt])
+	for sitename in SiteCommMatrixT1T2:
+		for dt in SiteCommMatrixT1T2[sitename]:
+			SiteCommMatrixT1T2[sitename][dt]=CorrectGlobalMatrix(sitename, dt, SiteCommMatrixT1T2[sitename][dt])
 
-filehtml= path_out + '/SiteReadinessReport_Summary_' + timestamphtml +'_new.html'
-fileHandle = open ( filehtml , 'w' )    
+def ProduceSiteReadinessSSBFile(SiteCommGlobalMatrix, fileSSB):
 
-fileHandle.write("<html><head><link type=\"text/css\" rel=\"stylesheet\" href=\"./style-css-reports.css\"/></head>\n")
-fileHandle.write("<body><center>\n")
-
-sitesit = SiteCommGlobalMatrix.keys()
-sitesit.sort()
-
-# fileHandle.write("<a name=\""+ sitename + "\"></a>\n\n")
-fileHandle.write("<p><br>\n")
-
-percstats=500
-percstatsw=str(percstats)
-
-percstatsw2="10"
-percstatsw3="1"
-percstatsw4="5"
-
-tablew2 = str((daysshow)*dw+mw+percstats)
-
-sitefilter = [ "T1_", "T2_" ]
-
-DailyMetricStats = {}
-SiteReadinessStats = {}
-
-for i in sitefilter:
-
-	# Daily Metric
-
-	fileHandle.write("<table border=\"0\" cellspacing=\"0\" class=stat>\n")
+	fileHandle = open ( fileSSB , 'w' )
 	
-	fileHandle.write("<tr height=4><td width=" + metricw + "></td>\n")
-	fileHandle.write("<td width=" + daysw + " colspan=" + colspans1 + " bgcolor=black></td></tr>\n")
+	sitesit = SiteCommGlobalMatrix.keys()
+	sitesit.sort()
 	
-	fileHandle.write("<tr>\n")
-	fileHandle.write("<td width=\"" + metricw + "\"></td>\n")
+	prog = progressBar(0, 100, 77)
+	iprog=0
 
-	if i.find("T1") == 0:
-		fileHandle.write("<td width=\"" + daysw + "\" colspan=" + colspans1 + " bgcolor=darkblue><div id=\"site\"> Tier-1 Daily Metric </div></td>\n")
-	else:
-		fileHandle.write("<td width=\"" + daysw + "\" colspan=" + colspans1 + " bgcolor=darkblue><div id=\"site\"> Tier-2 Daily Metric </div></td>\n")
-	fileHandle.write("</tr>\n")
+	SRMatrixColors = { "R":"green", "W":"yellow", "NR":"red", "SD":"brown", " ":"white", "n/a":"white", "n/a*":"white" }
 
-	fileHandle.write("<tr height=4><td width=" + tablew + " colspan=" + colspans2 + " bgcolor=black></td></tr>\n")
-		
 	for sitename in sitesit:
 
-		if not FilterSitesInTablesPlots(sitename, SiteCommGlobalMatrix) : continue
+		iprog+=100./len(sitesit)
+		prog.updateAmount(iprog)
+		sys.stdout.write(str(prog)+'\r')
+		sys.stdout.flush()
 
-		if sitename.find(i) == 0:
+		if not FilterSitesInTablesPlots(sitename, SiteCommMatrix, SiteCommGlobalMatrix) : continue
 
-			infostats = {}
+		status=SiteCommGlobalMatrix[sitename][yesterdaystamp]
+		colorst=SRMatrixColors[status]
+		tofile=todaystampfileSSB + '\t' + sitename + '\t' + status + '\t' + colorst + '\t' + linkSSB + "#" + sitename + "\n"
+		fileHandle.write(tofile)
+		
+	fileHandle.close()
 
-			if not DailyMetricStats.has_key(sitename):
-				DailyMetricStats[sitename]={}		
+	sys.stdout.write("\n")
+	sys.stdout.flush()
+
+
+def ProduceSiteReadinessHTMLViews(SiteCommGlobalMatrix, metorder, metlegends, colors, path_out):
+
+        ####################################################################
+	# Print Site html view  -- Not all historical data (only 15 days)
+        ####################################################################
+
+	colspans1 = str(daysshow+1)
+	colspans2 = str(daysshow+1)
+	colspans22 = str(daysshow+2)
+	colspans3 = str(dayssc)
+	colspans4 = str(dayssc)
+	colspans5 = str(daysshow-dayssc)
+
+	dw=45
+	mw=325
+
+	tablew = str((daysshow)*dw+mw)
+	dayw = str(dw)
+	metricw = str(mw)
+	daysw = str((daysshow)*dw)
+	scdaysw1 = str((dayssc)*dw)
+	scdaysw = str((dayssc)*dw)
+
+	filehtml= path_out + '/SiteReadinessReport_' + timestamphtml +'_new2.html'
+	fileHandle = open ( filehtml , 'w' )    
+
+	fileHandle.write("<html><head><title>CMS Site Readiness</title><link type=\"text/css\" rel=\"stylesheet\" href=\"./style-css-reports.css\"/></head>\n")
+	fileHandle.write("<body><center>\n")
+
+	sitesit = SiteCommGlobalMatrix.keys()
+	sitesit.sort()
+
+	prog = progressBar(0, 100, 77)
+	iprog=0
+
+	for sitename in sitesit:
+
+		iprog+=100./len(sitesit)
+		prog.updateAmount(iprog)
+		sys.stdout.write(str(prog)+'\r')
+		sys.stdout.flush()
+
+		if FilterSitesInTablesPlots(sitename, SiteCommMatrix, SiteCommGlobalMatrix) : 
+
+			fileHandle.write("<a name=\""+ sitename + "\"></a>\n\n")
+			fileHandle.write("<p><br>\n")
+
+			fileHandle.write("<table border=\"0\" cellspacing=\"0\" class=stat>\n")
+
+			fileHandle.write("<tr height=4><td width=" + metricw + "></td>\n")
+			fileHandle.write("<td width=" + daysw + " colspan=" + colspans1 + " bgcolor=black></td></tr>\n")
 
 			fileHandle.write("<tr>\n")
-			fileHandle.write("<td width=\"" + metricw + "\"><div id=\"daily-metric-header\">" + sitename + ":</div></td>\n")
+			fileHandle.write("<td width=\"" + metricw + "\"></td>\n")
+			fileHandle.write("<td width=\"" + daysw + "\" colspan=" + colspans1 + " bgcolor=darkblue><div id=\"site\">" + sitename + "</div></td>\n")
+			fileHandle.write("</tr>\n")
+
+			fileHandle.write("<tr height=4><td width=" + metricw + "></td>\n")
+			fileHandle.write("<td width=" + daysw + " colspan=" + colspans1 + " bgcolor=black></td></tr>\n")
+		
+			fileHandle.write("<tr height=7><td width=" + metricw + "></td>\n")
+			fileHandle.write("<td width=" + daysw + " colspan=" + colspans1 + "></td></tr>\n")
 
 			dates = SiteCommMatrixT1T2[sitename].keys()
 			dates.sort()
-			countO=0
-			countE=0
-			countSD=0
 
+			fileHandle.write("<tr height=4><td width=" + metricw + "></td>\n")
+			fileHandle.write("<td width=" + daysw + " colspan=" + colspans1 + " bgcolor=black></td></tr>\n")
+		
+			fileHandle.write("<tr><td width=" + metricw + "></td>\n")
+			fileHandle.write("<td width=" + scdaysw1 + " colspan=" + colspans3 + "><div id=\"daily-metric-header\">Site Readiness Status: </div></td>\n")
+		
 			igdays=0
 
 			for datesgm in dates:
 
 				igdays+=1
-				if datesgm == todaystamp: continue # do not print current day
-				if (days - igdays)>daysshow-1: continue
-
-				state=SiteCommMatrixT1T2[sitename][datesgm]
-				fileHandle.write("<td width=\"" + dayw + "\" bgcolor=" + colors[state] + "><div id=\"daily-metric\">" + state + "</div></td>\n")
-				if state == "O": countO+=1
-				if state == "E": countE+=1
-				if state == "SD": countSD+=1
-
-		       	stats=str((int)(100.*countO/days)) + "%(O) - " + str((int)(100.*countE/days)) + "%(E) - " + str((int)(100.*countSD/days)) + "%(SD)"
-
-			infostats['O_perc']= (int)(round(100.*countO/daysshow))
-			infostats['E_perc']= (int)(round(100.*countE/daysshow))
-			infostats['SD_perc']= (int)(round(100.*countSD/daysshow))
-			infostats['O']= countO
-			infostats['E']= countE
-			infostats['SD']= countSD
-			infostats['days']=days 
-
-			DailyMetricStats[sitename]=infostats
-
-		       	fileHandle.write("<td width=\"" + percstatsw4 + "\"><div id=\"stats\"></div></td>\n")
-		       	fileHandle.write("<td width=\"" + percstatsw2 + "\" bgcolor=" + colors['O'] + "><div id=\"stats\">" + str((int)(round(100.*countO/daysshow))) + "%</div></td>\n")
-		       	fileHandle.write("<td width=\"" + percstatsw3 + "\"><div id=\"stats\"></div></td>\n")
-		       	fileHandle.write("<td width=\"" + percstatsw2 + "\" bgcolor=" + colors['E'] + "><div id=\"stats\">" + str((int)(round(100.*countE/daysshow))) + "%</div></td>\n")
-		       	fileHandle.write("<td width=\"" + percstatsw3 + "\"><div id=\"stats\"></div></td>\n")
-		       	fileHandle.write("<td width=\"" + percstatsw2 + "\" bgcolor=" + colors['SD'] + "><div id=\"stats\">" + str((int)(round(100.*countSD/daysshow))) + "%</div></td>\n")
-		       	fileHandle.write("</tr>\n")
-
-	fileHandle.write("<tr height=4><td width=" + tablew + " colspan=" + colspans2 + " bgcolor=black></td></tr>\n")
-
-	fileHandle.write("<tr><td width=" + metricw + "></td>\n")
-
-	igdays=0
-
-	for datesgm in dates:
-
-		igdays+=1
-		if datesgm == todaystamp: continue # do not print current day
-		if (days - igdays)>daysshow-1: continue
-
-		datesgm1 = datesgm[8:10]
-		c = datetime.datetime(*time.strptime(datesgm,"%Y-%m-%d")[0:5])
-		if c.weekday() == 5 or c.weekday() == 6: # id. weekends
-			fileHandle.write("<td width=" + dayw + " bgcolor=grey> <div id=\"date\">" + datesgm1 + "</div></td>\n")
-		else:
-			fileHandle.write("<td width=" + dayw + " bgcolor=lightgrey> <div id=\"date\">" + datesgm1 + "</div></td>\n")
-	fileHandle.write("</tr>\n")
-
-	fileHandle.write("<tr height=4><td width=" + metricw + "></td>\n")
-	fileHandle.write("<td width=" + daysw + " colspan=" + colspans1 + " bgcolor=black></td></tr>\n")
-
-	fileHandle.write("<tr><td width=" + metricw + "></td>\n")
-
-	lastmonth=""
-
-	igdays=0
-
-	for datesgm in dates:
-
-		igdays+=1
-		if datesgm == todaystamp: continue # do not print current day
-		if (days - igdays)>daysshow-1: continue
-
-		c = datetime.datetime(*time.strptime(datesgm,"%Y-%m-%d")[0:5])
-		month = c.strftime("%b")
-		if month != lastmonth:
-			fileHandle.write("<td width=" + dayw + " bgcolor=black> <div id=\"month\">" + month + "</div></td>\n")
-			lastmonth=month
-		else:
-			fileHandle.write("<td width=" + dayw + "></td>\n")
-	fileHandle.write("</tr>\n")
-
-	fileHandle.write("</table>\n")
-
-        fileHandle.write("<div id=\"leg1\">" + reptime + "</div>\n")
-
-	# Daily Metrics legends
-
-	lw1="15"
-	lw2="425"
-	lw3="650"
-
-	fileHandle.write("<br>\n")
-	fileHandle.write("<table border=\"0\" cellspacing=\"0\" class=leg>\n")
-
-	if i.find("T2") == 0:
-		fileHandle.write("<tr height=15>\n") 
-		fileHandle.write("<td width=" + lw1 + " bgcolor=grey><div id=legflag>--</div></td>\n")
-		fileHandle.write("<td width=" + lw3 + "><div id=\"legend\"> = Errors on weekends are ignored for Site Readiness computation on Tier-2 sites [<a href=\"https://twiki.cern.ch/twiki/bin/view/CMS/SiteCommRules\">+info</a>], but we show here Daily Metric statistics for all days.</div></td>\n")
-		fileHandle.write("</tr>\n")
-		fileHandle.write("<tr height=10>\n") 
-		fileHandle.write("</tr>\n")
-
-	fileHandle.write("<tr height=15>\n") 
-	mes="\"Daily Metric\" as boolean AND of all invidual metrics considered for the site:" 
-	fileHandle.write("<td width=" + lw2 + " colspan=2><div id=\"legendexp\">" + mes + "</div></td>\n")
-	fileHandle.write("</tr>\n")
-	fileHandle.write("<tr height=15>\n") 
-	fileHandle.write("<td width=" + lw1 + " bgcolor=green><div id=legflag>O</div></td>\n")
-	fileHandle.write("<td width=" + lw2 + "><div id=\"legend\"> = OK (All individual metrics above Site Commissioning Thresholds; \"n/a\" ignored)</div></td>\n")
-	fileHandle.write("</tr>\n")
-	fileHandle.write("<tr height=15>\n") 
-	fileHandle.write("<td width=" + lw1 + " bgcolor=red><div id=legflag>E</div></td>\n")
-	fileHandle.write("<td width=" + lw2 + "><div id=\"legend\"> = ERROR (Some individual metrics below Site Commissioning Thresholds)</div></td>\n")
-	fileHandle.write("</tr>\n")
-	fileHandle.write("<tr height=15>\n") 
-	fileHandle.write("<td width=" + lw1 + " bgcolor=brown><div id=legflag>SD</div></td>\n")
-	fileHandle.write("<td width=" + lw2 + "><div id=\"legend\"> = SCHEDULED-DOWNTIME</div></td>\n")
-	fileHandle.write("</tr>\n")
-
-	fileHandle.write("<tr height=10>\n") 
-	fileHandle.write("</tr>\n")
-
-	fileHandle.write("</table>\n")
-	fileHandle.write("<p><br>\n")
-
-
-	# SiteComm Metric
-
-	fileHandle.write("<table border=\"0\" cellspacing=\"0\" class=stat>\n")
-	
-	fileHandle.write("<tr height=4><td width=" + metricw + "></td>\n")
-	fileHandle.write("<td width=" + daysw + " colspan=" + colspans1 + " bgcolor=black></td></tr>\n")
-	
-	fileHandle.write("<tr>\n")
-	fileHandle.write("<td width=\"" + metricw + "\"></td>\n")
-
-	if i.find("T1") == 0:
-		fileHandle.write("<td width=\"" + daysw + "\" colspan=" + colspans1 + " bgcolor=darkblue><div id=\"site\"> Tier-1 Site Readiness Status </div></td>\n")
-	else:
-		fileHandle.write("<td width=\"" + daysw + "\" colspan=" + colspans1 + " bgcolor=darkblue><div id=\"site\"> Tier-2 Site Readiness Status </div></td>\n")
-	fileHandle.write("</tr>\n")
-
-	fileHandle.write("<tr height=4><td width=" + metricw + "></td>\n")
-	fileHandle.write("<td width=" + daysw + " colspan=" + colspans1 + " bgcolor=black></td></tr>\n")
-	
-	for sitename in sitesit:
-		
-		if not FilterSitesInTablesPlots(sitename, SiteCommGlobalMatrix) : continue
-		
-		if sitename.find(i) == 0:
-			
-			infostats2 = {}
-
-			if not SiteReadinessStats.has_key(sitename):
-				SiteReadinessStats[sitename]={}		
-
-			fileHandle.write("<tr><td width=" + metricw + "></td>\n")
-			fileHandle.write("<td width=" + scdaysw1 + " colspan=" + colspans3 + "><div id=\"daily-metric-header\">" + sitename + ": </div></td>\n")
-			
-			countR=0
-			countW=0
-			countNR=0
-			countSD=0
-
-			igdays=0			
-			for datesgm in dates:
-
-				igdays+=1
-#cjf				if datesgm == todaystamp: continue # do not print current day
 				if (days - igdays)>(daysshow-dayssc): continue
 
 				if not SiteCommGlobalMatrix[sitename].has_key(datesgm):
 					continue
 				state=SiteCommGlobalMatrix[sitename][datesgm]
+				datesgm1 = datesgm[8:10]
+				c = datetime.datetime(*time.strptime(datesgm,"%Y-%m-%d")[0:5])
 				fileHandle.write("<td width=\"" + dayw + "\" bgcolor=" + colors[state] + "><div id=\"daily-metric\">" + state + "</div></td>\n")
+
+			fileHandle.write("<tr height=4><td width=" + metricw + "></td>\n")
+			fileHandle.write("<td width=" + daysw + " colspan=" + colspans1 + " bgcolor=black></td></tr>\n")
+			
+			fileHandle.write("<tr height=7><td width=" + metricw + "></td>\n")
+			fileHandle.write("<td width=" + daysw + " colspan=" + colspans1 + "></td></tr>\n")
+			
+			fileHandle.write("<tr height=4><td width=" + tablew + " colspan=" + colspans2 + " bgcolor=black></td></tr>\n")
+
+			fileHandle.write("<td width=\"" + metricw + "\"><div id=\"daily-metric-header\">Daily Metric: </div></td>\n")
+
+			igdays=0
+
+			for datesgm in dates:
+
+				igdays+=1
+				if (days - igdays)>daysshow-1: continue
+
+				state=SiteCommMatrixT1T2[sitename][datesgm]
+
+				datesgm1 = datesgm[8:10]
+				c = datetime.datetime(*time.strptime(datesgm,"%Y-%m-%d")[0:5])
+				if (c.weekday() == 5 or c.weekday() == 6) and sitename.find('T2_') == 0: # id. weekends
+					if state!=" ":
+						fileHandle.write("<td width=\"" + dayw + "\" bgcolor=grey><div id=\"daily-metric\">" + state + "</div></td>\n")
+					else:
+						fileHandle.write("<td width=\"" + dayw + "\" bgcolor=white><div id=\"daily-metric\">" + state + "</div></td>\n")
+				else:
+					fileHandle.write("<td width=\"" + dayw + "\" bgcolor=" + colors[state] + "><div id=\"daily-metric\">" + state + "</div></td>\n")
+
+
+			fileHandle.write("<tr height=4><td width=" + tablew + " colspan=" + colspans2 + " bgcolor=black></td></tr>\n")
+
+			fileHandle.write("<tr height=7><td width=" + metricw + "></td>\n")
+			fileHandle.write("<td width=" + daysw + " colspan=" + colspans1 + "></td></tr>\n")
+
+			fileHandle.write("<tr height=4><td width=" + tablew + " colspan=" + colspans2 + " bgcolor=black></td></tr>\n")
+			
+			indmetrics = metorder.keys()
+			indmetrics.sort()
+
+			for metnumber in indmetrics:
+
+				met=metorder[metnumber]
+			
+				if not SiteCommMatrix[sitename][datesgm].has_key(met) or met == 'IsSiteInSiteDB': continue # ignore 
+
+				fileHandle.write("<tr><td width=\"" + metricw + "\"><div id=\"metrics-header\">" + metlegends[met] + ": </div></td>\n")
+				igdays=0
+				for datesgm in dates:
+					igdays+=1
+					if (days - igdays)>daysshow-1: continue
+
+					state=SiteCommMatrix[sitename][datesgm][met]['Status']
+					colorst=SiteCommMatrix[sitename][datesgm][met]['Color']
+					datesgm1 = datesgm[8:10]
+					c = datetime.datetime(*time.strptime(datesgm,"%Y-%m-%d")[0:5])
+					
+					if (c.weekday() == 5 or c.weekday() == 6) and sitename.find('T2_') == 0: # id. weekends
+						if SiteCommMatrix[sitename][datesgm][met].has_key('URL') and SiteCommMatrix[sitename][datesgm][met]['URL'] != ' ' :
+							stateurl=SiteCommMatrix[sitename][datesgm][met]['URL']
+							fileHandle.write("<td width=\"" + dayw + "\" bgcolor=grey><a href=\""+stateurl+"\">"+"<div id=\"metrics2\">" + state + "</div></a></td>\n")
+						else:
+							fileHandle.write("<td width=\"" + dayw + "\" bgcolor=grey><div id=\"metrics2\">" + state + "</div></td>\n")
+					else:
+						if SiteCommMatrix[sitename][datesgm][met].has_key('URL') and SiteCommMatrix[sitename][datesgm][met]['URL'] != ' ' :
+							stateurl=SiteCommMatrix[sitename][datesgm][met]['URL']
+							fileHandle.write("<td width=\"" + dayw + "\" bgcolor=" + colorst + "><a href=\""+stateurl+"\">"+"<div id=\"metrics2\">" + state + "</div></a></td>\n")
+						else:
+							fileHandle.write("<td width=\"" + dayw + "\" bgcolor=" + colorst + "><div id=\"metrics2\">" + state + "</div></td>\n")
+				fileHandle.write("</tr>\n")
+				
+			fileHandle.write("<tr height=4><td width=" + tablew + " colspan=" + colspans22 + " bgcolor=black></td></tr>\n")
+			fileHandle.write("<tr height=4><td width=" + metricw + "></td>\n")
+
+			igdays=0
+			
+			for datesgm in dates:
+				igdays+=1
+
+				if (days - igdays)>daysshow-1: continue
+				datesgm1 = datesgm[8:10]
+				c = datetime.datetime(*time.strptime(datesgm,"%Y-%m-%d")[0:5])
+				if c.weekday() == 5 or c.weekday() == 6: # id. weekends
+					fileHandle.write("<td width=" + dayw + " bgcolor=grey> <div id=\"date\">" + datesgm1 + "</div></td>\n")
+				else:
+					fileHandle.write("<td width=" + dayw + " bgcolor=lightgrey> <div id=\"date\">" + datesgm1 + "</div></td>\n")
+			fileHandle.write("</tr>\n")
+
+			fileHandle.write("<tr height=4><td width=" + metricw + "></td>\n")
+			fileHandle.write("<td width=" + daysw + " colspan=" + colspans1 + " bgcolor=black></td></tr>\n")
+
+			fileHandle.write("<tr><td width=" + metricw + "></td>\n")
+
+			lastmonth=""
+			igdays=0
+
+			for datesgm in dates:
+				igdays+=1
+				if (days - igdays)>daysshow-1: continue
+				c = datetime.datetime(*time.strptime(datesgm,"%Y-%m-%d")[0:5])
+				month = c.strftime("%b")
+				if month != lastmonth:
+					fileHandle.write("<td width=" + dayw + " bgcolor=black> <div id=\"month\">" + month + "</div></td>\n")
+					lastmonth=month
+				else:
+					fileHandle.write("<td width=" + dayw + "></td>\n")
+			fileHandle.write("</tr>\n")
+		
+			fileHandle.write("<tr><td width=" + metricw + "></td>\n")
+			fileHandle.write("<td width=" + scdaysw1 + " colspan=" + colspans3 + "></td>\n")
+		
+			fileHandle.write("</table>\n")
+
+			# report time
+			
+			fileHandle.write("<div id=\"leg1\">" + reptime + "</div>\n")
+
+			#legends
+
+			lw1="15"
+			lw2="425"
+
+			fileHandle.write("<br>\n")
+			fileHandle.write("<table border=\"0\" cellspacing=\"0\" class=leg>\n")
+			
+			fileHandle.write("<tr height=15>\n") 
+			fileHandle.write("<td width=" + lw1 + " bgcolor=white><div id=legflag>*</div></td>\n")
+			fileHandle.write("<td width=" + lw2 + "><div id=\"legend\"> = Due to operational errors, the metric has been corrected manually (!=SSB).</div></td>\n")
+			fileHandle.write("</tr>\n")
+			fileHandle.write("<tr height=10>\n") 
+			fileHandle.write("</tr>\n")
+
+			if sitename.find('T2_') == 0:
+				fileHandle.write("<tr height=15>\n") 
+				fileHandle.write("<td width=" + lw1 + " bgcolor=grey><div id=legflag>--</div></td>\n")
+				fileHandle.write("<td width=" + lw2 + "><div id=\"legend\"> = Errors on weekends are ignored on Site Readiness computation for T2s [<a href=\"https://twiki.cern.ch/twiki/bin/view/CMS/SiteCommRules\">+info</a>]</div></td>\n")
+				fileHandle.write("</tr>\n")
+				fileHandle.write("<tr height=10>\n") 
+				fileHandle.write("</tr>\n")
+
+			fileHandle.write("<tr height=15>\n") 
+			mes="\"Site Readiness Status\" as defined in <a href=\"https://twiki.cern.ch/twiki/bin/view/CMS/SiteCommRules\">Site Commissioning Twiki</a>:" 
+			fileHandle.write("<td width=" + lw2 + " colspan=2><div id=\"legendexp\">" + mes + "</div></td>\n")
+			mes="\"Daily Metric\" as boolean AND of all invidual metrics:" 
+			fileHandle.write("<td width=" + lw2 + " colspan=2><div id=\"legendexp\">" + mes + "</div></td>\n")
+			fileHandle.write("</tr>\n")
+			fileHandle.write("<tr height=15>\n") 
+			fileHandle.write("<td width=" + lw1 + " bgcolor=green><div id=legflag>R</div></td>\n")
+			fileHandle.write("<td width=" + lw2 + "><div id=\"legend\"> = READY </div></td>\n")
+			fileHandle.write("<td width=" + lw1 + " bgcolor=green><div id=legflag>O</div></td>\n")
+			fileHandle.write("<td width=" + lw2 + "><div id=\"legend\"> = OK (All individual metrics above Site Commissioning Thresholds; \"n/a\" ignored)</div></td>\n")
+			fileHandle.write("</tr>\n")
+			fileHandle.write("<tr height=15>\n") 
+			fileHandle.write("<td width=" + lw1 + " bgcolor=yellow><div id=legflag>W</div></td>\n")
+			fileHandle.write("<td width=" + lw2 + "><div id=\"legend\"> = WARNING </div></td>\n")
+			fileHandle.write("<td width=" + lw1 + " bgcolor=red><div id=legflag>E</div></td>\n")
+			fileHandle.write("<td width=" + lw2 + "><div id=\"legend\"> = ERROR (Some individual metrics below Site Commissioning Thresholds)</div></td>\n")
+			fileHandle.write("</tr>\n")
+			fileHandle.write("<tr height=15>\n") 
+			fileHandle.write("<td width=" + lw1 + " bgcolor=red><div id=legflag>NR</div></td>\n")
+			fileHandle.write("<td width=" + lw2 + "><div id=\"legend\"> = NOT-READY </div></td>\n")
+			fileHandle.write("<td width=" + lw1 + " bgcolor=brown><div id=legflag>SD</div></td>\n")
+			fileHandle.write("<td width=" + lw2 + "><div id=\"legend\"> = SCHEDULED-DOWNTIME</div></td>\n")
+			fileHandle.write("</tr>\n")
+			fileHandle.write("<tr height=15>\n") 
+			fileHandle.write("<td width=" + lw1 + " bgcolor=brown><div id=legflag>SD</div></td>\n")
+			fileHandle.write("<td width=" + lw2 + "><div id=\"legend\"> = SCHEDULED-DOWNTIME</div></td>\n")
+			fileHandle.write("</tr>\n")
+			
+			fileHandle.write("<tr height=10>\n") 
+			fileHandle.write("</tr>\n")
+			
+			fileHandle.write("<tr height=15>\n") 
+			
+			mes="- INDIVIDUAL METRICS -"
+		
+			fileHandle.write("<td width=" + lw2 + " colspan=6><div id=\"legendexp2\">" + mes + "</div></td>\n")
+			fileHandle.write("</tr>\n")
+			
+			fileHandle.write("<tr height=10>\n") 
+			fileHandle.write("</tr>\n")
+			
+			fileHandle.write("<tr height=15>\n") 
+			mes="\"Scheduled Downtimes\": site maintenances" 
+			fileHandle.write("<td width=" + lw2 + " colspan=2><div id=\"legendexp\">" + mes + "</div></td>\n")
+			mes="\"Job Robot\":" 
+			fileHandle.write("<td width=" + lw2 + " colspan=2><div id=\"legendexp\">" + mes + "</div></td>\n")
+			mes="\"Good Links\":" 
+			fileHandle.write("<td width=" + lw2 + " colspan=2><div id=\"legendexp\">" + mes + "</div></td>\n")
+			fileHandle.write("</tr>\n")
+			fileHandle.write("<tr height=15>\n") 
+			fileHandle.write("<td width=" + lw1 + " bgcolor=green><div id=legflag>Up</div></td>\n")
+			fileHandle.write("<td width=" + lw2 + "><div id=\"legend\"> = Site is not declaring Scheduled-downtime </div></td>\n")
+			fileHandle.write("<td width=" + lw1 + " bgcolor=green><div id=legflag></div></td>\n")
+			if sitename.find('T1_') == 0:
+				fileHandle.write("<td width=" + lw2 + "><div id=\"legend\"> = Job success rate is &ge; 90%</div></td>\n")
+			else:
+				fileHandle.write("<td width=" + lw2 + "><div id=\"legend\"> = Job success rate is &ge; 80%</div></td>\n")
+			fileHandle.write("<td width=" + lw1 + " bgcolor=green><div id=legflag></div></td>\n")
+			fileHandle.write("<td width=" + lw2 + "><div id=\"legend\"> = at least half of links have 'good' transfers (i.e. with transfer quality > 50%)</div></td>\n")
+			fileHandle.write("</tr>\n")
+			fileHandle.write("<tr height=15>\n") 
+			fileHandle.write("<td width=" + lw1 + " bgcolor=brown><div id=legflag></div></td>\n")
+			fileHandle.write("<td width=" + lw2 + "><div id=\"legend\"> = SD=full-site; SE-SD: All CMS SE(s) in SD; CE-SD: All CMS CE(s) in SD</div></td>\n")
+			fileHandle.write("<td width=" + lw1 + " bgcolor=red><div id=legflag></div></td>\n")
+			if sitename.find('T1_') == 0:
+				fileHandle.write("<td width=" + lw2 + "><div id=\"legend\"> = Job success rate is < 90%</div></td>\n")
+			else:
+				fileHandle.write("<td width=" + lw2 + "><div id=\"legend\"> = Job success rate is < 80%</div></td>\n")
+			fileHandle.write("<td width=" + lw1 + " bgcolor=red><div id=legflag></div></td>\n")
+			fileHandle.write("<td width=" + lw2 + "><div id=\"legend\"> = Otherwise</div></td>\n")
+			fileHandle.write("</tr>\n")
+			fileHandle.write("<tr height=15>\n") 
+			fileHandle.write("<td width=" + lw1 + " bgcolor=yellow><div id=legflag>~</div></td>\n")
+			fileHandle.write("<td width=" + lw2 + "><div id=\"legend\"> = Some SE or CE services (not all) Downtime</div></td>\n")
+			fileHandle.write("<td width=" + lw1 + " bgcolor=orange><div id=legflag>-</div></td>\n")
+			fileHandle.write("<td width=" + lw2 + "><div id=\"legend\"> = Jobs submitted but not finished</div></td>\n")
+			fileHandle.write("</tr>\n")
+			fileHandle.write("<tr height=15>\n") 
+			fileHandle.write("<td width=" + lw1 + " bgcolor=white><div id=legflag></div></td>\n")
+			fileHandle.write("<td width=" + lw2 + "><div id=\"legend\"></div></td>\n")
+			fileHandle.write("<td width=" + lw1 + " bgcolor=white><div id=legflag>n/a</div></td>\n")
+			fileHandle.write("<td width=" + lw2 + "><div id=\"legend\"> = Job success rate is n/a</div></td>\n")
+			fileHandle.write("</tr>\n")
+
+			fileHandle.write("<tr height=10>\n") 
+			fileHandle.write("</tr>\n")
+
+			fileHandle.write("<tr height=15>\n") 
+			mes="\"SAM Availability\":" 
+			fileHandle.write("<td width=" + lw2 + " colspan=2><div id=\"legendexp\">" + mes + "</div></td>\n")
+			if sitename.find('T1_') == 0:
+				mes="\"Active T1 links from T0\":" 
+			else:
+				mes="\"Active T2 links to T1s\":"
+			fileHandle.write("<td width=" + lw2 + " colspan=2><div id=\"legendexp\">" + mes + "</div></td>\n")
+			fileHandle.write("</tr>\n")
+			fileHandle.write("<tr height=15>\n") 
+			fileHandle.write("<td width=" + lw1 + " bgcolor=green><div id=legflag></div></td>\n")
+			if sitename.find('T1_') == 0:
+				fileHandle.write("<td width=" + lw2 + "><div id=\"legend\"> = SAM availability is &ge; 90% </div></td>\n")
+			else:	
+				fileHandle.write("<td width=" + lw2 + "><div id=\"legend\"> = SAM availability is &ge; 80% </div></td>\n")
+			fileHandle.write("<td width=" + lw1 + " bgcolor=green><div id=legflag></div></td>\n")
+			if sitename.find('T1_') == 0:
+				fileHandle.write("<td width=" + lw2 + "><div id=\"legend\"> = Link from T0_CH_CERN is DDT-commissioned </div></td>\n")
+			else:
+				fileHandle.write("<td width=" + lw2 + "><div id=\"legend\"> = Site has &ge; 2 DDT-commissioned links to T1 sites </div></td>\n")			
+			fileHandle.write("</tr>\n")
+			fileHandle.write("<tr height=15>\n") 
+			fileHandle.write("<td width=" + lw1 + " bgcolor=red><div id=legflag></div></td>\n")
+			if sitename.find('T1_') == 0:
+				fileHandle.write("<td width=" + lw2 + "><div id=\"legend\"> = SAM availability is < 90%  <div></td>\n")
+			else:
+				fileHandle.write("<td width=" + lw2 + "><div id=\"legend\"> = SAM availability is < 80%  <div></td>\n")	
+			fileHandle.write("<td width=" + lw1 + " bgcolor=red><div id=legflag></div></td>\n")
+			fileHandle.write("<td width=" + lw2 + "><div id=\"legend\"> = Otherwise</div></td>\n")
+			fileHandle.write("</tr>\n")
+			
+			fileHandle.write("<tr height=10>\n") 
+			fileHandle.write("</tr>\n")
+
+			fileHandle.write("<tr height=15>\n") 
+			if sitename.find('T1_') == 0:
+				mes="\"Active T1 links from/to T1s\":" 
+			else:
+				mes="\"Active T2 links from T1s\":"
+			fileHandle.write("<td width=" + lw2 + " colspan=2><div id=\"legendexp\">" + mes + "</div></td>\n")
+
+			if sitename.find('T1_') == 0:
+				mes="\"Active T1 links to T2s\":" 
+			else:
+				mes=""
+			fileHandle.write("<td width=" + lw2 + " colspan=2><div id=\"legendexp\">" + mes + "</div></td>\n")
+			fileHandle.write("</tr>\n")
+			fileHandle.write("<tr height=15>\n") 
+			fileHandle.write("<td width=" + lw1 + " bgcolor=green><div id=legflag></div></td>\n")
+			if sitename.find('T1_') == 0:
+				fileHandle.write("<td width=" + lw2 + "><div id=\"legend\"> = Site has &ge; 4 DDT-commissioned links from and to, respectively, other T1 sites </div></td>\n")
+			else:
+				fileHandle.write("<td width=" + lw2 + "><div id=\"legend\"> = Site has &ge; 4 DDT-commissioned links from T1 sites </div></td>\n")	
+	
+			if sitename.find('T1_') == 0:
+				fileHandle.write("<td width=" + lw1 + " bgcolor=green><div id=legflag></div></td>\n")
+				fileHandle.write("<td width=" + lw2 + "><div id=\"legend\"> = Site has &ge; 20 DDT-commissioned links to T2 sites </div></td>\n")
+			else:
+				fileHandle.write("<td width=" + lw1 + " bgcolor=white><div id=legflag></div></td>\n")
+				fileHandle.write("<td width=" + lw2 + "><div id=\"legend\"></div></td>\n")
+			fileHandle.write("</tr>\n")
+			fileHandle.write("<tr height=15>\n") 
+			fileHandle.write("<td width=" + lw1 + " bgcolor=red><div id=legflag></div></td>\n")
+			fileHandle.write("<td width=" + lw2 + "><div id=\"legend\"> = Otherwise <div></td>\n")
+			if sitename.find('T1_') == 0:
+				fileHandle.write("<td width=" + lw1 + " bgcolor=red><div id=legflag></div></td>\n")
+				fileHandle.write("<td width=" + lw2 + "><div id=\"legend\"> = Otherwise </div></td>\n")
+			else:
+				fileHandle.write("<td width=" + lw1 + " bgcolor=white><div id=legflag></div></td>\n")
+				fileHandle.write("<td width=" + lw2 + "><div id=\"legend\"></div></td>\n")
+
+			fileHandle.write("</tr>\n")
+			
+			fileHandle.write("</table>\n")
+			fileHandle.write("<p>\n")
+
+			fileHandle.write("<p><br>\n")
+
+	fileHandle.write("</center></html></body>")
+	fileHandle.close()
+
+	sys.stdout.write("\n")
+	sys.stdout.flush()
+
+def ProduceSiteReadinessStatistics(SiteCommMatrix, SiteCommGlobalMatrix, SiteReadinessStats2):
+
+	# 
+	# Evaluate statistics for Site Readiness  (last week, last month)
+	# 
+
+	sitesit = SiteCommGlobalMatrix.keys()
+	sitesit.sort()
+
+	prog = progressBar(0, 100, 77)
+	iprog=0
+
+	for dayspan in 30, 15, 7:
+
+		iprog+=100./3.
+		prog.updateAmount(iprog)
+		sys.stdout.write(str(prog)+'\r')
+		sys.stdout.flush()
+
+		for sitename in sitesit:
+
+			if not FilterSitesInTablesPlots(sitename, SiteCommMatrix, SiteCommGlobalMatrix) : continue
+			
+			countR=0; countW=0; countNR=0; countSD=0; countNA=0
+
+			infostats2 = {}
+
+			if not SiteReadinessStats2.has_key(sitename):
+				SiteReadinessStats2[sitename]={}		
+
+			for i in range(0,dayspan):
+
+				d=datetime.timedelta(i)
+				datestamp=yesterday-d
+
+				state=SiteCommGlobalMatrix[sitename][datestamp.strftime("%Y-%m-%d")]
+				
 				if state == "R": countR+=1
 				if state == "W": countW+=1
 				if state == "NR": countNR+=1
 				if state == "SD": countSD+=1
-		       	stats=str((int)(100.*countR/(days-dayssc))) + "%(R) - " + str((int)(100.*countW/(days-dayssc))) + "%(W) - " + str((int)(100.*(countW+countR)/(days-dayssc))) + "%(R+W) - " + str((int)(100.*countNR/(days-dayssc))) + "%(NR) - " + str((int)(100.*countSD/(days-dayssc))) + "%(SD)"
+				if state.find("n/a") == 0: countNA+=1
+				
+			if not SiteReadinessStats2[sitename].has_key(dayspan):
+				SiteReadinessStats2[sitename][dayspan]={}	
 
-			infostats2['R_perc']= (int)(round(100.*countR/(daysshow-dayssc)))
-			infostats2['W_perc']= (int)(round(100.*countW/(daysshow-dayssc)))
-			infostats2['R+W_perc']= (int)(round(100.*(countR+countW)/(daysshow-dayssc)))
-			infostats2['NR_perc']= (int)(round(100.*countNR/(daysshow-dayssc)))
-			infostats2['SD_perc']= (int)(round(100.*countSD/(daysshow-dayssc)))
+			infostats2['R_perc']= (int)(round(100.*countR/dayspan))
+			infostats2['W_perc']= (int)(round(100.*countW/dayspan))
+			infostats2['R+W_perc']= (int)(round(100.*(countR+countW)/dayspan))
+			infostats2['NR_perc']= (int)(round(100.*countNR/dayspan))
+			infostats2['SD_perc']= (int)(round(100.*countSD/dayspan))
 			infostats2['R']= countR
 			infostats2['W']= countW
 			infostats2['R+W']= countW+countR
 			infostats2['NR']= countNR
 			infostats2['SD']= countSD
-			infostats2['days']=days-dayssc 
+			infostats2['days']=dayspan
 
-			SiteReadinessStats[sitename]=infostats2
-
-		       	fileHandle.write("<td width=\"" + percstatsw4 + "\"><div id=\"stats\"></div></td>\n")
-		       	fileHandle.write("<td width=\"" + percstatsw2 + "\" bgcolor=" + colors['R'] + "><div id=\"stats\">" + str((int)(round(100.*countR/(daysshow-dayssc)))) + "%</div></td>\n")
-		       	fileHandle.write("<td width=\"" + percstatsw3 + "\"><div id=\"stats\"></div></td>\n")
-		       	fileHandle.write("<td width=\"" + percstatsw2 + "\" bgcolor=" + colors['W'] + "><div id=\"stats\">" + str((int)(round(100.*countW/(daysshow-dayssc)))) + "%</div></td>\n")
-		       	fileHandle.write("<td width=\"" + percstatsw3 + "\"><div id=\"stats\"></div></td>\n")
-		       	fileHandle.write("<td width=\"" + percstatsw2 + "\" bgcolor=" + colors['NR'] + "><div id=\"stats\">" + str((int)(round(100.*countNR/(daysshow-dayssc)))) + "%</div></td>\n")
-		       	fileHandle.write("<td width=\"" + percstatsw3 + "\"><div id=\"stats\"></div></td>\n")
-		       	fileHandle.write("<td width=\"" + percstatsw2 + "\" bgcolor=" + colors['SD'] + "><div id=\"stats\">" + str((int)(round(100.*countSD/(daysshow-dayssc)))) + "%</div></td>\n")
-			fileHandle.write("</tr>\n")
-	
-	fileHandle.write("<tr height=4><td width=" + metricw + "></td>\n")
-	fileHandle.write("<td width=" + daysw + " colspan=" + colspans1 + " bgcolor=black></td></tr>\n")
-	
-	fileHandle.write("<tr><td width=" + metricw + "></td>\n")
-	fileHandle.write("<td width=" + scdaysw1 + " colspan=" + colspans3 + "></td>\n")
-
-	igdays=0
-	for datesgm in dates:
-
-		igdays+=1
-#cjf		if datesgm == todaystamp: continue # do not print current day
-		if (days - igdays)>(daysshow-dayssc): continue
-
-		if not SiteCommGlobalMatrix[sitename].has_key(datesgm):
-			continue
-		datesgm1 = datesgm[8:10]
-		c = datetime.datetime(*time.strptime(datesgm,"%Y-%m-%d")[0:5])
-		if c.weekday() == 5 or c.weekday() == 6: # id. weekends
-			fileHandle.write("<td width=" + dayw + " bgcolor=grey> <div id=\"date\">" + datesgm1 + "</div></td>\n")
-		else:
-			fileHandle.write("<td width=" + dayw + " bgcolor=lightgrey> <div id=\"date\">" + datesgm1 + "</div></td>\n")
-	fileHandle.write("</tr>\n")
-
-	fileHandle.write("<tr height=4><td width=" + metricw + "></td>\n")
-	fileHandle.write("<td width=" + scdaysw1 + " colspan=" + colspans3 + "></td>\n")
-	fileHandle.write("<td width=" + scdaysw + " colspan=" + colspans5 + " bgcolor=black></td></tr>\n")
-
-	fileHandle.write("<tr><td width=" + metricw + "></td>\n")
-	fileHandle.write("<td width=" + scdaysw1 + " colspan=" + colspans3 + "></td>\n")
-
-	lastmonth=""
-	
-	igdays=0
-	for datesgm in dates:
-
-		igdays+=1
-#cjf		if datesgm == todaystamp: continue # do not print current day
-		if (days - igdays)>(daysshow-dayssc): continue
-
-		if not SiteCommGlobalMatrix[sitename].has_key(datesgm):
-			continue
-		c = datetime.datetime(*time.strptime(datesgm,"%Y-%m-%d")[0:5])
-		month = c.strftime("%b")
-		if month != lastmonth:
-			fileHandle.write("<td width=" + dayw + " bgcolor=black> <div id=\"month\">" + month + "</div></td>\n")
-			lastmonth=month
-		else:
-			fileHandle.write("<td width=" + dayw + "></td>\n")
-	fileHandle.write("</tr>\n")
-
-	fileHandle.write("</table>\n")
-
-
-        fileHandle.write("<div id=\"leg1\">" + reptime + "</div>\n")
-
-	fileHandle.write("<br>\n")
-	fileHandle.write("<table border=\"0\" cellspacing=\"0\" class=leg>\n")
-
-	if i.find("T2") == 0:
-		fileHandle.write("<tr height=15>\n") 
-		fileHandle.write("<td width=" + lw1 + " bgcolor=grey><div id=legflag>--</div></td>\n")
-		fileHandle.write("<td width=" + lw2 + "><div id=\"legend\"> = Errors on weekends are ignored on Site Readiness computation for Tier-2 sites [<a href=\"https://twiki.cern.ch/twiki/bin/view/CMS/SiteCommRules\">+info</a>]</div></td>\n")
-		fileHandle.write("</tr>\n")
-		fileHandle.write("<tr height=10>\n") 
-		fileHandle.write("</tr>\n")
-
-	fileHandle.write("<tr height=15>\n") 
-	mes="\"Site Readiness Status\" as defined in <a href=\"https://twiki.cern.ch/twiki/bin/view/CMS/SiteCommRules\">Site Commissioning Twiki</a>:" 
-	fileHandle.write("<td width=" + lw2 + " colspan=2><div id=\"legendexp\">" + mes + "</div></td>\n")
-	fileHandle.write("</tr>\n")
-	fileHandle.write("<tr height=15>\n") 
-	fileHandle.write("<td width=" + lw1 + " bgcolor=green><div id=legflag>R</div></td>\n")
-	fileHandle.write("<td width=" + lw2 + "><div id=\"legend\"> = READY </div></td>\n")
-	fileHandle.write("</tr>\n")
-	fileHandle.write("<tr height=15>\n") 
-	fileHandle.write("<td width=" + lw1 + " bgcolor=yellow><div id=legflag>W</div></td>\n")
-	fileHandle.write("<td width=" + lw2 + "><div id=\"legend\"> = WARNING </div></td>\n")
-	fileHandle.write("</tr>\n")
-	fileHandle.write("<tr height=15>\n") 
-	fileHandle.write("<td width=" + lw1 + " bgcolor=red><div id=legflag>NR</div></td>\n")
-	fileHandle.write("<td width=" + lw2 + "><div id=\"legend\"> = NOT-READY </div></td>\n")
-	fileHandle.write("</tr>\n")
-	fileHandle.write("<tr height=15>\n") 
-	fileHandle.write("<td width=" + lw1 + " bgcolor=brown><div id=legflag>SD</div></td>\n")
-	fileHandle.write("<td width=" + lw2 + "><div id=\"legend\"> = SCHEDULED-DOWNTIME</div></td>\n")
-	fileHandle.write("</tr>\n")
-
-	fileHandle.write("<tr height=10>\n") 
-	fileHandle.write("</tr>\n")
-
-	fileHandle.write("</table>\n")
-	fileHandle.write("<p><br>\n")
-
-fileHandle.write("</center></html></body>")
-fileHandle.close()
-
-
-# 
-# Evaluate statistics for Site Readiness  (last week, last month)
-# 
-
-sitesit = SiteCommGlobalMatrix.keys()
-sitesit.sort()
-
-SiteReadinessStats2={}
-
-for dayspan in 30, 15, 7:
-
-	for sitename in sitesit:
-
-		if not FilterSitesInTablesPlots(sitename, SiteCommGlobalMatrix) : continue
-
-		daycoun=0
-		daycoun2=0
-
-		dates = SiteCommGlobalMatrix[sitename].keys()
-		dates.sort()
-
-		countR=0
-		countW=0
-		countNR=0
-		countSD=0
-
-		infostats2 = {}
-
-		if not SiteReadinessStats2.has_key(sitename):
-			SiteReadinessStats2[sitename]={}		
-
-		for datesgm in dates:
-	
-			daycoun+=1
-#cjf			if datesgm == todaystamp: continue # do not print current day
-			if (days-dayssc-daycoun)>dayspan: continue
-			daycoun2+=1
-			state=SiteCommGlobalMatrix[sitename][datesgm]
-			if state == "R": countR+=1
-			if state == "W": countW+=1
-			if state == "NR": countNR+=1
-			if state == "SD": countSD+=1
-
-		if not SiteReadinessStats2[sitename].has_key(dayspan):
-			SiteReadinessStats2[sitename][dayspan]={}	
-
-		infostats2['R_perc']= (int)(round(100.*countR/daycoun2))
-		infostats2['W_perc']= (int)(round(100.*countW/daycoun2))
-		infostats2['R+W_perc']= (int)(round(100.*(countR+countW)/daycoun2))
-		infostats2['NR_perc']= (int)(round(100.*countNR/daycoun2))
-		infostats2['SD_perc']= (int)(round(100.*countSD/daycoun2))
-		infostats2['R']= countR
-		infostats2['W']= countW
-		infostats2['R+W']= countW+countR
-		infostats2['NR']= countNR
-		infostats2['SD']= countSD
-		infostats2['days']=daycoun2
-		if (daycoun2-countSD)!=0:
-			infostats2['Rcorr_perc']= (int)(round(100.*countR/(daycoun2-countSD)))
-			infostats2['Wcorr_perc']= (int)(round(100.*countW/(daycoun2-countSD)))
-			infostats2['R+Wcorr_perc']= (int)(round(100.*(countR+countW)/(daycoun2-countSD)))
-			infostats2['NRcorr_perc']= (int)(round(100.*countNR/(daycoun2-countSD)))
-		else:
-			infostats2['Rcorr_perc']= 0
-			infostats2['Wcorr_perc']= 0
-			infostats2['R+Wcorr_perc']= 0
-			infostats2['NRcorr_perc']= 100
+			if (dayspan-countSD-countNA)!=0:
+				infostats2['Rcorr_perc']= (int)(round(100.*countR/(dayspan-countSD-countNA)))
+				infostats2['Wcorr_perc']= (int)(round(100.*countW/(dayspan-countSD-countNA)))
+				infostats2['R+Wcorr_perc']= (int)(round(100.*(countR+countW)/(dayspan-countSD-countNA)))
+				infostats2['NRcorr_perc']= (int)(round(100.*countNR/(dayspan-countSD-countNA)))
+			else:
+				infostats2['Rcorr_perc']= 0
+				infostats2['Wcorr_perc']= 0
+				infostats2['R+Wcorr_perc']= 0
+				infostats2['NRcorr_perc']= 100
 			
-		SiteReadinessStats2[sitename][dayspan]=infostats2
+			SiteReadinessStats2[sitename][dayspan]=infostats2
 
-	print dayspan, daycoun, daycoun2
+	sys.stdout.write("\n")
+	sys.stdout.flush()
 
 
+def ProduceSiteReadinessSSBFiles(SiteCommMatrix, SiteCommGlobalMatrix, SiteReadinessStats2, path_out):
+	
+	html_out_plots = "http://lhcweb.pic.es/cms/SiteReadinessPlots_new/"
+	
+	prog = progressBar(0, 100, 77)
+	iprog=0
 
-pprint.pprint(SiteReadinessStats2)
+	for dayspan in 30, 15, 7:
 
-for dayspan in 30, 15, 7:
+		iprog+=100./3.
+		prog.updateAmount(iprog)
+		sys.stdout.write(str(prog)+'\r')
+		sys.stdout.flush()
 
-	fileSSBRanking= path_out + '/SiteReadinessRanking_SSBfeed_last' + str(dayspan) + 'days.txt' 
-	fileHandle = open ( fileSSBRanking , 'w' )    
+		fileSSBRanking= path_out + '/SiteReadinessRanking_SSBfeed_last' + str(dayspan) + 'days.txt' 
+		fileHandle = open ( fileSSBRanking , 'w' )
 
-	for i in sitefilter:
+		sitesit=SiteCommGlobalMatrix.keys()
+		sitesit.sort()
+		
+		for sitename in sitesit:
+
+			if not FilterSitesInTablesPlots(sitename, SiteCommMatrix, SiteCommGlobalMatrix) : continue
+
+			pl = "R+Wcorr_perc"
+			color="red"
+			if sitename.find("T1") == 0 and SiteReadinessStats2[sitename][dayspan][pl]>90:
+				color="green"
+			if sitename.find("T2") == 0 and SiteReadinessStats2[sitename][dayspan][pl]>80:
+				color="green"
+			if SiteReadinessStats2[sitename][dayspan][pl] != "n/a":
+				filenameSSB = html_out_plots + sitename.split("_")[0] + "_" + pl + "_last" + str(dayspan) + "days_" + timestamphtml + ".png"
+				tofile=yesterdaystampfileSSB + '\t' + sitename + '\t' + str(SiteReadinessStats2[sitename][dayspan][pl]) + '\t' + color + '\t' + filenameSSB + "\n"
+				fileHandle.write(tofile)
+						
+	fileHandle.close()
+
+	sys.stdout.write("\n")
+	sys.stdout.flush()
+
+def ProduceSiteReadinessRankingPlots(SiteCommMatrix, SiteCommGlobalMatrix, SiteReadinessStats2, path_out_plots):
+	
+	prog = progressBar(0, 100, 77)
+	iprog=0
+
+	sitesit=SiteCommGlobalMatrix.keys()
+	sitesit.sort()
+		
+	for dayspan in 30, 15, 7:
+
+		iprog+=100./3.
+		prog.updateAmount(iprog)
+		sys.stdout.write(str(prog)+'\r')
+		sys.stdout.flush()
 
 		for pl in 'SD_perc', 'R+Wcorr_perc':
 
-			dataR ={}
-			filename = path_out_plots + i + pl + "_last" + str(dayspan) + "days_" + timestamphtml + ".png"				
+			for i in "T1","T2":
+			
+				dataR ={}
 	
-			for sitename in sitesit:
+				filename = path_out_plots + i + "_" + pl + "_last" + str(dayspan) + "days_" + timestamphtml + ".png"				
 
-				if not FilterSitesInTablesPlots(sitename, SiteCommGlobalMatrix) : continue
+				for sitename in sitesit:
 
-#				if sitename.find("T2_TR_ULAKBIM") == 0 : continue
-#				if sitename.find("T2_RU") == 0 or sitename.find("T2_UA") == 0 or sitename.find("T2_TR") == 0 :
-				if sitename.find(i) == 0:
+					if not sitename.find(i+"_") == 0: continue
+					if not FilterSitesInTablesPlots(sitename, SiteCommMatrix, SiteCommGlobalMatrix) : continue
+					if pl == 'SD_perc' and SiteReadinessStats2[sitename][dayspan][pl]==0.: continue # Do not show Up sites on SD plots.
 					
-					if not dataR.has_key(sitename):
-						if pl == 'SD_perc' and SiteReadinessStats2[sitename][dayspan][pl]==0.: continue # Do not show Up sites on SD plots.
-						if pl != 'SD_perc' and SiteReadinessStats2[sitename][dayspan]['SD_perc']>=75: # Do not show sites with more than 75% downtime on Readiness ranking
-							filenameSSB = html_out_plots + i + "SD_perc" + "_last" + str(dayspan) + "days_" + timestamphtml + ".png"				
-							tofile=yesterdaystampfileSSB + '\t' + sitename + '\t' + "n/a" + '\t' + "white" + '\t' + filenameSSB + "\n"
-							fileHandle.write(tofile)
-							continue
+					dataR[sitename+" ("+str(SiteReadinessStats2[sitename][dayspan]["SD_perc"])+"%)"] = SiteReadinessStats2[sitename][dayspan][pl]/100.
 
-						dataR[sitename] = SiteReadinessStats2[sitename][dayspan][pl]/100.
+				fileR = open(expand_string(filename,os.environ),'w')
 
-						if pl == "R+Wcorr_perc":
-							filenameSSB = html_out_plots + i + pl + "_last" + str(dayspan) + "days_" + timestamphtml + ".png"
-							color="red"
-							if sitename.find("T1") == 0 and SiteReadinessStats2[sitename][dayspan][pl]>90:
-								color="green"
-							if sitename.find("T2") == 0 and SiteReadinessStats2[sitename][dayspan][pl]>80:
-								color="green"
-							if SiteReadinessStats2[sitename][dayspan][pl] == "n/a":
-								color="white"
-							tofile=yesterdaystampfileSSB + '\t' + sitename + '\t' + str(SiteReadinessStats2[sitename][dayspan][pl]) + '\t' + color + '\t' + filenameSSB + "\n"
-							fileHandle.write(tofile)
-						
-
-					fileR = open(expand_string(filename,os.environ),'w')
-
-					if pl == 'R+Wcorr_perc':
-						metadataR = {'title':'Quality Ranking for %s Site Readiness last %i days' % (i.split("_")[0],int(dayspan)), 'fixed-height':False }
-					if pl == 'SD_perc':
-						metadataR = {'title':'Quality Ranking for %s Scheduled Downtimes last %i days' % (i.split("_")[0],int(dayspan)), 'fixed-height':True}
+				if pl == 'R+Wcorr_perc':
+					metadataR = {'title':'%s Site Readiness Quality Rank last %i days (+SD %%)' % (i,int(dayspan)), 'fixed-height':False }
+			       	if pl == 'SD_perc':
+					metadataR = {'title':'Quality Ranking for %s Scheduled Downtimes last %i days' % (i,int(dayspan)), 'fixed-height':True}
 				
-			if len(dataR) != 0:
-				print dayspan, i, dataR
-				QBG = QualityBarGraph()
-				print "1"
-				QBG(dataR, fileR, metadataR)
-				print "2"
+				if len(dataR) != 0:
+					QBG = QualityBarGraph()
+					QBG(dataR, fileR, metadataR)
 				fileR.close()
+
+	sys.stdout.write("\n")
+	sys.stdout.flush()
+
+
+def PrintDailyMetricsStats(SiteCommMatrix, SiteCommMatrixT1T2, SiteCommGlobalMatrix):
+
+	sites = SiteCommMatrixT1T2.keys()
+	sites.sort()
+
+	# print stats
+	for sitename in sites:
+
+		dates = SiteCommMatrixT1T2[sitename].keys()
+		dates.sort()
+		continue
+
+	for i in "T1","T2":
+
+		for dat in dates:
+		
+			countO=0; countE=0; countSD=0; countna=0
+		
+			for sitename in sites:
+
+				if not sitename.find(i+"_") == 0: continue
+				if not FilterSitesInTablesPlots(sitename, SiteCommMatrix, SiteCommGlobalMatrix) : continue
+				
+				state=SiteCommMatrixT1T2[sitename][dat]
+				
+				if state == "O":
+					countO+=1
+				if state == "E":
+					countE+=1
+				if state.find("n/a") == 0:
+					countna+=1
+				if state == "SD":
+					countSD+=1
+
+			if dat == todaystamp: continue
+			print "Daily Metric ", i, dat, countE, countO, countna , countSD, countE+countO+countSD+countna								
+
+
+def PrintSiteReadinessMetricsStats(SiteCommMatrix, SiteCommGlobalMatrix):
 	
-	fileHandle.close()
+	sites = SiteCommGlobalMatrix.keys()
+	sites.sort()
+
+	# print stats
+	for sitename in sites:
+
+		dates = SiteCommGlobalMatrix[sitename].keys()
+		dates.sort()
+		continue
+
+	for i in "T1","T2":
+
+		for dat in dates:
+		
+			countR=0; countW=0; countNR=0; countSD=0; countna=0
+		
+			for sitename in sites:
+
+				if not sitename.find(i+"_") == 0: continue
+				if not FilterSitesInTablesPlots(sitename, SiteCommMatrix, SiteCommGlobalMatrix) : continue
+				
+				state=SiteCommGlobalMatrix[sitename][dat]
+				
+				if state == "R":
+					countR+=1
+				if state == "W":
+					countW+=1
+				if state == "NR":
+					countNR+=1
+				if state.find("n/a") == 0:
+					countna+=1
+				if state == "SD":
+					countSD+=1
+
+			if dat == todaystamp: continue
+			print "Site Readiness Metric ", i, dat, countR, countNR, countna , countW, countSD, countR+countNR+countW+countna+countSD
+
+
+def PrintDailyMetrics(SiteCommMatrix, SiteCommGlobalMatrix, metorder):
+	
+	indmetrics = metorder.keys()
+	indmetrics.sort()
+	
+	sites = SiteCommMatrix.keys()
+	sites.sort()
+
+	# print stats
+	for sitename in sites:
+
+		dates = SiteCommMatrixT1T2[sitename].keys()
+		dates.sort()
+
+		for dat in dates:
+
+			if not FilterSitesInTablesPlots(sitename, SiteCommMatrix, SiteCommGlobalMatrix) : continue
+				
+			for metnumber in indmetrics:
+				
+				met=metorder[metnumber]
+			
+				if not SiteCommMatrix[sitename][dat].has_key(met) or met == 'IsSiteInSiteDB': continue # ignore 
+
+				if SiteCommMatrix[sitename][dat][met].has_key('URL'):
+					url=SiteCommMatrix[sitename][dat][met]['URL']
+				else:
+					url="-"
+				print dat, sitename, met, SiteCommMatrix[sitename][dat][met]['Status'], SiteCommMatrix[sitename][dat][met]['Color'],url
+				
+
+########################################################
+# Reading data from SSB and perform all actions
+########################################################
+
+sites={}
+SiteCommMatrix={}
+SiteCommGlobalMatrix = {}
+SiteCommMatrixT1T2 = {}
+SiteCommStatistics = {}
+
+criteriasT1 = ( 'JobRobot', 'SAMAvailability', 'T1linksfromT0', 'T1linksfromtoT1s', 'T1linkstoT2s', 'GoodT1linksfromT0', 'GoodT1linksfromT1s', 'GoodT1linksfromT2s', 'GoodT1linkstoT1s', 'GoodT1linkstoT2s' )
+criteriasT2 = ( 'JobRobot', 'SAMAvailability', 'T2linksfromT1s', 'T2linkstoT1s', 'GoodT2linksfromT1s', 'GoodT2linkstoT1s')
+
+# parse SSB XML data from all relevants columns
+
+print "\nObtaining XML info from SSB 'commission' view\n"
+SSBXMLParser(sites, ColumnMatrix)
+
+print "\nExtracting Daily Metrics for CMS sites\n"
+#GetDailyMetricStatusOrig(sites, SiteCommMatrix, MatrixStatusColors)
+GetDailyMetricStatus(sites, SiteCommMatrix, MatrixStatusColors)
+
+print "\nExtracting Scheduled Downtime Daily Metrics for CMS sites\n"
+GetDailyScheduledDowntimeStatus(sites, SiteCommMatrix, MatrixStatusColors)
+
+print "\nCorrecting Daily Metrics from external ascii file\n"
+CorrectDailyMetricsFromASCIIFile(sites, SiteCommMatrix, DailyMetricsCorrected)
+
+print "\nEvaluating Daily Status\n"
+EvaluateDailyStatus(SiteCommMatrix, SiteCommMatrixT1T2, criterias)
+
+print "\nEvaluating Site Readiness\n"
+EvaluateSiteReadiness(SiteCommMatrixT1T2, SiteCommGlobalMatrix)
+
+print "\nProducing Site Readiness SSB input file\n"
+ProduceSiteReadinessSSBFile(SiteCommGlobalMatrix, fileSSB)
+
+print "\nProducing Site Readiness HTML view\n"
+ProduceSiteReadinessHTMLViews(SiteCommGlobalMatrix, metorder, metlegends, colors, path_out)
+
+print "\nProducing Site Readiness Statistics\n"
+ProduceSiteReadinessStatistics(SiteCommMatrix, SiteCommGlobalMatrix, SiteCommStatistics)
+
+print "\nProducing Site Readiness SSB files to commission view\n"
+ProduceSiteReadinessSSBFiles(SiteCommMatrix, SiteCommGlobalMatrix, SiteCommStatistics, path_out)
+
+print "\nProducing Site Readiness Ranking plots\n"
+ProduceSiteReadinessRankingPlots(SiteCommMatrix, SiteCommGlobalMatrix, SiteCommStatistics, path_out_plots)
+
+print "\nPrinting Daily Metrics Statistics\n"
+PrintDailyMetricsStats(SiteCommMatrix, SiteCommMatrixT1T2, SiteCommGlobalMatrix)
+
+print "\nPrinting Site Readiness Metrics Statistics\n"
+PrintSiteReadinessMetricsStats(SiteCommMatrix, SiteCommGlobalMatrix)
+
+#PrintDailyMetrics(SiteCommMatrix, SiteCommGlobalMatrix, metorder)
+
+sys.exit(0)
 
 fileHandle = open ( "./tickets_test_2.txt" , 'w' )    
 
 sites2=SiteCommMatrix.keys()
 sites2.sort()
-
+SiteCommGlobalMatrix
 for sitename in sites2:
 
 	i = 0
 
 	if not SiteReadinessStats2.has_key(sitename): continue
 	
-	if FilterSitesInTablesPlots(sitename, SiteCommGlobalMatrix) : 
+	if FilterSitesInTablesPlots(sitename, SiteCommMatrix,SiteCommGlobalMatrix) : 
 	
 		items = SiteCommMatrix[sitename].keys()
 		items.sort()
@@ -2139,33 +1802,6 @@ for sitename in sites2:
 
 fileHandle.close()
 
-# print stats
-for i in sitefilter:
-
-	for dat in dates:
-		
-		countO=0
-		countE=0
-		countSD=0
-		countna=0
-		
-		for sitename in sitesit:
-			
-			if not FilterSitesInTablesPlots(sitename, SiteCommGlobalMatrix) : continue
-			if sitename.find(i) == 0:
-				
-				state=SiteCommMatrixT1T2[sitename][dat]
-				
-				if state == "O":
-					countO+=1
-				if state == "E":
-					countE+=1
-				if state == "n/a":
-					countna+=1
-				if state == "SD":
-					countSD+=1
-								
-		print "Daily Metric ", i, dat, countE, countO, countna , countSD, countE+countO+countSD+countna								
 								
 dates = SiteCommGlobalMatrix[sitename].keys()
 dates.sort()
@@ -2182,7 +1818,7 @@ for i in sitefilter:
 		
 		for sitename in sitesit:
 
-			if not FilterSitesInTablesPlots(sitename, SiteCommGlobalMatrix) : continue
+			if not FilterSitesInTablesPlots(sitename, SiteCommMatrix,SiteCommGlobalMatrix) : continue
 			if sitename.find(i) == 0:
 
 				state=SiteCommGlobalMatrix[sitename][dat]
@@ -2201,8 +1837,6 @@ for i in sitefilter:
 				if i.find("T1") == 0:
 					print sitename,state,countR, countNR, countna , countW, countSD, countR+countNR+countW+countna+countSD
  		print "SiteComm Metric ", i, dat, countR, countNR, countna , countW, countSD, countR+countNR+countW+countna+countSD
-
-
 
 
 sys.exit(0)
