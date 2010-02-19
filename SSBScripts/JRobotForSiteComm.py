@@ -143,6 +143,8 @@ def build_info(sitelist):
         if status=="err": color="red"
         if status=="warn":color="green"
         output.append(("%s\t%s\t%s\t%s\t%s") % (timestamp, site, value, color, link))
+        if site == 'T1_CH_CERN':
+            output.append(("%s\t%s\t%s\t%s\t%s") % (timestamp, 'T0_CH_CERN', value, color, link))
         sites.remove(site)
 
 #    for site in sites:

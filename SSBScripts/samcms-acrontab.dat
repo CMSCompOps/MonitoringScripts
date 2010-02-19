@@ -29,20 +29,19 @@
 40 10,22 * * * vocms07.cern.ch /bin/cp -f /data/JobRobot/work/asciaba/.px /data/JobRobot/work/SiteComm/PRN/.PRX/samcms-as; /bin/chmod 0600 /data/JobRobot/work/SiteComm/PRN/.PRX/samcms-as
 #
 # redelegate proxy to WMProxy
-13 12 * * * vocms07.cern.ch cd /data/JobRobot/work/SiteComm; source SETUP.sh; source GetSamcmsProxy.sh; /data/JobRobot/work/SiteComm/delegation.pl
+13 12 * * * vocms07.cern.ch cd /data/JobRobot/work/SiteComm; source SETUP.sh; source GetSamcmsProxy.sh; /data/JobRobot/work/SiteComm/delegation.pl > /dev/null
 #
 #============== SITE STATUS BOARD STUFF ==========================
 #== 17 * * * * lxplus /afs/cern.ch/user/b/belforte/SiteMonitor/JRobotForSiteMonitor.sh > /afs/cern.ch/user/b/belforte/SiteMonitor/JRobotForSiteMonitor.log
 10 8,17 * * * lxplus $HOME/COMP/SITECOMM/SSBScripts//EnabledLinksForSiteMonitor.sh > $HOME/COMP/SITECOMM/SSBScripts/EnabledLinksForSiteMonitor.log
 #== 17 * * * * lxplus /afs/cern.ch/user/b/belforte/SiteMonitor/SiteSizeForSiteMonitor.sh > /afs/cern.ch/user/b/belforte/SiteMonitor/SiteSizeForSiteMonitor.log
 18,48 * * * * lxplus $HOME/COMP/SITECOMM/SSBScripts/JRobotForSiteComm.py.old > /afs/cern.ch/cms/LCG/SiteComm/JobRobot.txt
-55 1 * * * lxplus $HOME/COMP/SITECOMM/SSBScripts/JRobotForSiteComm.sh
-55 1 * * * lxplus $HOME/COMP/SITECOMM/SSBScripts/site_avail.pl
+55 0 * * * lxplus $HOME/COMP/SITECOMM/SSBScripts/JRobotForSiteComm.sh
+55 0 * * * lxplus $HOME/COMP/SITECOMM/SSBScripts/site_avail.pl
 5 0 * * * lxplus $HOME/COMP/SITECOMM/SSBScripts/pledged.pl > /afs/cern.ch/cms/LCG/SiteComm/pledged_slots.txt
 #
 #============== THIS IS FOR SAM TESTS ============================
 30 * * * * lxplus /afs/cern.ch/user/s/samcms/mybin/list-tags.sh > /dev/null
-0 * * * * vocms36 source /data/sam2/ui.sh; $HOME/same-cron/same-cron-srm.sh
-15 * * * * vocms36 source /data/sam2/ui.sh; $HOME/same-cron/same-cron-ce-prod.sh
-20 * * * * vocms36 source /data/sam2/ui.sh; $HOME/same-cron/same-cron-user.sh
-30 * * * * vocms36 source /data/sam2/ui.sh; $HOME/same-cron/same-cron-ce.sh
+0 * * * * vocms07 /data/sam2/same-cron/same-cron-srm.sh
+15 * * * * vocms07 /data/sam2/same-cron/same-cron-ce-prod.sh
+30 * * * * vocms07 /data/sam2/same-cron/same-cron-ce.sh
