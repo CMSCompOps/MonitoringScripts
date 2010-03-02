@@ -54,28 +54,33 @@ $url_prod2 = &datasvc_url('prod', $start, $end);
 $url_debug2 = &datasvc_url('debug', $start, $end);
 
 # Parsing and combination production+debug
-($dbgtime, $ref1) = &get_quality($url_debug);
-%quality_debug = %$ref1;
-($prdtime, $ref2) = &get_quality($url_prod);
-%quality_prod  = %$ref2;
-%quality       = &quality_combine(\%quality_debug, \%quality_prod);
-foreach ( keys %quality ) {
-    $lup{$_} = $hup{$_} = $ldown{$_} = $hdown{$_} = $outcross{$_} = $incross{$_} = 0;
-    $t_lup{$_} = $t_hup{$_} = $t_ldown{$_} = $t_hdown{$_} = $t_outcross{$_} = $t_incross{$_} = 0;
-}
+#($dbgtime, $ref1) = &get_quality($url_debug);
+#%quality_debug = %$ref1;
+#($prdtime, $ref2) = &get_quality($url_prod);
+#%quality_prod  = %$ref2;
+#%quality       = &quality_combine(\%quality_debug, \%quality_prod);
+#foreach ( keys %quality ) {
+#    $lup{$_} = $hup{$_} = $ldown{$_} = $hdown{$_} = $outcross{$_} = $incross{$_} = 0;
+#    $t_lup{$_} = $t_hup{$_} = $t_ldown{$_} = $t_hdown{$_} = $t_outcross{$_} = $t_incross{$_} = 0;
+#}
 
 %quality_debug2 = &get_quality2($url_debug2);
 %quality_prod2 = &get_quality2($url_prod2);
 %quality2 = &quality_combine2(\%quality_debug2, \%quality_prod2);
 
+foreach ( keys %quality2 ) {
+    $lup{$_} = $hup{$_} = $ldown{$_} = $hdown{$_} = $outcross{$_} = $incross{$_} = 0;
+    $t_lup{$_} = $t_hup{$_} = $t_ldown{$_} = $t_hdown{$_} = $t_outcross{$_} = $t_incross{$_} = 0;
+}
+
 # Calculate number of good links per site
 $totlinks = 0;
 $goodlinks = 0;
-foreach my $site ( keys %quality ) {
+foreach my $site ( keys %quality2 ) {
     my $tier = substr($site, 1, 1);
-    foreach my $dest ( keys %{$quality{$site}} ) {
+    foreach my $dest ( keys %{$quality2{$site}} ) {
 	my $dtier = substr($dest, 1, 1);
-	my $q = $quality{$site}{$dest}[0];
+#	my $q = $quality{$site}{$dest}[0];
 	my $q2;
 	if ($quality2{$site}{$dest}[0]+$quality2{$site}{$dest}[1] > 0) {
 	    $q2 = 100. *
@@ -84,32 +89,32 @@ foreach my $site ( keys %quality ) {
 	} else {
 	    $q2 = 0;
 	}
-	print "$q $q2\n";
+	print "$site $dest $q2\n";
 	$totlinks++;
-	$goodlinks++ if ( $q >= $thrsh );
+	$goodlinks++ if ( $q2 >= $thrsh );
 
 # Uplinks
 	if ( $tier > $dtier ) {
-	    $hup{$dest}++ if ( $q >= $thrsh );
-	    $lup{$site}++ if ( $q >= $thrsh );
+	    $hup{$dest}++ if ( $q2 >= $thrsh );
+	    $lup{$site}++ if ( $q2 >= $thrsh );
 	    $t_hup{$dest}++;
 	    $t_lup{$site}++;
 
 # Links between Tier-1's
 	} elsif ( $tier == $dtier ) {
-	    $outcross{$site} += 1 if ( $q >= $thrsh );
-	    $incross{$dest} += 1 if ( $q >= $thrsh );
+	    $outcross{$site} += 1 if ( $q2 >= $thrsh );
+	    $incross{$dest} += 1 if ( $q2 >= $thrsh );
 	    $t_outcross{$site}++;
 	    $t_incross{$dest}++;
 
 # Downlinks
 	} elsif ( $tier < $dtier ) {
-	    $ldown{$dest}++ if ( $q >= $thrsh );
-	    $hdown{$site}++ if ( $q >= $thrsh );
+	    $ldown{$dest}++ if ( $q2 >= $thrsh );
+	    $hdown{$site}++ if ( $q2 >= $thrsh );
 	    $t_ldown{$dest}++;
 	    $t_hdown{$site}++;
 	    if ( $tier == 0 ) {
-		$outcross{'T1_CH_CERN_Buffer'}++ if ( $q >= $thrsh );
+		$outcross{'T1_CH_CERN_Buffer'}++ if ( $q2 >= $thrsh );
 		$t_outcross{'T1_CH_CERN_Buffer'}++;
 	    }
 	}
@@ -126,7 +131,7 @@ $t_ldown{'T1_CH_CERN_Buffer'}++;
 if ( $debug ) {
     open(HTML, ">$dir/$file") or die "Cannot write HTML report\n";
     print HTML &header;
-    foreach ( sort keys %quality ) {
+    foreach ( sort keys %quality2 ) {
 	my $tier = substr($_, 1, 1);
 	if ( $tier == 1 or $tier == 2) {
 	    print HTML &site_report($_);
@@ -140,7 +145,7 @@ if ( $debug ) {
 
 # Generate input files for SSB
 open(SSB, ">$ssbpath") or die "Cannot write SSB input file\n";
-foreach my $site ( sort keys %quality ) {
+foreach my $site ( sort keys %quality2 ) {
     next if ( $site =~ /^T0/ );
     my $timestamp = &timestamp;
     my $status = 'no';
@@ -177,7 +182,7 @@ sub generate_ssbfile {
 	@map = ('', 'lup', 'ldown');
     }
     open(SSBL, ">$filename") or die "Cannot write SSB input file $filename\n";
-    foreach my $site ( sort keys %quality ) {
+    foreach my $site ( sort keys %quality2 ) {
 	my $t = substr($site, 1, 1);
 	next if ( $site =~ /^T0/ );
 	next if ( $t != $tier );
@@ -472,8 +477,8 @@ sub header {
 	"<tr><td>links to T2</td><td>$t1tt2</td><td>&nbsp;</td></tr>\n" .
 	"</table>\n" .
 	"<h2>Site status vs. good links</h2>\n" .
-	"<p>PhEDEx <a href=\"$url_debug\">debug report</a> generated at $dbgtime.</p>\n" .
-	"<p>PhEDEx <a href=\"$url_prod\">production report</a> generated at $prdtime.</p>\n" .
+	"<p>PhEDEx <a href=\"$url_debug\">debug report</a>.</p>\n" .
+	"<p>PhEDEx <a href=\"$url_prod\">production report</a>./p>\n" .
 	"<table border=\"1\">\n" .
 	"<colgroup span=\"6\">\n" .
 	"<col></col>\n" .
