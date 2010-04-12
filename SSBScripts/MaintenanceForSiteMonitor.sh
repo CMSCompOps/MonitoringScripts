@@ -30,7 +30,6 @@ cmsSites=`curl -ks https://cmsweb.cern.ch/sitedb/sitedb/json/index/SitetoCMSName
 for s in $cmsSites
 do
   sam=`curl -ks https://cmsweb.cern.ch/sitedb/sitedb/json/index/CMStoSAMName?name=$s | tr "," "\n"|cut -d"'" -f6 | head -1`
-  if [ "$sam" == "UKI-LT2-BRUNEL" ] ; then sam=UKI-LT2-Brunel ; fi
   goc=`curl -s http://goc.grid.sinica.edu.tw/gstat/$sam/|grep "goc.gridops.org"| cut -d= -f3,4|cut -d">" -f1|tr -d '"'`
 
   if [ "$s" == "T1_US_FNAL" ]
