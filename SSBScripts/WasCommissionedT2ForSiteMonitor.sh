@@ -65,6 +65,7 @@ RU_IHEP \
 RU_INR \
 RU_ITEP \
 RU_JINR \
+RU_RRCI_KI \
 RU_SINP \
 TR_METU \
 TW_Taiwan \
