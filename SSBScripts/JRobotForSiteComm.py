@@ -50,7 +50,7 @@ def summary_info(date, option):
     
     info_list = []
     for n in range(ini, end, step):
-        site = ((file_lines[n+1].split('>')[2]).split('<')[0])[1:-1]
+        site = file_lines[n+1].split(' ')[4]
         subm = int(((file_lines[n+2].split('>')[1]).split('<')[0])[1:-1])
         
         isit = wordInStr('</a>',file_lines[n+3])
