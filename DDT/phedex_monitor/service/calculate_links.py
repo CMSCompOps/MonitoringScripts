@@ -36,7 +36,7 @@ T3_recommission_days = (1, 12)
 
 """ @author: Brian Bockelman """
 
-default_url='http://cmsweb.cern.ch/phedex/datasvc/xml/debug/transferhistory?binwidth=3600&starttime=1247868000&endtime=1248888241'
+default_url='https://cmsweb.cern.ch/phedex/datasvc/xml/debug/transferhistory?binwidth=3600&starttime=1247868000&endtime=1248888241'
 #default_url='http://t2.unl.edu/phedex/xml/quantity?span=86400&starttime=1180645200&no_mss=True&link=link&endtime=time.time%28%29&to_node=.*&from_node=.*'
 
 default_status_url='http://t2.unl.edu/phedex/xml/enabled?from_node=.*&excludefrom=T3%7CMSS%7CT0%7CPIC_Disk%7CXT2%7CCH_CAF&excludeto=T3%7CMSS%7CT0%7CPIC_Disk%7CXT2%7CCH_CAF&to_node=.*&conn=Prod%2FNEBRASKA'

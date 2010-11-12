@@ -1,6 +1,8 @@
 from xml.sax import handler, make_parser
 from sets import Set as set
 import logging
+import urllib2
+import platform
 
 import phedex_monitor.model.state as state
 from phedex_monitor.model.node import Node
@@ -26,6 +28,8 @@ class DDTLinkStatusParser(handler.ContentHandler):
 
     def __init__( self, url ):
         self.url = url
+        self.opener = urllib2.build_opener()
+        self.opener.addheaders = [('User-agent','DDT/1.0 (CMS) %s/%s %s/%s (%s)' % (urllib2.__name__,urllib2.__version__,platform.system(),platform.release(),platform.processor()))]
         self.parser = make_parser()
         self.parser.setContentHandler( self )
         self.in_data = False
@@ -39,7 +43,7 @@ class DDTLinkStatusParser(handler.ContentHandler):
 
     def run( self, debug_links = [] ):
         self.debug_links = debug_links
-        self.parser.parse( self.url )
+        self.parser.parse( self.opener.open(self.url) )
  
     def node_str_to_link( self, source_str, dest_str ):
         from_node, to_node = Node(source_str), Node(dest_str)

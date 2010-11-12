@@ -1,6 +1,8 @@
 from xml.sax import handler, make_parser
 import datetime, getopt, sys, time, logging, re
 from sets import Set as set
+import urllib2
+import platform
 
 import phedex_monitor.model.state as state
 from phedex_monitor.model.node import Node
@@ -33,6 +35,8 @@ class DDTDataParser(handler.ContentHandler):
 
     def __init__( self, url ):
         self.url = url
+        self.opener = urllib2.build_opener()
+        self.opener.addheaders = [('User-agent','DDT/1.0 (CMS) %s/%s %s/%s (%s)' % (urllib2.__name__,urllib2.__version__,platform.system(),platform.release(),platform.processor()))]
         self.parser = make_parser()
         self.parser.setContentHandler( self )
         self.in_data = False
@@ -53,7 +57,7 @@ class DDTDataParser(handler.ContentHandler):
 
     def run( self, debug_links = [] ):
         self.debug_links = debug_links
-        self.parser.parse( self.url )
+        self.parser.parse( self.opener.open(self.url) )
  
     def node_str_to_link( self, from_node_name, to_node_name):
         from_node, to_node = Node(from_node_name), Node(to_node_name)
