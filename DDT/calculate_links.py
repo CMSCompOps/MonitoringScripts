@@ -75,8 +75,8 @@ if __name__ == '__main__':
 
    
     #surl = 'http://t2.unl.edu/phedex/xml/enabled?from_node=.*&excludefrom=XT%7CCH_CAF&excludeto=XT%7CCH_CAF&to_node=.*&conn=Prod%2FNEBRASKA'
-    surl='http://cmsweb.cern.ch/phedex/datasvc/xml/prod/links'
-    durl2='http://cmsweb.cern.ch/phedex/datasvc/xml/debug/transferhistory?binwidth=%s&starttime=%s&endtime=%s'
+    surl='https://cmsweb.cern.ch/phedex/datasvc/xml/prod/links'
+    durl2='https://cmsweb.cern.ch/phedex/datasvc/xml/debug/transferhistory?binwidth=%s&starttime=%s&endtime=%s'
        
     year = kwOpts.get('y')
     month = kwOpts.get('m')
