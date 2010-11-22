@@ -16,8 +16,8 @@ $t2tt1 = 1;    # Minimum number of links to T1 for T2
 $debug = 1;
 
 # Variable initialization
-$base_url_debug = "http://cmsweb.cern.ch/phedex/debug/Reports::DailyReport?reportfile=__date__.txt";
-$base_url_prod = "http://cmsweb.cern.ch/phedex/production/Reports::DailyReport?reportfile=__date__.txt";
+$base_url_debug = "https://cmsweb.cern.ch/phedex/debug/Reports::DailyReport?reportfile=__date__.txt";
+$base_url_prod = "https://cmsweb.cern.ch/phedex/production/Reports::DailyReport?reportfile=__date__.txt";
 %lup = %hup = %outcross = %incross = %ldown = %hdown = ();
 %t_lup = %t_hup = %t_outcross = %t_incross = %t_ldown = %t_hdown = ();
 
@@ -312,7 +312,7 @@ sub datasvc_url {
     my $instance = shift;
     my $start = shift;
     my $end = shift;
-    my $url = "http://cmsweb.cern.ch/phedex/datasvc/perl/$instance/TransferHistory?starttime=$start&endtime=$end&binwidth=86399";
+    my $url = "https://cmsweb.cern.ch/phedex/datasvc/perl/$instance/TransferHistory?starttime=$start&endtime=$end&binwidth=86399";
     return $url;
 }
 
@@ -422,7 +422,7 @@ sub quality_combine {
 sub phedex_link {
     my $site = shift;
     my $type = shift;
-    my $base_url = "http://cmsweb.cern.ch/phedex/graphs/quality_all?link=link&no_mss=true&to_node=__dest__&from_node=__src__&%2FWebSite&starttime=${start}&span=3600&endtime=${end}";
+    my $base_url = "https://cmsweb.cern.ch/phedex/graphs/quality_all?link=link&no_mss=true&to_node=__dest__&from_node=__src__&%2FWebSite&starttime=${start}&span=3600&endtime=${end}";
     my $tier = substr($site, 1, 1);
     my $url = $base_url;
     if ( $tier == 1 ) {
