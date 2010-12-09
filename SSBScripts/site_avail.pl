@@ -8,6 +8,7 @@
 
 use LWP::Simple;
 use XML::Parser;
+use File::Temp("tempfile");
 
 # Small class for Sites
 
@@ -37,6 +38,7 @@ package main;
 my $url = "https://cmsweb.cern.ch/sitedb/sitedb/reports/showXMLReport/?reportid=naming_convention.ini";
 my $doc = get($url) or die "Cannot retrieve XML\n";
 my $filepath = "/afs/cern.ch/cms/LCG/SiteComm/site_avail.txt";
+($fh, $tmpfile) = tempfile(UNLINK => 1) or die "Cannot create temporary file\n";
 
 # Parse XML
 
@@ -49,7 +51,6 @@ if (! %sites) {
     die "No sites found!\n";
 }
 
-open (LIST, "> $filepath") or die "Cannot write site list\n";
 foreach my $s ( values %sites ) {
     my $t = $s->tier;
     next if ( $t eq 'X' );
@@ -57,6 +58,7 @@ foreach my $s ( values %sites ) {
     next if ($s->{CMS} eq 'T1_CH_CERN');
     my $timestamp = &timestamp;
     my $avail = &get_avail($s->{CMS});
+    die "Cannot get XML\n" if ($avail eq 'error');
     next if ( $avail eq 'NA' );
     my $colour = 'green';
     if ( $t == 0 or $t == 1 ) {
@@ -66,15 +68,16 @@ foreach my $s ( values %sites ) {
     }
     $colour = 'red' if ( $avail eq 'NA' );
     my $comm_url = &avail_url($s->{CMS});
-    printf LIST "%s\t%s\t%s\t%s\t%s\n", $timestamp, $s->{CMS}, "${avail}%",
+    printf $fh "%s\t%s\t%s\t%s\t%s\n", $timestamp, $s->{CMS}, "${avail}%",
     $colour, $comm_url;
 # Use T0_CH_CERN for T1_CH_CERN
     if ( $s->{CMS} eq 'T0_CH_CERN' ) {
-	printf LIST "%s\t%s\t%s\t%s\t%s\n", $timestamp, 'T1_CH_CERN',
+	printf $fh "%s\t%s\t%s\t%s\t%s\n", $timestamp, 'T1_CH_CERN',
         "${avail}%", $colour, $comm_url;
     }
 } 
-close LIST;
+close $fh;
+system("/bin/cp -f $tmpfile $filepath"); 
 
 # Handler routines
 
@@ -134,13 +137,15 @@ sub get_avail {
 
     my $site = shift;
     my $avail = 'NA';
-    my $url = "http://dashb-cms-sam.cern.ch/dashboard/request.py/historicalsiteavailabilityranking.png?siteSelect3=T2T1T0&sites=${site}&timeRange=last24";
+    my $url = "http://dashb-cms-sam.cern.ch/dashboard/request.py/historicalsiteavailabilityranking?siteSelect3=T2T1T0&sites=${site}&timeRange=last24";
     my $cmd = "curl -H \'Accept: text/xml\' \'$url\' 2> /dev/null";
     my $output = `$cmd`;
     if ( defined $output ) {
 	if ($output =~ /<num>(.+)<\/num>/) {
 	    $avail = sprintf "%.0f", $1;
 	}
+    } else {
+	return 'error';
     }
     return $avail;
 }
