@@ -65,6 +65,7 @@ RU_IHEP \
 RU_INR \
 RU_ITEP \
 RU_JINR \
+RU_PNPI \
 RU_RRC_KI \
 RU_SINP \
 TR_METU \
@@ -72,7 +73,6 @@ TW_Taiwan \
 UA_KIPT \
 UK_London_Brunel \
 UK_London_IC \
-UK_SGrid_Bristol \
 UK_SGrid_RALPP \
 US_Caltech \
 US_Florida \
