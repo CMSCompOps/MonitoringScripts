@@ -51,7 +51,11 @@ if (! %sites) {
     die "No sites found!\n";
 }
 
+%seen = ();
+
 foreach my $s ( values %sites ) {
+    my $cms = $s->{CMS};
+    next if $seen{$cms}++;
     my $t = $s->tier;
     next if ( $t eq 'X' );
 # Skip T1_CH_CERN
