@@ -72,12 +72,12 @@ foreach my $s ( values %sites ) {
     }
     $colour = 'red' if ( $avail eq 'NA' );
     my $comm_url = &avail_url($s->{CMS});
-    printf $fh "%s\t%s\t%s\t%s\t%s\n", $timestamp, $s->{CMS}, "${avail}%",
+    printf $fh "%s\t%s\t%s\t%s\t%s\n", $timestamp, $s->{CMS}, "${avail}",
     $colour, $comm_url;
 # Use T0_CH_CERN for T1_CH_CERN
     if ( $s->{CMS} eq 'T0_CH_CERN' ) {
 	printf $fh "%s\t%s\t%s\t%s\t%s\n", $timestamp, 'T1_CH_CERN',
-        "${avail}%", $colour, $comm_url;
+        "${avail}", $colour, $comm_url;
     }
 } 
 close $fh;
