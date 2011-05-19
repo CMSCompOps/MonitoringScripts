@@ -36,18 +36,18 @@ d=datetime.timedelta(1);
 yesterday=today-d
 yesterdaystamp=yesterday.strftime("%Y-%m-%d")
 yesterdaystampfileSSB=yesterday.strftime("%Y-%m-%d 00:00:01")
-timestamphtml=yesterday.strftime("%Y%m%d")
+timestamphtml=today.strftime("%Y%m%d")
 
 
 ########################################################################################
 #
 
-GetURLs=False
-#GetURLs=True
+#GetURLs=False
+GetURLs=True
 
-path_out = '/var/www/html/cms/SiteReadinessReports_new/' 
-path_out_plots = '/var/www/html/cms/SiteReadinessPlots_new/' 
-html_out_plots = "http://lhcweb.pic.es/cms/SiteReadinessPlots_new/"
+path_out = '/var/www/html/cms/SiteReadinessReports/' 
+path_out_plots = '/var/www/html/cms/SiteReadinessPlots/' 
+html_out_plots = "http://lhcweb.pic.es/cms/SiteReadinessPlots/"
 #path_out= './SiteReadinessReports/'
 
 #Corrections for Daily metrics, badly inserted on the SSB
@@ -58,7 +58,9 @@ linkSSB="http://lhcweb.pic.es/cms/SiteReadinessReports/SiteReadinessReport_" + t
 
 reptime="Report made on %s (UTC)\n" % todaystampfile
 
-days=40  # Number of days to get the information from SSB -- We need these number of days to build the 30-plots view.
+# 60, 36 <- last month
+# 40 , 21 <- last 15-days
+days=60  # Number of days to get the information from SSB -- We need these number of days to build the 30-plots view.
 daysshow=21  # Number of days to get the information from SSB
 dayssc=7  # Number of last days to build the Site Commissioning status
 hours=str(days*24)
@@ -76,13 +78,14 @@ webserver_devel="http://dashb-ssb-devel.cern.ch"
 webserver="http://dashb-ssb.cern.ch"
 
 # Downtimes/Maintenances from SAM DB
-Downtimes_sam= webserver_devel + '/dashboard/request.py/siteviewhistory?columnid=71&time=' + hours + "&fullstatus=1"
+Downtimes_sam= webserver + '/dashboard/request.py/siteviewhistory?columnid=71&time=' + hours + "&fullstatus=1"
 
 # Job Robot
 SiteCommJR= webserver + '/dashboard/request.py/siteviewhistory?columnid=27&time=' + hours + "&fullstatus=1"
 
 # SAM availability
 SAMAvailability= webserver + '/dashboard/request.py/siteviewhistory?columnid=40&time=' + hours + "&fullstatus=1"
+SAMNagiosAvailability= webserver + '/dashboard/request.py/siteviewhistory?columnid=116&time=' + hours + "&fullstatus=1"
 
 # DDT-commissioned links
 T1linksfromT0= webserver + '/dashboard/request.py/siteviewhistory?columnid=33&time=' + hours + "&fullstatus=1"
@@ -109,6 +112,7 @@ ColumnMatrix = {}  # SSB URLs Matrix
 ColumnMatrix["Downtimes_sam"]=Downtimes_sam
 ColumnMatrix["JobRobot"]=SiteCommJR
 ColumnMatrix["SAMAvailability"]=SAMAvailability
+ColumnMatrix["SAMNagiosAvailability"]=SAMNagiosAvailability
 ColumnMatrix["T1linksfromT0"]=T1linksfromT0
 ColumnMatrix["T1linkstoT2s"]=T1linkstoT2s
 ColumnMatrix["T1linksfromtoT1s"]=T1linksfromtoT1s
@@ -125,9 +129,10 @@ ColumnMatrix["IsSiteInSiteDB"]=IsSiteInSiteDB
 
 # Add the color name <-> color index here
 MatrixStatusColors = {}  # SSB XML Status colors
-MatrixStatusColors["Downtimes_sam"]={"4":"white", "5":"brown", "6":"yellow"}
+MatrixStatusColors["Downtimes_sam"]={"4":"white", "5":"green", "6":"brown", "7":"yellow"}
 MatrixStatusColors["JobRobot"]={"4":"green", "5":"red", "6":"white"}
 MatrixStatusColors["SAMAvailability"]={"4":"green", "5":"red"}
+MatrixStatusColors["SAMNagiosAvailability"]={"1":"green", "0":"red"}
 MatrixStatusColors["T1linksfromT0"]={"4":"green", "5":"red"}
 MatrixStatusColors["T1linksfromtoT1s"]={"4":"green", "5":"red"}
 MatrixStatusColors["T1linkstoT2s"]={"4":"green", "5":"red"}
@@ -143,8 +148,10 @@ MatrixStatusColors["GoodT2linkstoT1s"]={"0":"red", "1":"green"}
 MatrixStatusColors["IsSiteInSiteDB"]={"5":"green"}
 
 criterias = { "T0": [ 'JobRobot',
+		      'SAMNagiosAvailability',
 		      'SAMAvailability'],
 	      "T1": [ 'JobRobot',
+		      'SAMNagiosAvailability',
 		      'SAMAvailability',
 		      'T1linksfromT0',
 		      'T1linksfromtoT1s',
@@ -155,12 +162,14 @@ criterias = { "T0": [ 'JobRobot',
 		      'GoodT1linkstoT1s',
 		      'GoodT1linkstoT2s'], 
 	      "T2": [ 'JobRobot',
+		      'SAMNagiosAvailability',
 		      'SAMAvailability',
 		      'T2linksfromT1s',
 		      'T2linkstoT1s',
 		      'GoodT2linksfromT1s',
 		      'GoodT2linkstoT1s'],
 	      "T3": [ 'JobRobot',
+		      'SAMNagiosAvailability',
 		      'SAMAvailability']}
 
 colors = { "R":"green",
@@ -180,21 +189,23 @@ colors = { "R":"green",
 metorder = {    "01":"Downtimes_sam",
 		"02":"JobRobot",
 		"03":"SAMAvailability",
-		"04":"GoodT1linksfromT0",
-		"05":"GoodT1linksfromT1s",
-		"06":"GoodT1linksfromT2s",
-		"07":"GoodT1linkstoT1s",
-		"08":"GoodT1linkstoT2s",
-		"09":"GoodT2linksfromT1s",
-		"10":"GoodT2linkstoT1s",
-		"11":"T1linksfromT0",
-		"12":"T1linksfromtoT1s",
-		"13":"T1linkstoT2s",
-		"14":"T2linksfromT1s",
-		"15":"T2linkstoT1s",}
+		"04":"SAMNagiosAvailability",
+		"05":"GoodT1linksfromT0",
+		"06":"GoodT1linksfromT1s",
+		"07":"GoodT1linksfromT2s",
+		"08":"GoodT1linkstoT1s",
+		"09":"GoodT1linkstoT2s",
+		"10":"GoodT2linksfromT1s",
+		"11":"GoodT2linkstoT1s",
+		"12":"T1linksfromT0",
+		"13":"T1linksfromtoT1s",
+		"14":"T1linkstoT2s",
+		"15":"T2linksfromT1s",
+		"16":"T2linkstoT1s",}
 
 metlegends = {  "Downtimes_sam":"Maintenance", 
-		"SAMAvailability":"SAM Availability", 
+		"SAMAvailability":"SAM Avail. (*info*)", 
+		"SAMNagiosAvailability":"SAM Avail. (Nagios)", 
 		"JobRobot":"Job Robot", 
 		"T1linksfromT0":"Active T1 links from T0",
 		"T1linksfromtoT1s":"Active T1 links from/to T1s",
@@ -366,7 +377,7 @@ def GetDailyMetricStatusOrig(sites, SiteCommMatrix, MatrixStatusColors):
 
 def ShiftDayForMetric(datestamp,col):
 
-	if col == "JobRobot" or col == "SAMAvailability" or col.find("Good")==0:
+	if col == "JobRobot" or col == "SAMAvailability" or col == "SAMNagiosAvailability" or col.find("Good")==0:
 		d=datetime.timedelta(1)
 		yesterday=datestamp-d
 		return yesterday.strftime("%Y-%m-%d")
@@ -422,21 +433,26 @@ def GetDailyMetricStatus(sites, SiteCommMatrix, MatrixStatusColors):
 					diff2s=(diff2.days*86400+diff2.seconds)
 					diff3 = xmlendtime-xmltime
 					diff3s=(diff3.days*86400+diff3.seconds)
-#					print "looptime:",looptime,"time:",xmltime,"endtime:",xmlendtime, "endtime-time",diff3.days*86400+diff3.seconds
-					if diff1s<0 and diff2s>0:
-						if diff2s>86400: validity=86400
+#					if sitename.find("T1_DE_KIT") == 0:
+#						print sitename, col
+#						print "looptime:",looptime,"time:",xmltime,"endtime:",xmlendtime, "endtime-time",diff1s, diff2s, diff3s
+					if diff1s<=0 and diff2s>0:
+						if diff2s>=86400: validity=86400
 						else: validity=86400-diff2s
-#						print "ok1", "validity:", validity
+#						if sitename.find("T1_DE_KIT") == 0:
+#							print "ok1", "validity:", validity
 						found=True
 					if diff1s>0 and diff1s<8400:
 						if diff2s>86400: validity=86400-diff1s
 						else: validity=diff3s
-#						print "ok2", "validity:", validity
+#						if sitename.find("T1_DE_KIT") == 0:
+#							print "ok2", "validity:", validity
 						found=True
 #					print "\n"
 
 					if validity>0:
-						
+
+#						print sitename, col, coldate, sites[sitename][col][coldate]['COLOR']
 						if MatrixStatusColors[col][sites[sitename][col][coldate]['COLOR']] == "green":
 							status=sites[sitename][col][coldate]['Status']
 							statusu=sites[sitename][col][coldate]['URL']
@@ -559,11 +575,14 @@ def FilterSitesInTablesPlots(sitename, matrix=[], matrixgl=[]):
 
         #exceptions (show tables for n/a sites or sites not in SiteDB today)
 
+#FIJAR!
+	if not matrix[sitename][yesterdaystamp].has_key('IsSiteInSiteDB'): return 0
 	if matrix[sitename][yesterdaystamp]['IsSiteInSiteDB']['Color'] == 'white': return 0
-
+		
 	if sitename.find("T1_DE_FZK") == 0 : return 0
 	if sitename.find("T2_CH_CAF") == 0 : return 0
-	if sitename.find("T2_PL_Cracow") == 0 : return 0
+#	if sitename.find("T2_PL_Cracow") == 0 : return 0
+	if sitename.find("T2_TR_ULAKBIM") == 0 : return 0
 
 	if sitename.find("T3_") == 0 : return 0
 
@@ -597,7 +616,7 @@ def SSBXMLParser(sites, ColumnMatrix):
 
 		url=ColumnMatrix[col]
 
-		fileN="/tmp/"+col+"_new2"
+		fileN="/tmp/"+col
 
 		if GetURLs == True:
 			print "Column %s - Getting the url %s" % (col, url)
@@ -618,6 +637,9 @@ def SSBXMLParser(sites, ColumnMatrix):
 						s=""
 					info[option]=s
 
+                        if info['VOName'].find("T3_FR-IPNL") == 0: continue
+			if info['VOName'].find("T2_TR_ULAKBIM") == 0: continue
+			
 			if not sites.has_key(info['VOName']):
 				sites[info['VOName']]={}
 			if not sites[info['VOName']].has_key(col):
@@ -628,8 +650,14 @@ def SSBXMLParser(sites, ColumnMatrix):
 
 			if col=="JobRobot":
 				tmp=sites[info['VOName']][col][info['Time']]['Status']
-				sites[info['VOName']][col][info['Time']]['Status']=tmp.split("(")[0]
+				tmp2=tmp.split("(")[0]
+				if not tmp2.find("%") == 0: tmp2+="%"
+				sites[info['VOName']][col][info['Time']]['Status']=tmp2
 #			sites[info['VOName']][col][info['Time']]['Status']=tmp.partition("(")[0] # only valid in Python 2.5
+			if col=="SAMAvailability" or col=="SAMNagiosAvailability":
+				tmp=sites[info['VOName']][col][info['Time']]['Status']
+				if not tmp.find("%") == 0: tmp+="%"
+				sites[info['VOName']][col][info['Time']]['Status']=tmp
 
 	sys.stdout.write("\n")
 	sys.stdout.flush()
@@ -737,6 +765,8 @@ def GetDailyScheduledDowntimeStatus(sites, SiteCommMatrix, MatrixStatusColors):
 
 						if coldate.find(dayloopstamp) == 0:
 
+							#print "->",sitename, col, coldate, sites[sitename][col][coldate]['COLOR'], cl
+							
 							if sites[sitename][col][coldate]['COLOR'] == cl: # Found Downtime
 						
 								for j in range(i,days+1):
@@ -753,17 +783,23 @@ def GetDailyScheduledDowntimeStatus(sites, SiteCommMatrix, MatrixStatusColors):
 									elif sites[sitename][col][coldate]['Status'].find("SRMv2") == 0:
 										infocol26['Color'] = 'brown'
 										infocol26['Status'] = 'SE-SD'
-									elif sites[sitename][col][coldate]['Status'].find("CE") == 0:
+									elif sites[sitename][col][coldate]['Status'].find("CE") == 0 or sites[sitename][col][coldate]['Status'].find("CREAMCE") == 0:
 										infocol26['Color'] = 'brown'
 										infocol26['Status'] = 'CE-SD'
 									elif sites[sitename][col][coldate]['Status'].find("Some SRMv2") == 0:
 										infocol26['Color'] = 'yellow'
 										infocol26['Status'] = '~'
-									elif sites[sitename][col][coldate]['Status'].find("Some CE") == 0:
+									elif sites[sitename][col][coldate]['Status'].find("Some CE") == 0 or sites[sitename][col][coldate]['Status'].find("Some CREAMCE") == 0:
 										infocol26['Color'] = 'yellow'
 										infocol26['Status'] = '~'
 
+									if MatrixStatusColors[col][sites[sitename][col][coldate]['COLOR']] == 'green':
+										infocol26['Color'] = 'green'
+										infocol26['Status'] = 'Up'
+
 									SiteCommMatrix[sitename][dayloopstamp2][col]=infocol26
+
+									#print sitename, dayloopstamp2, col, infocol26
 									if dayloopstamp2 == sites[sitename][col][coldate]['EndTime'][0:sites[sitename][col][coldate]['EndTime'].find(" ")]:
 										break
 
@@ -785,7 +821,7 @@ def CorrectDailyMetricsFromASCIIFile(sites, SiteCommMatrix, DailyMetricsCorrecte
 
 	prog = progressBar(0, 100, 77)
 	iprog=0
-
+	
 	f=open(DailyMetricsCorrected)
 	flen=len(f.readlines())
 	f.close()
@@ -815,6 +851,7 @@ def CorrectDailyMetricsFromASCIIFile(sites, SiteCommMatrix, DailyMetricsCorrecte
 			infomod['Color'] = row[3]
 			if SiteCommMatrix.has_key(row[0]):
 				if SiteCommMatrix[row[0]].has_key(row[1]):
+#					print infomod
 					SiteCommMatrix[row[0]][row[1]][row[2]]=infomod
 	sys.stdout.write("\n")
 	sys.stdout.flush()
@@ -823,8 +860,6 @@ def CorrectDailyMetricsFromASCIIFile(sites, SiteCommMatrix, DailyMetricsCorrecte
 def EvaluateDailyStatus(SiteCommMatrix, SiteCommMatrixT1T2, criterias):
 	
 	# Daily Metrics
-
-	GetCriteriasList("T2_CH_CERN", criterias)
 
 	prog = progressBar(0, 100, 77)
 	iprog=0
@@ -841,6 +876,8 @@ def EvaluateDailyStatus(SiteCommMatrix, SiteCommMatrixT1T2, criterias):
 		items = SiteCommMatrix[sitename].keys()
 		items.sort()
 
+#		pprint.pprint(SiteCommMatrix)
+#		sys.exit(0)
 		status=' '
 
 		for day in items:
@@ -856,9 +893,16 @@ def EvaluateDailyStatus(SiteCommMatrix, SiteCommMatrixT1T2, criterias):
 					infocol3['Color']='white'
 					SiteCommMatrix[sitename][day][crit] = infocol3
 
+				thedate=date(int(day[0:4]),int(day[5:7]),int(day[8:10]))
+				sam_change=date(2011,5,11)
+
+				if (thedate-sam_change).days > 0 and crit == "SAMAvailability": continue
+				if (thedate-sam_change).days <= 0 and crit == "SAMNagiosAvailability": continue
+
 				if SiteCommMatrix[sitename][day][crit]['Color'] == 'red':
 					status = 'E'
-					
+
+#			print sitename,day
 			if SiteCommMatrix[sitename][day]['Downtimes_sam']['Color'] == 'brown':
 				status = 'SD'
 
@@ -866,8 +910,10 @@ def EvaluateDailyStatus(SiteCommMatrix, SiteCommMatrixT1T2, criterias):
 			sitedbtimeint = testdate-IsSiteInSiteDB_validsince
 
 			# exclude sites that are not in SiteDB
-			if sitedbtimeint.days >= 0 and SiteCommMatrix[sitename][day]['IsSiteInSiteDB']['Color'] == 'white':
-				status = 'n/a'
+			if sitedbtimeint.days >= 0:
+				if SiteCommMatrix[sitename][day].has_key('IsSiteInSiteDB'):
+					if SiteCommMatrix[sitename][day]['IsSiteInSiteDB']['Color'] == 'white':
+						status = 'n/a'
 
 			if day == todaystamp:
 				status = ' '
@@ -1055,7 +1101,7 @@ def ProduceSiteReadinessHTMLViews(SiteCommGlobalMatrix, metorder, metlegends, co
 	scdaysw1 = str((dayssc)*dw)
 	scdaysw = str((dayssc)*dw)
 
-	filehtml= path_out + '/SiteReadinessReport_' + timestamphtml +'_new2.html'
+	filehtml= path_out + '/SiteReadinessReport_' + timestamphtml +'.html'
 	fileHandle = open ( filehtml , 'w' )    
 
 	fileHandle.write("<html><head><title>CMS Site Readiness</title><link type=\"text/css\" rel=\"stylesheet\" href=\"./style-css-reports.css\"/></head>\n")
@@ -1074,10 +1120,14 @@ def ProduceSiteReadinessHTMLViews(SiteCommGlobalMatrix, metorder, metlegends, co
 		sys.stdout.write(str(prog)+'\r')
 		sys.stdout.flush()
 
+#		print "1",sitename
+
 		if FilterSitesInTablesPlots(sitename, SiteCommMatrix, SiteCommGlobalMatrix) : 
 
+#			print "2",sitename
+			
 			fileHandle.write("<a name=\""+ sitename + "\"></a>\n\n")
-			fileHandle.write("<p><br>\n")
+			fileHandle.write("<div id=para-"+ sitename +">\n")
 
 			fileHandle.write("<table border=\"0\" cellspacing=\"0\" class=stat>\n")
 
@@ -1118,7 +1168,7 @@ def ProduceSiteReadinessHTMLViews(SiteCommGlobalMatrix, metorder, metlegends, co
 				c = datetime.datetime(*time.strptime(datesgm,"%Y-%m-%d")[0:5])
 				fileHandle.write("<td width=\"" + dayw + "\" bgcolor=" + colors[state] + "><div id=\"daily-metric\">" + state + "</div></td>\n")
 
-			fileHandle.write("<tr height=4><td width=" + metricw + "></td>\n")
+			fileHandle.write("</tr><tr height=4><td width=" + metricw + "></td>\n")
 			fileHandle.write("<td width=" + daysw + " colspan=" + colspans1 + " bgcolor=black></td></tr>\n")
 			
 			fileHandle.write("<tr height=7><td width=" + metricw + "></td>\n")
@@ -1161,10 +1211,15 @@ def ProduceSiteReadinessHTMLViews(SiteCommGlobalMatrix, metorder, metlegends, co
 			for metnumber in indmetrics:
 
 				met=metorder[metnumber]
-			
-				if not SiteCommMatrix[sitename][datesgm].has_key(met) or met == 'IsSiteInSiteDB': continue # ignore 
 
-				fileHandle.write("<tr><td width=\"" + metricw + "\"><div id=\"metrics-header\">" + metlegends[met] + ": </div></td>\n")
+				if not SiteCommMatrix[sitename][dates[0]].has_key(met) or met == 'IsSiteInSiteDB': continue # ignore 
+				if sitename.find("T1_CH_CERN") == 0 and met == 'T1linksfromT0': continue # ignore 
+
+				if met == 'SAMAvailability':
+					fileHandle.write("<tr><td width=\"" + metricw + "\"><div id=\"metrics-header\"><font color=\"orange\">" + metlegends[met] + ": </font></div></td>\n")
+				else:
+					fileHandle.write("<tr><td width=\"" + metricw + "\"><div id=\"metrics-header\">" + metlegends[met] + ": </div></td>\n")
+					
 				igdays=0
 				for datesgm in dates:
 					igdays+=1
@@ -1176,11 +1231,14 @@ def ProduceSiteReadinessHTMLViews(SiteCommGlobalMatrix, metorder, metlegends, co
 					c = datetime.datetime(*time.strptime(datesgm,"%Y-%m-%d")[0:5])
 					
 					if (c.weekday() == 5 or c.weekday() == 6) and sitename.find('T2_') == 0: # id. weekends
-						if SiteCommMatrix[sitename][datesgm][met].has_key('URL') and SiteCommMatrix[sitename][datesgm][met]['URL'] != ' ' :
-							stateurl=SiteCommMatrix[sitename][datesgm][met]['URL']
-							fileHandle.write("<td width=\"" + dayw + "\" bgcolor=grey><a href=\""+stateurl+"\">"+"<div id=\"metrics2\">" + state + "</div></a></td>\n")
+						if state != " " :
+							if SiteCommMatrix[sitename][datesgm][met].has_key('URL') and SiteCommMatrix[sitename][datesgm][met]['URL'] != ' ' :
+								stateurl=SiteCommMatrix[sitename][datesgm][met]['URL']
+								fileHandle.write("<td width=\"" + dayw + "\" bgcolor=grey><a href=\""+stateurl+"\">"+"<div id=\"metrics2\">" + state + "</div></a></td>\n")
+							else:
+								fileHandle.write("<td width=\"" + dayw + "\" bgcolor=grey><div id=\"metrics2\">" + state + "</div></td>\n")
 						else:
-							fileHandle.write("<td width=\"" + dayw + "\" bgcolor=grey><div id=\"metrics2\">" + state + "</div></td>\n")
+								fileHandle.write("<td width=\"" + dayw + "\" bgcolor=white><div id=\"metrics2\">" + state + "</div></td>\n")
 					else:
 						if SiteCommMatrix[sitename][datesgm][met].has_key('URL') and SiteCommMatrix[sitename][datesgm][met]['URL'] != ' ' :
 							stateurl=SiteCommMatrix[sitename][datesgm][met]['URL']
@@ -1234,6 +1292,7 @@ def ProduceSiteReadinessHTMLViews(SiteCommGlobalMatrix, metorder, metlegends, co
 			# report time
 			
 			fileHandle.write("<div id=\"leg1\">" + reptime + "</div>\n")
+			fileHandle.write("</div>\n")
 
 			#legends
 
@@ -1507,7 +1566,7 @@ def ProduceSiteReadinessStatistics(SiteCommMatrix, SiteCommGlobalMatrix, SiteRea
 
 def ProduceSiteReadinessSSBFiles(SiteCommMatrix, SiteCommGlobalMatrix, SiteReadinessStats2, path_out):
 	
-	html_out_plots = "http://lhcweb.pic.es/cms/SiteReadinessPlots_new/"
+	html_out_plots = "http://lhcweb.pic.es/cms/SiteReadinessPlots/"
 	
 	prog = progressBar(0, 100, 77)
 	iprog=0
@@ -1537,7 +1596,7 @@ def ProduceSiteReadinessSSBFiles(SiteCommMatrix, SiteCommGlobalMatrix, SiteReadi
 				color="green"
 			if SiteReadinessStats2[sitename][dayspan][pl] != "n/a":
 				filenameSSB = html_out_plots + sitename.split("_")[0] + "_" + pl + "_last" + str(dayspan) + "days_" + timestamphtml + ".png"
-				tofile=yesterdaystampfileSSB + '\t' + sitename + '\t' + str(SiteReadinessStats2[sitename][dayspan][pl]) + '\t' + color + '\t' + filenameSSB + "\n"
+				tofile=todaystampfileSSB + '\t' + sitename + '\t' + str(SiteReadinessStats2[sitename][dayspan][pl]) + '\t' + color + '\t' + filenameSSB + "\n"
 				fileHandle.write(tofile)
 						
 	fileHandle.close()
@@ -1579,9 +1638,9 @@ def ProduceSiteReadinessRankingPlots(SiteCommMatrix, SiteCommGlobalMatrix, SiteR
 				fileR = open(expand_string(filename,os.environ),'w')
 
 				if pl == 'R+Wcorr_perc':
-					metadataR = {'title':'%s Site Readiness Quality Rank last %i days (+SD %%)' % (i,int(dayspan)), 'fixed-height':False }
+					metadataR = {'title':'%s Readiness Rank last %i days (+SD %%) [%s]' % (i,int(dayspan),todaystamp), 'fixed-height':False }
 			       	if pl == 'SD_perc':
-					metadataR = {'title':'Quality Ranking for %s Scheduled Downtimes last %i days' % (i,int(dayspan)), 'fixed-height':True}
+					metadataR = {'title':'Rank for %s Scheduled Downtimes last %i days [%s]' % (i,int(dayspan),todaystamp), 'fixed-height':True}
 				
 				if len(dataR) != 0:
 					QBG = QualityBarGraph()
@@ -1591,9 +1650,7 @@ def ProduceSiteReadinessRankingPlots(SiteCommMatrix, SiteCommGlobalMatrix, SiteR
 	sys.stdout.write("\n")
 	sys.stdout.flush()
 
-
 def PrintDailyMetricsStats(SiteCommMatrix, SiteCommMatrixT1T2, SiteCommGlobalMatrix):
-
 	sites = SiteCommMatrixT1T2.keys()
 	sites.sort()
 
@@ -1612,6 +1669,7 @@ def PrintDailyMetricsStats(SiteCommMatrix, SiteCommMatrixT1T2, SiteCommGlobalMat
 		
 			for sitename in sites:
 
+				if sitename.find("T1_CH_CERN") == 0: continue
 				if not sitename.find(i+"_") == 0: continue
 				if not FilterSitesInTablesPlots(sitename, SiteCommMatrix, SiteCommGlobalMatrix) : continue
 				
@@ -1650,6 +1708,7 @@ def PrintSiteReadinessMetricsStats(SiteCommMatrix, SiteCommGlobalMatrix):
 		
 			for sitename in sites:
 
+				if sitename.find("T1_CH_CERN") == 0: continue
 				if not sitename.find(i+"_") == 0: continue
 				if not FilterSitesInTablesPlots(sitename, SiteCommMatrix, SiteCommGlobalMatrix) : continue
 				
@@ -1711,8 +1770,8 @@ SiteCommGlobalMatrix = {}
 SiteCommMatrixT1T2 = {}
 SiteCommStatistics = {}
 
-criteriasT1 = ( 'JobRobot', 'SAMAvailability', 'T1linksfromT0', 'T1linksfromtoT1s', 'T1linkstoT2s', 'GoodT1linksfromT0', 'GoodT1linksfromT1s', 'GoodT1linksfromT2s', 'GoodT1linkstoT1s', 'GoodT1linkstoT2s' )
-criteriasT2 = ( 'JobRobot', 'SAMAvailability', 'T2linksfromT1s', 'T2linkstoT1s', 'GoodT2linksfromT1s', 'GoodT2linkstoT1s')
+criteriasT1 = ( 'JobRobot', 'SAMAvailability', 'SAMNagiosAvailability', 'T1linksfromT0', 'T1linksfromtoT1s', 'T1linkstoT2s', 'GoodT1linksfromT0', 'GoodT1linksfromT1s', 'GoodT1linksfromT2s', 'GoodT1linkstoT1s', 'GoodT1linkstoT2s' )
+criteriasT2 = ( 'JobRobot', 'SAMAvailability', 'SAMNagiosAvailability', 'T2linksfromT1s', 'T2linkstoT1s', 'GoodT2linksfromT1s', 'GoodT2linkstoT1s')
 
 # parse SSB XML data from all relevants columns
 
@@ -1738,6 +1797,12 @@ EvaluateSiteReadiness(SiteCommMatrixT1T2, SiteCommGlobalMatrix)
 print "\nProducing Site Readiness SSB input file\n"
 ProduceSiteReadinessSSBFile(SiteCommGlobalMatrix, fileSSB)
 
+#pprint.pprint(SiteCommMatrixT1T2['T1_ES_PIC'])
+#pprint.pprint(SiteCommGlobalMatrix['T1_ES_PIC'])
+#pprint.pprint(SiteCommMatrix['T1_ES_PIC'])
+
+print "*************************change"
+
 print "\nProducing Site Readiness HTML view\n"
 ProduceSiteReadinessHTMLViews(SiteCommGlobalMatrix, metorder, metlegends, colors, path_out)
 
@@ -1756,9 +1821,29 @@ PrintDailyMetricsStats(SiteCommMatrix, SiteCommMatrixT1T2, SiteCommGlobalMatrix)
 print "\nPrinting Site Readiness Metrics Statistics\n"
 PrintSiteReadinessMetricsStats(SiteCommMatrix, SiteCommGlobalMatrix)
 
+sys.exit(0)
+
 #PrintDailyMetrics(SiteCommMatrix, SiteCommGlobalMatrix, metorder)
 
-sys.exit(0)
+# _start -> This is to print Site REadiness and correct columnid 45, sometimes
+SRMatrixColors = { "R":"green", "W":"yellow", "NR":"red", "SD":"brown", " ":"white", "n/a":"white", "n/a*":"white" }
+
+sites=SiteCommGlobalMatrix.keys()
+sites.sort()
+
+for site in sites:
+
+	if site.find("T3_") == 0 or site.find("T0_") == 0: continue
+
+	dates=SiteCommGlobalMatrix[site].keys()
+	dates.sort
+
+	for date in dates:
+
+		print date+" 00:00:01",'\t',site,'\t',SiteCommGlobalMatrix[site][date],'\t',SRMatrixColors[SiteCommGlobalMatrix[site][date]],'\t',"http://lhcweb.pic.es/cms/SiteReadinessReports/SiteReadinessReport_"+date.split("-")[0]+date.split("-")[1]+date.split("-")[2]+".html#"+site
+# _end
+
+
 
 fileHandle = open ( "./tickets_test_2.txt" , 'w' )    
 
