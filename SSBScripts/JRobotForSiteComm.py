@@ -123,7 +123,7 @@ def build_info(sitelist):
                     jsuc+=ySummary[yi][4]
         if (jabo+jerr+jsuc) > 0:   # some jobs completed
             effic= jsuc *100 / (jabo+jerr+jsuc)
-            value=str(effic) + '%' + '(' + str(jabo+jerr+jsuc) + ')'
+            value=str(effic)
             if effic>=thrs: status="ok"
             else:
                 status="err"
