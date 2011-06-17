@@ -65,8 +65,15 @@ RU_IHEP \
 RU_INR \
 RU_ITEP \
 RU_JINR \
+<<<<<<< WasCommissionedT2ForSiteMonitor.sh
+<<<<<<< WasCommissionedT2ForSiteMonitor.sh
+RU_RRCI_KI \
+=======
+=======
 RU_PNPI \
+>>>>>>> 1.8
 RU_RRC_KI \
+>>>>>>> 1.7
 RU_SINP \
 TR_METU \
 TW_Taiwan \
