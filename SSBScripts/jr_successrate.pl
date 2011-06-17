@@ -75,7 +75,7 @@ foreach my $s ( sort {$a->{CMS} cmp $b->{CMS}} values %sites ) {
     my $timestamp = &dbtime2(time); 
     my $sr = &get_sr($s->{CMS});
 
-#    next if ( $sr eq 'NA' );
+    next if ( $sr eq 'NA' );
     my $colour = 'green';
     if ( $t == 0 or $t == 1 ) {
 	$colour = 'red' if ( $sr ne 'NA' and $sr < 90 );
