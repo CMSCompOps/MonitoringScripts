@@ -83,13 +83,13 @@ foreach my $s ( sort {$a->{CMS} cmp $b->{CMS}} values %sites ) {
 	$colour = 'red' if ( $sr ne 'NA' and $sr < 80 );
     }
     my $comm_url = &successrate_url($s->{CMS}, $start, $end);
-    printf $fh "%s\t%s\t%s\t%s\t%s\n", $timestamp, $s->{CMS}, $sr,
+    printf $fh "%s\t%s\t%.1f\t%s\t%s\n", $timestamp, $s->{CMS}, $sr,
     $colour, $comm_url;
 
 # Use T0_CH_CERN for T1_CH_CERN
     if ( $s->{CMS} eq 'T0_CH_CERN' ) {
-	printf $fh "%s\t%s\t%s\t%s\t%s\n", $timestamp, 'T1_CH_CERN',
-        "${sr}", $colour, $comm_url;
+	printf $fh "%s\t%s\t%.1f\t%s\t%s\n", $timestamp, 'T1_CH_CERN',
+        $sr, $colour, $comm_url;
     }
 } 
 close $fh;
