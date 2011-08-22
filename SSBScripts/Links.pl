@@ -422,7 +422,7 @@ sub quality_combine {
 sub phedex_link {
     my $site = shift;
     my $type = shift;
-    my $base_url = "https://cmsweb.cern.ch/phedex/graphs/quality_all?link=link&no_mss=true&to_node=__dest__&from_node=__src__&%2FWebSite&starttime=${start}&span=3600&endtime=${end}";
+    my $base_url = "https://cmsweb.cern.ch/phedex/graphs/quality_all?link=link&no_mss=true&to_node=__dest__&from_node=__src__&starttime=${start}&span=3600&endtime=${end}";
     my $tier = substr($site, 1, 1);
     my $url = $base_url;
     if ( $tier == 1 ) {
