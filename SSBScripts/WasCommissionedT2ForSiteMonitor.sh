@@ -1,7 +1,6 @@
 #!/bin/sh
 #
 #
-#outFile="/afs/cern.ch/user/b/belforte/www/misc/WasCommissionedT2ForSiteMonitor.txt"
 outFile="./WasCommissionedT2ForSiteMonitor.txt"
 
 cat <<EOF > $outFile
@@ -22,11 +21,12 @@ cat <<EOF > $outFile
 # Jun 10 2009: enable SINP on req. of admins, enable METU based on good record
 # Aug 10 2009: enable UA_KIPT and move to CVS (will have history there)
 #
-# this page is created by an acrontab script running on lxplus.cern.ch
-# which runs the script
-# /afs/cern.ch/user/b/belforte/SiteMonitor/WasCommissionedT2ForSiteMonitor.sh
-# directely linked at
-# http://belforte.home.cern.ch/belforte/misc/WasCommissionedT2ForSiteMonitor.sh
+# this page is located at
+# /afs/cern.ch/cms/LCG/SiteComm/T2WaitingList/WasCommissionedT2ForSiteMonitor.txt
+# and is created by running the script
+# /afs/cern.ch/cms/LCG/SiteComm/SSBScripts/WasCommissionedT2ForSiteMonitor.sh
+# which is maintained in CVS at
+# http://cmssw.cvs.cern.ch/cgi-bin/cmssw.cgi/COMP/SITECOMM/SSBScripts/WasCommissionedT2ForSiteMonitor.sh?view=log
 #
 EOF
 
@@ -93,5 +93,5 @@ done
 #
 
 
-cp /afs/cern.ch/user/b/belforte/www/misc/WasCommissionedT2ForSiteMonitor.txt /afs/cern.ch/user/b/belforte/www/misc/WasCommissionedT2ForSiteMonitor.txt.OLD
-cp $outFile /afs/cern.ch/user/b/belforte/www/misc/WasCommissionedT2ForSiteMonitor.txt
+cp /afs/cern.ch/cms/LCG/SiteComm/T2WaitingList/WasCommissionedT2ForSiteMonitor.txt /afs/cern.ch/cms/LCG/SiteComm/T2WaitingList/WasCommissionedT2ForSiteMonitor.txt.OLD
+cp $outFile /afs/cern.ch/cms/LCG/SiteComm/T2WaitingList/WasCommissionedT2ForSiteMonitor.txt
