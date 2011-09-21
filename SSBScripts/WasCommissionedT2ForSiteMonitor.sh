@@ -11,15 +11,12 @@ cat <<EOF > $outFile
 # Other T2's are in the "wating room" to avoid cluttering
 # the main view with sites that are mostly in error status
 #
-# This table is maintained by hand by the Commissioning Coordinators
+# This table is maintained by hand by Facility Operation Coordinators
 #
 # Is initially seeded on July 17 2008 by picking sites
 # that did at least 40% OK in both SAM and JobRobot in last 30days
 #
-# updates:
-# Sep 11 2008: enable Warsaw and Sprace based on good record in last month
-# Jun 10 2009: enable SINP on req. of admins, enable METU based on good record
-# Aug 10 2009: enable UA_KIPT and move to CVS (will have history there)
+# updates are tracked in CVS
 #
 # this page is located at
 # /afs/cern.ch/cms/LCG/SiteComm/T2WaitingList/WasCommissionedT2ForSiteMonitor.txt
@@ -27,6 +24,18 @@ cat <<EOF > $outFile
 # /afs/cern.ch/cms/LCG/SiteComm/SSBScripts/WasCommissionedT2ForSiteMonitor.sh
 # which is maintained in CVS at
 # http://cmssw.cvs.cern.ch/cgi-bin/cmssw.cgi/COMP/SITECOMM/SSBScripts/WasCommissionedT2ForSiteMonitor.sh?view=log
+#
+# PROCEDURE TO CHANGE THE LIST
+# 1. make sure you are in AFS group zh:lcg_writers
+#   using e.g. the command:  pts membership zh:lcg_writers
+#   if not, ask CMS AFS admins
+# 2. cd /afs/cern.ch/cms/LCG/SiteComm/SSBScripts
+# 3. edit WasCommissionedT2ForSiteMonitor.sh as proper
+# 4. cvs commit -m "some decent comment" WasCommissionedT2ForSiteMonitor.sh
+# 5. run with ./WasCommissionedT2ForSiteMonitor.sh
+#   that will create a new file in /afs/cern.ch/cms/LCG/SiteComm/T2WaitingList/
+#   and save previous one in <...>.OLD so you
+#   can x-check what you have done
 #
 EOF
 
@@ -81,7 +90,7 @@ US_Nebraska \
 US_Purdue \
 US_UCSD \
 US_Wisconsin \
-"
+"I 
 #
 
 for site in $WasCommissionedT2List
