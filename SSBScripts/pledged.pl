@@ -19,6 +19,11 @@ sub new {
 
 package main;
 
+$ssbdir = "/afs/cern.ch/cms/LCG/SiteComm/";
+$file_pledged_slots = "$ssbdir/pledged_slots.txt";
+$file_pledged_disk = "$ssbdir/pledged_disk.txt";
+$file_pledged_tape = "$ssbdir/pledged_tape.txt";
+
 # Array with all Sites and tiers
 %sites = ();
 
@@ -42,20 +47,40 @@ foreach (keys %sites) {
     my $cms = $site2cms{$name};
     my $slots = $sites{$_} ->{SLOTS};
     my $quarter = $sites{$_} ->{QUARTER};
+    my $disk = $sites{$_} ->{DISK};
+    my $tape = $sites{$_} ->{TAPE};
     next if (&gt($quarter, &curr_quarter()));
-    $data{$cms} = [$quarter, $slots] if (!defined $data{$cms} or
+    $data{$cms} = [$quarter, $slots, $disk, $tape] if (!defined $data{$cms} or
 					 &gt($quarter, ${$data{$cms}}[0]));
 }
+
+open(SLOTS, "> $file_pledged_slots") or
+    die "Cannot create $file_pledged_slots\n";
+open(DISK, "> $file_pledged_disk") or
+    die "Cannot create $file_pledged_disk\n";
+open(TAPE, "> $file_pledged_tape") or
+    die "Cannot create $file_pledged_tape\n";
+
 foreach my $cms (sort keys %data){
     my $timestamp = &timestamp();
     my $quarter = ${$data{$cms}}[0];
     my $slots = ${$data{$cms}}[1];
+    my $disk = ${$data{$cms}}[2];
+    my $tape = ${$data{$cms}}[3];
     my $colour = 'green';
     $colour = "yellow" if (&gt(&curr_quarter(), $quarter));
     my $pledge_url = 'https://cmsweb.cern.ch/sitedb/reports/showReport?reportid=quarterly_pledges.ini';
-    printf "%s\t%s\t%s\t%s\t%s\n", $timestamp, $cms, $slots,
+    printf SLOTS "%s\t%s\t%s\t%s\t%s\n", $timestamp, $cms, $slots,
+    $colour, $pledge_url;
+    printf DISK "%s\t%s\t%s\t%s\t%s\n", $timestamp, $cms, $disk,
+    $colour, $pledge_url;
+    printf TAPE "%s\t%s\t%s\t%s\t%s\n", $timestamp, $cms, $tape,
     $colour, $pledge_url;
 }
+
+close SLOTS;
+close DISK;
+close TAPE;
 
 # Handler routines
 
@@ -88,6 +113,12 @@ sub h_char_pledges {
     } elsif ($p->in_element('JOB_SLOTS')) {
 	my $site = $sites{$lastid};
 	$site->{SLOTS} = $a;
+    } elsif ($p->in_element('DISK_STORE')) {
+	my $site = $sites{$lastid};
+	$site->{DISK} = $a;
+    } elsif ($p->in_element('TAPE_STORE')) {
+	my $site = $sites{$lastid};
+	$site->{TAPE} = $a;
     }
 }
 
@@ -118,7 +149,7 @@ sub timestamp {
 
 sub curr_quarter {
 
-    my @time = localtime(time);
+    my @time = gmtime(time);
     my $year = 1900 + $time[5];
     my $q = int(($time[4] / 3) + 1);
     return "$year.$q";
