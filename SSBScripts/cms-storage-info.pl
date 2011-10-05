@@ -66,7 +66,7 @@ foreach my $cms (sort keys %cms2phedex) {
 	my ($sub, $cust, $ncust, $url) = &get_phedex_info($node);
 	next if ($sub == -1);
 	$hasnode = 1;
-	$turl = $url unless ($url =~ /Buffer$/);
+	$turl = "https://cmsweb/phedex/prod/Reports::SiteUsage?node=$node#" unless ($node =~ /Disk/ or $node =~ /Buffer/);
 	$tsub += $sub;
 	$tcust += $cust;
 	$tncust += $ncust;
@@ -98,7 +98,7 @@ foreach my $cms (sort keys %cms2phedex) {
     my $space = -1;
     $space = $total_online{$cms} if (defined $total_online{$cms});
     if (defined $total_online{$cms} && $total_online{$cms} > 0 && defined $used_online{$cms} && defined $free_online{$cms}) {
-	if (abs($total_online{$cms} - $used_online{$cms} - $free_online{$cms}) / $total_online{$cms} > 0.05) {
+	if (abs($total_online{$cms} - $used_online{$cms} - $free_online{$cms}) / $total_online{$cms} > 0.1) {
 	    $color = "yellow";
 	}
     }
@@ -149,7 +149,7 @@ foreach my $cms (sort keys %cms2phedex) {
     my $t1 = ($cms ne 'T1_CH_CERN' and $cms =~ /^T[01]/);
     $space = $total_nearline{$cms} if (defined $total_nearline{$cms});
     if (defined $total_nearline{$cms} && $total_nearline{$cms} > 0 && defined $used_nearline{$cms} && defined $free_nearline{$cms}) {
-	if (abs($total_nearline{$cms} - $used_nearline{$cms} - $free_nearline{$cms}) / $total_nearline{$cms} > 0.05) {
+	if (abs($total_nearline{$cms} - $used_nearline{$cms} - $free_nearline{$cms}) / $total_nearline{$cms} > 0.1) {
 	    $color = "yellow";
 	}
     }
@@ -200,6 +200,11 @@ foreach my $cms (sort keys %cms2phedex) {
     my $turl = 'n/a';
     my $space = -1;
     $space = $inst_online{$cms} if (defined $inst_online{$cms});
+    if (defined $inst_online{$cms} && defined $total_online{$cms} && ($inst_online{$cms} + $total_online{$cms}) > 0) {
+	if (2. * abs($inst_online{$cms} - $total_online{$cms}) / ($inst_online{$cms} + $total_online{$cms}) > 0.1) {
+	    $color = "yellow";
+	}
+    }
     $color = "red" if ($space <= 1);
     printf BDII "%s\t%s\t%.1f\t%s\t%s\n", $time, $cms,
     $space, $color, $turl;
@@ -216,6 +221,11 @@ foreach my $cms (sort keys %cms2phedex) {
     my $space = -1;
     my $t1 = ($cms ne 'T1_CH_CERN' and $cms =~ /^T[01]/);
     $space = $inst_nearline{$cms} if (defined $inst_nearline{$cms});
+    if (defined $inst_nearline{$cms} && defined $total_nearline{$cms} && ($inst_nearline{$cms} + $total_nearline{$cms}) > 0) {
+	if (2. * abs($inst_nearline{$cms} - $total_nearline{$cms}) / ($inst_nearline{$cms} + $total_nearline{$cms}) > 0.1) {
+	    $color = "yellow";
+	}
+    }
     $color = "red" if ($space <= 1 && $t1);
     printf BDII "%s\t%s\t%.1f\t%s\t%s\n", $time, $cms,
     $space, $color, $turl;
