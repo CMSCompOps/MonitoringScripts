@@ -13,6 +13,8 @@ sub new {
     my $self = {ID => $id,
 	        NAME    => '',
 	        QUARTER => '',
+	        DISK => '',
+	        TAPE => '',
 	        SLOTS   => ''};
     bless $self, $class;
 }
@@ -45,12 +47,13 @@ $p->parse($doc_s) or die "Cannot parse XML\n";
 foreach (keys %sites) {
     my $name = $sites{$_}->{NAME};
     my $cms = $site2cms{$name};
+    my $id = $site2id{$name};
     my $slots = $sites{$_} ->{SLOTS};
     my $quarter = $sites{$_} ->{QUARTER};
     my $disk = $sites{$_} ->{DISK};
     my $tape = $sites{$_} ->{TAPE};
     next if (&gt($quarter, &curr_quarter()));
-    $data{$cms} = [$quarter, $slots, $disk, $tape] if (!defined $data{$cms} or
+    $data{$cms} = [$quarter, $slots, $disk, $tape, $id] if (!defined $data{$cms} or
 					 &gt($quarter, ${$data{$cms}}[0]));
 }
 
@@ -67,9 +70,12 @@ foreach my $cms (sort keys %data){
     my $slots = ${$data{$cms}}[1];
     my $disk = ${$data{$cms}}[2];
     my $tape = ${$data{$cms}}[3];
+    my $id = ${$data{$cms}}[4];
     my $colour = 'green';
     $colour = "yellow" if (&gt(&curr_quarter(), $quarter));
-    my $pledge_url = 'https://cmsweb.cern.ch/sitedb/reports/showReport?reportid=quarterly_pledges.ini';
+    $colour = "red" if (&diff(&curr_quarter(), $quarter) > 4);
+    my ($y, $q) = split /\./, $quarter;
+    my $pledge_url = "https://cmsweb.cern.ch/sitedb/resources/?site=$id&quarter=$q&year=$y";
     printf SLOTS "%s\t%s\t%s\t%s\t%s\n", $timestamp, $cms, $slots,
     $colour, $pledge_url;
     printf DISK "%s\t%s\t%s\t%s\t%s\n", $timestamp, $cms, $disk,
@@ -126,10 +132,13 @@ sub h_char_names {
     my $p = shift;
     my $a = shift;
 
-    if ($p->in_element('site')) {
+    if ($p->in_element('id')) {
+	$id2 = $a;
+    } elsif ($p->in_element('site')) {
 	$sitename = $a;
     } elsif ($p->in_element('cms') and $sitename) {
 	$site2cms{$sitename} = $a;
+	$site2id{$sitename} = $id2;
     }
 }
 
@@ -167,3 +176,11 @@ sub gt {
 	return 0;
     }
 }
+
+sub diff {
+    my ($a1, $a2) = @_;
+    my ($y1, $q1) = split /\./, $a1;
+    my ($y2, $q2) = split /\./, $a2;
+    return ($y1 - $y2 ) * 4 + ($q1 - $q2);
+}
+
