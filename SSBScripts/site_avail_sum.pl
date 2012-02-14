@@ -160,6 +160,6 @@ sub avail_url {
     my $site = shift;
     my $start = &ptime(gmtime(time));
     my $end = &ptime(gmtime(time+86400));
-    my $url = "http://dashb-cms-sum.cern.ch/dashboard/request.py/historicalsmryview-sum#view=siteavl&time%5B%5D=last24&profile=CMS_CRITICAL_FULL&group=AllGroups&site%5B%5D=$site&type=quality";
+    my $url = "http://dashb-cms-sum.cern.ch/dashboard/request.py/historicalsmryview-sum#view=siteavl&time%5B%5D=individual&starttime=$start&endtime=$end&profile=CMS_CRITICAL_FULL&group=AllGroups&site%5B%5D=$site&type=quality";
     return $url;
 }
