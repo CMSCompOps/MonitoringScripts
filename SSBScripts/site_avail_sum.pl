@@ -149,6 +149,7 @@ sub get_avail {
 	chomp;
 	if (/<item>(\d*\.+\d*)<\/item>/) {
 	    $avail = sprintf "%.3f", $1;
+            $avail = $avail * 100.;
 	}
     }
     return $avail;
