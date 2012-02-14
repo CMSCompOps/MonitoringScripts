@@ -111,8 +111,8 @@ if __name__ == '__main__':
     import string
     from pprint import pprint
 #    bdii = 'uscmsbd2.fnal.gov'
-#    bdii = 'lcg-bdii.cern.ch'
-    bdii = 'sam-bdii.cern.ch'
+    bdii = 'lcg-bdii.cern.ch'
+#    bdii = 'sam-bdii.cern.ch'
     celist = listAllCEs(bdii)
     #pprint (celist)
     swmap = getSW(celist, bdii)
