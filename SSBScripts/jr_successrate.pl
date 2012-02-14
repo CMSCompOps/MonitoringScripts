@@ -157,6 +157,9 @@ sub h_sr_char {
     if ($p->in_element('allunk')) {
 	$dbinfo{$lastsiteid}->{'allunk'} = $a;
     }
+    if ($p->in_element('cancelled')) {
+        $dbinfo{$lastsiteid}->{'cancelled'} = $a;
+    }
 }
 
 sub timestamp {
@@ -203,8 +206,10 @@ sub get_sr {
 	my $unsucc = $dbinfo{$id}->{'unsuccess'};
 	my $term = $dbinfo{$id}->{'terminated'};
 	my $unkn = $dbinfo{$id}->{'allunk'};
-	next unless ($term - $unkn > 0);
-	$sr = ($succ - $unsucc) / ($term - $unkn) * 100.;
+        my $canc = $dbinfo{$id}->{'cancelled'};
+        $sr = 100.;
+	next unless ($term - $canc - $unkn > 0);
+	$sr = ($succ - $unsucc) / ($term - $canc - $unkn) * 100.;
     }
     return $sr;
 }
@@ -214,7 +219,7 @@ sub get_successrates {
     my $start = shift;
     my $end = shift;
     my $sr = 'NA';
-    my $url = "http://dashb-cms-job.cern.ch/dashboard/request.py/jobsummary-plot-or-table?user=&site=&ce=&submissiontool=&datset=&application=&rb=&activity=$activity&grid=&date2=$start&date1=$end&sortby=site&nbars=&scale=linear&jobtype=&tier=&check=submitted";
+    my $url = "http://dashb-cms-job.cern.ch/dashboard/request.py/jobsummary-plot-or-table?user=&site=&ce=&submissiontool=&datset=&application=&rb=&activity=$activity&grid=&date2=$start&date1=$end&sortby=site&nbars=&scale=linear&jobtype=&tier=&check=terminated";
     my $cmd = "curl -H \'Accept: text/xml\' \'$url\' 2> /dev/null";
     my $output = `$cmd`;
     if ( defined $output ) {
@@ -230,6 +235,6 @@ sub successrate_url {
     my $site = shift;
     my $start = shift;
     my $end = shift;
-    my $url = "http://dashb-cms-job.cern.ch/dashboard/request.py/jobsummary#user=&site=$site&ce=&submissiontool=&dataset=&application=&rb=&activity=$activity&grid=&date2=$start&date1=$end&sortby=ce&nbars=&scale=linear&jobtype=&tier=&check=submitted";
+    my $url = "http://dashb-cms-job.cern.ch/dashboard/request.py/jobsummary#user=&site=$site&ce=&submissiontool=&dataset=&application=&rb=&activity=$activity&grid=&date2=$start&date1=$end&sortby=ce&nbars=&scale=linear&jobtype=&tier=&check=terminated";
     return $url;
 }
