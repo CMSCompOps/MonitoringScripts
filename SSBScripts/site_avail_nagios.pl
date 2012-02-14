@@ -140,8 +140,10 @@ sub ptime {
 sub get_avail {
 
     my $site = shift;
+    my $start = &ptime(gmtime(time));
+    my $end = &ptime(gmtime(time+86400));
     my $avail = 'NA';
-    my $url = "http://dashb-nagios-cms.cern.ch/dashboard/request.py/historicalsiteavailabilityranking?siteSelect3=T2T1T0&sites=${site}&timeRange=last24";
+    my $url = "http://dashb-nagios-cms.cern.ch/dashboard/request.py/historicalsiteavailabilityranking?siteSelect3=All%20Sites&sites=${site}&timeRange=individual&start=${start}&end=${end}";
     my $cmd = "curl -H \'Accept: text/xml\' \'$url\' 2> /dev/null";
     my $output = `$cmd`;
     if ( defined $output ) {
