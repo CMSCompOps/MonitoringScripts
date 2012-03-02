@@ -208,11 +208,18 @@ sub get_sr {
 	my $unkn = $dbinfo{$id}->{'allunk'};
         my $canc = $dbinfo{$id}->{'cancelled'};
         $sr = 100.;
-	next unless ($term - $canc - $unkn > 0);
+	next unless ($term - $canc - $unkn != 0);
 	$sr = ($succ - $unsucc) / ($term - $canc - $unkn) * 100.;
+        if ($sr < 0. or $sr > 100. or ($term - $canc - $unkn < 0.)) {
+            warn "ERROR: site = " . $site . " success rate = " . $sr .
+		"\nsucc = " . $succ . " unsucc = " . $unsucc .
+		" term = " . $term . " canc = " . $canc . " unkn = " .
+		$unkn . "\n";
+        }
     }
     return $sr;
 }
+
 sub get_successrates {
 
     my $activity = shift;
