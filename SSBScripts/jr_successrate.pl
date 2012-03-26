@@ -259,6 +259,6 @@ sub successrate_url {
     my $site = shift;
     my $start = shift;
     my $end = shift;
-    my $url = "http://dashb-cms-job.cern.ch/dashboard/templates/web-job2/#user=&refresh=0&table=Jobs&p=1&records=25&activemenu=0&usr=&site=T2_US_Wisconsin&submissiontool=&application=&activity=jobrobot&status=&check=terminated&tier=&from=$start&to=$end&sortby=ce&scale=linear&bars=20&ce=&rb=&grid=&jobtype=&submissionui=&dataset=&submissiontype=&task=&subtoolver=&genactivity=&outputse=&appexitcode=&accesstype=";
+    my $url = "http://dashb-cms-job.cern.ch/dashboard/templates/web-job2/#user=&refresh=0&table=Jobs&p=1&records=25&activemenu=0&usr=&site=$site&submissiontool=&application=&activity=jobrobot&status=&check=terminated&tier=&from=$start&to=$end&sortby=ce&scale=linear&bars=20&ce=&rb=&grid=&jobtype=&submissionui=&dataset=&submissiontype=&task=&subtoolver=&genactivity=&outputse=&appexitcode=&accesstype=";
     return $url;
 }
