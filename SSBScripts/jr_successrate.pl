@@ -229,8 +229,8 @@ sub get_sr {
 	$sr = ($succ - $unsucc) / ($term - $canc - $unkn) * 100.;
         if ($sr < 0. or $sr > 100. or ($term - $canc - $unkn < 0.)) {
             warn "ERROR: site = " . $site . " success rate = " . $sr .
-		"\nsucc = " . $succ . " unsucc = " . $unsucc .
-		" term = " . $term . " canc = " . $canc . " unkn = " .
+		"\napp-succeded = " . $succ . " unsuccess = " . $unsucc .
+		" terminated = " . $term . " cancelled = " . $canc . " allunkn = " .
 		$unkn . "\n";
         }
     }
