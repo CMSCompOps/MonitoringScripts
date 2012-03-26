@@ -61,8 +61,8 @@ if (! %sites) {
 
 my $start = &dbtime(time);
 my $end = &dbtime(time-86400);
-my $start3 = &dbtime3(time);
-my $end3 = &dbtime3(time-86400);
+my $start3 = &dbtime3(time-86400);
+my $end3 = &dbtime3(time);
 
 &get_successrates($activity, $start, $end);
 
@@ -84,7 +84,7 @@ foreach my $s ( sort {$a->{CMS} cmp $b->{CMS}} values %sites ) {
     } elsif ( $t == 2 ) {
 	$colour = 'red' if ( $sr ne 'NA' and $sr < 80 );
     }
-    my $comm_url = &successrate_url($s->{CMS}, $start3, $end3);
+    my $comm_url = &successrate_url($s->{CMS}, $start3, $end3, $activity);
     printf $fh "%s\t%s\t%.1f\t%s\t%s\n", $timestamp, $s->{CMS}, $sr,
     $colour, $comm_url;
 
@@ -259,6 +259,7 @@ sub successrate_url {
     my $site = shift;
     my $start = shift;
     my $end = shift;
-    my $url = "http://dashb-cms-job.cern.ch/dashboard/templates/web-job2/#user=&refresh=0&table=Jobs&p=1&records=25&activemenu=0&usr=&site=$site&submissiontool=&application=&activity=jobrobot&status=&check=terminated&tier=&from=$start&to=$end&sortby=ce&scale=linear&bars=20&ce=&rb=&grid=&jobtype=&submissionui=&dataset=&submissiontype=&task=&subtoolver=&genactivity=&outputse=&appexitcode=&accesstype=";
+    my $activity = shift;
+    my $url = "http://dashb-cms-job.cern.ch/dashboard/templates/web-job2/#user=&refresh=0&table=Jobs&p=1&records=25&activemenu=0&usr=&site=$site&submissiontool=&application=&activity=$activity&status=&check=terminated&tier=&from=$start&to=$end&sortby=ce&scale=linear&bars=20&ce=&rb=&grid=&jobtype=&submissionui=&dataset=&submissiontype=&task=&subtoolver=&genactivity=&outputse=&appexitcode=&accesstype=";
     return $url;
 }
