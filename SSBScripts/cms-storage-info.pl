@@ -63,6 +63,7 @@ foreach my $cms (sort keys %cms2phedex) {
     my ($tsub, $tcust, $tncust, $turl, $hasnode) = (0, 0, 0, '', 0);
     my @nodes = @{$cms2phedex{$cms}};
     foreach my $node (@nodes) {
+	next if ($node =~ /^TX/ or $node =~ /^TV/);
 	my ($sub, $cust, $ncust, $url) = &get_phedex_info($node);
 	next if ($sub == -1);
 	$hasnode = 1;
@@ -458,12 +459,16 @@ sub get_phedex_info {
 #         )
 
     my $node = shift;
+    my ($s, $c, $n) = (-1, -1, -1);
     my $url = "https://cmsweb.cern.ch/phedex/datasvc/xml/prod/nodeusage?node=$node";
     my $doc = get($url);
+    if (! defined $doc) {
+	warn "Could not get node info: $url\n";
+	return ($s, $c, $n, $url);
+    }
 
 # PhEDEx numbers are set to -1 when information is missing
 # Space measured in TB (powers of 1000)
-    my ($s, $c, $n) = (-1, -1, -1);
     my $k = (1000 * 1000 * 1000 * 1000); 
     if ($doc =~ /cust_node_bytes='(\d+)'.*cust_dest_bytes='(\d+)'.*noncust_dest_bytes='(\d+)'.*noncust_node_bytes='(\d+)'/) {
 	$s = ($2 + $3 - $1 - $4) / $k;
