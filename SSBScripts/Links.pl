@@ -53,17 +53,6 @@ $url_debug =~ s/__date__/$date/;
 $url_prod2 = &datasvc_url('prod', $start, $end);
 $url_debug2 = &datasvc_url('debug', $start, $end);
 
-# Parsing and combination production+debug
-#($dbgtime, $ref1) = &get_quality($url_debug);
-#%quality_debug = %$ref1;
-#($prdtime, $ref2) = &get_quality($url_prod);
-#%quality_prod  = %$ref2;
-#%quality       = &quality_combine(\%quality_debug, \%quality_prod);
-#foreach ( keys %quality ) {
-#    $lup{$_} = $hup{$_} = $ldown{$_} = $hdown{$_} = $outcross{$_} = $incross{$_} = 0;
-#    $t_lup{$_} = $t_hup{$_} = $t_ldown{$_} = $t_hdown{$_} = $t_outcross{$_} = $t_incross{$_} = 0;
-#}
-
 %quality_debug2 = &get_quality2($url_debug2);
 %quality_prod2 = &get_quality2($url_prod2);
 %quality2 = &quality_combine2(\%quality_debug2, \%quality_prod2);
@@ -80,7 +69,6 @@ foreach my $site ( keys %quality2 ) {
     my $tier = substr($site, 1, 1);
     foreach my $dest ( keys %{$quality2{$site}} ) {
 	my $dtier = substr($dest, 1, 1);
-#	my $q = $quality{$site}{$dest}[0];
 	my $q2;
 	if ($quality2{$site}{$dest}[0]+$quality2{$site}{$dest}[1] > 0) {
 	    $q2 = 100. *
@@ -89,7 +77,6 @@ foreach my $site ( keys %quality2 ) {
 	} else {
 	    $q2 = 0;
 	}
-	print "$site $dest $q2\n";
 	$totlinks++;
 	$goodlinks++ if ( $q2 >= $thrsh );
 
@@ -273,41 +260,6 @@ sub site_report {
     return $output
 }
 
-sub get_quality {
-    my $url = shift;
-    my $report = get($url) or die "Cannot retrieve PhEDEx report\n";
-    my $parse = 0;
-    my $gentime;
-    my %quality = ();
-    foreach ( split /\n/, $report ) {
-	if ( /generated at (.*) by/ ) {
-	    $gentime = $1;
-	}
-	$parse = 1 if ( /1-day period/ );
-	$parse = 0 if ( /7-day period/ );
-	if ( $parse ) {
-	    if ( /^(T\w*)\s+/ ) {
-		$dest = $1 ;
-	    }
-	    if ( /^\. (T\w+)/ ) {
-		$source = $1;
-		next if ( $source =~ /MSS/ || $dest =~ /MSS/ );
-		next if ( $source =~ /^T3/ || $dest =~ /^T3/ );
-		my @data = split /\s+/, $_;
-		my $succ = $data[5];
-		$succ =~ s/%//;
-		$succ = 0 if ( $succ eq 'N/A' );
-		my $ftot = $data[4];
-		if ( $debug ) {
-		    system("echo $succ >> quality.vec");
-		}
-		$quality{$source}{$dest} = [$succ, $ftot];
-	    }
-	}
-    }
-    return ($gentime, \%quality);
-}
-
 sub datasvc_url {
     my $instance = shift;
     my $start = shift;
@@ -376,49 +328,6 @@ sub quality_combine2 {
     return %q;
 }
     
-sub quality_combine {
-    my ($hashref1, $hashref2) = @_;
-    my %q1 = %$hashref1;
-    my %q2 = %$hashref2;
-    my %q;
-    my @sites = ();
-    foreach my $s (keys %q1, keys %q2) {
-	push @sites, $s if ( ! grep(/$s/, @sites) );
-    }
-    foreach my $s ( @sites ) {
-	my @dests = ();
-	foreach my $d ( keys %{$q1{$s}}, keys %{$q2{$s}} ) {
-	    push @dests, $d if ( ! grep(/$d/, @dests) );
-	}
-	foreach my $d ( @dests ) {
-	    my $q1 = (defined ${$q1{$s}{$d}}[0])?${$q1{$s}{$d}}[0]:-1;
-	    my $q2 = (defined ${$q2{$s}{$d}}[0])?${$q2{$s}{$d}}[0]:-1;
-	    my $t1 = (defined ${$q1{$s}{$d}}[1])?${$q1{$s}{$d}}[1]:-1;
-	    my $t2 = (defined ${$q2{$s}{$d}}[1])?${$q2{$s}{$d}}[1]:-1;
-	    my $q;
-	    my $t;
-	    if ( $q1 < 0 ) {
-		$q = $q2;
-		$t = $t2;
-	    } elsif ( $q2 < 0 ) {
-		$q = $q1;
-		$t = $t1;
-	    } elsif ( $q1 == 0 ) {
-		$q = $q2;
-		$t = $t2;
-	    } elsif ( $q2 == 0 ) {
-		$q = $q1;
-		$t = $t1;
-	    } else {
-		$q = 1/((1/$q1*$t1+1/$q2*$t2)/($t1+$t2));
-		$t = $t1+$t2;
-	    }
-	    $q{$s}{$d} = [$q, $t];
-	}
-    }
-    return %q;
-}
-
 sub phedex_link {
     my $site = shift;
     my $type = shift;
