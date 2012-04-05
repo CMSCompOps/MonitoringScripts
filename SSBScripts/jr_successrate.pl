@@ -224,8 +224,10 @@ sub get_sr {
 	my $term = $dbinfo{$id}->{'terminated'};
 	my $unkn = $dbinfo{$id}->{'allunk'};
         my $canc = $dbinfo{$id}->{'cancelled'};
-        $sr = 100.;
-	next unless ($term - $canc - $unkn != 0);
+	if ($term - $canc - $unkn < 10) {
+	    warn "WARNING: too few jobs. Skipping site = " . $site . " terminated = " . $term . " cancelled = " . $canc . " allunk = " . $unkn . "\n";
+	    next;
+        }
 	$sr = ($succ - $unsucc) / ($term - $canc - $unkn) * 100.;
         if ($sr < 0. or $sr > 100. or ($term - $canc - $unkn < 0.)) {
             warn "ERROR: site = " . $site . " success rate = " . $sr .
