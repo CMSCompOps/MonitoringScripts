@@ -39,13 +39,21 @@ $lastsiteid = 0;
 %dbinfo = ();
 
 my $activity = $ARGV[0];
+my $outfile = $ARGV[1];
+my $last = $ARGV[2];
+
 die "Usage: $NAME <activity>\n" if (! defined $activity);
 
 #Get XML file from SiteDB
 
 my $url = "https://cmsweb.cern.ch/sitedb/sitedb/reports/showXMLReport/?reportid=naming_convention.ini";
 my $doc = get($url) or die "Cannot retrieve XML\n";
-my $filepath = "/afs/cern.ch/cms/LCG/SiteComm/successrate_$activity.txt";
+my $filepath;
+if ($outfile) {
+    $filepath = "/afs/cern.ch/cms/LCG/SiteComm/$outfile";
+} else {
+    $filepath = "/afs/cern.ch/cms/LCG/SiteComm/successrate_$activity.txt";
+}
 ($fh, $tmpfile) = tempfile(UNLINK => 1) or die "Cannot create temporary file\n";
 
 # Parse XML
@@ -59,9 +67,10 @@ if (! %sites) {
     die "No sites found!\n";
 }
 
+$last = 24 if (!$last);    
 my $start = &dbtime(time);
-my $end = &dbtime(time-86400);
-my $start3 = &dbtime3(time-86400);
+my $end = &dbtime(time-$last*3600);
+my $start3 = &dbtime3(time-$last*3600);
 my $end3 = &dbtime3(time);
 
 &get_successrates($activity, $start, $end);
