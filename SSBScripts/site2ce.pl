@@ -55,12 +55,13 @@ my $doc = get($url) or die "Cannot retrieve XML\n";
 $p = new XML::Parser(Handlers => {Start => \&h_start, Char  => \&h_char});
 $p->parse($doc) or die "Cannot parse XML\n";
 
+@site_list = ();
 foreach my $s (values %sites) {
     if ($s->{CMS} eq $site) {
-	$site = $s->{SAM};
+	push @site_list, $s->{SAM};
 	if (! $compact) {
 	    print "CMS name:  " . $s->{CMS} . "\n";
-	    print "BDII name: " . $site . "\n";
+	    print "BDII name: " . $s->{SAM} . "\n";
         }
 	$found = 1;
     }
@@ -70,24 +71,26 @@ if ( ! $found and ! $compact) {
 }
 
 my $ldap = &bdii_init(@bdiilist) or die "$NAME: cannot contact LDAP server.\n";
-my $siteid = &siteid($ldap, $site) or die "$NAME: site $site not found.\n";
-my @clusters = &clusters($ldap, $siteid) or die "$NAME: no clusters associated to site $site.\n";
+for $site (@site_list) {
+    my $siteid = &siteid($ldap, $site) or die "$NAME: site $site not found.\n";
+    my @clusters = &clusters($ldap, $siteid) or warn "$NAME: no clusters associated to site $site.\n";
 
-$output = '';
-$found = 0;
-foreach my $clusterid (@clusters) {
-    my @ces = &ce($ldap, $clusterid, $vo);
-    if (! $compact) {
-        map {$output .= "$_\n"} @ces;
-    } else {
-	map {$output .= "$_,"} @ces;
+    $output = '';
+    $found = 0;
+    foreach my $clusterid (@clusters) {
+	my @ces = &ce($ldap, $clusterid, $vo);
+	if (! $compact) {
+	    map {$output .= "$_\n"} @ces;
+	} else {
+	    map {$output .= "$_,"} @ces;
+	}
     }
+    $output =~ s/,$//;
+    if ( ! $output ) {
+	die "No CEs found\n";
+    }
+    print $output;
 }
-$output =~ s/,$//;
-if ( ! $output ) {
-    die "No CEs found\n";
-}
-print $output;
 
 sub bdii_init {
     my @bdiilist = @_;
