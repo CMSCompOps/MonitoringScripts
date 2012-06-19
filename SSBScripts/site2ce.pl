@@ -75,6 +75,9 @@ for $site (@site_list) {
     my $siteid = &siteid($ldap, $site) or die "$NAME: site $site not found.\n";
     my @clusters = &clusters($ldap, $siteid) or warn "$NAME: no clusters associated to site $site.\n";
 
+    if ($output and $compact) {
+	print ",";
+    }
     $output = '';
     $found = 0;
     foreach my $clusterid (@clusters) {
