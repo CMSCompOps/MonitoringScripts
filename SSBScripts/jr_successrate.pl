@@ -85,17 +85,23 @@ foreach my $s ( sort {$a->{CMS} cmp $b->{CMS}} values %sites ) {
     next if ($s->{CMS} eq 'T1_CH_CERN');
     my $timestamp = &dbtime2(time); 
     my $sr = &get_sr($s->{CMS});
-
-    next if ( $sr eq 'NA' );
-    my $colour = 'green';
-    if ( $t == 0 or $t == 1 ) {
-	$colour = 'red' if ( $sr ne 'NA' and $sr < 90 );
-    } elsif ( $t == 2 ) {
-	$colour = 'red' if ( $sr ne 'NA' and $sr < 80 );
-    }
+    my $colour;
     my $comm_url = &successrate_url($s->{CMS}, $start3, $end3, $activity);
-    printf $fh "%s\t%s\t%.1f\t%s\t%s\n", $timestamp, $s->{CMS}, $sr,
-    $colour, $comm_url;
+    if ( $sr eq 'NA' ) {
+	$colour = 'white';
+	$sr = 'n/a';
+	printf $fh "%s\t%s\t%s\t%s\t%s\n", $timestamp, $s->{CMS}, $sr,
+	$colour, $comm_url;
+    } else {
+	$colour = 'green';
+	if ( $t == 0 or $t == 1 ) {
+	    $colour = 'red' if ( $sr ne 'NA' and $sr < 90 );
+	} elsif ( $t == 2 ) {
+	    $colour = 'red' if ( $sr ne 'NA' and $sr < 80 );
+	}
+	printf $fh "%s\t%s\t%.1f\t%s\t%s\n", $timestamp, $s->{CMS}, $sr,
+	$colour, $comm_url;
+    }
 
 # Use T0_CH_CERN for T1_CH_CERN
     if ( $s->{CMS} eq 'T0_CH_CERN' ) {
