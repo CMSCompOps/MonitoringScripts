@@ -105,8 +105,13 @@ foreach my $s ( sort {$a->{CMS} cmp $b->{CMS}} values %sites ) {
 
 # Use T0_CH_CERN for T1_CH_CERN
     if ( $s->{CMS} eq 'T0_CH_CERN' ) {
-	printf $fh "%s\t%s\t%.1f\t%s\t%s\n", $timestamp, 'T1_CH_CERN',
-        $sr, $colour, $comm_url;
+        if ( $sr eq 'n/a' ) {
+            printf $fh "%s\t%s\t%s\t%s\t%s\n", $timestamp, $s->{CMS}, $sr,
+            $colour, $comm_url;
+        } else {
+	    printf $fh "%s\t%s\t%.1f\t%s\t%s\n", $timestamp, 'T1_CH_CERN',
+            $sr, $colour, $comm_url;
+        }
     }
 } 
 close $fh;
