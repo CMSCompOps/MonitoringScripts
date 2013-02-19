@@ -58,7 +58,8 @@ foreach my $s ( values %sites ) {
     next if $seen{$cms}++;
     my $t = $s->tier;
     next if ( $t eq 'X' );
-# Skip T1_CH_CERN
+# Skip T[01]_CH_CERN
+    next if ($s->{CMS} eq 'T0_CH_CERN');
     next if ($s->{CMS} eq 'T1_CH_CERN');
     my $timestamp = &timestamp;
     my $avail = &get_avail($s->{CMS});
@@ -74,11 +75,6 @@ foreach my $s ( values %sites ) {
     my $comm_url = &avail_url($s->{CMS});
     printf $fh "%s\t%s\t%s\t%s\t%s\n", $timestamp, $s->{CMS}, "${avail}",
     $colour, $comm_url;
-# Use T0_CH_CERN for T1_CH_CERN
-    if ( $s->{CMS} eq 'T0_CH_CERN' ) {
-	printf $fh "%s\t%s\t%s\t%s\t%s\n", $timestamp, 'T1_CH_CERN',
-        "${avail}", $colour, $comm_url;
-    }
 } 
 close $fh;
 system("/bin/cp -f $tmpfile $filepath"); 
