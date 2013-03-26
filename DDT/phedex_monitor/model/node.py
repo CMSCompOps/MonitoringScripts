@@ -1,7 +1,6 @@
 import re
 
 alter = { \
-    'CERN' : 'T1_CH_CERN_Buffer',
     'PIC' : 'T1_ES_PIC_Buffer'
 }
 
