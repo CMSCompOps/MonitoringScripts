@@ -83,35 +83,27 @@ foreach my $s ( sort {$a->{CMS} cmp $b->{CMS}} values %sites ) {
 
 # Skip T1_CH_CERN
     next if ($s->{CMS} eq 'T1_CH_CERN');
+    next if ($s->{CMS} eq 'T0_CH_CERN'); # Change to T2 at end of LS1
     my $timestamp = &dbtime2(time); 
     my $sr = &get_sr($s->{CMS});
     my $colour;
+    my $site = $s->{CMS};
+#    $site = 'T2_CH_CERN' if ($site eq 'T0_CH_CERN'); # Uncomment at end of LS1
     my $comm_url = &successrate_url($s->{CMS}, $start3, $end3, $activity);
     if ( $sr eq 'NA' ) {
 	$colour = 'white';
 	$sr = 'n/a';
-	printf $fh "%s\t%s\t%s\t%s\t%s\n", $timestamp, $s->{CMS}, $sr,
+	printf $fh "%s\t%s\t%s\t%s\t%s\n", $timestamp, $site, $sr,
 	$colour, $comm_url;
     } else {
 	$colour = 'green';
 	if ( $t == 0 or $t == 1 ) {
-	    $colour = 'red' if ( $sr ne 'NA' and $sr < 90 );
+	    $colour = 'red' if ( $sr < 90 );
 	} elsif ( $t == 2 ) {
-	    $colour = 'red' if ( $sr ne 'NA' and $sr < 80 );
+	    $colour = 'red' if ( $sr < 80 );
 	}
-	printf $fh "%s\t%s\t%.1f\t%s\t%s\n", $timestamp, $s->{CMS}, $sr,
+	printf $fh "%s\t%s\t%.1f\t%s\t%s\n", $timestamp, $site, $sr,
 	$colour, $comm_url;
-    }
-
-# Use T0_CH_CERN for T1_CH_CERN
-    if ( $s->{CMS} eq 'T0_CH_CERN' ) {
-        if ( $sr eq 'n/a' ) {
-            printf $fh "%s\t%s\t%s\t%s\t%s\n", $timestamp, $s->{CMS}, $sr,
-            $colour, $comm_url;
-        } else {
-	    printf $fh "%s\t%s\t%.1f\t%s\t%s\n", $timestamp, 'T1_CH_CERN',
-            $sr, $colour, $comm_url;
-        }
     }
 } 
 close $fh;
@@ -245,7 +237,7 @@ sub get_sr {
 	my $unkn = $dbinfo{$id}->{'allunk'};
         my $canc = $dbinfo{$id}->{'cancelled'};
 	if ($term - $canc - $unkn < 10) {
-	    warn "WARNING: too few jobs. Skipping site = " . $site . " terminated = " . $term . " cancelled = " . $canc . " allunk = " . $unkn . "\n";
+#	    warn "WARNING: too few jobs. Skipping site = " . $site . " terminated = " . $term . " cancelled = " . $canc . " allunk = " . $unkn . "\n";
 	    next;
         }
 	$sr = ($succ - $unsucc) / ($term - $canc - $unkn) * 100.;
