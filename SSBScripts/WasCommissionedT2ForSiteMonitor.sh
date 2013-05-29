@@ -46,14 +46,17 @@ WasCommissionedT2List="
 AT_Vienna \
 BE_IIHE \
 BE_UCL \
-BR_UERJ \
 BR_SPRACE \
+CH_CERN \
+CH_CERN_AI \
+CH_CERN_HLT \
 CH_CSCS \
 CN_Beijing \
 DE_DESY \
 DE_RWTH \
 ES_CIEMAT \
 ES_IFCA \
+GR_Ioannina
 FI_HIP \
 FR_CCIN2P3 \
 FR_GRIF_IRFU \
@@ -65,10 +68,10 @@ IT_Legnaro \
 IT_Pisa \
 IT_Rome \
 KR_KNU \
-PL_Warsaw \
 PT_NCG_Lisbon \
 RU_IHEP \
 RU_INR \
+RU_ITEP \
 RU_JINR \
 RU_PNPI \
 RU_SINP \
@@ -76,6 +79,7 @@ TW_Taiwan \
 UA_KIPT \
 UK_London_Brunel \
 UK_London_IC \
+UK_SGrid_Bristol \
 UK_SGrid_RALPP \
 US_Caltech \
 US_Florida \
