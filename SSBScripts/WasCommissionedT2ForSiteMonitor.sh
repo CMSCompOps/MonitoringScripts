@@ -54,6 +54,7 @@ CH_CSCS \
 CN_Beijing \
 DE_DESY \
 DE_RWTH \
+EE_Estonia \
 ES_CIEMAT \
 ES_IFCA \
 GR_Ioannina
