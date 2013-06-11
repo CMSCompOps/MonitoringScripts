@@ -73,7 +73,7 @@ PT_NCG_Lisbon \
 RU_IHEP \
 RU_INR \
 RU_JINR \
-RU_METU \
+TR_METU \
 RU_PNPI \
 RU_SINP \
 TW_Taiwan \
