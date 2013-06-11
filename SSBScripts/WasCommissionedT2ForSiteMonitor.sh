@@ -72,8 +72,8 @@ KR_KNU \
 PT_NCG_Lisbon \
 RU_IHEP \
 RU_INR \
-RU_ITEP \
 RU_JINR \
+RU_METU \
 RU_PNPI \
 RU_SINP \
 TW_Taiwan \
