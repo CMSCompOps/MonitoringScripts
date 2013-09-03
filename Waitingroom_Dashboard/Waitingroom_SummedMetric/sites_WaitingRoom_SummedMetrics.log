@@ -1,0 +1,326 @@
+starting to fetch all sites from siteDB
+X509_USER_CERT and X509_USER_KEY found
+conn found in if else structure
+r1 passed
+r2 passed
+-------------------------------------------------------------
+Getting the url http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153&time=custom&dateFrom=2013-08-03&dateTo=2013-09-03&sites=T2&batch=1
+2013-06-21 14:36:03 2013-09-04 03:35:58
+T2_TH_CUNSTDA :  76
+---------------------------------------
+2013-08-01 22:05:08 2013-09-04 03:35:58
+T2_BR_UERJ :  35
+---------------------------------------
+2013-07-08 22:50:27 2013-09-04 03:35:58
+T2_RU_INR :  59
+---------------------------------------
+2013-08-12 23:51:07 2013-08-28 13:35:55
+T2_RU_JINR :  17
+---------------------------------------
+2013-06-21 14:36:03 2013-09-04 03:35:58
+T2_PK_NCP :  76
+---------------------------------------
+2013-06-21 14:36:03 2013-09-04 03:35:58
+T2_RU_RRC_KI :  76
+---------------------------------------
+2013-07-02 22:05:56 2013-08-28 13:35:55
+T2_RU_SINP :  58
+---------------------------------------
+2013-06-21 14:36:03 2013-09-04 03:35:58
+T2_IN_TIFR :  76
+---------------------------------------
+2013-08-09 23:20:28 2013-08-12 23:51:07
+T2_PL_Warsaw :  4
+---------------------------------------
+{'T2_GR_Ioannina': 0, 'T2_BR_UERJ': 35, 'T2_TR_METU': 0, 'T2_AT_Vienna': 0, 'T2_CH_CSCS': 0, 'T2_UA_KIPT': 0, 'T2_PK_NCP': 76, 'T2_RU_PNPI': 0, 'T2_US_Purdue': 0, 'T2_FI_HIP': 0, 'T2_UK_SGrid_RALPP': 0, 'T2_FR_GRIF_LLR': 0, 'T2_BE_UCL': 0, 'T2_ES_IFCA': 0, 'T2_DE_RWTH': 0, 'T2_UK_SGrid_Bristol': 0, 'T2_FR_IPHC': 0, 'T2_CH_CERN_AI': 0, 'T2_KR_KNU': 0, 'T2_DE_DESY': 0, 'T2_RU_SINP': 58, 'T2_IT_Legnaro': 0, 'T2_US_Caltech': 0, 'T2_RU_ITEP': 0, 'T2_UK_London_Brunel': 0, 'T2_RU_JINR': 17, 'T2_IT_Pisa': 0, 'T2_US_Vanderbilt': 0, 'T2_EE_Estonia': 0, 'T2_IN_TIFR': 76, 'T2_TW_Taiwan': 0, 'T2_CN_Beijing': 0, 'T2_MY_UPM_BIRUNI': 0, 'T2_US_Florida': 0, 'T2_TH_CUNSTDA': 76, 'T2_FR_GRIF_IRFU': 0, 'T2_RU_RRC_KI': 76, 'T2_UK_London_IC': 0, 'T2_IT_Bari': 0, 'T2_US_Nebraska': 0, 'T2_IT_Rome': 0, 'T2_FR_CCIN2P3': 0, 'T2_US_UCSD': 0, 'T2_CH_CERN_HLT': 0, 'T2_ES_CIEMAT': 0, 'T2_RU_IHEP': 0, 'T2_PL_Warsaw': 4, 'T2_US_Wisconsin': 0, 'T2_HU_Budapest': 0, 'T2_US_MIT': 0, 'T2_BE_IIHE': 0, 'T2_RU_INR': 59, 'T2_CH_CERN': 0, 'T2_PT_NCG_Lisbon': 0, 'T2_BR_SPRACE': 0}
+Local current time : 2013-09-03 14:35:38
+T2_GR_Ioannina 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_BR_UERJ 35 red http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_TR_METU 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_AT_Vienna 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_CH_CSCS 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_UA_KIPT 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_PK_NCP 76 red http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_RU_PNPI 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_US_Purdue 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_FI_HIP 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_UK_SGrid_RALPP 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_FR_GRIF_LLR 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_BE_UCL 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_ES_IFCA 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_DE_RWTH 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_UK_SGrid_Bristol 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_FR_IPHC 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_CH_CERN_AI 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_KR_KNU 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_DE_DESY 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_RU_SINP 58 red http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_IT_Legnaro 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_US_Caltech 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_RU_ITEP 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_UK_London_Brunel 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_RU_JINR 17 red http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_IT_Pisa 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_US_Vanderbilt 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_EE_Estonia 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_IN_TIFR 76 red http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_TW_Taiwan 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_CN_Beijing 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_MY_UPM_BIRUNI 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_US_Florida 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_TH_CUNSTDA 76 red http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_FR_GRIF_IRFU 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_RU_RRC_KI 76 red http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_UK_London_IC 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_IT_Bari 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_US_Nebraska 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_IT_Rome 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_FR_CCIN2P3 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_US_UCSD 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_CH_CERN_HLT 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_ES_CIEMAT 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_RU_IHEP 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_PL_Warsaw 4 red http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_US_Wisconsin 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_HU_Budapest 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_US_MIT 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_BE_IIHE 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_RU_INR 59 red http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_CH_CERN 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_PT_NCG_Lisbon 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_BR_SPRACE 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+__________________________________________________
+__________________________________________________
+Getting the url http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153&time=custom&dateFrom=2013-07-03&dateTo=2013-09-03&sites=T2&batch=1
+2013-06-21 14:36:03 2013-09-04 03:35:58
+T2_TH_CUNSTDA :  76
+---------------------------------------
+2013-06-21 14:36:03 2013-07-30 15:50:54
+2013-08-01 22:05:08 2013-09-04 03:35:58
+T2_BR_UERJ :  75
+---------------------------------------
+2013-07-18 01:05:45 2013-07-25 15:21:24
+T2_RU_IHEP :  8
+---------------------------------------
+2013-07-08 22:50:27 2013-09-04 03:35:58
+T2_RU_INR :  59
+---------------------------------------
+2013-07-22 20:50:38 2013-07-30 15:50:54
+T2_RU_ITEP :  9
+---------------------------------------
+2013-06-26 09:20:41 2013-07-30 15:50:54
+2013-08-12 23:51:07 2013-08-28 13:35:55
+T2_RU_JINR :  52
+---------------------------------------
+2013-07-08 22:50:27 2013-07-18 01:05:45
+2013-07-22 20:50:38 2013-07-30 15:50:54
+T2_TR_METU :  20
+---------------------------------------
+2013-06-21 14:36:03 2013-09-04 03:35:58
+T2_PK_NCP :  76
+---------------------------------------
+2013-07-08 22:50:27 2013-07-18 01:05:45
+T2_RU_PNPI :  11
+---------------------------------------
+2013-06-21 14:36:03 2013-09-04 03:35:58
+T2_RU_RRC_KI :  76
+---------------------------------------
+2013-07-02 22:05:56 2013-08-28 13:35:55
+T2_RU_SINP :  58
+---------------------------------------
+2013-06-21 14:36:03 2013-09-04 03:35:58
+T2_IN_TIFR :  76
+---------------------------------------
+2013-08-09 23:20:28 2013-08-12 23:51:07
+T2_PL_Warsaw :  4
+---------------------------------------
+{'T2_GR_Ioannina': 0, 'T2_BR_UERJ': 75, 'T2_TR_METU': 20, 'T2_AT_Vienna': 0, 'T2_CH_CSCS': 0, 'T2_UA_KIPT': 0, 'T2_PK_NCP': 76, 'T2_RU_PNPI': 11, 'T2_US_Purdue': 0, 'T2_FI_HIP': 0, 'T2_UK_SGrid_RALPP': 0, 'T2_FR_GRIF_LLR': 0, 'T2_BE_UCL': 0, 'T2_ES_IFCA': 0, 'T2_DE_RWTH': 0, 'T2_UK_SGrid_Bristol': 0, 'T2_FR_IPHC': 0, 'T2_CH_CERN_AI': 0, 'T2_KR_KNU': 0, 'T2_DE_DESY': 0, 'T2_RU_SINP': 58, 'T2_IT_Legnaro': 0, 'T2_US_Caltech': 0, 'T2_RU_ITEP': 9, 'T2_UK_London_Brunel': 0, 'T2_RU_JINR': 52, 'T2_IT_Pisa': 0, 'T2_US_Vanderbilt': 0, 'T2_EE_Estonia': 0, 'T2_IN_TIFR': 76, 'T2_TW_Taiwan': 0, 'T2_CN_Beijing': 0, 'T2_MY_UPM_BIRUNI': 0, 'T2_US_Florida': 0, 'T2_TH_CUNSTDA': 76, 'T2_FR_GRIF_IRFU': 0, 'T2_RU_RRC_KI': 76, 'T2_UK_London_IC': 0, 'T2_IT_Bari': 0, 'T2_US_Nebraska': 0, 'T2_IT_Rome': 0, 'T2_FR_CCIN2P3': 0, 'T2_US_UCSD': 0, 'T2_CH_CERN_HLT': 0, 'T2_ES_CIEMAT': 0, 'T2_RU_IHEP': 8, 'T2_PL_Warsaw': 4, 'T2_US_Wisconsin': 0, 'T2_HU_Budapest': 0, 'T2_US_MIT': 0, 'T2_BE_IIHE': 0, 'T2_RU_INR': 59, 'T2_CH_CERN': 0, 'T2_PT_NCG_Lisbon': 0, 'T2_BR_SPRACE': 0}
+Local current time : 2013-09-03 14:35:38
+T2_GR_Ioannina 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_BR_UERJ 75 red http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_TR_METU 20 red http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_AT_Vienna 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_CH_CSCS 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_UA_KIPT 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_PK_NCP 76 red http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_RU_PNPI 11 red http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_US_Purdue 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_FI_HIP 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_UK_SGrid_RALPP 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_FR_GRIF_LLR 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_BE_UCL 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_ES_IFCA 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_DE_RWTH 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_UK_SGrid_Bristol 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_FR_IPHC 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_CH_CERN_AI 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_KR_KNU 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_DE_DESY 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_RU_SINP 58 red http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_IT_Legnaro 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_US_Caltech 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_RU_ITEP 9 red http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_UK_London_Brunel 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_RU_JINR 52 red http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_IT_Pisa 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_US_Vanderbilt 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_EE_Estonia 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_IN_TIFR 76 red http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_TW_Taiwan 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_CN_Beijing 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_MY_UPM_BIRUNI 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_US_Florida 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_TH_CUNSTDA 76 red http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_FR_GRIF_IRFU 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_RU_RRC_KI 76 red http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_UK_London_IC 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_IT_Bari 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_US_Nebraska 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_IT_Rome 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_FR_CCIN2P3 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_US_UCSD 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_CH_CERN_HLT 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_ES_CIEMAT 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_RU_IHEP 8 red http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_PL_Warsaw 4 red http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_US_Wisconsin 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_HU_Budapest 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_US_MIT 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_BE_IIHE 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_RU_INR 59 red http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_CH_CERN 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_PT_NCG_Lisbon 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_BR_SPRACE 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+__________________________________________________
+__________________________________________________
+Getting the url http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153&time=custom&dateFrom=2013-06-03&dateTo=2013-09-03&sites=T2&batch=1
+2013-06-14 17:20:17 2013-06-14 17:50:17
+2013-06-15 00:20:31 2013-06-15 06:05:15
+2013-06-16 01:53:30 2013-06-16 03:50:43
+2013-06-17 03:22:19 2013-06-17 04:20:28
+2013-06-21 14:36:03 2013-09-04 03:35:58
+T2_TH_CUNSTDA :  80
+---------------------------------------
+2013-06-14 17:20:17 2013-06-14 17:50:17
+2013-06-15 00:20:31 2013-06-15 06:05:15
+2013-06-16 01:53:30 2013-06-16 03:50:43
+2013-06-17 03:22:19 2013-06-17 04:20:28
+2013-06-21 14:36:03 2013-07-30 15:50:54
+2013-08-01 22:05:08 2013-09-04 03:35:58
+T2_BR_UERJ :  79
+---------------------------------------
+2013-07-18 01:05:45 2013-07-25 15:21:24
+T2_RU_IHEP :  8
+---------------------------------------
+2013-07-08 22:50:27 2013-09-04 03:35:58
+T2_RU_INR :  59
+---------------------------------------
+2013-06-14 17:20:17 2013-06-14 17:50:17
+2013-06-15 00:20:31 2013-06-15 06:05:15
+2013-06-16 01:53:30 2013-06-16 03:50:43
+2013-06-17 03:22:19 2013-06-17 04:20:28
+2013-06-21 14:36:03 2013-06-26 09:20:41
+2013-07-22 20:50:38 2013-07-30 15:50:54
+T2_RU_ITEP :  19
+---------------------------------------
+2013-06-26 09:20:41 2013-07-30 15:50:54
+2013-08-12 23:51:07 2013-08-28 13:35:55
+T2_RU_JINR :  52
+---------------------------------------
+2013-06-26 09:20:41 2013-07-02 22:05:56
+2013-07-08 22:50:27 2013-07-18 01:05:45
+2013-07-22 20:50:38 2013-07-30 15:50:54
+T2_TR_METU :  27
+---------------------------------------
+2013-06-14 17:20:17 2013-06-14 17:50:17
+2013-06-15 00:20:31 2013-06-15 06:05:15
+2013-06-16 01:53:30 2013-06-16 03:50:43
+2013-06-17 03:22:19 2013-06-17 04:20:28
+2013-06-21 14:36:03 2013-09-04 03:35:58
+T2_PK_NCP :  80
+---------------------------------------
+2013-07-08 22:50:27 2013-07-18 01:05:45
+T2_RU_PNPI :  11
+---------------------------------------
+2013-06-14 17:20:17 2013-06-14 17:50:17
+2013-06-15 00:20:31 2013-06-15 06:05:15
+2013-06-16 01:53:30 2013-06-16 03:50:43
+2013-06-17 03:22:19 2013-06-17 04:20:28
+2013-06-21 14:36:03 2013-09-04 03:35:58
+T2_RU_RRC_KI :  80
+---------------------------------------
+2013-07-02 22:05:56 2013-08-28 13:35:55
+T2_RU_SINP :  58
+---------------------------------------
+2013-06-14 17:20:17 2013-06-14 17:50:17
+2013-06-15 00:20:31 2013-06-15 06:05:15
+2013-06-16 01:53:30 2013-06-16 03:50:43
+2013-06-17 03:22:19 2013-06-17 04:20:28
+2013-06-21 14:36:03 2013-09-04 03:35:58
+T2_IN_TIFR :  80
+---------------------------------------
+2013-06-14 17:20:17 2013-06-14 17:50:17
+2013-06-15 00:20:31 2013-06-15 06:05:15
+2013-06-16 01:53:30 2013-06-16 03:50:43
+2013-06-17 03:22:19 2013-06-17 04:20:28
+2013-06-21 14:36:03 2013-06-26 09:20:41
+2013-08-09 23:20:28 2013-08-12 23:51:07
+T2_PL_Warsaw :  14
+---------------------------------------
+{'T2_GR_Ioannina': 0, 'T2_BR_UERJ': 79, 'T2_TR_METU': 27, 'T2_AT_Vienna': 0, 'T2_CH_CSCS': 0, 'T2_UA_KIPT': 0, 'T2_PK_NCP': 80, 'T2_RU_PNPI': 11, 'T2_US_Purdue': 0, 'T2_FI_HIP': 0, 'T2_UK_SGrid_RALPP': 0, 'T2_FR_GRIF_LLR': 0, 'T2_BE_UCL': 0, 'T2_ES_IFCA': 0, 'T2_DE_RWTH': 0, 'T2_UK_SGrid_Bristol': 0, 'T2_FR_IPHC': 0, 'T2_CH_CERN_AI': 0, 'T2_KR_KNU': 0, 'T2_DE_DESY': 0, 'T2_RU_SINP': 58, 'T2_IT_Legnaro': 0, 'T2_US_Caltech': 0, 'T2_RU_ITEP': 19, 'T2_UK_London_Brunel': 0, 'T2_RU_JINR': 52, 'T2_IT_Pisa': 0, 'T2_US_Vanderbilt': 0, 'T2_EE_Estonia': 0, 'T2_IN_TIFR': 80, 'T2_TW_Taiwan': 0, 'T2_CN_Beijing': 0, 'T2_MY_UPM_BIRUNI': 0, 'T2_US_Florida': 0, 'T2_TH_CUNSTDA': 80, 'T2_FR_GRIF_IRFU': 0, 'T2_RU_RRC_KI': 80, 'T2_UK_London_IC': 0, 'T2_IT_Bari': 0, 'T2_US_Nebraska': 0, 'T2_IT_Rome': 0, 'T2_FR_CCIN2P3': 0, 'T2_US_UCSD': 0, 'T2_CH_CERN_HLT': 0, 'T2_ES_CIEMAT': 0, 'T2_RU_IHEP': 8, 'T2_PL_Warsaw': 14, 'T2_US_Wisconsin': 0, 'T2_HU_Budapest': 0, 'T2_US_MIT': 0, 'T2_BE_IIHE': 0, 'T2_RU_INR': 59, 'T2_CH_CERN': 0, 'T2_PT_NCG_Lisbon': 0, 'T2_BR_SPRACE': 0}
+Local current time : 2013-09-03 14:35:39
+T2_GR_Ioannina 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_BR_UERJ 79 red http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_TR_METU 27 red http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_AT_Vienna 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_CH_CSCS 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_UA_KIPT 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_PK_NCP 80 red http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_RU_PNPI 11 red http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_US_Purdue 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_FI_HIP 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_UK_SGrid_RALPP 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_FR_GRIF_LLR 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_BE_UCL 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_ES_IFCA 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_DE_RWTH 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_UK_SGrid_Bristol 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_FR_IPHC 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_CH_CERN_AI 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_KR_KNU 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_DE_DESY 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_RU_SINP 58 red http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_IT_Legnaro 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_US_Caltech 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_RU_ITEP 19 red http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_UK_London_Brunel 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_RU_JINR 52 red http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_IT_Pisa 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_US_Vanderbilt 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_EE_Estonia 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_IN_TIFR 80 red http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_TW_Taiwan 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_CN_Beijing 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_MY_UPM_BIRUNI 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_US_Florida 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_TH_CUNSTDA 80 red http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_FR_GRIF_IRFU 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_RU_RRC_KI 80 red http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_UK_London_IC 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_IT_Bari 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_US_Nebraska 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_IT_Rome 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_FR_CCIN2P3 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_US_UCSD 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_CH_CERN_HLT 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_ES_CIEMAT 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_RU_IHEP 8 red http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_PL_Warsaw 14 red http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_US_Wisconsin 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_HU_Budapest 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_US_MIT 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_BE_IIHE 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_RU_INR 59 red http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_CH_CERN 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_PT_NCG_Lisbon 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
+T2_BR_SPRACE 0 green http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153
