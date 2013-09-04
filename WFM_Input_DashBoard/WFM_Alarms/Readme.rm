@@ -1,0 +1,8 @@
+# Sten Luyckx
+# Script in acrontab t1
+# 0,15,30,45 * * * * vocms174 /afs/cern.ch/user/c/cmst1/scratch0/WFM_Input_DashBoard/WFM_Alarms/runWFMonDB_Alarms.sh  &> /dev/null
+# This script is a bit slow 10-14min runtime
+# json files are fetched by Dashboardteam, via a special way. Cant be changed by myself
+# Script for Dashboard metric : 141, 142, 143, 144 :  GlideIn, 8h, Instant, 24h alarms  
+# outputfile SSB_alarms.json 
+# outputdir /afs/cern.ch/user/c/cmst1/www/WFMon/
