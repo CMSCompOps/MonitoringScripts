@@ -1,0 +1,61 @@
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:--  0:00:01 --:--:--     0100  3186    0  3186    0     0   1687      0 --:--:--  0:00:01 --:--:--  3645100  3186    0  3186    0     0   1687      0 --:--:--  0:00:01 --:--:--  3641
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:--  0:00:01 --:--:--     0  0     0    0     0    0     0      0      0 --:--:--  0:00:02 --:--:--     0100 25971    0 25971    0     0  11717      0 --:--:--  0:00:02 --:--:-- 21410
+Retrieve Dashboard infomration via json
+Filling intermediate json
+Local current time : 2013-09-04+08%3A20
+T1_FR_CCIN2P3 96. 96. green green
+T1_DE_KIT 0. 3. red red
+T1_IT_CNAF 85. 85. green green
+T1_US_FNAL 53. 55. yellow yellow
+T1_ES_PIC 85. 86. green green
+T1_IT_CNAF 85. 85. green green
+T1_ES_PIC 85. 86. green green
+T2_FR_CCIN2P3 54. 66. yellow yellow
+T2_ES_CIEMAT 73. 74. yellow yellow
+T1_UK_RAL 80. 80. green green
+T2_CH_CERN 74. 78. yellow green
+T2_US_Purdue 73. 75. yellow green
+T2_IT_Legnaro 77. 78. green green
+T2_UK_London_IC 74. 76. yellow green
+T2_DE_DESY 59. 61. yellow yellow
+T2_IT_Pisa 58. 60. yellow yellow
+T2_EE_Estonia 63. 64. yellow yellow
+T2_US_Nebraska 65. 67. yellow yellow
+T2_US_Caltech 47. 48. yellow yellow
+T2_UK_London_Brunel 58. 59. yellow yellow
+T2_FI_HIP 64. 65. yellow yellow
+T2_RU_IHEP 62. 64. yellow yellow
+T2_FR_GRIF_LLR 63. 65. yellow yellow
+T2_AT_Vienna 57. 60. yellow yellow
+T2_DE_RWTH 46. 48. yellow yellow
+T1_US_FNAL 53. 55. yellow yellow
+T2_HU_Budapest 37. 44. yellow yellow
+T2_IT_Bari 14. 24. red red
+T2_IT_Rome 53. 54. yellow yellow
+T2_FR_IPHC 49. 51. yellow yellow
+T2_US_Florida 28. 49. yellow yellow
+T2_US_Wisconsin 6. 27. red yellow
+T3_US_Colorado 6. 25. red yellow
+T2_CH_CSCS 9. 18. red red
+T2_ES_IFCA 33. 36. yellow yellow
+T2_BR_SPRACE 6. 13. red red
+T2_PT_NCG_Lisbon 8. 9. red red
+T2_TW_Taiwan 26. 28. yellow yellow
+T1_TW_ASGC 15. 17. red red
+T2_RU_ITEP 15. 17. red red
+T2_BE_UCL 7. 20. red red
+T2_CN_Beijing 7. 10. red red
+T2_US_UCSD 7. 7. red red
+T2_US_MIT 6. 7. red red
+T2_UA_KIPT 33. 38. yellow yellow
+T2_RU_SINP 29. 39. yellow yellow
+T1_FR_CCIN2P3 96. 96. green green
+T2_KR_KNU 90. 91. green green
+T2_CH_CERN_AI 99. 100. green green
+T2_CH_CERN_HLT 99. 100. green green
+unknown -1. -1. green green
+T1_DE_KIT 0. 3. red red

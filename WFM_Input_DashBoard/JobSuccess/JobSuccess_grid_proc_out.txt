@@ -1,0 +1,56 @@
+# grid proc: done*100.0/(aborted+done)  
+# watchout, you have to replace $date1 and $date2 below with the current time and the time-24h
+# reprocessing: http://dashb-cms-job.cern.ch/dashboard/request.py/jobsummary-plot-or-table2?user=&site=&submissiontool=&application=&activity=reprocessing&status=&check=submitted&tier=&sortby=site&ce=&rb=&grid=&jobtype=&submissionui=&dataset=&submissiontype=&task=&subtoolver=&genactivity=&outputse=&appexitcode=&accesstype=&date1=$date1&date2=$date2&prettyprint
+# production: http://dashb-cms-job.cern.ch/dashboard/request.py/jobsummary-plot-or-table2?user=&site=&submissiontool=&application=&activity=production&status=&check=submitted&tier=&sortby=site&ce=&rb=&grid=&jobtype=&submissionui=&dataset=&submissiontype=&task=&subtoolver=&genactivity=&outputse=&appexitcode=&accesstype=&date1=$date1&date2=$date2&prettyprint
+2013-09-04 08:20:50 T1_FR_CCIN2P3 96. green http://dashb-cms-job.cern.ch/dashboard/request.py/jobsummary-plot-or-table2
+2013-09-04 08:20:50 T1_DE_KIT 0. red http://dashb-cms-job.cern.ch/dashboard/request.py/jobsummary-plot-or-table2
+2013-09-04 08:20:50 T1_IT_CNAF 85. green http://dashb-cms-job.cern.ch/dashboard/request.py/jobsummary-plot-or-table2
+2013-09-04 08:20:50 T1_US_FNAL 53. yellow http://dashb-cms-job.cern.ch/dashboard/request.py/jobsummary-plot-or-table2
+2013-09-04 08:20:50 T1_ES_PIC 85. green http://dashb-cms-job.cern.ch/dashboard/request.py/jobsummary-plot-or-table2
+2013-09-04 08:20:50 T1_IT_CNAF 85. green http://dashb-cms-job.cern.ch/dashboard/request.py/jobsummary-plot-or-table2
+2013-09-04 08:20:50 T1_ES_PIC 85. green http://dashb-cms-job.cern.ch/dashboard/request.py/jobsummary-plot-or-table2
+2013-09-04 08:20:50 T2_FR_CCIN2P3 54. yellow http://dashb-cms-job.cern.ch/dashboard/request.py/jobsummary-plot-or-table2
+2013-09-04 08:20:50 T2_ES_CIEMAT 73. yellow http://dashb-cms-job.cern.ch/dashboard/request.py/jobsummary-plot-or-table2
+2013-09-04 08:20:50 T1_UK_RAL 80. green http://dashb-cms-job.cern.ch/dashboard/request.py/jobsummary-plot-or-table2
+2013-09-04 08:20:50 T2_CH_CERN 74. yellow http://dashb-cms-job.cern.ch/dashboard/request.py/jobsummary-plot-or-table2
+2013-09-04 08:20:50 T2_US_Purdue 73. yellow http://dashb-cms-job.cern.ch/dashboard/request.py/jobsummary-plot-or-table2
+2013-09-04 08:20:50 T2_IT_Legnaro 77. green http://dashb-cms-job.cern.ch/dashboard/request.py/jobsummary-plot-or-table2
+2013-09-04 08:20:50 T2_UK_London_IC 74. yellow http://dashb-cms-job.cern.ch/dashboard/request.py/jobsummary-plot-or-table2
+2013-09-04 08:20:50 T2_DE_DESY 59. yellow http://dashb-cms-job.cern.ch/dashboard/request.py/jobsummary-plot-or-table2
+2013-09-04 08:20:50 T2_IT_Pisa 58. yellow http://dashb-cms-job.cern.ch/dashboard/request.py/jobsummary-plot-or-table2
+2013-09-04 08:20:50 T2_EE_Estonia 63. yellow http://dashb-cms-job.cern.ch/dashboard/request.py/jobsummary-plot-or-table2
+2013-09-04 08:20:50 T2_US_Nebraska 65. yellow http://dashb-cms-job.cern.ch/dashboard/request.py/jobsummary-plot-or-table2
+2013-09-04 08:20:50 T2_US_Caltech 47. yellow http://dashb-cms-job.cern.ch/dashboard/request.py/jobsummary-plot-or-table2
+2013-09-04 08:20:50 T2_UK_London_Brunel 58. yellow http://dashb-cms-job.cern.ch/dashboard/request.py/jobsummary-plot-or-table2
+2013-09-04 08:20:50 T2_FI_HIP 64. yellow http://dashb-cms-job.cern.ch/dashboard/request.py/jobsummary-plot-or-table2
+2013-09-04 08:20:50 T2_RU_IHEP 62. yellow http://dashb-cms-job.cern.ch/dashboard/request.py/jobsummary-plot-or-table2
+2013-09-04 08:20:50 T2_FR_GRIF_LLR 63. yellow http://dashb-cms-job.cern.ch/dashboard/request.py/jobsummary-plot-or-table2
+2013-09-04 08:20:50 T2_AT_Vienna 57. yellow http://dashb-cms-job.cern.ch/dashboard/request.py/jobsummary-plot-or-table2
+2013-09-04 08:20:50 T2_DE_RWTH 46. yellow http://dashb-cms-job.cern.ch/dashboard/request.py/jobsummary-plot-or-table2
+2013-09-04 08:20:50 T1_US_FNAL 53. yellow http://dashb-cms-job.cern.ch/dashboard/request.py/jobsummary-plot-or-table2
+2013-09-04 08:20:50 T2_HU_Budapest 37. yellow http://dashb-cms-job.cern.ch/dashboard/request.py/jobsummary-plot-or-table2
+2013-09-04 08:20:50 T2_IT_Bari 14. red http://dashb-cms-job.cern.ch/dashboard/request.py/jobsummary-plot-or-table2
+2013-09-04 08:20:50 T2_IT_Rome 53. yellow http://dashb-cms-job.cern.ch/dashboard/request.py/jobsummary-plot-or-table2
+2013-09-04 08:20:50 T2_FR_IPHC 49. yellow http://dashb-cms-job.cern.ch/dashboard/request.py/jobsummary-plot-or-table2
+2013-09-04 08:20:50 T2_US_Florida 28. yellow http://dashb-cms-job.cern.ch/dashboard/request.py/jobsummary-plot-or-table2
+2013-09-04 08:20:50 T2_US_Wisconsin 6. red http://dashb-cms-job.cern.ch/dashboard/request.py/jobsummary-plot-or-table2
+2013-09-04 08:20:50 T3_US_Colorado 6. red http://dashb-cms-job.cern.ch/dashboard/request.py/jobsummary-plot-or-table2
+2013-09-04 08:20:50 T2_CH_CSCS 9. red http://dashb-cms-job.cern.ch/dashboard/request.py/jobsummary-plot-or-table2
+2013-09-04 08:20:50 T2_ES_IFCA 33. yellow http://dashb-cms-job.cern.ch/dashboard/request.py/jobsummary-plot-or-table2
+2013-09-04 08:20:50 T2_BR_SPRACE 6. red http://dashb-cms-job.cern.ch/dashboard/request.py/jobsummary-plot-or-table2
+2013-09-04 08:20:50 T2_PT_NCG_Lisbon 8. red http://dashb-cms-job.cern.ch/dashboard/request.py/jobsummary-plot-or-table2
+2013-09-04 08:20:50 T2_TW_Taiwan 26. yellow http://dashb-cms-job.cern.ch/dashboard/request.py/jobsummary-plot-or-table2
+2013-09-04 08:20:50 T1_TW_ASGC 15. red http://dashb-cms-job.cern.ch/dashboard/request.py/jobsummary-plot-or-table2
+2013-09-04 08:20:50 T2_RU_ITEP 15. red http://dashb-cms-job.cern.ch/dashboard/request.py/jobsummary-plot-or-table2
+2013-09-04 08:20:50 T2_BE_UCL 7. red http://dashb-cms-job.cern.ch/dashboard/request.py/jobsummary-plot-or-table2
+2013-09-04 08:20:50 T2_CN_Beijing 7. red http://dashb-cms-job.cern.ch/dashboard/request.py/jobsummary-plot-or-table2
+2013-09-04 08:20:50 T2_US_UCSD 7. red http://dashb-cms-job.cern.ch/dashboard/request.py/jobsummary-plot-or-table2
+2013-09-04 08:20:50 T2_US_MIT 6. red http://dashb-cms-job.cern.ch/dashboard/request.py/jobsummary-plot-or-table2
+2013-09-04 08:20:50 T2_UA_KIPT 33. yellow http://dashb-cms-job.cern.ch/dashboard/request.py/jobsummary-plot-or-table2
+2013-09-04 08:20:50 T2_RU_SINP 29. yellow http://dashb-cms-job.cern.ch/dashboard/request.py/jobsummary-plot-or-table2
+2013-09-04 08:20:50 T1_FR_CCIN2P3 96. green http://dashb-cms-job.cern.ch/dashboard/request.py/jobsummary-plot-or-table2
+2013-09-04 08:20:50 T2_KR_KNU 90. green http://dashb-cms-job.cern.ch/dashboard/request.py/jobsummary-plot-or-table2
+2013-09-04 08:20:50 T2_CH_CERN_AI 99. green http://dashb-cms-job.cern.ch/dashboard/request.py/jobsummary-plot-or-table2
+2013-09-04 08:20:50 T2_CH_CERN_HLT 99. green http://dashb-cms-job.cern.ch/dashboard/request.py/jobsummary-plot-or-table2
+2013-09-04 08:20:50 unknown -1. green http://dashb-cms-job.cern.ch/dashboard/request.py/jobsummary-plot-or-table2
+2013-09-04 08:20:50 T1_DE_KIT 0. red http://dashb-cms-job.cern.ch/dashboard/request.py/jobsummary-plot-or-table2

@@ -1,0 +1,8 @@
+# Sten Luyckx
+# Script in acrontab t1
+# 5,20,35,50 * * * * lxplus ssh vocms202 /afs/cern.ch/user/c/cmst1/scratch0/WFM_Input_DashBoard/JobSuccess/run_jobSuccess.sh &> /dev/null
+# Script for Dashboard metric 148, 149: Avg 24h grid/app proc jobSuccess  
+# outputfile JobSuccess_app_proc_out.txt
+# outputfile JobSuccess_grid_proc_out.txt
+# outputdir /afs/cern.ch/user/c/cmst1/www/WFMon/
+
