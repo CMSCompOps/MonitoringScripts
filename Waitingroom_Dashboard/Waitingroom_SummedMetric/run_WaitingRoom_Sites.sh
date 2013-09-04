@@ -1,6 +1,12 @@
 #!/bin/bash
 # Sten Luyckx
+# Script in acrontab t1
+# 5,20,35,50 * * * * lxplus ssh vocms202 /afs/cern.ch/user/c/cmst1/scratch0/Waitingroom_Dashboard/Waitingroom_SummedMetric/run_WaitingRoom_Sites.sh &> /dev/null
 # Script for Dashboard metric 154, 155, 156
+# outputfile WaitingRoom_1MonthSum.txt
+# outputfile WaitingRoom_2MonthSum.txt
+# outputfile WaitingRoom_3MonthSum.txt
+# outputdir /afs/cern.ch/user/c/cmst1/www/WFMon/
 
 cd /afs/cern.ch/user/c/cmst1/scratch0/Waitingroom_Dashboard/Waitingroom_SummedMetric/
 
