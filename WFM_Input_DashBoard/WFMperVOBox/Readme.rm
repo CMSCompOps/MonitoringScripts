@@ -5,6 +5,5 @@
 # Script for Dashboard metric (part of) 137, 138: Running/Pending jobs . This metric is shared with that of the # on site instead of on p
 er schedular/vobox
 # outputfile SSBCERN_voBoxInfo.json
-# outputfile SSBFNAL_voBoxInfo.json / empty at the moment
 # outputdir /afs/cern.ch/user/c/cmst1/www/WFMon/
 

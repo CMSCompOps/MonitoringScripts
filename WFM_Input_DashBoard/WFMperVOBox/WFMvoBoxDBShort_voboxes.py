@@ -2,12 +2,13 @@
 
 # script that fills the WM database. It is called every 15 min and the database itself is 1time created with create_WMdatabase.db
 # script calls a bash function to write the database because only sqlite 1.1.7 is available in python ( <--> sqlite3 in bash )
+
 import sys,os
 import subprocess
+from datetime import datetime
 
-collectorCERN="vocms97.cern.ch"
-#collectorFNAL="cmssrv119.fnal.gov"
-collectorCERN2="vocms165.cern.ch"
+collectors = ['vocms97.cern.ch', 'vocms165.cern.ch', 'cmssrv119.fnal.gov']
+#collectors = ['vocms97.cern.ch', 'vocms165.cern.ch']
 
 # Filling the dictionaries
 def increaseCounterInDict(dict,key,type):
@@ -123,16 +124,15 @@ def jsonDict(dict_run,dict_pen,json_name,date,hour,location):
 
 #################################################################
 
+#Timing the script
+starttime=datetime.now()
+
 jsonCERN_name="SSBCERN_voBoxInfo.json"
-jsonFNAL_name="SSBFNAL_voBoxInfo.json"
 
 #Start of the program: Creating 3 empty dictionaries
-overview_runningCERN = {}
-overview_pendingCERN = {}
-overview_otherCERN = {}
-overview_runningFNAL = {}
-overview_pendingFNAL = {}
-overview_otherFNAL = {}
+overview_running = {}
+overview_pending = {}
+#overview_other = {}
 
 #get time
 gettime="sqlite3 fakedatabase \"select datetime('now');\" "
@@ -145,81 +145,56 @@ currTime=currTime.replace(' ','h')
 print currTime
 
 
-#Extracting the schedulars list from CERN and FNAL
+#Extracting the schedulars list from all collectors
 #command='condor_q -format "%i." ClusterID -format "%s " ProcId -format " %i " JobStatus  -format " %d " ServerTime-EnteredCurrentStatus -format "%s" UserLog -format " %s" DESIRED_Sites -format " %s" RemoveReason -format " %i\n" NumJobStarts'
 #command="""condor_q -format "%i." ClusterID -format "%s " ProcId -format " %i " JobStatus  -format " %d " ServerTime-JobStartDate -format "%s" UserLog -format " %s" DESIRED_Sites -format " %s" RemoveReason -format " %i\n" NumJobStarts | awk '{if ($2!= 1) print $0}'"""
-listcommand="condor_status -pool "+collectorCERN+" -schedd -format \"%s \n\" Name"
-print listcommand
-proc = subprocess.Popen(listcommand, stderr = subprocess.PIPE,stdout = subprocess.PIPE, shell = True)
-out, err = proc.communicate()
-# we don't have to send an email when there is an error (collector not reachable), since it is already done in the script per site
-listscheddsCERN=[]
-for line in out.split('\n') :
+# keep track of which schedd as keyword is attached to which col
+dict_col_with_schedd={}
+listschedds=[]
+for col in collectors:
+   listcommand="condor_status -pool "+col+" -schedd -format \"%s \n\" Name"
+   print listcommand
+   proc = subprocess.Popen(listcommand, stderr = subprocess.PIPE,stdout = subprocess.PIPE, shell = True)
+   out, err = proc.communicate()
+   # we don't have to send an email when there is an error (collector not reachable), since it is already done in the script per site
+   for line in err.split('\n') :
+        if 'Error' in line:
+              print "Called:   "+listcommand
+              print "Col: "+col+" is offline"
+              break
+   for line in out.split('\n') :
 	if ('cern' in line) or ('fnal' in line):
-		listscheddsCERN.append(line)
+		listschedds.append(line)
+                dict_col_with_schedd[line]=col
 
-#listcommand="condor_status -pool "+collectorFNAL+" -schedd -format \"%s \n\" Name"
-#print listcommand
-#proc = subprocess.Popen(listcommand, stderr = subprocess.PIPE,stdout = subprocess.PIPE, shell = True)
-#out, err = proc.communicate()
-listscheddsFNAL=[]
-#for line in out.split('\n') :
-#	if ('cern' in line) or ('fnal' in line):
-#		listscheddsFNAL.append(line)
-
-listcommand="condor_status -pool "+collectorCERN2+" -schedd -format \"%s \n\" Name"
-print listcommand
-proc = subprocess.Popen(listcommand, stderr = subprocess.PIPE,stdout = subprocess.PIPE, shell = True)
-out, err = proc.communicate()
-# we don't have to send an email when there is an error (collector not reachable), since it is already done in the script per site
-listscheddsCERN2=[]
-for line in out.split('\n') :
-        if ('cern' in line) or ('fnal' in line):
-                listscheddsCERN2.append(line)
-print "Passed first condor_status pool"
+print "Passed condor_status pool of all collectors."
+print "Dict of dict['schedd']=col:"
+print dict_col_with_schedd
 
 #copy lists and change . to _ in the naming
 #words = [w.replace('[br]', '<br />') for w in words]
-listscheddsCERN_fix = [schedd.replace('.','_') for schedd in listscheddsCERN]
-#print listscheddsCERN_fix
-#listscheddsFNAL_fix = [schedd.replace('.','_') for schedd in listscheddsFNAL]
-#print listscheddsFNAL_fix
-listscheddsCERN2_fix = [schedd.replace('.','_') for schedd in listscheddsCERN2]
-#print listscheddsCERN2_fix
+listschedds_fix = [schedd.replace('.','_') for schedd in listschedds]
+#print listschedds_fix
 
-#create list of vobox CERN and of vobox FNAL
-print "listscheddsCERN"
-print  listscheddsCERN_fix
+#create list of voboxes
+print "listschedds"
+print  listschedds_fix
 print "----------------------"
-#print "listscheddsFNAL"
-#print  listscheddsFNAL_fix
-#print "----------------------"
-print "listscheddsCERN2"
-print  listscheddsCERN2_fix
 print "----------------------"
 #previous list:
-voboxCERN_list_prev="voboxCERN_prev.txt"
-voboxFNAL_list_prev="voboxFNAL_prev.txt"
+vobox_list_prev="voboxlist_prev.txt"
 
-voboxCERN_list="voboxCERN.txt"
-file_voboxCERN = open(voboxCERN_list,'w')
-for schedd in listscheddsCERN_fix:
-  print>>file_voboxCERN, schedd
-for schedd in listscheddsCERN2_fix:
-  print>>file_voboxCERN, schedd
-file_voboxCERN.close()
-voboxFNAL_list="voboxFNAL.txt"
-file_voboxFNAL = open(voboxFNAL_list,'w')
-#for schedd in listscheddsFNAL_fix:
-#  print>>file_voboxFNAL, schedd
-#file_voboxFNAL.close()
+vobox_list="voboxlist.txt"
+file_vobox = open(vobox_list,'w')
+for schedd in listschedds_fix:
+  print>>file_vobox, schedd
+file_vobox.close()
 
 print "update collector list "
-#Check the FNAL / CERN list voBox list and add a new voBox when necessary
+#Check the voBox list and add a new voBox when necessary
 #Checking if there might be a new site. If so, a new table is added. voBoxes without data will be kept here, so that the fillBrokenSites() function can still fill them with 0's. 
-#If schedd is inside new txt of CERN, but also in _prev of FNAL, it will ignore remove it from the FNAL list !!! This happens when shedds are moved from one to another collector
-#Pass CERN_NEW txt to FNAL_NEW and FNAL_prev. Then .sh script will copy .txt to _prev.txt
-listcommand="bash update_voBoxlist.sh %s %s; bash update_voBoxlist.sh %s %s"% (voboxCERN_list_prev,voboxCERN_list,voboxFNAL_list_prev,voboxFNAL_list)
+# .sh script will copy .txt to _prev.txt
+listcommand="bash update_voBoxlist.sh %s %s"% (vobox_list_prev,vobox_list)
 print listcommand
 proc = subprocess.Popen(listcommand, stderr = subprocess.PIPE,stdout = subprocess.PIPE, shell = True)
 out, err = proc.communicate()
@@ -227,33 +202,11 @@ print out
 print err
 print "collector list update complete"
 
-for schedd in listscheddsCERN+listscheddsFNAL+listscheddsCERN2:
+for schedd in listschedds:
         schedd_fix = schedd.replace('.',"_")
         schedd_fix = schedd_fix.strip(' ')
-        vobox_list_write=""
-        overview_running_write=""
-        overview_pending_write=""
-        overview_other_write=""
-	command=""	
-	#if schedd in listscheddsFNAL:
-	#	command='condor_q -pool '+collectorFNAL+' -name ' + schedd
-        #        vobox_list_write=voboxFNAL_list
-        #        overview_running_write=overview_runningFNAL
-        #        overview_pending_write=overview_pendingFNAL
-        #        overview_other_write=overview_otherFNAL
-#        elif schedd in listscheddsCERN2:
-        if schedd in listscheddsCERN2:
-                command='condor_q -pool '+collectorCERN2+' -name ' + schedd
-                vobox_list_write=voboxCERN_list
-                overview_running_write=overview_runningCERN
-                overview_pending_write=overview_pendingCERN
-                overview_other_write=overview_otherCERN
-	else:
-		command='condor_q -pool '+collectorCERN+' -name ' + schedd
-                vobox_list_write=voboxCERN_list
-                overview_running_write=overview_runningCERN
-                overview_pending_write=overview_pendingCERN
-                overview_other_write=overview_otherCERN
+        # Issue, need to know which col + which schedd
+        command='condor_q -pool '+dict_col_with_schedd[schedd]+' -name ' + schedd
        #  condor_q -pool vocms97.cern.ch  -name vocms216.cern.ch  
         command=command+"""  -format "%i." ClusterID -format "%s||" ProcId  -format "%i||" JobStatus  -format "%s||" UserLog -format "%s||" DESIRED_Sites -format "\%s||" WMAgent_SubTaskType -format "%s||" MATCH_EXP_JOBGLIDEIN_CMSSite -format "\n" Owner"""
         # array[0] ClusterID.ProcId
@@ -269,9 +222,6 @@ for schedd in listscheddsCERN+listscheddsFNAL+listscheddsCERN2:
         # --> new osftware len(array ) ={5,6} depending if the job is already assigned to a site
 
         print command
-        proc = subprocess.Popen(command, stderr = subprocess.PIPE,stdout = subprocess.PIPE, shell = True)
-        out, err = proc.communicate()
-
 #	command=command+""" -format "%i." ClusterID -format "%s " ProcId -format " %i " JobStatus  -format " %d " ServerTime -format " %d " JobStartDate -format " %d" EnteredCurrentStatus -format " %s" UserLog -format " %s" DESIRED_Sites -format " %s" RemoveReason -format " %i\n" NumJobStarts"""
 	proc = subprocess.Popen(command, stderr = subprocess.PIPE,stdout = subprocess.PIPE, shell = True)
 	out, err = proc.communicate()
@@ -329,41 +279,26 @@ for schedd in listscheddsCERN+listscheddsFNAL+listscheddsCERN2:
 	    if 'JobCache' not in line and 'vocms228' not in schedd:
 		continue
 
-
+            # Increase/append the dictionarry
 	    if status == 2:
-		increaseCounterInDict(overview_running_write,schedd_fix,type)
+		increaseCounterInDict(overview_running,schedd_fix,type)
 	    elif status == 1:
-		increaseCounterInDict(overview_pending_write,schedd_fix,type)
+		increaseCounterInDict(overview_pending,schedd_fix,type)
 #	    else :
-#		increaseCounterInDict(overview_other_write,schedd_fix,type)
-
-	if schedd in listscheddsFNAL:
-                overview_runningFNAL=overview_running_write
-                overview_pendingFNAL=overview_pending_write
-                overview_otherFNAL=overview_other_write
-	else:
-                overview_runningCERN=overview_running_write
-                overview_pendingCERN=overview_pending_write
-                overview_otherCERN=overview_other_write
+#		increaseCounterInDict(overview_other,schedd_fix,type)
 
 #Adding the voboxes to the 2 dicts that are not in the overview list. At the moment they are added with 0's
-fillBrokenSites(voboxCERN_list,overview_runningCERN) 
-fillBrokenSites(voboxCERN_list,overview_pendingCERN) 
-fillBrokenSites(voboxFNAL_list,overview_runningFNAL) 
-fillBrokenSites(voboxFNAL_list,overview_pendingFNAL) 
+fillBrokenSites(vobox_list,overview_running) 
+fillBrokenSites(vobox_list,overview_pending) 
 
-print overview_runningCERN
-printDict(overview_runningCERN,'RunningCERN')
+print overview_running
+printDict(overview_running,'Running')
 print ""
-print overview_pendingCERN
-printDict(overview_pendingCERN,'PendingCERN')
-
-print overview_runningFNAL
-printDict(overview_runningFNAL,'RunningFNAL')
-print ""
-print overview_pendingFNAL
-printDict(overview_pendingFNAL,'PendingFNAL')
+print overview_pending
+printDict(overview_pending,'Pending')
 
 #Writing the json file
-jsonDict(overview_runningCERN,overview_pendingCERN,jsonCERN_name,date,hour,"CERN")
-jsonDict(overview_runningFNAL,overview_pendingFNAL,jsonFNAL_name,date,hour,"FNAL")
+jsonDict(overview_running,overview_pending,jsonCERN_name,date,hour,"CERN")
+
+print '__________________-'
+print 'THE PROGRAM IS FINISHED AFTER', datetime.now()-starttime
