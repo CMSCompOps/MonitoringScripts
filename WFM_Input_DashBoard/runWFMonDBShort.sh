@@ -22,7 +22,7 @@ then
    # email subject
    SUBJECT="[Monitoring] Condor History load"
    # Email To ?
-   EMAIL="sten.luyckx@cern.ch"
+   EMAIL="cms-comp-ops-monitoring-wf-ss-teams@cern.ch"
    # Email text/message
    if [ -f emailmessage.txt ];
    then
