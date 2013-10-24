@@ -11,26 +11,6 @@ use LWP::UserAgent;
 use XML::Parser;
 use File::Temp("tempfile");
 
-# Small class for Sites
-
-package Site;
-
-sub new {
-    my $class = shift;
-    my $id = shift;
-    my $self = {ID => $id, CMS => '', SAM => ''};
-    bless $self, $class;
-}
-
-sub tier {
-    my $self = shift;
-    return substr $self->{CMS}, 1, 1;
-}
-
-# Main program
-
-package main;
-
 # Define HTTPS environment to use proxy
 $ENV{HTTPS_CA_DIR} = (defined $ENV{X509_CERT_DIR})?$ENV{X509_CERT_DIR}:"/etc/grid-security/certificates";
 my $GSIPROXY = (defined $ENV{X509_USER_PROXY})?$ENV{X509_USER_PROXY}:"/tmp/x509up_u$<";
