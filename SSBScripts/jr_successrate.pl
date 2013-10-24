@@ -23,7 +23,6 @@ my $last = $ARGV[2];
 
 die "Usage: $NAME <activity>\n" if (! defined $activity);
 
-#Get JSON file from SiteDB
 # Define HTTPS environment to use proxy
 $ENV{HTTPS_CA_DIR} = (defined $ENV{X509_CERT_DIR})?$ENV{X509_CERT_DIR}:"/etc/grid-security/certificates";
 my $GSIPROXY = (defined $ENV{X509_USER_PROXY})?$ENV{X509_USER_PROXY}:"/tmp/x509up_u$<";
@@ -31,7 +30,9 @@ $ENV{HTTPS_CA_FILE} = $GSIPROXY;
 $ENV{HTTPS_CERT_FILE} = $GSIPROXY;
 $ENV{HTTPS_KEY_FILE}  = $GSIPROXY;
 
+# Get JSON file from SiteDB
 my $url = "https://cmsweb.cern.ch/sitedb/data/prod/site-names";
+
 # Set header to select output format
 $header = HTTP::Headers->new(
 			     Accept => 'application/json');
@@ -41,9 +42,10 @@ $ua->default_headers($header);
 
 my $response = $ua->get($url) or die "Cannot retrieve JSON\n";
 
+# Define output file
 my $filepath;
 if ($outfile) {
-    $filepath = "/afs/cern.ch/cms/LCG/SiteComm/$outfile";
+    $filepath = $outfile;
 } else {
     $filepath = "/afs/cern.ch/cms/LCG/SiteComm/successrate_$activity.txt";
 }
@@ -66,8 +68,12 @@ if (! @sites) {
 }
 
 $last = 24 if (!$last);    
-my $start = &dbtime(time);
-my $end = &dbtime(time-$last*3600);
+
+# Time interval for Dashboard job monitoring
+my $start = &dbtime(time-$last*3600);
+my $end = &dbtime(time);
+
+# Time interval for Dashboard links
 my $start3 = &dbtime3(time-$last*3600);
 my $end3 = &dbtime3(time);
 
@@ -217,7 +223,7 @@ sub get_successrates {
     my $start = shift;
     my $end = shift;
     my $sr = 'NA';
-    my $url = "http://dashb-cms-job.cern.ch/dashboard/request.py/jobsummary-plot-or-table?user=&site=&ce=&submissiontool=&datset=&application=&rb=&activity=$activity&grid=&date2=$start&date1=$end&sortby=site&nbars=&scale=linear&jobtype=&tier=&check=terminated";
+    my $url = "http://dashb-cms-job.cern.ch/dashboard/request.py/jobsummary-plot-or-table?user=&site=&ce=&submissiontool=&datset=&application=&rb=&activity=$activity&grid=&date2=$end&date1=$start&sortby=site&nbars=&scale=linear&jobtype=&tier=&check=terminated";
     my $cmd = "curl -H \'Accept: text/xml\' \'$url\' 2> /dev/null";
     my $output = `$cmd`;
     if ( defined $output ) {
