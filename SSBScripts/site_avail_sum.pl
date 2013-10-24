@@ -8,8 +8,9 @@
 
 use JSON;
 use LWP::UserAgent;
-use XML::Parser;
 use File::Temp("tempfile");
+
+my $outfile = $ARGV[0];
 
 # Define HTTPS environment to use proxy
 $ENV{HTTPS_CA_DIR} = (defined $ENV{X509_CERT_DIR})?$ENV{X509_CERT_DIR}:"/etc/grid-security/certificates";
@@ -39,7 +40,13 @@ foreach my $item (@{$ref->{'result'}}) {
     }
 }
 
-my $filepath = "/afs/cern.ch/cms/LCG/SiteComm/site_avail_sum.txt";
+# Define output file
+my $filepath;
+if ($outfile) {
+    $filepath = $outfile;
+} else {
+    $filepath = "/afs/cern.ch/cms/LCG/SiteComm/site_avail_sum.txt";
+}
 ($fh, $tmpfile) = tempfile(UNLINK => 1) or die "Cannot create temporary file\n";
 
 # Exit if no sites are found
