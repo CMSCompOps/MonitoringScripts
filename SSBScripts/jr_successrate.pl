@@ -7,7 +7,6 @@
 #
 
 use JSON;
-use LWP::Simple;
 use LWP::UserAgent;
 use XML::Parser;
 use File::Temp("tempfile");
@@ -140,11 +139,6 @@ sub h_sr_char {
     if ($p->in_element('cancelled')) {
         $dbinfo{$lastsiteid}->{'cancelled'} = $a;
     }
-}
-
-sub timestamp {
-    my $timestamp = &dbtime2(time);
-    return $timestamp;
 }
 
 sub dbtime {
