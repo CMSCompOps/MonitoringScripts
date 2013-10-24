@@ -59,7 +59,7 @@ foreach my $item (@{$ref->{'result'}}) {
     }
 }
 
-my $filepath = "/afs/cern.ch/cms/LCG/SiteComm/site_avail_sum_test.txt";
+my $filepath = "/afs/cern.ch/cms/LCG/SiteComm/site_avail_sum.txt";
 ($fh, $tmpfile) = tempfile(UNLINK => 1) or die "Cannot create temporary file\n";
 
 # Exit if no sites are found
