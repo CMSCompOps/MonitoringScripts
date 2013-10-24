@@ -107,42 +107,12 @@ system("/bin/cp -f $tmpfile $filepath");
 
 # Handler routines
 
-sub h_start {
-    my $p = shift;
-    my $el = shift;
-    my %attr = ();
-    while (@_) {
-	my $a = shift;
-	my $v = shift;
-	$attr{$a} = $v;
-    }
-    if ($el eq 'item') {
-	$lastid = $attr{id};
-	my $s = new Site($attr{id});
-	$sites{$lastid} = $s;
-    }
-}
-
 sub h_sr_start {
     my $p = shift;
     my $el = shift;
     if ($el eq 'item' and $p->in_element('summaries')) {
 	$lastsiteid++;
 	$dbinfo{$lastsiteid} = {} unless (defined $dbinfo{$lastsiteid});
-    }
-}
-sub h_char {
-    my $p = shift;
-    my $a = shift;
-    $a =~ tr/ //;
-
-    if ($p->in_element('cms')) {
-	my $site = $sites{$lastid};
-	$site->{CMS} = $a; 
-    }
-    if ($p->in_element('sam')) {
-	my $site = $sites{$lastid};
-	$site->{SAM} = $a; 
     }
 }
 
