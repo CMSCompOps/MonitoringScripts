@@ -6,7 +6,8 @@
 #   Writes the lists to files in the current directory
 #
 
-use LWP::Simple;
+use JSON;
+use LWP::UserAgent;
 use XML::Parser;
 use File::Temp("tempfile");
 
@@ -30,39 +31,53 @@ sub tier {
 
 package main;
 
-# Array with all Sites and tiers
-%sites = ();
+# Define HTTPS environment to use proxy
+$ENV{HTTPS_CA_DIR} = (defined $ENV{X509_CERT_DIR})?$ENV{X509_CERT_DIR}:"/etc/grid-security/certificates";
+my $GSIPROXY = (defined $ENV{X509_USER_PROXY})?$ENV{X509_USER_PROXY}:"/tmp/x509up_u$<";
+$ENV{HTTPS_CA_FILE} = $GSIPROXY;
+$ENV{HTTPS_CERT_FILE} = $GSIPROXY;
+$ENV{HTTPS_KEY_FILE}  = $GSIPROXY;
 
-#Get XML file from SiteDB
+#Get JSON file from SiteDB
+my $url = "https://cmsweb.cern.ch/sitedb/data/prod/site-names";
+# Set header to select output format
+$header = HTTP::Headers->new(
+			     Accept => 'application/json');
 
-my $url = "https://cmsweb.cern.ch/sitedb/sitedb/reports/showXMLReport/?reportid=naming_convention.ini";
-my $doc = get($url) or die "Cannot retrieve XML\n";
-my $filepath = "/afs/cern.ch/cms/LCG/SiteComm/site_avail_sum.txt";
+$ua = LWP::UserAgent->new;
+$ua->default_headers($header);
+
+my $response = $ua->get($url) or die "Cannot retrieve JSON\n";
+
+# Parse JSON
+my $ref = from_json($response->decoded_content);
+my @sites;
+foreach my $item (@{$ref->{'result'}}) {
+    my $type = $item->[0];
+    if ($type eq 'cms') {
+	push @sites, $item->[2];
+    }
+}
+
+my $filepath = "/afs/cern.ch/cms/LCG/SiteComm/site_avail_sum_test.txt";
 ($fh, $tmpfile) = tempfile(UNLINK => 1) or die "Cannot create temporary file\n";
-
-# Parse XML
-
-$p = new XML::Parser(Handlers => {Start => \&h_start, Char  => \&h_char});
-$p->parse($doc) or die "Cannot parse XML\n";
 
 # Exit if no sites are found
 
-if (! %sites) {
+if (! @sites) {
     die "No sites found!\n";
 }
-
 %seen = ();
 
-foreach my $s ( values %sites ) {
-    my $cms = $s->{CMS};
+foreach my $cms ( sort @sites ) {
     next if $seen{$cms}++;
-    my $t = $s->tier;
+    my $t = tier($cms);
     next if ( $t eq 'X' );
 # Skip T[01]_CH_CERN
-    next if ($s->{CMS} eq 'T0_CH_CERN');
-    next if ($s->{CMS} eq 'T1_CH_CERN');
+    next if ($cms eq 'T0_CH_CERN');
+    next if ($cms eq 'T1_CH_CERN');
     my $timestamp = &timestamp;
-    my $avail = &get_avail($s->{CMS});
+    my $avail = &get_avail($cms);
     die "Cannot get XML\n" if ($avail eq 'error');
     next if ( $avail eq 'NA' );
     my $colour = 'green';
@@ -72,44 +87,12 @@ foreach my $s ( values %sites ) {
 	$colour = 'red' if ( $avail ne 'NA' and $avail < 80 );
     }
     $colour = 'red' if ( $avail eq 'NA' );
-    my $comm_url = &avail_url($s->{CMS});
-    printf $fh "%s\t%s\t%s\t%s\t%s\n", $timestamp, $s->{CMS}, "${avail}",
+    my $comm_url = &avail_url($cms);
+    printf $fh "%s\t%s\t%s\t%s\t%s\n", $timestamp, $cms, "${avail}",
     $colour, $comm_url;
 } 
 close $fh;
 system("/bin/cp -f $tmpfile $filepath"); 
-
-# Handler routines
-
-sub h_start {
-    my $p = shift;
-    my $el = shift;
-    my %attr = ();
-    while (@_) {
-	my $a = shift;
-	my $v = shift;
-	$attr{$a} = $v;
-    }
-    if ($el eq 'item') {
-	$lastid = $attr{id};
-	my $s = new Site($attr{id});
-	$sites{$lastid} = $s;
-    }
-}
-
-sub h_char {
-    my $p = shift;
-    my $a = shift;
-
-    if ($p->in_element('cms')) {
-	my $site = $sites{$lastid};
-	$site->{CMS} = $a; 
-    }
-    if ($p->in_element('sam')) {
-	my $site = $sites{$lastid};
-	$site->{SAM} = $a; 
-    }
-}
 
 sub timestamp {
 
@@ -158,4 +141,9 @@ sub avail_url {
     my $end = &ptime(gmtime(time+86400));
     my $url = "http://dashb-cms-sum.cern.ch/dashboard/request.py/historicalsmryview-sum#view=siteavl&time%5B%5D=individual&starttime=$start&endtime=$end&profile=CMS_CRITICAL_FULL&group=AllGroups&site%5B%5D=$site&type=quality";
     return $url;
+}
+
+sub tier {
+    my $site = shift;
+    return substr $site, 1, 1;
 }
