@@ -6,35 +6,15 @@
 #   Writes the lists to files in the current directory
 #
 
+use JSON;
 use LWP::Simple;
+use LWP::UserAgent;
 use XML::Parser;
 use File::Temp("tempfile");
-
-# Small class for Sites
-
-package Site;
-
-sub new {
-    my $class = shift;
-    my $id = shift;
-    my $self = {ID => $id, CMS => '', SAM => ''};
-    bless $self, $class;
-}
-
-sub tier {
-    my $self = shift;
-    return substr $self->{CMS}, 1, 1;
-}
-
-# Main program
-
-package main;
 
 $NAME = 'jr_successrate.pl';
 
 # Array with all Sites and tiers
-%seen = ();
-%sites = ();
 $lastsiteid = 0;
 %dbinfo = ();
 
@@ -44,10 +24,24 @@ my $last = $ARGV[2];
 
 die "Usage: $NAME <activity>\n" if (! defined $activity);
 
-#Get XML file from SiteDB
+#Get JSON file from SiteDB
+# Define HTTPS environment to use proxy
+$ENV{HTTPS_CA_DIR} = (defined $ENV{X509_CERT_DIR})?$ENV{X509_CERT_DIR}:"/etc/grid-security/certificates";
+my $GSIPROXY = (defined $ENV{X509_USER_PROXY})?$ENV{X509_USER_PROXY}:"/tmp/x509up_u$<";
+$ENV{HTTPS_CA_FILE} = $GSIPROXY;
+$ENV{HTTPS_CERT_FILE} = $GSIPROXY;
+$ENV{HTTPS_KEY_FILE}  = $GSIPROXY;
 
-my $url = "https://cmsweb.cern.ch/sitedb/sitedb/reports/showXMLReport/?reportid=naming_convention.ini";
-my $doc = get($url) or die "Cannot retrieve XML\n";
+my $url = "https://cmsweb.cern.ch/sitedb/data/prod/site-names";
+# Set header to select output format
+$header = HTTP::Headers->new(
+			     Accept => 'application/json');
+
+$ua = LWP::UserAgent->new;
+$ua->default_headers($header);
+
+my $response = $ua->get($url) or die "Cannot retrieve JSON\n";
+
 my $filepath;
 if ($outfile) {
     $filepath = "/afs/cern.ch/cms/LCG/SiteComm/$outfile";
@@ -56,14 +50,19 @@ if ($outfile) {
 }
 ($fh, $tmpfile) = tempfile(UNLINK => 1) or die "Cannot create temporary file\n";
 
-# Parse XML
-
-$p = new XML::Parser(Handlers => {Start => \&h_start, Char  => \&h_char});
-$p->parse($doc) or die "Cannot parse XML\n";
+# Parse JSON
+my $ref = from_json($response->decoded_content);
+my @sites;
+foreach my $item (@{$ref->{'result'}}) {
+    my $type = $item->[0];
+    if ($type eq 'cms') {
+	push @sites, $item->[2];
+    }
+}
 
 # Exit if no sites are found
 
-if (! %sites) {
+if (! @sites) {
     die "No sites found!\n";
 }
 
@@ -75,25 +74,22 @@ my $end3 = &dbtime3(time);
 
 &get_successrates($activity, $start, $end);
 
-foreach my $s ( sort {$a->{CMS} cmp $b->{CMS}} values %sites ) {
-    my $cms = $s->{CMS};
-    next if $seen{$cms}++;
-    my $t = $s->tier;
+foreach my $cms ( sort @sites ) {
+    my $t = tier($cms);
     next if ( $t eq 'X' );
 
 # Skip T1_CH_CERN
-    next if ($s->{CMS} eq 'T1_CH_CERN');
-    next if ($s->{CMS} eq 'T0_CH_CERN'); # Change to T2 at end of LS1
+    next if ($cms eq 'T1_CH_CERN');
+    next if ($cms eq 'T0_CH_CERN'); # Change to T2 at end of LS1
     my $timestamp = &dbtime2(time); 
-    my $sr = &get_sr($s->{CMS});
+    my $sr = &get_sr($cms);
     my $colour;
-    my $site = $s->{CMS};
-#    $site = 'T2_CH_CERN' if ($site eq 'T0_CH_CERN'); # Uncomment at end of LS1
-    my $comm_url = &successrate_url($s->{CMS}, $start3, $end3, $activity);
+#    $cms = 'T2_CH_CERN' if ($cms eq 'T0_CH_CERN'); # Uncomment at end of LS1
+    my $comm_url = &successrate_url($cms, $start3, $end3, $activity);
     if ( $sr eq 'NA' ) {
 	$colour = 'white';
 	$sr = 'n/a';
-	printf $fh "%s\t%s\t%s\t%s\t%s\n", $timestamp, $site, $sr,
+	printf $fh "%s\t%s\t%s\t%s\t%s\n", $timestamp, $cms, $sr,
 	$colour, $comm_url;
     } else {
 	$colour = 'green';
@@ -102,7 +98,7 @@ foreach my $s ( sort {$a->{CMS} cmp $b->{CMS}} values %sites ) {
 	} elsif ( $t == 2 ) {
 	    $colour = 'red' if ( $sr < 80 );
 	}
-	printf $fh "%s\t%s\t%.1f\t%s\t%s\n", $timestamp, $site, $sr,
+	printf $fh "%s\t%s\t%.1f\t%s\t%s\n", $timestamp, $cms, $sr,
 	$colour, $comm_url;
     }
 } 
@@ -276,4 +272,9 @@ sub successrate_url {
     my $activity = shift;
     my $url = "http://dashb-cms-job.cern.ch/dashboard/templates/web-job2/#user=&refresh=0&table=Jobs&p=1&records=25&activemenu=0&usr=&site=$site&submissiontool=&application=&activity=$activity&status=&check=terminated&tier=&date1=$start&date2=$end&sortby=ce&scale=linear&bars=20&ce=&rb=&grid=&jobtype=&submissionui=&dataset=&submissiontype=&task=&subtoolver=&genactivity=&outputse=&appexitcode=&accesstype=";
     return $url;
+}
+
+sub tier {
+    my $site = shift;
+    return substr $site, 1, 1;
 }
