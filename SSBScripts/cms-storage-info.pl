@@ -5,8 +5,8 @@
 #
 # Author: Andrea Sciaba'
 # Notes: supersedes script InfoFromDBS_text by Xiao Mei
-# Version: 1.0
-# Date: 27/01/2011
+# Version: 1.1
+# Date: 06/11/2013
 #
 #####################################################################
 
@@ -31,14 +31,7 @@ $file_install_nearline = "$ssbdir/installNearline.txt";
 
 $bdii = "lcg-bdii.cern.ch:2170";
 
-$last_site = $last_cms = $last_sam = undef;
-
 # Information sources: PhEDEx data service, DBS, BDII
-
-# Get site names
-#&site_naming;
-
-# Associate PhEDEx nodes to sites
 
 # Associate SEs to PhEDEx nodes
 &phedex_se;
@@ -233,16 +226,6 @@ foreach my $cms (sort keys %cms2phedex) {
 }
 close BDII;
 
-
-# Fill site name transation hashes
-sub site_naming {
-    my $url = "https://cmsweb.cern.ch/sitedb/reports/showXMLReport/?reportid=naming_convention.ini";
-    my $doc = get($url) or die "Cannot retrieve XML from $url\n";
-    $p = new XML::Parser(Handlers => {Char => \&h_char_names});
-    $p->parse($doc);
-}
-
-
 # Map between storage elements and PhEDEx nodes
 # %cms2phedex: maps CMS site name to array of PhEDEx nodes
 # %node2se: maps PhEDEx node to SE
@@ -434,20 +417,6 @@ sub bdii_info {
 	}
     }
 }
-
-sub h_char_names {
-    my $p = shift;
-    my $s = shift;
-    if ($p->in_element('site')) {
-	$last_site = $s;
-    } elsif ($p->in_element('sam')) {
-	$last_sam = $s;
-    } elsif ($p->in_element('cms')) {
-	$last_cms = $s;
-#	$cms2site{$last_cms} = $last_site;
-    }
-}
-
 
 sub get_phedex_info {
 
