@@ -1,32 +1,66 @@
 #!/usr/bin/env python
-import db_Initialize, db_ExtractStatusEntry, db_time_converter.py
-import shutil
+import db_Initialize, db_ExtractStatusEntry, db_time_converter
+import shutil, time, urllib, urllib2
 from datetime import datetime, timedelta
-import time
-import urllib
-# copy all python scripts and .sh
+
+
+print "Importing list of python file:",
+try:
+    import db_Initialize, db_ExtractStatusEntry, db_time_converter
+except ImportError:
+    print "Could not import some python file, please check the directory"
+print"Done"
+
+# copy list of site
+print "Copying site_list_prev.txt:",
 shutil.copy( "/afs/cern.ch/user/c/cmst1/scratch0/WFM_Input_DashBoard/site_list_prev.txt", "sitelist_prev_copy.txt")
+print "Done"
 
 sitelist="sitelist_prev_copy.txt"
-#cat $sitelist
 pledgejson="tmp_pledge.json"
 statusjson="tmp_status.json"
 
 
-#UNCOMMENTE
 #call db_Inititalize
-print 'python db_Initialize.py',pledgejson,statusjson
-db_Initialize.initialize(pledge_json, status_json)
+print 'Initializing jason file:',
+print 'python db_Initialize.py',pledgejson,statusjson  #<<====Why do you want to do this?
+db_Initialize.initialize(pledgejson,statusjson)
+print"Done"
+
+'''
 OUTPUTJSON="SSB_alarms.json"
+if [  -f $OUTPUTJSON ]; then rm $OUTPUTJSON; fi
+DateTimeSplit=$(sqlite3 fakedatabase "select datetime('now')")
+rm fakedatabase
+DateTimeSplitwith_h=$(echo $DateTimeSplit | awk '{print $1"T"$2}')
+Date=$(echo $DateTimeSplit | awk '{print $1}')
+Time=$(echo $DateTimeSplit | awk '{print $2}')
+echo "{\"UPDATE\":{\"Date\":\"$Date\",\"Time\":\"$Time\"},\"Sites\":[" > $OUTPUTJSON
+{"UPDATE":{"Date":"2013-11-26","Time":"10:28:03"},"Sites":[
+{"UPDATE":{"Date":"2013-11-26","Time":"11:58:09"},"Sites":[
+python output :2013-11-26T11:29:24
+'''
+
+OUTPUTJSON="SSB_alarms.json",
+print "creating SSB_alarms.json file:"
+try:
+    OUTPUTJSON=open("SSB_alarms.json",'w') #<<====even if there is already SSB_alarms.json, python will overwrite the existing
+    print'Done'
+except OSError:
+    print "Could not make SSB_alarms.json"
+
+print"Writing data on SSB_alarms.json",
+OUTPUTJSON.write(time.strftime("{\"UPDATE\":{\"Date\":\"%Y-%m-%d\",\"Time\":\"%H:%M:%S\"},\"Sites\":["))
+
 
 #gets the curren date and time
-dateTime = time.strftime("%Y-%m-%dT%H:%M:%S")
+dateTime = time.strftime("%Y-%m-%d %H:%M:%S")
+
 
 
 # thresholds for the alarm state of the normal alarm
 thresh_alarm=0.7
 thresh_warning=0.9
-
 #for loop over sites, get site list
 firstSite=1
 # #sitelist goes into this loop at the end of the loop
@@ -49,16 +83,16 @@ for site in sites:
     if pledge_SafeDivision == 0:
         pledge_SafeDivision=1
 
-    # fetching site information numbers of the last 24 hours 
+    # fetching site information numbers of the last 24 hours
     tmp_csv_merg="temp_site_RunAndPend.csv"
     #RUNNING
-    url_filledwithsite=("http://dashb-cms-prod.cern.ch/dashboard/request.py/"         
+    url_filledwithsite=("http://dashb-cms-prod.cern.ch/dashboard/request.py/"
                     "condorjobnumberscsv?sites="+site+"&sitesSort=1&"
                     "jobTypes=&start=null&end=null&timeRange=last24&"
                     "granularity=15%20Min&sortBy=3&series=All&type=r")
 
     print url_filledwithsite
-    #get content from url_filledwithsite to tmp_cvs_run    
+    #get content from url_filledwithsite to tmp_cvs_run
     tmp_csv_run= urllib2.urlopen(url_filledwithsite).read()
     print 'fetched running csv of',site, 'succesfully'
 
@@ -70,7 +104,7 @@ for site in sites:
     print url_filledwithsite
     tmp_csv_pen= urllib2.urlopen(url_filledwithsite).read()
     print 'fetched pending csv of',site, 'succesfully'
-    
+
 
     #MERGE the TWO list togther with paste and put a "," between the two instead of an endline symbol
     tmp_csv_merg = tmp_csv_run + '\n' + tmp_csv_pen
@@ -87,9 +121,9 @@ for site in sites:
     nb_Pen_RelVal="-1"
     nb_Pen_Proc="-1"
     nb_Pen_Prod="-1"
-    
+
     for line in tmp_csv_merg.split('\n'):
-        args = line.split(',')      
+        args = line.split(',')
         jobtype = args[2]
         if jobtype == 'Clean':
             nb_Run_Clean =  args[0]
@@ -109,4 +143,5 @@ for site in sites:
         elif jobtype == 'Prod':
             nb_Run_Clean =  args[0]
             nb_Pen_Clean = args[4]
+
 
