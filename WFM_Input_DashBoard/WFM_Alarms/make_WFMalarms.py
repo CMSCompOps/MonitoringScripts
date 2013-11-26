@@ -1,9 +1,7 @@
 #!/usr/bin/env python
 import db_Initialize, db_ExtractStatusEntry, db_time_converter
-import shutil
+import shutil, time, urllib, urllib2
 from datetime import datetime, timedelta
-import time
-import urllib
 
 
 print "Importing list of python file:",
