@@ -63,6 +63,7 @@ def getSiteStatusEntry(site, testtime, inputfile):
 
   #THE OUTPUT don't comment this line !!!!
   print out_status 
+  return out_status
 
 
 ########################################
