@@ -1,32 +1,41 @@
 #!/usr/bin/env python
-import db_Initialize, db_ExtractStatusEntry, db_time_converter.py
+import db_Initialize, db_ExtractStatusEntry, db_time_converter
 import shutil
 from datetime import datetime, timedelta
 import time
 import urllib
-# copy all python scripts and .sh
+
+
+print "Importing list of python file:",
+try:
+    import db_Initialize, db_ExtractStatusEntry, db_time_converter
+except ImportError:
+    print "Could not import some python file, please check the directory"
+print"Done"
+
+# copy list of site
+print "Copying site_list_prev.txt:",
 shutil.copy( "/afs/cern.ch/user/c/cmst1/scratch0/WFM_Input_DashBoard/site_list_prev.txt", "sitelist_prev_copy.txt")
+print "Done"
 
 sitelist="sitelist_prev_copy.txt"
-#cat $sitelist
 pledgejson="tmp_pledge.json"
 statusjson="tmp_status.json"
 
 
-#UNCOMMENTE
 #call db_Inititalize
-print 'python db_Initialize.py',pledgejson,statusjson
-db_Initialize.initialize(pledge_json, status_json)
+print 'Initializing jason file:',
+print 'python db_Initialize.py',pledgejson,statusjson  #<<====Why do you want to do this?
+db_Initialize.initialize(pledgejson,statusjson)
 OUTPUTJSON="SSB_alarms.json"
+print"Done"
 
 #gets the curren date and time
 dateTime = time.strftime("%Y-%m-%dT%H:%M:%S")
 
-
 # thresholds for the alarm state of the normal alarm
 thresh_alarm=0.7
 thresh_warning=0.9
-
 #for loop over sites, get site list
 firstSite=1
 # #sitelist goes into this loop at the end of the loop
