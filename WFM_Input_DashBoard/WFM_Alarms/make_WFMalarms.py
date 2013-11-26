@@ -27,19 +27,6 @@ print 'python db_Initialize.py',pledgejson,statusjson  #<<====Why do you want to
 db_Initialize.initialize(pledgejson,statusjson)
 print"Done"
 
-'''
-OUTPUTJSON="SSB_alarms.json"
-if [  -f $OUTPUTJSON ]; then rm $OUTPUTJSON; fi
-DateTimeSplit=$(sqlite3 fakedatabase "select datetime('now')")
-rm fakedatabase
-DateTimeSplitwith_h=$(echo $DateTimeSplit | awk '{print $1"T"$2}')
-Date=$(echo $DateTimeSplit | awk '{print $1}')
-Time=$(echo $DateTimeSplit | awk '{print $2}')
-echo "{\"UPDATE\":{\"Date\":\"$Date\",\"Time\":\"$Time\"},\"Sites\":[" > $OUTPUTJSON
-{"UPDATE":{"Date":"2013-11-26","Time":"10:28:03"},"Sites":[
-{"UPDATE":{"Date":"2013-11-26","Time":"11:58:09"},"Sites":[
-python output :2013-11-26T11:29:24
-'''
 
 OUTPUTJSON="SSB_alarms.json",
 print "creating SSB_alarms.json file:"
