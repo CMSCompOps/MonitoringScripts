@@ -23,7 +23,6 @@ statusjson="tmp_status.json"
 
 #call db_Inititalize
 print 'Initializing jason file:',
-print 'python db_Initialize.py',pledgejson,statusjson  #<<====Why do you want to do this?
 db_Initialize.initialize(pledgejson,statusjson)
 OUTPUTJSON="SSB_alarms.json"
 print"Done"
@@ -80,8 +79,7 @@ for site in sites:
     
 
     #MERGE the TWO list togther with paste and put a "," between the two instead of an endline symbol
-    tmp_csv_merg = tmp_csv_run + '\n' + tmp_csv_pen
-
+    tmp_csv_merg = [run+','+pen for run,pen in zip(tmp_csv_run.splitlines(),tmp_csv_run.splitlines())]
     nb_Run_Clean="-1"
     nb_Run_Log="-1"
     nb_Run_Merge="-1"
@@ -94,26 +92,66 @@ for site in sites:
     nb_Pen_RelVal="-1"
     nb_Pen_Proc="-1"
     nb_Pen_Prod="-1"
-    
-    for line in tmp_csv_merg.split('\n'):
+    #read each line
+    for line in tmp_csv_merg:
         args = line.split(',')      
         jobtype = args[2]
         if jobtype == 'Clean':
             nb_Run_Clean =  args[0]
             nb_Pen_Clean = args[4]
-        elif jobtype == 'Log':
-            nb_Run_Clean =  args[0]
-            nb_Pen_Clean = args[4]
-        elif jobtype == 'Merge':
-            nb_Run_Clean =  args[0]
-            nb_Pen_Clean = args[4]
-        elif jobtype == 'RelVal':
-            nb_Run_Clean =  args[0]
-            nb_Pen_Clean = args[4]
-        elif jobtype == 'Proc':
-            nb_Run_Clean =  args[0]
-            nb_Pen_Clean = args[4]
-        elif jobtype == 'Prod':
-            nb_Run_Clean =  args[0]
-            nb_Pen_Clean = args[4]
+        if jobtype == 'Log':
+            nb_Run_Log =  args[0]
+            nb_Pen_Log = args[4]
+        if jobtype == 'Merge':
+            nb_Run_Merge =  args[0]
+            nb_Pen_Merge = args[4]
+        if jobtype == 'RelVal':
+            nb_Run_RelVal =  args[0]
+            nb_Pen_RelVal = args[4]
+        if jobtype == 'Proc':
+            nb_Run_Proc =  args[0]
+            nb_Pen_Proc = args[4]
+        if jobtype == 'Prod':
+            nb_Run_Prod =  args[0]
+            nb_Pen_Prod = args[4]
+            #this is also the last of the 5 variables that I have to read, so we write away our set and reset all the others
+            nb_SUMRun = nb_Run_Clean + nb_Run_Log + nb_Run_Merge  + nb_Run_RelVal + nb_Run_Proc +nb_Run_Prod 
+            nb_SUMPen = nb_Pen_Clean + nb_Pen_Log + nb_Pen_Merge + nb_Pen_RelVal + nb_Pen_Proc + nb_Pen_Prod
+            #get time and transform format
+            timePoint=strptime(args[1],"%d-%b-%y %H:%M:%S")
+            timePoint=timeTest.strftime("%Y-%m-%dT%H:%M:%S")
 
+            # fetching the status number per time_point
+            status= db_ExtractStatusEntry.getSiteStatusEntry( site timePoint ,statusjson )
+           
+            Ratio = float(SUMRun)/pledge_SafeDivision
+            PerfectRatio=1
+            SeventyRatio=0.7
+            Condition= (siteTier=="T1") or (status=="on"))            
+            GL_AL=Condition and (SUMPen>=10) and (SUMRun==0)
+            GL_UNDEF= not Condition
+            GL_OK=(GL_AL==False) or (GL_UNDEF==False)
+            A_WARN=Condition and (Ratio<th_war) and (Ratio>=th_al)&&(SUMPen>10)        
+            A_AL=Condition and (Ratio<th_al) and (SUMPen>10)
+            A_UNDEF=(!Condition)
+            A_OK=(A_AL==0) and (A_WARN==0) and (A_UNDEF==0)
+            SPEC_Cond=Condition and (SUMPen>=10)
+            SPEC_SUMRun=SUMRun if SPEC_Cond else 0
+            SPEC_Pledge=pledge_SafeDivision if SPEC_Cond else 0
+            
+             #format of data.dat: dateTime State SUMRun SUMPen Pledge Ratio 1.0 0.7 ALARM_OK ALARM_WARNING ALARM_ALARM ALARM_UNDEFINED GLIDEIN_OK GLIDEIN_ALARM GLIDEIN_UNDEF SPEC_SUMRun SPEC_Pledge SPEC_CondCanBeRemoved 
+             #store int tmp_all
+            tmp_all.append (timePoint + ' ' + status + ' ' + nb_SUMRun + ' ' + nb_SUMPen +
+                    ' ' + pledge_SafeDivision + ' ' + Ratio + ' ' + PerfectRatio + 
+                    ' ' + A_OK+ ' ' +A_WARN,A_AL+ ' ' +A_UNDEF+ ' ' +GL_OK+
+                    ' ' + GL_AL+ ' ' +GL_UNDEF+ ' ' +SPEC_SUMRun+ ' ' +SPEC_Pledge +
+                    ' '  +SPEC_Cond)
+
+
+# Looping over the 4 alarms: instant, 1h, 8h, 24h
+index=0
+GlideInAlarm = {}
+
+for nb_entries in [1, 4, 32, 96]:
+    #get last nb_entrues in tmp_all
+    part_dat = tmp_all[-nb_entries:]
