@@ -17,6 +17,10 @@ use Net::LDAP;
 
 $debug = 0;
 $ssbdir = "/afs/cern.ch/cms/LCG/SiteComm/";
+$mydir = $ARGV[0];
+if ($mydir) {
+    $ssbdir = $mydir;
+}
 $file_phedex_sub = "$ssbdir/subscription.txt";
 $file_phedex_cust = "$ssbdir/custodial.txt";
 $file_phedex_ncust = "$ssbdir/noncustodial.txt";
