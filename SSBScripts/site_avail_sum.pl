@@ -6,7 +6,7 @@
 #   Writes the lists to files in the current directory
 #
 
-use JSON;
+eval "use JSON; 1" or eval "use JSON::XS; 1" or die;
 use LWP::UserAgent;
 use File::Temp("tempfile");
 
@@ -31,7 +31,7 @@ $ua->default_headers($header);
 my $response = $ua->get($url) or die "Cannot retrieve JSON\n";
 
 # Parse JSON
-my $ref = from_json($response->decoded_content);
+my $ref = decode_json($response->decoded_content);
 my @sites;
 foreach my $item (@{$ref->{'result'}}) {
     my $type = $item->[0];
