@@ -139,7 +139,7 @@ for site in sites:
             GL_AL=Condition and (SUMPen>=10) and (SUMRun==0)
             GL_UNDEF= not Condition
             GL_OK=(GL_AL==False) or (GL_UNDEF==False)
-            A_WARN=Condition and (Ratio<th_war) and (Ratio>=th_al)&&(SUMPen>10)
+            A_WARN=Condition and (Ratio<th_war) and (Ratio>=th_al) and (SUMPen>10)
             A_AL=Condition and (Ratio<th_al) and (SUMPen>10)
             A_UNDEF=(not Condition)
             A_OK=(A_AL==0) and (A_WARN==0) and (A_UNDEF==0)
@@ -152,7 +152,7 @@ for site in sites:
                 SPEC_Pledge=pledge_SafeDivision
             else:
                 SPEC_Pledge=0
-            
+
 
              #format of data.dat: dateTime State SUMRun SUMPen Pledge Ratio 1.0 0.7 ALARM_OK ALARM_WARNING ALARM_ALARM ALARM_UNDEFINED GLIDEIN_OK GLIDEIN_ALARM GLIDEIN_UNDEF SPEC_SUMRun SPEC_Pledge SPEC_CondCanBeRemoved
              #store int tmp_all
