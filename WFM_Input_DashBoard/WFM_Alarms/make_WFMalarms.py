@@ -25,10 +25,18 @@ statusjson="tmp_status.json"
 print 'Initializing jason file:',
 db_Initialize.initialize(pledgejson,statusjson)
 OUTPUTJSON="SSB_alarms.json"
+outputJson = open(OUTPUTJSON,'w')
+
+
 print"Done"
 
 #gets the curren date and time
 dateTime = time.strftime("%Y-%m-%dT%H:%M:%S")
+dateTimeSplit = dateTime.split('T')
+#write header
+#echo "{\"UPDATE\":{\"Date\":\"$Date\",\"Time\":\"$Time\"},\"Sites\":[" > $OUTPUTJSON
+outputJson.write('{"UPDATE":{"Date":"'+dateTimeSplit[0] +'","Time":"'+dateTimeSplit[1]+'"},"Sites":[')
+
 
 # thresholds for the alarm state of the normal alarm
 thresh_alarm=0.7
@@ -79,7 +87,7 @@ for site in sites:
     
 
     #MERGE the TWO list togther with paste and put a "," between the two instead of an endline symbol
-    tmp_csv_merg = [run+','+pen for run,pen in zip(tmp_csv_run.splitlines(),tmp_csv_run.splitlines())]
+    #tmp_csv_merg = [run+','+pen for run,pen in zip(tmp_csv_run.splitlines(),tmp_csv_run.splitlines())]
     nb_Run_Clean="-1"
     nb_Run_Log="-1"
     nb_Run_Merge="-1"
