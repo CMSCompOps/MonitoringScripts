@@ -1,3 +1,4 @@
+
 #!/usr/bin/env python
 import db_Initialize, db_ExtractStatusEntry, db_time_converter
 import shutil, time, urllib, urllib2
@@ -130,22 +131,21 @@ for site in sites:
             timePoint=timeTest.strftime("%Y-%m-%dT%H:%M:%S")
 
             # fetching the status number per time_point
-            status= db_ExtractStatusEntry.getSiteStatusEntry( site timePoint ,statusjson )
+            status= db_ExtractStatusEntry.getSiteStatusEntry( site, timePoint ,statusjson )
            
             Ratio = float(SUMRun)/pledge_SafeDivision
             PerfectRatio=1
             SeventyRatio=0.7
-            Condition= (siteTier=="T1") or (status=="on"))            
+            Condition= (siteTier=="T1") or (status=="on")
             GL_AL=Condition and (SUMPen>=10) and (SUMRun==0)
             GL_UNDEF= not Condition
             GL_OK=(GL_AL==False) or (GL_UNDEF==False)
-            A_WARN=Condition and (Ratio<th_war) and (Ratio>=th_al)&&(SUMPen>10)        
+            A_WARN=Condition and (Ratio<th_war) and (Ratio>=th_al) and (SUMPen>10)
             A_AL=Condition and (Ratio<th_al) and (SUMPen>10)
-            A_UNDEF=(!Condition)
+            A_UNDEF=(not Condition)
             A_OK=(A_AL==0) and (A_WARN==0) and (A_UNDEF==0)
-            SPEC_Cond=Condition and (SUMPen>=10)
-            SPEC_SUMRun=SUMRun if SPEC_Cond else 0
-            SPEC_Pledge=pledge_SafeDivision if SPEC_Cond else 0
+
+
             
              #format of data.dat: dateTime State SUMRun SUMPen Pledge Ratio 1.0 0.7 ALARM_OK ALARM_WARNING ALARM_ALARM ALARM_UNDEFINED GLIDEIN_OK GLIDEIN_ALARM GLIDEIN_UNDEF SPEC_SUMRun SPEC_Pledge SPEC_CondCanBeRemoved 
              #store int tmp_all
@@ -163,4 +163,3 @@ GlideInAlarm = {}
 for nb_entries in [1, 4, 32, 96]:
     #get last nb_entrues in tmp_all
     part_dat = tmp_all[-nb_entries:]
-
