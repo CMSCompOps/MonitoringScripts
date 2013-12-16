@@ -124,8 +124,60 @@ def main_function(outputfile_txt, submonths,allSites):
       elif k['COLORNAME'] == 'green': continue
       elif k['COLORNAME'] == 'white' : continue #white ..
       # startime of entry
-      starttime=datetime(*(time.strptime( k['Time'] ,'%Y-%m-%dT%H:%M:%S')[0:6]))
+   
+   #------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#*************************************************************** Modification of GK *******************************************************************************
+#------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+      starttime = datetime(*(time.strptime( k['Time'] ,'%Y-%m-%dT%H:%M:%S')[0:6]))
       endtime=datetime(*(time.strptime( k['EndTime'] ,'%Y-%m-%dT%H:%M:%S')[0:6]))
+      day_string = endtime.strftime('%Y-%m-%d %H:%M:%S')
+      date_string  = day_string.split(" ")[0].split('-')  # 2013-12-06 13:12:12 sekilindeki veriyi ikiye bolup date ve time diye iki farkli degiskende tutuyoruz
+      time_string  = day_string.split(" ")[1]
+      gMonth = date_string[1]
+     #_______________________________________________________________________________________________________________________________ 
+      #eger 1 aylik parametre gelmisse yapilacaklar
+      if submonths == -1:
+        if gMonth == '01':
+          date_string[0] = str(int(date_string[0]) - 1)
+          dateMonth = '12'
+        else:
+          dateMonth = int(date_string[1]) - 1
+     #_______________________________________________________________________________________________________________________________ 
+      #eger 2 aylik parametre gelmisse yapilacaklar
+      if submonths == -2:
+        if gMonth == '01':
+          dateMonth = '11'
+          date_string[0] = str(int(date_string[0]) - 1)
+        elif gMonth == '02':
+          dateMonth = '12'
+          date_string[0] = str(int(date_string[0]) - 1)
+        else:
+          dateMonth = int(date_string[1]) - 2
+     #_______________________________________________________________________________________________________________________________     
+       #eger 3 aylik parametre gelmisse yapilacaklar
+      if submonths == -3:
+        if gMonth == '01':
+          dateMonth = '10'
+          date_string[0] = str(int(date_string[0]) - 1)
+        elif gMonth == '02':
+          dateMonth = '11'
+          date_string[0] = str(int(date_string[0]) - 1)
+        elif gMonth == '03':
+          dateMonth = '12'
+          date_string[0] = str(int(date_string[0]) - 1)
+        else:
+          dateMonth = int(date_string[1]) - 3
+      #_____________________________________________________________________________________________________________________________
+      if len(str(dateMonth)) < 2: date_string[1] = '0' + str(dateMonth)
+      else: date_string[1] = str(dateMonth)
+      realDate = date_string[0] + '-' + date_string[1] + '-' + str(int(date_string[2]) + 1) + 'T' + time_string
+      starttime = datetime(*(time.strptime( realDate , '%Y-%m-%dT%H:%M:%S') [0:6]))
+
+#------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
       # it means we had the interval Time TimeEnd for a few days, and the loop is not yet past this last day,
       # where we already counted a yes
       if date_check >=  starttime.date() : continue  
