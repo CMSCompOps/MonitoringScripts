@@ -125,18 +125,18 @@ def main_function(outputfile_txt, submonths,allSites):
       elif k['COLORNAME'] == 'white' : continue #white ..
       # startime of entry
    
-   #------------------------------------------------------------------------------------------------------------------------------------------------------------------
-#*************************************************************** Modification of GK *******************************************************************************
-#------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------------------------------------------------------------------
+#*************************************************************** Modification****************************************************************
+#-------------------------------------------------------------------------------------------------------------------------------------------------
 
       starttime = datetime(*(time.strptime( k['Time'] ,'%Y-%m-%dT%H:%M:%S')[0:6]))
       endtime=datetime(*(time.strptime( k['EndTime'] ,'%Y-%m-%dT%H:%M:%S')[0:6]))
       day_string = endtime.strftime('%Y-%m-%d %H:%M:%S')
-      date_string  = day_string.split(" ")[0].split('-')  # 2013-12-06 13:12:12 sekilindeki veriyi ikiye bolup date ve time diye iki farkli degiskende tutuyoruz
+      date_string  = day_string.split(" ")[0].split('-') #date split.
       time_string  = day_string.split(" ")[1]
       gMonth = date_string[1]
      #_______________________________________________________________________________________________________________________________ 
-      #eger 1 aylik parametre gelmisse yapilacaklar
+      # if metric is 1 month, things which is to do
       if submonths == -1:
         if gMonth == '01':
           date_string[0] = str(int(date_string[0]) - 1)
@@ -144,7 +144,7 @@ def main_function(outputfile_txt, submonths,allSites):
         else:
           dateMonth = int(date_string[1]) - 1
      #_______________________________________________________________________________________________________________________________ 
-      #eger 2 aylik parametre gelmisse yapilacaklar
+      # if metric is 2 months, things which is to do
       if submonths == -2:
         if gMonth == '01':
           dateMonth = '11'
@@ -155,7 +155,7 @@ def main_function(outputfile_txt, submonths,allSites):
         else:
           dateMonth = int(date_string[1]) - 2
      #_______________________________________________________________________________________________________________________________     
-       #eger 3 aylik parametre gelmisse yapilacaklar
+       # if metric is 3 months, things which is to do
       if submonths == -3:
         if gMonth == '01':
           dateMonth = '10'
@@ -174,7 +174,7 @@ def main_function(outputfile_txt, submonths,allSites):
       realDate = date_string[0] + '-' + date_string[1] + '-' + str(int(date_string[2]) + 1) + 'T' + time_string
       starttime = datetime(*(time.strptime( realDate , '%Y-%m-%dT%H:%M:%S') [0:6]))
 
-#------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#---------------------------------------------------------------------------------------------------------------------------------------------
 
 
 
