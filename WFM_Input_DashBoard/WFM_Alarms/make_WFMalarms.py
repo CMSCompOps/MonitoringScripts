@@ -90,7 +90,8 @@ for site in sites:
 
 
     #MERGE the TWO list togther with paste and put a "," between the two instead of an endline symbol
-    tmp_csv_merg = [run+','+pen for run,pen in zip(tmp_csv_run.splitlines(),tmp_csv_run.splitlines())]
+    tmp_csv_merg = [run+','+pen for run,pen in zip(tmp_csv_run.splitlines(),tmp_csv_pen.splitlines())]
+    print 'merged the csv to one csv'
     nb_Run_Clean=-1
     nb_Run_Log=-1
     nb_Run_Merge=-1
@@ -104,7 +105,7 @@ for site in sites:
     nb_Pen_Proc=-1
     nb_Pen_Prod=-1
     #read each line
-    #tmp_all a new list
+    #tmp_all a new list of results
     tmp_all = []
     for line in tmp_csv_merg:
         args = line.split(',')
@@ -141,14 +142,19 @@ for site in sites:
             Ratio = float(nb_SUMRun)/pledge_SafeDivision
             PerfectRatio=1
             SeventyRatio=0.7
+            #we check if site is tier 1, or is on
             Condition= (siteTier=="T1") or (status=="on")
             GL_AL=Condition and (nb_SUMPen>=10) and (nb_SUMRun==0)
             GL_UNDEF= not Condition
             GL_OK=(GL_AL==False) or (GL_UNDEF==False)
-            A_WARN=Condition and (Ratio<thresh_warning) and (Ratio>=thresh_alarm) and (nb_SUMPen>10)
+            #warning if condition, and ratio between alarm and warning threshold
+            A_WARN=Condition and (thresh_alarm =< Ratio < thresh_warning) and (nb_SUMPen>10)
+            #Alarm if condition and ratio less than alarm threshold
             A_AL=Condition and (Ratio<thresh_alarm) and (nb_SUMPen>10)
+            #Alarm is undef if not condition            
             A_UNDEF=(not Condition)
-            A_OK=(A_AL==0) and (A_WARN==0) and (A_UNDEF==0)
+            #Alarm is ok if not warning, not alarm  and not undefined
+            A_OK=(not A_AL) and (not A_WARN) and (not A_UNDEF)
             SPEC_Cond=Condition and (nb_SUMPen>=10)
             if SPEC_Cond:
                 SPEC_SUMRun=nb_SUMRun
@@ -159,15 +165,15 @@ for site in sites:
             else:
                 SPEC_Pledge=0
 
-
              #format of data.dat: dateTime State SUMRun SUMPen Pledge Ratio 1.0 0.7 ALARM_OK ALARM_WARNING ALARM_ALARM ALARM_UNDEFINED GLIDEIN_OK GLIDEIN_ALARM GLIDEIN_UNDEF SPEC_SUMRun SPEC_Pledge SPEC_CondCanBeRemoved
              #store int tmp_all
             timePointS=timePoint.strftime("%d-%b-%yT%H:%M:%S")
             tmp_all.append (timePointS + ' ' + str(status) + ' ' + str(nb_SUMRun) + ' ' + str(nb_SUMPen) +
                     ' ' + str(pledge_SafeDivision) + ' ' + str(Ratio) + ' ' + str(PerfectRatio) + 
                     ' ' + str(SeventyRatio) +
-                    ' ' + str(A_OK)+ ' ' +str(A_WARN) +' '+ str(A_AL)+ ' ' +str(A_UNDEF)+ ' ' +str(GL_OK)+
-                    ' ' + str(GL_AL)+ ' ' +str(GL_UNDEF)+ ' ' +str(SPEC_SUMRun)+ ' ' +str(SPEC_Pledge) +
+                    ' ' + str(A_OK)+ ' ' + str(A_WARN) +' '+ str(A_AL)+ ' ' +str(A_UNDEF)+ 
+                    ' ' +str(GL_OK)+ ' ' + str(GL_AL)+ ' ' +str(GL_UNDEF)+ 
+                    ' ' +str(SPEC_SUMRun)+ ' ' +str(SPEC_Pledge) +
                     ' ' + str(SPEC_Cond))
             nb_Run_Clean=-1
             nb_Run_Log=-1
@@ -181,7 +187,6 @@ for site in sites:
             nb_Pen_RelVal=-1
             nb_Pen_Proc=-1
             nb_Pen_Prod=-1
-
     # Looping over the 4 alarms: instant, 1h, 8h, 24h
     index=0
     GlideInAlarm = ['' for i in range(4)]
@@ -201,7 +206,8 @@ for site in sites:
         denom = 0
         sum_ = 0
         for line in part_dat:
-            print line
+            if nb_entries == 1:            
+                print line
             parts = line.split()
             #glidein    
             GlideIn_UNDEF += (1 if parts[14] == 'True' else 0)
@@ -237,8 +243,8 @@ for site in sites:
   
         #compute ratio (safe division)
         ratioTmp = float(nom) / float(denom) if denom != 0 else 0
-        print 'denom',denom,'nom',nom
-        print 'ratioTmp',ratioTmp
+        print nb_entries        
+        print 'ratio: ',ratioTmp
         #if ratio below thresholds:
         if ratioTmp < thresh_alarm:
             NEW_ALARM[index]="ALARM"

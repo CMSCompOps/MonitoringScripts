@@ -2,7 +2,7 @@ import os,sys
 from datetime import datetime
 from datetime import timedelta
 import time
-import urllib, simplejson
+import urllib, json as simplejson
 from pprint import pprint
 
 #Extracting the site STATUS or the site PLEDGE, both work. Will choose depending on the input json that you pass to this script
@@ -61,8 +61,7 @@ def getSiteStatusEntry(site, testtime, inputfile):
     #print "site status/pledge not found for the following timeinterval and jsonfile:", site, testtime,inputfile
 
 
-  #THE OUTPUT don't comment this line !!!!
-  print out_status 
+ 
   return out_status
 
 
@@ -72,4 +71,5 @@ if __name__ == '__main__':
     site = sys.argv[1]
     timetotest = sys.argv[2]
     inputfile = sys.argv[3]
-    getSiteStatusEntry(site,timetotest,inputfile)
+    #THE OUTPUT don't comment this line !!!!
+    print getSiteStatusEntry(site,timetotest,inputfile)
