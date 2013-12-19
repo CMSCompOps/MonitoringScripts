@@ -1,6 +1,6 @@
 import os, sys, errno
 #import urllib, json
-import urllib, simplejson
+import urllib
 from datetime import datetime
 from pprint import pprint
 
