@@ -1,4 +1,11 @@
 #!/usr/bin/env python
+"""
+Retrieves job information for last 24 hours, for all the sites
+and makes a json file with a summary of the GlideIn and running
+alarms for each site.
+This is a refactory of the previously used make_WFMalarms.sh
+"""
+
 import db_Initialize, db_ExtractStatusEntry, db_time_converter
 import shutil, time, urllib, urllib2
 from datetime import datetime, timedelta
@@ -15,11 +22,14 @@ print"Done"
 sitelist="sitelist_prev_copy.txt"
 pledgejson="tmp_pledge.json"
 statusjson="tmp_status.json"
-workdir='/afs/cern.ch/user/c/cmst1/scratch0/WFM_Input_DashBoard/WFM_Alarms'
-copyto='/afs/cern.ch/user/c/cmst1/www/WFMon'
 OUTPUTJSON="SSB_alarms.json"
-sitelist_origin = "/afs/cern.ch/user/c/cmst1/scratch0/WFM_Input_DashBoard/site_list_prev.txt"
 
+sitelist_origin = "/afs/cern.ch/user/c/cmst1/scratch0/WFM_Input_DashBoard/site_list_prev.txt"
+#site_list_origin="/Users/jabadillo/workspace_cern/MonitoringScripts/WFM_Input_DashBoard/site_list.txt"
+workdir='/afs/cern.ch/user/c/cmst1/scratch0/WFM_Input_DashBoard/WFM_Alarms'
+#workdir = '/Users/jabadillo/workspace_cern'
+copyto='/afs/cern.ch/user/c/cmst1/www/WFMon'
+#copyto = '/Users/jabadillo/workspace_cern'
 # thresholds for the alarm state of the normal alarm
 thresh_alarm=0.7
 thresh_warning=0.9
@@ -60,12 +70,13 @@ def fetchSiteJobInfo(site):
     return tmp_csv_merg
 
 
-def aggregateSiteInfo(tmp_csv_merg):
+def aggregateSiteJobInfo(tmp_csv_merg, site, statusjson, pledge_SafeDivision):
     """
     Processes site job list and aggregates it making a line per time/point
     counting how many Clean, Log, Merge, Relval, Proc and Prod jobs
     where running and pending at a site.
     """
+    siteTier = site[:2]
     nb_Run_Clean= 0
     nb_Run_Log= 0
     nb_Run_Merge=0
@@ -113,7 +124,7 @@ def aggregateSiteInfo(tmp_csv_merg):
             timePointS=timePoint.strftime("%Y-%m-%dT%H:%M:%S")
 
             # fetching the site status at that time_point
-            status= db_ExtractStatusEntry.getSiteStatusEntry(site, timePointS, tmpdir+'/'+statusjson)
+            status= db_ExtractStatusEntry.getSiteStatusEntry(site, timePointS, statusjson)
 
             Ratio = float(nb_SUMRun)/pledge_SafeDivision
             PerfectRatio=1
@@ -176,8 +187,8 @@ def main():
     tmpdir = tempfile.mkdtemp(prefix='tmp')
     print 'Temporal directory: ',tmpdir
     # copy list of site
-    print "Copying site_list_prev.txt:"
-    shutil.copy(sitelist_origin, tmpdir+'/'+sitelist)
+    print "Copying" , site_list_origin
+    shutil.copy(site_list_origin, tmpdir+'/'+sitelist)
     print "Done"
 
     #call db_Inititalize
@@ -193,7 +204,7 @@ def main():
     outputJson.write('{"UPDATE":{"Date":"'+dateTimeSplit[0] +'","Time":"'+dateTimeSplit[1]+'"},"Sites":[')
     
     #read site list
-    sites = [line.strip() for line in open(sitelist).readlines()]
+    sites = [line.strip() for line in open(tmpdir+'/'+sitelist).readlines()]
 
     first = True
     #for each site
@@ -216,7 +227,7 @@ def main():
         # fetching site information numbers of the last 24 hours
         tmp_csv_merg = fetchSiteJobInfo(site)
         #aggregate site information
-        tmp_all = aggregateSiteJobInfo(tmp_csv_merg)
+        tmp_all = aggregateSiteJobInfo(tmp_csv_merg, site, tmpdir+'/'+statusjson, pledge_SafeDivision)
         
         # Looping over the 4 alarms: instant, 1h, 8h, 24h
         index=0
@@ -237,8 +248,6 @@ def main():
             denom = 0
             sum_ = 0
             for line in part_dat:
-                if nb_entries == 1:            
-                    print line
                 parts = line.split()
                 #glidein    
                 GlideIn_UNDEF += (1 if parts[14] == 'True' else 0)
@@ -326,6 +335,7 @@ def main():
 
     #remove temporal dir
     shutil.rmtree(tmpdir)
+    print tmpdir,'removed'
     
 if __name__ == '__main__':
     main()
