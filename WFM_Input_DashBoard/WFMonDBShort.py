@@ -35,7 +35,7 @@ def getSitePledgeList(filename):
        if columns[1].isdigit():
          list[columns[0]]=int(columns[1])
        else :
-         print "The following site has no pledge !!! Ask Edgar for a fix in the file: http://cmst1.web.cern.ch/CMST1/wmaconfig/slot-limits.conf;"
+         print "The following site has no pledge !!! Ask the Site Support Team for a fix in the file: http://cmst1.web.cern.ch/CMST1/wmaconfig/slot-limits.conf;"
          print columns
          list[columns[0]]=1
 
