@@ -25,10 +25,10 @@
 1/24/2014 0:00:01	T2_DE_RWTH	0	green	n/a
 1/24/2014 0:00:01	T2_EE_Estonia	0	green	n/a
 1/24/2014 0:00:01	T2_ES_CIEMAT	60	green	n/a
-1/24/2014 0:00:01	T2_ES_IFCA	54.4	green	n/a
-1/24/2014 0:00:01	T2_FI_HIP	25.5	green	n/a
+1/24/2014 0:00:01	T2_ES_IFCA	54	green	n/a
+1/24/2014 0:00:01	T2_FI_HIP	26	green	n/a
 1/24/2014 0:00:01	T2_FR_CCIN2P3	50	green	n/a
-1/24/2014 0:00:01	T2_FR_GRIF_IRFU	23.5	green	n/a
+1/24/2014 0:00:01	T2_FR_GRIF_IRFU	24	green	n/a
 1/24/2014 0:00:01	T2_FR_GRIF_LLR	70	green	n/a
 1/24/2014 0:00:01	T2_FR_IPHC	60	green	n/a
 1/24/2014 0:00:01	T2_GR_Ioannina	10	green	n/a
@@ -40,7 +40,7 @@
 1/24/2014 0:00:01	T2_IT_Rome	108	green	n/a
 1/24/2014 0:00:01	T2_KR_KNU	20	green	n/a
 1/24/2014 0:00:01	T2_MY_UPM_BIRUNI	0	green	n/a
-1/24/2014 0:00:01	T2_PK_NCP	26.2	green	n/a
+1/24/2014 0:00:01	T2_PK_NCP	26	green	n/a
 1/24/2014 0:00:01	T2_PL_Warsaw	0	green	n/a
 1/24/2014 0:00:01	T2_PT_NCG_Lisbon	0	green	n/a
 1/24/2014 0:00:01	T2_RU_IHEP	70	green	n/a
@@ -56,7 +56,7 @@
 1/24/2014 0:00:01	T2_UA_KIPT	20	green	n/a
 1/24/2014 0:00:01	T2_UK_London_Brunel	0	green	n/a
 1/24/2014 0:00:01	T2_UK_London_IC	0	green	n/a
-1/24/2014 0:00:01	T2_UK_SGrid_Bristol	22.4	green	n/a
+1/24/2014 0:00:01	T2_UK_SGrid_Bristol	22	green	n/a
 1/24/2014 0:00:01	T2_UK_SGrid_RALPP	0	green	n/a
 1/24/2014 0:00:01	T2_US_Caltech	150	green	n/a
 1/24/2014 0:00:01	T2_US_Florida	250	green	n/a
