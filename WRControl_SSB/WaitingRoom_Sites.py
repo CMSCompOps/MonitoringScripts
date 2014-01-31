@@ -110,12 +110,12 @@ def main_function(outputfile_txt):
 
   print "Local current time :", now_write
   for k in waitingRoom_sites:
-    print k, 'yes', 'red', url2
-    f1.write(now_write+' '+k+' yes red '+url2+'\n')
+    print k, 'in', 'red', url2
+    f1.write(now_write+' '+k+' in red '+url2+'\n')
   for k in site_T2: 
     if not k in waitingRoom_sites:
-      print k, 'no', 'green', url2 
-      f1.write(now_write+' '+k+' no green '+url2+'\n')
+      print k, 'out', 'green', url2
+      f1.write(now_write+' '+k+' out green '+url2+'\n')
 
 if __name__ == '__main__':
   outputfile_txt=sys.argv[1]

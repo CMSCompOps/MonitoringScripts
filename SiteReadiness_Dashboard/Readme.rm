@@ -1,7 +1,0 @@
-# Sten Luyckx
-# Script in acrontab t1
-# 5,20,35,50 * * * * lxplus ssh vocms202 /afs/cern.ch/user/c/cmst1/scratch0/SiteReadiness_Dashboard/run_badSites_SiteReadiness.sh &> /dev/null 
-# Green red if : site readiness percentage is bigger or smaller than 60 % for both the last week as in the last 3 months
-# Script for Dashboard metric 152: SiteReadiness 1W&3M (>60%) 
-# outputfile BadSites_SiteReadiness.txt
-# outputdir /afs/cern.ch/user/c/cmst1/www/WFMon/
