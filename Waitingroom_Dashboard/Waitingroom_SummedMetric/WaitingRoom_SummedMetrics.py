@@ -118,25 +118,20 @@ def main_function(outputfile_txt, submonths,allSites):
     # since we already checked the yes or no for this day...
     date_check = addmonths(  datetime(*(time.strptime(jsn['csvdata'][0]['Time'],'%Y-%m-%dT%H:%M:%S')[0:6]))  ,-1)
     for k in jsn['csvdata']:
-      #print k #tum sitelerin bilgilerinin elden gecirildigi yer.
       if k['VOName'] != site: continue
       elif k['COLORNAME'] == 'green': continue
       elif k['COLORNAME'] == 'white' : continue #white ..
       # startime of entry
 
-#------------------------------------------------------------------------------------------------------------------------------------------------------------------
-#*************************************************************** Modification of GK *******************************************************************************
-#------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
+#************************************************Modifications**************************************
       starttime = datetime(*(time.strptime( k['Time'] ,'%Y-%m-%dT%H:%M:%S')[0:6]))
       endtime=datetime(*(time.strptime( k['EndTime'] ,'%Y-%m-%dT%H:%M:%S')[0:6]))
       day_string = endtime.strftime('%Y-%m-%dT%H:%M:%S')
-      #date_string  = day_string.split("T")[0].split('-')  # 2013-12-06 13:12:12 sekilindeki veriyi ikiye bolup date ve time diye iki farkli degiskende tutuyoruz
-      date_string = day_string.split("T")[0].split("-")
+      date_string = day_string.split("T")[0].split("-") #split and keeps 2013-01-13 ---> 2013 01 13 
       time_string  = day_string.split("T")[1]
       gMonth = date_string[1]
      #_______________________________________________________________________________________________________________________________ 
-      #eger 1 aylik parametre gelmisse yapilacaklar
+      # if a month ->  to do 
       if submonths == -1:
         if gMonth == '01':
           date_string[0] = str(int(date_string[0]) - 1)
@@ -146,7 +141,7 @@ def main_function(outputfile_txt, submonths,allSites):
  	print date_string[0]
 	print dateMonth
      #_______________________________________________________________________________________________________________________________ 
-      #eger 2 aylik parametre gelmisse yapilacaklar
+      #if two months -> to do
       if submonths == -2:
         if gMonth == '01': 
           dateMonth = '11'
@@ -157,7 +152,7 @@ def main_function(outputfile_txt, submonths,allSites):
         else: 
           dateMonth = int(date_string[1]) - 2
      #_______________________________________________________________________________________________________________________________	  
-       #eger 3 aylik parametre gelmisse yapilacaklar
+       #if three months -> to do
       if submonths == -3:
         if gMonth == '01': 
           dateMonth = '10'
@@ -175,9 +170,7 @@ def main_function(outputfile_txt, submonths,allSites):
       else: date_string[1] = str(dateMonth)
       realDate = date_string[0] + '-' + date_string[1] + '-' + str(int(date_string[2]) -1 ) + 'T' + time_string
       starttime = datetime(*(time.strptime( realDate ,'%Y-%m-%dT%H:%M:%S')[0:6]))
-#******************************************************************************************************************************************************************
-#------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
+#******************************************************************************************************************************
       # it means we had the interval Time TimeEnd for a few days, and the loop is not yet past this last day,
       # where we already counted a yes
       if date_check >=  starttime.date() : continue  
