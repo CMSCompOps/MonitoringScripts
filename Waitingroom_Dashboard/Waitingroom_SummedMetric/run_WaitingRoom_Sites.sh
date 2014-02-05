@@ -8,14 +8,13 @@
 # outputfile WaitingRoom_3MonthSum.txt
 # outputdir /afs/cern.ch/user/c/cmst1/www/WFMon/
 
-cd /afs/cern.ch/user/c/cmst1/scratch0/Waitingroom_Dashboard/Waitingroom_SummedMetric/
-
+#cd /afs/cern.ch/user/g/gkandemi/scratch0/Waitingroom_Dashboard/Waitingroom_SummedMetric/
+clear
 echo "exporting KEY and CERT"
 
 #fixing access
-export X509_USER_CERT=/data/certs/servicecert.pem
-export X509_USER_KEY=/data/certs/servicekey.pem
-
+export X509_USER_CERT=./data/usercert.pem
+export X509_USER_KEY=./data/userkey.pem
 
 # Email if things are running slowly
 
@@ -48,13 +47,13 @@ fi
 #Run the script
 txt="WaitingRoom_"  #postfix in code itself
 echo "python waitingRoom_SummedMetrics.py $txt1"
-python waitingRoom_SummedMetrics.py $txt &> sites_WaitingRoom_SummedMetrics.log
+python WaitingRoom_SummedMetrics.py $txt &> sites_WaitingRoom_SummedMetrics.log
 cat sites_WaitingRoom_SummedMetrics.log
 
 problem="$?"
 echo "problem: $problem"
 
-cp $txt*.txt /afs/cern.ch/user/c/cmst1/www/WFMon/
-echo "files copied to: /afs/cern.ch/user/c/cmst1/www/WFMon/ "
+cp $txt*.txt /afs/cern.ch/user/g/gkandemi/www/WFMon/
+echo "files copied to: /afs/cern.ch/user/g/gkandemi/www/WFMon/ "
 rm scriptRunning.run
 
