@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 
-import sys, time, datetime, logging
+import os, sys, time, datetime, logging
 from phedex_monitor.service.calculate_links import DDTCommissionCalculator
 from phedex_monitor.model.state import State
 from phedex_monitor.service.data_parser import DDTDataParser
@@ -67,6 +67,8 @@ def printHelp():
     print help
 
 if __name__ == '__main__':
+    os.chdir("/data/ProdNodes/DDTLinksManage/")
+
     kwOpts, passedOpts, givenOpts = parseOpts( sys.argv[1:] )
 
     if 'h' in passedOpts or 'help' in passedOpts:
