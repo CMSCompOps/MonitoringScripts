@@ -88,7 +88,8 @@ def main_function(outputfile_txt, submonths,allSites):
   days_per_site={}
   for site in allSites: # Read all sites from allsites variable
     wrDays = 0 # keeps number of wrDays per Site
-    days = 0  # keeps temporary wrDays 
+    days = 0  # keeps temporary wrDays
+    temp = 0  
     for k in jsn['csvdata']: # JSON file reads.
       if k['VOName'] != site: continue
       elif k['COLORNAME'] == 'green': continue # if the site is green continue
@@ -105,11 +106,14 @@ def main_function(outputfile_txt, submonths,allSites):
       				days = endtime.date() - startdate
       			elif startdate <= starttime.date():
       				days = endtime.date() - starttime.date()
-      			wrDays+= days.days
+      			temp = days.days
+			if endtime.date() > enddate: temp = temp - 1
+			wrDays+= temp
       	elif startdate <= starttime.date():
       		days = endtime.date() - starttime.date()
-		if endtime.date() > enddate: days-= 1
-      		wrDays+= days.days
+		temp = days.days
+		if endtime.date() > enddate: temp = temp - 1
+      		wrDays+= temp
       	days_per_site[site] = wrDays 
 #******************************************************************************************************************************
     days_per_site[site] = wrDays
