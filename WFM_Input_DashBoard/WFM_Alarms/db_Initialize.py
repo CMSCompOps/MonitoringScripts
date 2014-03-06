@@ -21,7 +21,7 @@ def initialize(pledge_json, status_json):
 
   #extract the STATUS json file
   #urlstr2="http://dashb-ssb-dev.cern.ch/dashboard/request.py/getplotdata?columnid=10075&time=24&site=&sites=all&batch=1"
-  urlstr2="http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=139&time=24&site=&sites=all&batch=1"
+  urlstr2="http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=158&time=24&site=&sites=all&batch=1"
   #print urlstr
   u2 = urllib.urlopen(urlstr2)
   #u = urllib.urlopen("http://dashb-ssb-dev.cern.ch/dashboard/request.py/getplotdata?columnid=10075&time=48&dateFrom=&dateTo=&site=T1_DE_KIT&sites=all&clouds=undefined&batch=1")

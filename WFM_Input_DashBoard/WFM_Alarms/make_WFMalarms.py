@@ -125,7 +125,7 @@ def aggregateSiteJobInfo(tmp_csv_merg, site, statusjson, pledge_SafeDivision):
 
             # fetching the site status at that time_point
             status= db_ExtractStatusEntry.getSiteStatusEntry(site, timePointS, statusjson)
-
+            
             Ratio = float(nb_SUMRun)/pledge_SafeDivision
             PerfectRatio=1
             SeventyRatio=0.7
@@ -194,13 +194,13 @@ def main():
     #call db_Inititalize
     print "Initializing jason file:"
     db_Initialize.initialize(tmpdir+'/'+pledgejson, tmpdir+'/'+statusjson)
-    outputJson = open(tmpdir+'/'+OUTPUTJSON,'w')
 
     print"Done"
     #gets the curren date and time
     dateTime = time.strftime("%Y-%m-%dT%H:%M:%S")
     dateTimeSplit = dateTime.split('T')
     #write Json header
+    outputJson = open(tmpdir+'/'+OUTPUTJSON,'w')
     outputJson.write('{"UPDATE":{"Date":"'+dateTimeSplit[0] +'","Time":"'+dateTimeSplit[1]+'"},"Sites":[')
     
     #read site list
@@ -261,7 +261,7 @@ def main():
                 denom += int(parts[16])
                 
                 sum_ += int(parts[3])
-                res = parts[1]
+                site_status = parts[1]
                 #needed for json
                 if nb_entries == 1:
                     #Timetmp=parts[0]+'T'+parts[1]
@@ -300,7 +300,7 @@ def main():
             if sum_ <= 10:
                 NEW_ALARM[index]="OK"
             # T1 or on??
-            if not (res == 'on' or siteTier == 'T1'):
+            if not (site_status == 'on' or siteTier == 'T1'):
                 NEW_ALARM[index]="UNDEF"
             
             index+=1
