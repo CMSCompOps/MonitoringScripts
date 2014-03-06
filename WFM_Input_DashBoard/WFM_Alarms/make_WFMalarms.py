@@ -24,9 +24,9 @@ pledgejson="tmp_pledge.json"
 statusjson="tmp_status.json"
 OUTPUTJSON="SSB_alarms.json"
 
-sitelist_origin = "/afs/cern.ch/user/c/cmst1/scratch0/WFM_Input_DashBoard/site_list_prev.txt"
+site_list_origin = "/afs/cern.ch/user/c/cmst1/scratch0/WFM_Input_DashBoard/site_list_prev.txt"
 #site_list_origin="/Users/jabadillo/workspace_cern/MonitoringScripts/WFM_Input_DashBoard/site_list.txt"
-workdir='/afs/cern.ch/user/c/cmst1/scratch0/WFM_Input_DashBoard/WFM_Alarms'
+workdir='/afs/cern.ch/user/c/cmst1/scratch0/WFM_Input_DashBoard/WFM_Alarms_python'
 #workdir = '/Users/jabadillo/workspace_cern'
 copyto='/afs/cern.ch/user/c/cmst1/www/WFMon'
 #copyto = '/Users/jabadillo/workspace_cern'
@@ -218,7 +218,9 @@ def main():
         # First 2 letters of the site (T1, T2 or T3)
         siteTier = site[:2]
         # fetching the pledge numbers
-        pledge = int(db_ExtractStatusEntry.getSiteStatusEntry(site, dateTime, tmpdir+'/'+pledgejson))
+        pledge = (db_ExtractStatusEntry.getSiteStatusEntry(site, dateTime, tmpdir+'/'+pledgejson))
+        if pledge == "n/a" : pledge = 0
+        pledge = int(pledge)
         print "pledge:", pledge  
         pledge_SafeDivision = pledge
         if pledge_SafeDivision == 0:
