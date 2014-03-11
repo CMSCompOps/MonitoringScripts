@@ -12,7 +12,7 @@ def initialize(pledge_json, status_json):
 
   #extract the PLEDGE json file
   #urlstr="http://dashb-ssb-dev.cern.ch/dashboard/request.py/getplotdata?columnid=10080&time=24&dateFrom=&dateTo=&site=&sites=all&clouds=undefined&batch=1&lastdata=1"
-  urlstr="http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=136&time=24&dateFrom=&dateTo=&site=&sites=all&clouds=undefined&batch=1&lastdata=1"
+  urlstr="http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=159&time=24&dateFrom=&dateTo=&site=&sites=all&clouds=undefined&batch=1&lastdata=1"
   #print urlstr
   u = urllib.urlopen(urlstr)
   localFile = open(pledge_json, 'w')
