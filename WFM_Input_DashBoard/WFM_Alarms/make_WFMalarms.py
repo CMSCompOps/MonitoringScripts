@@ -299,8 +299,8 @@ def main():
             
             if sum_ <= 10:
                 NEW_ALARM[index]="OK"
-            # T1 or on??
-            if not (site_status == 'on' or siteTier == 'T1'):
+            # if a site is not on, we skip and set the alarm to undef
+            if site_status != 'on':
                 NEW_ALARM[index]="UNDEF"
             
             index+=1
