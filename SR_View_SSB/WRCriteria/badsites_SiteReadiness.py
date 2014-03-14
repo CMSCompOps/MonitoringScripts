@@ -51,7 +51,7 @@ def main_function(outputfile_txt):
   f1.write('# This txt goes into SSB and marks sites red when the following condition is true:\n')
   f1.write('# badSites = [val for val in oneWeekBadSites if val in threeMonthsBadSites]\n')
   f1.write('# with: site readiness percentage is < 60 % for both the last week as in the last 3 months\n')
-
+  f1.write('# Readme: https://cmsdoc.cern.ch/cms/LCG/SiteComm/MonitoringScripts/SR_View_SSB/WRCriteria/README.txt\n')
   print "Local current time :", now_write
   for k in badSites:
     print k, 'red', 'red', url

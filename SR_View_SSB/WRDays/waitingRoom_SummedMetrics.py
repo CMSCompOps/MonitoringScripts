@@ -199,6 +199,7 @@ def main_function(outputfile_txt, submonths,allSites):
   # write to file
   f1=open('./'+outputfile_txt, 'w+')
   f1.write('# This txt goes into SSB and shows the number of days a site has been in the waiting list for X months (seefilename)\n')
+  f1.write('# Readme: https://cmsdoc.cern.ch/cms/LCG/SiteComm/MonitoringScripts/SR_View_SSB/WRDays/README.txt\n')
   now_write=(datetime.utcnow()).strftime("%Y-%m-%d %H:%M:%S")
   print "Local current time :", now_write
   url2='http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153'

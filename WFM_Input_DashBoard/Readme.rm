@@ -5,4 +5,3 @@
 # Script for Dashboard metric (part of) 137, 138: Running/Pending jobs . This metric is shared with that of the # on voboxes instead of only on per sites
 # outputfile SB_siteInfo.json 
 # outputdir /afs/cern.ch/user/c/cmst1/www/WFMon/
-

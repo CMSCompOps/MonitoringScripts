@@ -6,4 +6,5 @@
 # output file WaitingRoom_2MonthSum.txt
 # output file WaitingRoom_3MonthSum.txt
 # Script in acrontab t1
+# 5,20,35,50 * * * * => Every 15 minutes every day (starting at 00:05)
 # 5,20,35,50 * * * * lxplus ssh vocms202 /afs/cern.ch/user/c/cmst1/scratch0/Waitingroom_Dashboard/Waitingroom_SummedMetric/run_WaitingRoom_Sites.sh &> /dev/null

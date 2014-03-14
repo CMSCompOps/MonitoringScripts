@@ -26,7 +26,7 @@ then
    # email subject
    SUBJECT="[Monitoring] load WaitingRoom sites (sums)"
    # Email To ?
-   EMAIL="sten.luyckx@cern.ch"
+   EMAIL="artiedaj@fnal.gov"
    # Email text/message
    if [ -f emailmessage.txt ];
    then

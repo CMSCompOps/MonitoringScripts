@@ -19,7 +19,7 @@ then
    # email subject
    SUBJECT="[Monitoring] load SiteReadiness of sites"
    # Email To ?
-   EMAIL="cms-comp-ops-monitoring-wf-ss-teams@cern.ch"
+   EMAIL="artiedaj@fnal.gov"
    # Email text/message
    if [ -f emailmessage.txt ];
    then

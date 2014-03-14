@@ -74,8 +74,7 @@ def main_function(outputfile_txt):
   #             ["cms", "BY-NCPHEP", "T3_BY_NCPHEP"]
   #            ...
   
-  # match the information 
-
+  # match the information
   #print jn['result']
   #site_T1= []
   site_T2= []
@@ -91,10 +90,7 @@ def main_function(outputfile_txt):
         site_T2.append(sitedbname)
       #if 'T3' in sitedbname: 
       #   site_T3.append(sitedbname)
-
-  
   #print site_T2
-
   print '--------------------------------------------------------'
   print 'Sites in waiting room:'
   waitingRoom_sites = [ site for site in site_T2 if not site in nonWaitingRoom_Sites]
@@ -106,16 +102,26 @@ def main_function(outputfile_txt):
 
   # write file that can be loaded in SSB
   f1.write('# This txt goes into SSB and marks sites red when the site is in the waiting room:\n')
-  f1.write('# This file should be updated once a day.\n')
+  f1.write('# Readme: https://cmsdoc.cern.ch/cms/LCG/SiteComm/MonitoringScripts/SR_View_SSB/WRControl/README.txt\n')
 
   print "Local current time :", now_write
   for k in waitingRoom_sites:
-    print k, 'in', 'red', url2
-    f1.write(now_write+' '+k+' in red '+url2+'\n')
-  for k in site_T2: 
+    print k, 'in', 'red'
+    f1.write(now_write+'\t')        # timestamp
+    f1.write(''.join(k))            # sitename
+    f1.write('\tin')                # value
+    f1.write('\tred')               # color
+    f1.write(''.join(url2))         # link
+    f1.write('\n')
+  for k in site_T2:
     if not k in waitingRoom_sites:
-      print k, 'out', 'green', url2
-      f1.write(now_write+' '+k+' out green '+url2+'\n')
+        print k, 'out', 'green'
+        f1.write(now_write+'\t')    # timestamp
+        f1.write(''.join(k))        # sitename
+        f1.write('\tout')           # value
+        f1.write('\tgreen')         # color
+        f1.write(''.join(url2))     # link
+        f1.write('\n')
 
 if __name__ == '__main__':
   outputfile_txt=sys.argv[1]
