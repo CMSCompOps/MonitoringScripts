@@ -1,7 +1,10 @@
+# --INFO--
+# Script for Dashboard metric 154, 155, 156: WR days/last x months
+# Script responsible: John Artieda (artiedaj@fnal.gov)
+# output dir /afs/cern.ch/user/c/cmst1/www/WFMon/
+# output file WaitingRoom_1MonthSum.txt
+# output file WaitingRoom_2MonthSum.txt
+# output file WaitingRoom_3MonthSum.txt
 # Script in acrontab t1
-# Script for Dashboard metric 153
-# outputfile WaitingRoom_1MonthSum.txt
-# outputfile WaitingRoom_2MonthSum.txt
-# outputfile WaitingRoom_3MonthSum.txt
-# usercert and userkey files must be in folder "data"
-# this script read all of data from http://dashb-ssb.cern.ch/dashboard/ according to column, dateFrom, dateTo, sites and it calculates How many days Sites are in WaitingRoom as last 1 month, last 2 months, last 3 months. 
+# 5,20,35,50 * * * * => Every 15 minutes every day (starting at 00:05)
+# 5,20,35,50 * * * * lxplus ssh vocms202 /afs/cern.ch/user/c/cmst1/scratch0/Waitingroom_Dashboard/Waitingroom_SummedMetric/run_WaitingRoom_Sites.sh &> /dev/null
