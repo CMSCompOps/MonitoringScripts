@@ -7,7 +7,9 @@
 # outputfile WaitingRoom_2MonthSum.txt
 # outputfile WaitingRoom_3MonthSum.txt
 # outputdir /afs/cern.ch/user/c/cmst1/www/WFMon/
-
+# usercert and userkey files must be in folder "data"
+# this script read all of data from http://dashb-ssb.cern.ch/dashboard/ according to column, dateFrom, dateTo, sites and it calculates How many days Sites are in WaitingRoom as last 1 month, last 2 months, last 3 months. 
+clear
 cd /afs/cern.ch/user/c/cmst1/scratch0/Waitingroom_Dashboard/Waitingroom_SummedMetric/
 
 echo "exporting KEY and CERT"

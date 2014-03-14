@@ -21,12 +21,13 @@ def addmonths(sourcedate,months):
    year = sourcedate.year + month / 12
    month = month % 12 + 1
    day = min(sourcedate.day,calendar.monthrange(year,month)[1])
+   print calendar.monthrange(year,month)[1]
    return date(year,month,day)
 
 #_______________________________________________________________________
 
 def extractJson(col, startDate, endDate):
-  url='http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid='+col+'&time=custom&dateFrom='+startDate+'&dateTo='+endDate+'&sites=T2&batch=1'
+  url='http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid='+col+'&time=custom&dateFrom='+startDate+'&dateTo='+endDate+'&sites=T1&batch=1'
   print "Getting the url %s" % url
   request = urllib2.Request(url, headers = {"Accept":"application/json"})
   response = urllib2.urlopen(request)
@@ -59,147 +60,80 @@ def fetch_all_sites(url,api):
   print 'r2 passed'
   inputjson=r2.read()
   print '-------------------------------------------------------------'
-  #print inputjson
   jn = simplejson.loads(inputjson)
   conn.close()
 
-  #result json form:
-  #{"desc": {"columns": ["type", "site_name", "alias"]}, 
-  # "result": [
-  #             ["cms", "ASGC", "T1_TW_ASGC"],
-  #             ["cms", "BY-NCPHEP", "T3_BY_NCPHEP"]
-  #            ...
-  #json form:
-  #{"desc": {"columns": ["type", "site_name", "alias"]}, 
-  # "result": [
-  #             ["cms", "ASGC", "T1_TW_ASGC"],
-  #             ["cms", "BY-NCPHEP", "T3_BY_NCPHEP"]
-  #            ...
-
-  # match the information 
-  #print jn['result']
-  #site_T1= []
   site_T2= []
-  #site_T3= []
-  #print 'printing i'
   for i in jn['result']:
     if i[jn['desc']['columns'].index('type')]=='cms':
       sitedbname=i[jn['desc']['columns'].index('alias')]
-      #print sitedbname
-      #if 'T1' in sitedbname: 
-      #  site_T1.append(sitedbname)
       if 'T2' in sitedbname:
         site_T2.append(sitedbname)
-      #if 'T3' in sitedbname: 
-      #   site_T3.append(sitedbname)
   return site_T2
-
 #_______________________________________________________________________
 
 def main_function(outputfile_txt, submonths,allSites):
-
-  # waitingroomextracting, base url without date
+  print outputfile_txt
   columnnumber='153'
-  enddate=date.today()
-  startdate=addmonths(enddate,submonths)
-  start=startdate.strftime("%Y-%m-%d")
-  end=enddate.strftime("%Y-%m-%d")
-             
-  jsn=extractJson(columnnumber, start, end)
-  f=open('tmpjson.json','w')
+  enddate=date.today() # query date
+  startdate=addmonths(enddate,submonths) # query date
+  start=startdate.strftime("%Y-%m-%d") # as string field to query
+  end=enddate.strftime("%Y-%m-%d") # as string field to query
+  jsn=extractJson(columnnumber, start, end) # results from dashboard extracts into JSON file
+  filename = 'tmpjson' + start + '.json'
+  f=open(filename,'w')
   f.write(unicode(simplejson.dumps(jsn, ensure_ascii=False)))
   f.close()
-
+ 
   # sum @ days 
   days_per_site={}
-  for site in allSites:
-    nb_days=0
-    # initialse date_check with the date of the previous month. If date[k] == date_check that will be ignored
-    # since we already checked the yes or no for this day...
-    date_check = addmonths(  datetime(*(time.strptime(jsn['csvdata'][0]['Time'],'%Y-%m-%dT%H:%M:%S')[0:6]))  ,-1)
-    #print date_check
-    for k in jsn['csvdata']:
-      #print k
+  for site in allSites: # Read all sites from allsites variable
+    wrDays = 0 # keeps number of wrDays per Site
+    days = 0  # keeps temporary wrDays
+    temp = 0  
+    for k in jsn['csvdata']: # JSON file reads.
       if k['VOName'] != site: continue
-      elif k['COLORNAME'] == 'green': continue
-      elif k['COLORNAME'] == 'white' : continue #white ..
+      elif k['COLORNAME'] == 'green': continue # if the site is green continue
+      elif k['COLORNAME'] == 'white' : continue # if the site is white continue
       # startime of entry
-   
-#-------------------------------------------------------------------------------------------------------------------------------------------
-#*************************************************************** Modification****************************************************************
-#-------------------------------------------------------------------------------------------------------------------------------------------------
-
-      starttime = datetime(*(time.strptime( k['Time'] ,'%Y-%m-%dT%H:%M:%S')[0:6]))
-      endtime=datetime(*(time.strptime( k['EndTime'] ,'%Y-%m-%dT%H:%M:%S')[0:6]))
-      day_string = endtime.strftime('%Y-%m-%d %H:%M:%S')
-      date_string  = day_string.split(" ")[0].split('-') #date split.
-      time_string  = day_string.split(" ")[1]
-      gMonth = date_string[1]
-     #_______________________________________________________________________________________________________________________________ 
-      # if metric is 1 month, things which is to do
-      if submonths == -1:
-        if gMonth == '01':
-          date_string[0] = str(int(date_string[0]) - 1)
-          dateMonth = '12'
-        else:
-          dateMonth = int(date_string[1]) - 1
-     #_______________________________________________________________________________________________________________________________ 
-      # if metric is 2 months, things which is to do
-      if submonths == -2:
-        if gMonth == '01':
-          dateMonth = '11'
-          date_string[0] = str(int(date_string[0]) - 1)
-        elif gMonth == '02':
-          dateMonth = '12'
-          date_string[0] = str(int(date_string[0]) - 1)
-        else:
-          dateMonth = int(date_string[1]) - 2
-     #_______________________________________________________________________________________________________________________________     
-       # if metric is 3 months, things which is to do
-      if submonths == -3:
-        if gMonth == '01':
-          dateMonth = '10'
-          date_string[0] = str(int(date_string[0]) - 1)
-        elif gMonth == '02':
-          dateMonth = '11'
-          date_string[0] = str(int(date_string[0]) - 1)
-        elif gMonth == '03':
-          dateMonth = '12'
-          date_string[0] = str(int(date_string[0]) - 1)
-        else:
-          dateMonth = int(date_string[1]) - 3
-      #_____________________________________________________________________________________________________________________________
-      if len(str(dateMonth)) < 2: date_string[1] = '0' + str(dateMonth)
-      else: date_string[1] = str(dateMonth)
-      realDate = date_string[0] + '-' + date_string[1] + '-' + str(int(date_string[2]) + 1) + 'T' + time_string
-      starttime = datetime(*(time.strptime( realDate , '%Y-%m-%dT%H:%M:%S') [0:6]))
-
-#---------------------------------------------------------------------------------------------------------------------------------------------
-
-
-
-      # it means we had the interval Time TimeEnd for a few days, and the loop is not yet past this last day,
-      # where we already counted a yes
-      if date_check >=  starttime.date() : continue  
-      # so IF CLORNAME==RED
-      # count the first day if its not the same as the last day from the previous entry
-      if date_check != starttime.date(): nb_days+=1   
-      # Then if this state stays the same for multiple days,: # days for EndTime -Time, and then update date_check to EndTime
-      delta = endtime.date() - starttime.date()
-      nb_days+=delta.days
-      #print delta, delta.days
-      print starttime, endtime
-      date_check=endtime.date()
-    if nb_days != 0: 
-      print site, ': ', nb_days
-      print '---------------------------------------'
-    days_per_site[site]=nb_days  
+#************************************************Modifications**********************************************************************
+      elif k['COLORNAME'] == 'red': # if the site is red then calculate wrDays
+      	starttime = datetime(*(time.strptime( k['Time'] ,'%Y-%m-%dT%H:%M:%S')[0:6])) # starttime from JSON file
+      	endtime   = datetime(*(time.strptime( k['EndTime'] ,'%Y-%m-%dT%H:%M:%S')[0:6])) # endtime from JSON file
+      	if startdate > starttime.date():
+      		if startdate > endtime.date(): continue
+      		elif startdate < endtime.date():
+      			if startdate > starttime.date():
+      				days = endtime.date() - startdate
+      			elif startdate <= starttime.date():
+      				days = endtime.date() - starttime.date()
+      			temp = days.days
+			if endtime.date() > enddate: temp = temp - 1
+			wrDays+= temp
+      	elif startdate <= starttime.date():
+      		days = endtime.date() - starttime.date()
+        if endtime.date() > enddate:
+            if startdate > starttime.date():
+                days = enddate - starttime.date()
+            if starttime.date() > startdate:
+                if starttime.date() > enddate: continue
+                else:
+                    days = enddate - starttime.date()
+                        #temp = days.days
+                        #if endtime.date() > enddate: temp = temp - 1
+                        #wrDays+= temp
+      	days_per_site[site] = days
+#******************************************************************************************************************************
+    days_per_site[site] = wrDays
+    if wrDays != 0 : 
+    	print ('%s : %i') % (site , wrDays)
+    	print '------------------------------'
   print days_per_site
+
 
   # write to file
   f1=open('./'+outputfile_txt, 'w+')
   f1.write('# This txt goes into SSB and shows the number of days a site has been in the waiting list for X months (seefilename)\n')
-  f1.write('# Readme: https://cmsdoc.cern.ch/cms/LCG/SiteComm/MonitoringScripts/SR_View_SSB/WRDays/README.txt\n')
   now_write=(datetime.utcnow()).strftime("%Y-%m-%d %H:%M:%S")
   print "Local current time :", now_write
   url2='http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153'
@@ -208,7 +142,6 @@ def main_function(outputfile_txt, submonths,allSites):
     if number !=0: color='red'
     print key, number, color, url2
     f1.write(now_write+' '+key+' '+str(number)+' '+ color+' '+url2+'\n')
-
 
 #_______________________________________________________________________
 
