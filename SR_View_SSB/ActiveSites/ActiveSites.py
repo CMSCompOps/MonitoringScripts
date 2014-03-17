@@ -11,9 +11,9 @@ import string
 percentageThreshold = 0.6
 
 #T1+T2
-url = "http://dashb-ssb.cern.ch/dashboard/request.py/getsitereadinessrankdata?columnid=45&time=%s"
+#url = "http://dashb-ssb.cern.ch/dashboard/request.py/getsitereadinessrankdata?columnid=45&time=%s"
 #only T2s
-#url = "http://dashb-ssb.cern.ch/dashboard/request.py/getsitereadinessrankdata?columnid=45&time=%s&sites=T2"
+url = "http://dashb-ssb.cern.ch/dashboard/request.py/getsitereadinessrankdata?columnid=45&time=%s&sites=T2"
 
 def getData(url, headers=None):
     request = urllib2.Request(url, headers = headers)
@@ -51,4 +51,5 @@ for k in activeSites:
     f1.write(''.join(k))        # sitename
     f1.write('\t1')             # value
     f1.write('\tgreen')         # color
-    f1.write('\tn/a\n')         # link
+                                # link
+    f1.write('\thttps://cmsdoc.cern.ch/cms/LCG/SiteComm/T2WaitingList/WasCommissionedT2ForSiteMonitor.txt\n')
