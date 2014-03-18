@@ -1,9 +1,9 @@
 #!/bin/sh
 # acronjob in acrontab jartieda
 # 00 08 * * 1 => Every monday at 8AM
-# 00 08 * * 1 lxplus ssh vocms234
+# 00 08 * * 1 lxplus ssh vocms202
 # curl https://raw.github.com/CMSCompOps/MonitoringScripts/master/SR_View_SSB/ActiveSites/sActiveSites.sh > /afs/cern.ch/cms/LCG/SiteComm/MonitoringScripts/SR_View_SSB/ActiveSites/sActiveSites.sh &> /dev/null
-# && /afs/cern.ch/cms/LCG/SiteComm/MonitoringScripts/SR_View_SSB/ActiveSites/sActiveSites.sh &> /dev/null
+# && /afs/cern.ch/cms/LCG/SiteComm/MonitoringScripts/SR_View_SSB/ActiveSites/sActiveSites.sh
 
 # Script and files location
 location="/afs/cern.ch/cms/LCG/SiteComm/MonitoringScripts/SR_View_SSB/ActiveSites/"
@@ -13,15 +13,11 @@ ssbfeed="/afs/cern.ch/cms/LCG/SiteComm/T2WaitingList/WasCommissionedT2ForSiteMon
 ssbfeedweb="https://cmsdoc.cern.ch/cms/LCG/SiteComm/T2WaitingList/WasCommissionedT2ForSiteMonitor.txt"
 Read="https://cmsdoc.cern.ch/cms/LCG/SiteComm/MonitoringScripts/SR_View_SSB/ActiveSites/README.txt"
 
+echo "*** sActiveSites.sh SCRIPT STARTED ***"
 # cd script location and updating python script from github
 cd $location
 echo "* updating python script from github"
 curl $githublocation/ActiveSites.py > ActiveSites.py
-
-# Fixing access
-#echo "* exporting KEY and CERT"
-#export X509_USER_CERT=/data/certs/servicecert.pem
-#export X509_USER_KEY=/data/certs/servicekey.pem
 
 # Email if script is stuck
 if [ -f scriptRunning.run ];
@@ -100,8 +96,7 @@ cp $outFile $ssbfeed
 if [ $? = 0 ]
 then
     echo "* new file copied to web location to feed SSB"
-    echo "* SCRIPT COMPLETED SUCCESFULLY"
-    echo "* Email is being sent to the admin."
+    echo "*** sActiveSites.sh SCRIPT COMPLETED SUCCESFULLY ***"
     # email subject
     SUBJECT="[MonitoringScripts] sActiveSites.sh completed successfully!"
     # Email To ?
@@ -113,7 +108,7 @@ then
     fi
     touch emailmessage.txt
     EMAILMESSAGE="/tmp/emailmessage.txt"
-    echo "sActiveSites.sh  completed successfully!\n"> $EMAILMESSAGE
+    echo "sActiveSites.sh  completed successfully!"> $EMAILMESSAGE
     echo $Read >>$EMAILMESSAGE
     # send an email using /bin/mail
     /bin/mail -s "$SUBJECT" "$EMAIL" < $EMAILMESSAGE

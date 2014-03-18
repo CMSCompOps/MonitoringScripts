@@ -14,7 +14,7 @@ Any site that is not in this list will be automatically moved to the Waiting Roo
 --- INFO ---
 # acronjob in acrontab jartieda
 # 00 08 * * 1 => Every monday at 8AM
-# 00 08 * * 1 lxplus ssh vocms234 curl https://raw.github.com/CMSCompOps/MonitoringScripts/master/SR_View_SSB/ActiveSites/sActiveSites.sh > /afs/cern.ch/cms/LCG/SiteComm/MonitoringScripts/SR_View_SSB/ActiveSites/sActiveSites.sh &> /dev/null && /afs/cern.ch/cms/LCG/SiteComm/MonitoringScripts/SR_View_SSB/ActiveSites/sActiveSites.sh
+# 00 08 * * 1 lxplus ssh vocms202 curl https://raw.github.com/CMSCompOps/MonitoringScripts/master/SR_View_SSB/ActiveSites/sActiveSites.sh > /afs/cern.ch/cms/LCG/SiteComm/MonitoringScripts/SR_View_SSB/ActiveSites/sActiveSites.sh &> /dev/null && /afs/cern.ch/cms/LCG/SiteComm/MonitoringScripts/SR_View_SSB/ActiveSites/sActiveSites.sh
 
 Script name:
 	sActiveSites.sh
@@ -68,8 +68,3 @@ add a new line with the name of the site in the file:
 	git commit -a
 	(include "some decent comment")
 	git push
-7. *** If your changes are working and your pull request is accepted
-	REDEPLOY THE SCRIPT IN THE SCRIPT LOCATION THAT IS READ BY THE CRONTAB
-	a. cd /afs/cern.ch/user/c/cmst1/scratch0/MonitoringScripts/
-	b. update from the github repository
-		git pull (you need special permissions - contact Xavier Janssen)
