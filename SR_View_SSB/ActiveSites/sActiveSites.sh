@@ -14,10 +14,7 @@ ssbfeedweb="https://cmsdoc.cern.ch/cms/LCG/SiteComm/T2WaitingList/WasCommissione
 Read="https://cmsdoc.cern.ch/cms/LCG/SiteComm/MonitoringScripts/SR_View_SSB/ActiveSites/README.txt"
 
 echo "*** sActiveSites.sh SCRIPT STARTED ***"
-# cd script location and updating python script from github
 cd $location
-echo "* updating python script from github"
-curl $githublocation/ActiveSites.py > ActiveSites.py
 
 # Email if script is stuck
 if [ -f scriptRunning.run ];
@@ -43,6 +40,9 @@ else
     touch scriptRunning.run
 fi
 
+# updating files from github
+echo "* updating ActiveSites.py script from github"
+curl $githublocation/ActiveSites.py > ActiveSites.py
 echo "* updating README file from github"
 curl $githublocation/README.txt > README.txt
 
