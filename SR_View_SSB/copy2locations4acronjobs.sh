@@ -17,3 +17,5 @@ cp -a $location/WRCriteria/. /afs/cern.ch/user/c/cmst1/scratch0/SiteReadiness_Da
 
 #WRDays
 cp -a $location/WRDays/. /afs/cern.ch/user/c/cmst1/scratch0/Waitingroom_Dashboard/Waitingroom_SummedMetric/
+
+echo "*** All copies completed ***"
