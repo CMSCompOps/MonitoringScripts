@@ -96,7 +96,7 @@ def main_function(outputfile_txt, submonths,allSites):
       elif k['COLORNAME'] == 'green': continue # if the site is green continue
       elif k['COLORNAME'] == 'white' : continue # if the site is white continue
       # startime of entry
-#************************************************Modifications**********************************************************************
+#************************************************Modifications**************************************
       elif k['COLORNAME'] == 'red': # if the site is red then calculate wrDays
       	starttime = datetime(*(time.strptime( k['Time'] ,'%Y-%m-%dT%H:%M:%S')[0:6])) # starttime from JSON file
       	endtime   = datetime(*(time.strptime( k['EndTime'] ,'%Y-%m-%dT%H:%M:%S')[0:6])) # endtime from JSON file
@@ -112,17 +112,10 @@ def main_function(outputfile_txt, submonths,allSites):
 			wrDays+= temp
       	elif startdate <= starttime.date():
       		days = endtime.date() - starttime.date()
-        if endtime.date() > enddate:
-            if startdate > starttime.date():
-                days = enddate - starttime.date()
-            if starttime.date() > startdate:
-                if starttime.date() > enddate: continue
-                else:
-                    days = enddate - starttime.date()
-                        #temp = days.days
-                        #if endtime.date() > enddate: temp = temp - 1
-                        #wrDays+= temp
-      	days_per_site[site] = days
+		temp = days.days
+		if endtime.date() > enddate: temp = temp - 1
+      		wrDays+= temp
+      	days_per_site[site] = wrDays 
 #******************************************************************************************************************************
     days_per_site[site] = wrDays
     if wrDays != 0 : 
