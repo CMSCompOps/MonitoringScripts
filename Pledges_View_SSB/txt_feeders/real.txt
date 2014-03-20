@@ -1,4 +1,3 @@
-real		value	color	link
 2014-03-20 00:00:01	T0_CH_CERN	12100	green	n/a
 2014-03-20 00:00:01	T1_CH_CERN	n/a	white	n/a
 2014-03-20 00:00:01	T1_DE_KIT	1700	green	n/a
