@@ -102,16 +102,17 @@ def main_function(outputfile_txt):
 
   # write file that can be loaded in SSB
   f1.write('# This txt goes into SSB and marks sites red when the site is in the waiting room:\n')
-  f1.write('# Readme: https://cmsdoc.cern.ch/cms/LCG/SiteComm/MonitoringScripts/SR_View_SSB/WRControl/README.txt\n')
+  f1.write('# Readme:\n#https://cmst1.web.cern.ch/CMST1/WFMon/README.txt\n')
 
   print "Local current time :", now_write
+  link = "https://cmst1.web.cern.ch/CMST1/WFMon/WaitingRoom_Sites.txt"
   for k in waitingRoom_sites:
     print k, 'in', 'red'
     f1.write(now_write+'\t')        # timestamp
     f1.write(''.join(k))            # sitename
     f1.write('\tin')                # value
     f1.write('\tred')               # color
-    f1.write(''.join(url2))         # link
+    f1.write('\t'.join(link))       # link
     f1.write('\n')
   for k in site_T2:
     if not k in waitingRoom_sites:
@@ -120,7 +121,7 @@ def main_function(outputfile_txt):
         f1.write(''.join(k))        # sitename
         f1.write('\tout')           # value
         f1.write('\tgreen')         # color
-        f1.write(''.join(url2))     # link
+        f1.write('\t'.join(link))   # link
         f1.write('\n')
 
 if __name__ == '__main__':

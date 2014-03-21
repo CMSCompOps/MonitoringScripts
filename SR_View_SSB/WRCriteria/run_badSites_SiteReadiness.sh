@@ -17,7 +17,7 @@ then
    echo "bash run_badSites_SiteReadiness.sh is already running. Will send an email to the admin."
    # script to send simple email
    # email subject
-   SUBJECT="[Monitoring] load SiteReadiness of sites"
+   SUBJECT="[MonitoringScripts] WRCriteria is running slow"
    # Email To ?
    EMAIL="artiedaj@fnal.gov"
    # Email text/message

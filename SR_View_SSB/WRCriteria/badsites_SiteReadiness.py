@@ -53,13 +53,14 @@ def main_function(outputfile_txt):
   f1.write('# with: site readiness percentage is < 60 % for both the last week as in the last 3 months\n')
   f1.write('# Readme: https://cmsdoc.cern.ch/cms/LCG/SiteComm/MonitoringScripts/SR_View_SSB/WRCriteria/README.txt\n')
   print "Local current time :", now_write
+  link="https://dashb-ssb.cern.ch/dashboard/request.py/sitereadinessrank?columnid=45#time=2184&start_date=&end_date=&sites=T0/1/2"
   for k in badSites:
-    print k, 'red', 'red', url
-    f1.write(now_write+' '+k+' red red '+url+'\n')
+    print k, 'red', 'red', link
+    f1.write(now_write+' '+k+' red red '+link+'\n')
   for k in allSites: 
     if not k in badSites:
-      print k, 'green', 'green', url 
-      f1.write(now_write+' '+k+' green green '+url+'\n')
+      print k, 'green', 'green', link
+      f1.write(now_write+' '+k+' green green '+link+'\n')
 
 if __name__ == '__main__':
   outputfile_txt=sys.argv[1]

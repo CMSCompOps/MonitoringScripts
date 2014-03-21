@@ -51,6 +51,6 @@ problem="$?"
 echo "problem: $problem"
 
 cp $txt /afs/cern.ch/user/c/cmst1/www/WFMon/
-echo "files copied to: /afs/cern.ch/user/c/cmst1/www/WFMon/ "
+cp "README.txt" /afs/cern.ch/user/c/cmst1/www/WFMon/
+echo "WaitingRoom_Sites.txt & README.txt copied to: /afs/cern.ch/user/c/cmst1/www/WFMon/ "
 rm scriptRunning.run
-
