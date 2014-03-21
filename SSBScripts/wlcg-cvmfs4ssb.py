@@ -1,4 +1,4 @@
-#/bin/env python
+#! /bin/env python
 
 import urllib, json, datetime
 from xml.parsers import expat
@@ -46,7 +46,7 @@ class c4s :
     deplV = map(lambda x: int(x), val.split('.'))
     reqV = map(lambda x: int(x), self.requestedVersion.split('.'))
     if deplV[1] == reqV[1] and deplV[0] == reqV[0] : 
-      if (reqV[2] - deplV[2]) in maxDiff : return (val, 'green')
+      if (deplV[2] - reqV[2]) >= 0 : return (val, 'green')
       else : return (val, 'orange')
     else : return (val, 'red')
 
