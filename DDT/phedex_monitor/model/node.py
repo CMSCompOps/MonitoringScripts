@@ -1,7 +1,8 @@
 import re
 
 alter = { \
-    'PIC' : 'T1_ES_PIC_Buffer'
+    # 'PIC' : 'T1_ES_PIC_Buffer',
+    #'CERN' : 'T1_CH_CERN_Buffer',
 }
 
 def rename(name):
@@ -14,7 +15,7 @@ class Node:
     """ @todo COMMENT """
 
     class Tier:
-        T0 = 'T0'
+        T0 = 'T1'
         T1 = 'T1'
         T2 = 'T2'
         T3 = 'T3'
