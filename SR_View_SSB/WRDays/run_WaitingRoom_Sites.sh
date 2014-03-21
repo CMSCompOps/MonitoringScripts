@@ -57,6 +57,5 @@ problem="$?"
 echo "problem: $problem"
 
 cp $txt*.txt /afs/cern.ch/user/c/cmst1/www/WFMon/
-echo "files copied to: /afs/cern.ch/user/c/cmst1/www/WFMon/ "
+echo "WaitingRoom_XMonthSum.txt files copied to: /afs/cern.ch/user/c/cmst1/www/WFMon/ "
 rm scriptRunning.run
-

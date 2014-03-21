@@ -135,16 +135,7 @@ def main_function(outputfile_txt, submonths,allSites):
     color='green'
     if number !=0: color='red'
     print key, number, color, link
-    f1.write(now_write+' '+key+' '+str(number)+' '+color+' '+link+'\n')
-    f1.write(now_write+'\t')        # timestamp
-    f1.write(''.join(key))          # sitename
-    f1.write('\t')
-    f1.write(''.join(str(number)))  # value
-    f1.write('\t')
-    f1.write(''.join(color)         # color
-    f1.write('\t')
-    f1.write(''.join(link)          # link
-    f1.write('\n')
+    f1.write(now_write+'\t'+key+'\t'+str(number)+'\t'+color+'\t'+link+'\n')
 #_______________________________________________________________________
 
 # run program for last month, last 2 months and last 3 months
