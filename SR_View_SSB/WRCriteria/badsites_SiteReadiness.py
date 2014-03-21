@@ -54,13 +54,22 @@ def main_function(outputfile_txt):
   print "Local current time :", now_write
   link="https://dashb-ssb.cern.ch/dashboard/request.py/sitereadinessrank?columnid=45#time=2184&start_date=&end_date=&sites=T0/1/2"
   for k in badSites:
-    print k, 'red', 'red', link
-    f1.write(now_write+' '+k+' true red '+link+'\n')
+    print k, 'true', 'red', link
+    f1.write(now_write+'\t')        # timestamp
+    f1.write(''.join(k))            # sitename
+    f1.write('\ttrue')              # value
+    f1.write('\tred\t')             # color
+    f1.write(''.join(link))         # link
+    f1.write('\n')
   for k in allSites: 
     if not k in badSites:
-      print k, 'green', 'green', link
-      f1.write(now_write+' '+k+' false green '+link+'\n')
-
+      print k, 'false', 'green', link
+      f1.write(now_write+'\t')        # timestamp
+      f1.write(''.join(k))            # sitename
+      f1.write('\tfalse')             # value
+      f1.write('\tgreen\t')           # color
+      f1.write(''.join(link))         # link
+      f1.write('\n')
 if __name__ == '__main__':
   outputfile_txt=sys.argv[1]
   main_function(outputfile_txt)

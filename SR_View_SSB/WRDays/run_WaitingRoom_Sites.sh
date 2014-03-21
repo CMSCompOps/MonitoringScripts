@@ -26,7 +26,7 @@ then
    echo "run_WaitingRoom_SumMetrics.sh is already running. Will send an email to the admin."
    # script to send simple email
    # email subject
-   SUBJECT="[Monitoring] load WaitingRoom sites (sums)"
+   SUBJECT="[MonitoringScripts] WRDays running slow"
    # Email To ?
    EMAIL="artiedaj@fnal.gov"
    # Email text/message
