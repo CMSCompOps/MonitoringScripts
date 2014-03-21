@@ -146,7 +146,10 @@ def savetoFile(pledges, year,outputfile_txt):
   fileOp.write("Pledges[" + year + "]\n")
   for tmpPledges in pledges:
       #fileOp.write(saveTime + "    " + tmpPledges + "    " + str(pledges[tmpPledges]) + "\n")
-      fileOp.write('%-0s %20s %10s %10s %10s\n' % (saveTime, tmpPledges, str(pledges[tmpPledges]), "green", "n/a" ))
+      if (pledges[tmpPledges]      == 0)     : color = 'yellow'
+      if (pledges[tmpPledges]      > 0)      : color = 'green'
+      if (str(pledges[tmpPledges]) == 'n/a') : color = 'white'
+      fileOp.write('%-0s %20s %10s %10s %10s\n' % (saveTime, tmpPledges, str(pledges[tmpPledges]), color, "n/a" ))
 
   fileOp.close()
 
