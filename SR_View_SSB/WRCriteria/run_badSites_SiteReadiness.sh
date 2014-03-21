@@ -47,6 +47,5 @@ problem="$?"
 echo "problem: $problem"
 
 cp $txt /afs/cern.ch/user/c/cmst1/www/WFMon/
-echo "files copied to: /afs/cern.ch/user/c/cmst1/www/WFMon/ "
+echo "BadSites_SiteReadiness.txt copied to: /afs/cern.ch/user/c/cmst1/www/WFMon/ "
 rm scriptRunning.run
-

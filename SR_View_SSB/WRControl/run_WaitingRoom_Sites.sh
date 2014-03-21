@@ -20,7 +20,7 @@ then
    echo "run_WaitingRoom_Sites.sh is already running. Will send an email to the admin."
    # script to send simple email
    # email subject
-   SUBJECT="[Monitoring] load WaitingRoom sites"
+   SUBJECT="[MonitoringScripts] WRControl running slow"
    # Email To ?
    EMAIL="artiedaj@fnal.gov"
    # Email text/message
@@ -51,6 +51,5 @@ problem="$?"
 echo "problem: $problem"
 
 cp $txt /afs/cern.ch/user/c/cmst1/www/WFMon/
-cp "README.txt" /afs/cern.ch/user/c/cmst1/www/WFMon/
-echo "WaitingRoom_Sites.txt & README.txt copied to: /afs/cern.ch/user/c/cmst1/www/WFMon/ "
+echo "WaitingRoom_Sites.txt copied to: /afs/cern.ch/user/c/cmst1/www/WFMon/ "
 rm scriptRunning.run
