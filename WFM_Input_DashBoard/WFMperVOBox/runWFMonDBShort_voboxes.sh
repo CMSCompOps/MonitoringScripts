@@ -13,6 +13,7 @@
 #Initialize
 source ~cmst1/.bashrc
 agentenv
+source /data/srv/wmagent/current/apps/wmagent/etc/profile.d/init.sh
 cd /afs/cern.ch/user/c/cmst1/scratch0/WFM_Input_DashBoard/WFMperVOBox
 
 # Email if things are running slowly

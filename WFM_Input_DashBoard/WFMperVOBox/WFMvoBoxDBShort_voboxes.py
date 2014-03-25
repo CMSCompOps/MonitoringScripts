@@ -19,37 +19,62 @@ schedd_file_prev = "voboxlist_prev.txt"
 schedd_file = "voboxlist.txt"
 
 currTime = None
+jobs_failedTypeLogic = {}
 
-# Filling the dictionaries
+relvalAgents = ['vocms142.cern.ch', 'cmssrv113.fnal.gov']
+jobTypes = ['Processing', 'Production', 'Skim', 'Harvest', 'Merge', 'LogCollect', 'Cleanup', 'RelVal', 'T0']
+t0Types = ['Repack', 'Express', 'Reco']
+
+def findTask(id,sched,typeToExtract):
+    """
+    This deduces job type from given info about scheduler and taskName
+    """
+    type = ''
+    if any([x in sched for x in relvalAgents]):
+        type = 'RelVal'
+    elif 'Cleanup' in typeToExtract:
+        type = 'Cleanup'
+    elif 'Merge' in typeToExtract:
+        type = 'Merge'
+    elif 'LogCollect' in typeToExtract:
+        type = 'LogCollect'
+    elif 'skim' in typeToExtract.lower():
+        type = 'Skim'
+    elif 'harvest' in typeToExtract.lower():
+        type = 'Harvest'
+    elif 'Production' in typeToExtract or 'MonteCarloFromGEN' in typeToExtract:
+        type = 'Production'
+    elif 'Processing' in typeToExtract or 'StepOneProc' in typeToExtract or 'StepTwoProc' in typeToExtract:
+        type = 'Processing'
+    elif 'StoreResults' in typeToExtract:
+        type = 'Merge'
+    elif any([x in typeToExtract for x in t0Types]):
+        type = 'T0'
+    else:
+        type = 'Processing'
+        jobs_failedTypeLogic[id]=dict(scheduler = sched, BaseType = typeToExtract)
+    return type
+
 def increaseCounterInDict(dictionary, schedd, jobType):
+    """
+    Filling the dictionaries
+    """
     if schedd in dictionary:
         dictionary[schedd][jobType] += 1
     else:
-        tmp = {
-        'Processing': 0,
-        'Production': 0,
-        'Merge': 0,
-        'Cleanup': 0,
-        'LogCollect': 0,
-        'TestJobs' : 0,
-        }
+        tmp = dict((jobType, 0) for jobType in jobTypes)
         dictionary[schedd] = tmp
         dictionary[schedd][jobType] += 1
 
-# Fill the sites/vobox that have no information atm, but are in the database, with 0's
-def fillBrokenSites(schedd_list, dictionary):
+def fillBrokenSchedds(schedd_list, dictionary):
+    """
+    Fill the sites/vobox that have no information atm, but are in the database, with 0's
+    """
     #print dict.keys()
     for schedd in schedd_list:
         stripped_site = schedd.strip()
         if not stripped_site in dictionary:
-            tmp = {
-            'Processing': 0,
-            'Production': 0,
-            'Merge': 0,
-            'Cleanup': 0,
-            'LogCollect': 0,
-            'TestJobs' : 0,
-            }
+            tmp = dict((jobType, 0) for jobType in jobTypes)
             dictionary[stripped_site] = tmp
 
 #Printing function for debugging
@@ -57,14 +82,16 @@ def printDict(dictionary, description):
     sortedKeys = dictionary.keys()
     sortedKeys.sort()
     print '-'*114
-    print '| %35s | Processing | Production | Merge      | Cleanup    | LogCollect |  TestJobs   |   Total      |' % description
+    print '| %35s | Processing | Production | Merge      | Cleanup    | LogCollect |RelVal/Skim/Harv|   T0   |   Total      |' % description
     print '-'*114
+    #['Processing', 'Production', 'Skim', 'Harvest', 'Merge', 'LogCollect', 'Cleanup', 'RelVal', 'T0']
     for site in sortedKeys:
-        print '| %35s | %10d | %10d | %10d | %10d | %10d | %10d | %10d |' % (site, dictionary[site]['Processing'],
+        print '| %25s | %10d | %10d | %10d | %10d | %10d | %10d | %10d | %8d |' % (site, dictionary[site]['Processing'],
                             dictionary[site]['Production'], dictionary[site]['Merge'],
-                            dictionary[site]['Cleanup'], dictionary[site]['LogCollect'], dictionary[site]['TestJobs'],
-                            dictionary[site]['Processing'] + dictionary[site]['Production'] + dictionary[site]['Merge']      
-                            +dictionary[site]['Cleanup'] + dictionary[site]['LogCollect'] + dictionary[site]['TestJobs'])
+                            dictionary[site]['Cleanup'], dictionary[site]['LogCollect'], 
+                            dictionary[site]['RelVal'] + dictionary[site]['Skim'] + dictionary[site]['Harvest'],
+                            dictionary[site]['T0'],
+                            sum(dictionary[site].values()))
     print '-'*114
 
 def getScheddStatus():
@@ -86,8 +113,11 @@ def getScheddStatus():
         schedd_status[schedd] = status
     return schedd_status
     
-#Writing json file
+
 def jsonDict(dict_run, dict_pen, json_name, date, hour, location):
+    """
+    Writing json file
+    """
     #sort scheddulers
     schedd_list = dict_run.keys()
     schedd_list.sort()
@@ -115,35 +145,32 @@ def jsonDict(dict_run, dict_pen, json_name, date, hour, location):
         #adapt schedd to format
         schedd_fix = schedd.replace('.',"_")
         schedd_fix = schedd_fix.strip(' ')
-
+        sumRunning = sum(dict_run[schedd].values())
+        sumPending = sum(dict_pen[schedd].values())
         #schedd data
-        json_schedd_part = startingComma+"{\"VOBox\":\""+str(schedd_fix)+"\""  \
-              +",\"Pending\":\""+str(dict_pen[schedd]['Processing']
-                                    +dict_pen[schedd]['Production']
-                                    +dict_pen[schedd]['Merge']
-                                    +dict_pen[schedd]['Cleanup']
-                                    +dict_pen[schedd]['LogCollect']
-                                    +dict_run[schedd]['TestJobs'])+"\""        \
-              +",\"TimeDate\":\""+str(currTime.strip())+"\"" \
-              +",\"Running\":\""+str(dict_run[schedd]['Processing']
-                                    +dict_run[schedd]['Production']
-                                    +dict_run[schedd]['Merge']
-                                    +dict_run[schedd]['Cleanup']
-                                    +dict_run[schedd]['LogCollect']
-                                    +dict_pen[schedd]['TestJobs'])+"\""        \
-              +",\"Status\":\""+str(s_status)+"\""   \
-              +",\"RunProc\":\""+str(dict_run[schedd]['Processing'])+"\""      \
-              +",\"RunProd\":\""+str(dict_run[schedd]['Production'])+"\""      \
-              +",\"RunMerge\":\""+str(dict_run[schedd]['Merge'])+"\""  \
-              +",\"RunClean\":\""+str(dict_run[schedd]['Cleanup'])+"\""        \
-              +",\"RunLog\":\""+str(dict_run[schedd]['LogCollect'])+"\""       \
-              +",\"RunTestJobs\":\""+str(dict_run[schedd]['TestJobs'])+"\""       \
-              +",\"PenProc\":\""+str(dict_pen[schedd]['Processing'])+"\""      \
-              +",\"PenProd\":\""+str(dict_pen[schedd]['Production'])+"\""      \
-              +",\"PenMerge\":\""+str(dict_pen[schedd]['Merge'])+"\""  \
-              +",\"PenClean\":\""+str(dict_pen[schedd]['Cleanup'])+"\""        \
-              +",\"PenLog\":\""+str(dict_pen[schedd]['LogCollect'])+"\""       \
-              +",\"PenTestJobs\":\""+str(dict_pen[schedd]['TestJobs'])+"\""       \
+        json_schedd_part= startingComma+"{\"VOBox\":\""+str(schedd_fix)+"\""                     \
+              +",\"Pending\":\""+str(int(sumPending))+"\""                              \
+              +",\"TimeDate\":\""+str(currTime.strip())+"\""                            \
+              +",\"Running\":\""+str(sumRunning)+"\""                                   \
+              +",\"RunProc\":\""+str(dict_run[schedd]['Processing'])+"\""         \
+              +",\"RunProd\":\""+str(dict_run[schedd]['Production'])+"\""         \
+              +",\"RunSkim\":\""+str(dict_run[schedd]['Skim'])+"\""               \
+              +",\"RunHarvest\":\""+str(dict_run[schedd]['Harvest'])+"\""         \
+              +",\"RunMerge\":\""+str(dict_run[schedd]['Merge'])+"\""             \
+              +",\"RunClean\":\""+str(dict_run[schedd]['Cleanup'])+"\""           \
+              +",\"RunLog\":\""+str(dict_run[schedd]['LogCollect'])+"\""          \
+              +",\"RunRelVal\":\""+str(dict_run[schedd]['RelVal'])+"\""           \
+              +",\"RunT0\":\""+str(dict_run[schedd]['T0'])+"\""                   \
+              +",\"PenProc\":\""+str(int(dict_pen[schedd]['Processing']))+"\""    \
+              +",\"PenProd\":\""+str(int(dict_pen[schedd]['Production']))+"\""    \
+              +",\"PenSkim\":\""+str(int(dict_pen[schedd]['Skim']))+"\""          \
+              +",\"PenHarvest\":\""+str(int(dict_pen[schedd]['Harvest']))+"\""    \
+              +",\"PenMerge\":\""+str(int(dict_pen[schedd]['Merge']))+"\""        \
+              +",\"PenClean\":\""+str(int(dict_pen[schedd]['Cleanup']))+"\""      \
+              +",\"PenLog\":\""+str(int(dict_pen[schedd]['LogCollect']))+"\""     \
+              +",\"PenRelVal\":\""+str(int(dict_pen[schedd]['RelVal']))+"\""      \
+              +",\"PenT0\":\""+str(int(dict_pen[schedd]['T0']))+"\""              \
+              +",\"Status\":\""+str(s_status)+"\""                                      \
               +"}"
         #remove parenthesis 
         json_schedd_part = str(json_schedd_part).replace("('","").replace("')","")
@@ -161,8 +188,6 @@ def jsonDict(dict_run, dict_pen, json_name, date, hour, location):
     json_file = open(json_name,"w")
     json_file.write(json_part)
     json_file.close()
-#################################################################
-
 
 def getSchedulersFromCollector(collector):
     """
@@ -220,16 +245,13 @@ def updateScheddList(schedd_list):
 
 
 def countJobsForSchedd(coll, schedd, dict_running, dict_pending):
-    # Issue, need to know which col + which schedd
+    """
+    Traverse all jobs for a given scheduler on a given collector.
+    """
     command = 'condor_q -pool ' + coll + ' -name ' + schedd
     command += (' -format "%i." ClusterID -format "%s||" ProcId -format "%i||" JobStatus'+
-                ' -format "%s||" UserLog -format "%s||" WMAgent_SubTaskType'+
+                ' -format "%s||" WMAgent_SubTaskName -format "%s||" UserLog'+
                 r' -format "\n" ProcId')
-    # array[0] ClusterID.ProcId
-    # array[1] JobStatus
-    # only when its the new software
-    # array[2] UserLog
-    # array[3] WMAgent_SubTaskType
 
     print command
     #command line
@@ -243,45 +265,22 @@ def countJobsForSchedd(coll, schedd, dict_running, dict_pending):
         # skip sleep.log problem lines
         if 'sleep.log' in line:
             continue
+
+
         array = line.split("||")
+
+        # array[0] ClusterID.ProcId
+        # array[1] JobStatus
+        # only when its the new software
+        # array[2] WMAgent_SubTaskName
+        # array[3] UserLog
+
         procId = array[0]
         jobStatus = int(array[1])
-        userLog = array[2]
-        if len(array) > 3:
-            subTaskType = array[3] 
-        else:
-             subTaskType = None
-        #extract type from task name, if not available, from logname
-        if subTaskType:
-            typeToExtract = subTaskType 
-        else:
-            typeToExtract = userLog
-        jobType = ''
-
-        # now go through the group assignment
-        if typeToExtract.count('Merge') > 0 :
-            jobType = 'Merge'
-        elif typeToExtract.count('Cleanup') > 0 :
-            jobType = 'Cleanup'
-        elif typeToExtract.count('LogCollect') > 0 :
-            jobType = 'LogCollect'
-        elif typeToExtract.count('Production') > 0 :
-            jobType = 'Production'
-        elif typeToExtract.count('MonteCarloFromGEN') > 0 :
-            jobType = 'Production'
-        elif typeToExtract.count('Skim') > 0 :
-            jobType = 'Production'
-            #jobType = 'Skim'
-        elif typeToExtract.count('Harvest') > 0 :
-            #jobType = 'Harveset'
-           jobType = 'Production'
-        elif typeToExtract.count('Processing') > 0 :
-            jobType = 'Processing'
-        # HC/TestJobs
-        elif schedd.count('vocms228') > 0 :
-            jobType = 'TestJobs'  
-        else :
-            jobType = 'Processing'
+        #get 
+        task = array[2].split('/')[-1]
+        typeToExtract = task
+        jobType = findTask(procId,schedd,typeToExtract)
 
         # skip production jobs with JobCache, or HC/TestJobs with condor 
         if 'JobCache' not in line and 'vocms228' not in schedd:
@@ -339,8 +338,8 @@ def main():
             
 
     #Adding the voboxes to the 2 dicts that are not in the overview list. At the moment they are added with 0's
-    fillBrokenSites(listschedds, overview_running) 
-    fillBrokenSites(listschedds, overview_pending) 
+    fillBrokenSchedds(listschedds, overview_running) 
+    fillBrokenSchedds(listschedds, overview_pending) 
 
     #print overview_running
     printDict(overview_running,'Running')
@@ -350,6 +349,16 @@ def main():
 
     #Writing the json file
     jsonDict(overview_running, overview_pending, jsonCERN_name, date, hour, "CERN")
+    # Handling jobs that failed task extraction logic
+    if jobs_failedTypeLogic != {}:
+        #command="bash failedLogic_email.sh \"%s\"" % str(jobs_failedTypeLogic)
+        #proc = subprocess.Popen(command, stderr = subprocess.PIPE,stdout = subprocess.PIPE, shell = True)
+        #out, err = proc.communicate()
+        print 'ERROR: I find jobs that failed the type assignment logic, I will send an email'
+        #print jobs_failedTypeLogic
+        #print out, '\n', "Error: ", '\n', err
+
+    
 
     print '__________________-'
     print 'THE PROGRAM IS FINISHED AFTER', datetime.now()-starttime
