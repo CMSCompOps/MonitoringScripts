@@ -107,7 +107,7 @@ class c4s :
       if line[:len(pat)] == pat : break
       elif we == 'WARNING' and val.split(':')[0] != 'ERROR' : val = line
       elif we == 'ERROR' : val = line
-    self.ssbData['CvmfsProbeNoInfo'][site] = val
+    self.ssbData['CvmfsProbeNoInfo'][site] = val[:60]
 
   def getValCvmfsVersion(self, site, probe, metric):
     pat1 = 'INFO: CVMFS version installed '
@@ -138,12 +138,15 @@ class c4s :
 
   def getValCvmfsMountPoint(self, site, probe, metric):
     pat1 = 'INFO: Variable VO_CMS_SW_DIR points to CVMFS mount point '
-    pat2 = 'INFO: Mandatory mount point /cvmfs/cms.cern.ch is nfs mount point'
+    pat2 = 'INFO: Variable OSG_APP points to CVMFS mount point '
+    pat3 = 'INFO: Mandatory mount point /cvmfs/cms.cern.ch is nfs mount point'
     mp = 'n/a'
     for line in probe :
       if line[:len(pat1)] == pat1 :
         mp = line[len(pat1):]
       elif line[:len(pat2)] == pat2 :
+        mp = line[len(pat2):]
+      elif line[:len(pat3)] == pat3 :
         mp = '/cvmfs/cms.cern.ch'
     self.ssbData['CvmfsMountPoint'][site] = mp
 
