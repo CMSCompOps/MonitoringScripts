@@ -7,8 +7,8 @@ import sys,os
 import subprocess
 from datetime import datetime
 import urllib2
-#collectors = ['vocms97.cern.ch', 'vocms165.cern.ch', 'cmssrv119.fnal.gov']
-collectors = ['vocms97.cern.ch', 'vocms165.cern.ch']
+collectors = ['vocms97.cern.ch', 'vocms165.cern.ch', 'cmssrv119.fnal.gov']
+#collectors = ['vocms97.cern.ch', 'vocms165.cern.ch']
 
 schedd_status_url = r'https://cmst1.web.cern.ch/CMST1/wmaconfig/AgentStatus.txt'
 
@@ -19,11 +19,12 @@ schedd_file_prev = "voboxlist_prev.txt"
 schedd_file = "voboxlist.txt"
 
 currTime = None
-jobs_failedTypeLogic = {}
+jobs_failedTypeLogic = set()
 
 relvalAgents = ['vocms142.cern.ch', 'cmssrv113.fnal.gov']
 jobTypes = ['Processing', 'Production', 'Skim', 'Harvest', 'Merge', 'LogCollect', 'Cleanup', 'RelVal', 'T0']
 t0Types = ['Repack', 'Express', 'Reco']
+countedJobIds = set()
 
 def findTask(id,sched,typeToExtract):
     """
@@ -52,13 +53,19 @@ def findTask(id,sched,typeToExtract):
         type = 'T0'
     else:
         type = 'Processing'
-        jobs_failedTypeLogic[id]=dict(scheduler = sched, BaseType = typeToExtract)
+        jobs_failedTypeLogic.add(sched+' '+typeToExtract)    
     return type
 
-def increaseCounterInDict(dictionary, schedd, jobType):
+def increaseCounterInDict(dictionary, schedd, jobType, jobId):
     """
     Filling the dictionaries
     """
+    #skip if job is already counted
+    if jobId in countedJobIds:
+        return
+    else:
+        countedJobIds.add(jobId)
+    #add to dictionary
     if schedd in dictionary:
         dictionary[schedd][jobType] += 1
     else:
@@ -82,11 +89,11 @@ def printDict(dictionary, description):
     sortedKeys = dictionary.keys()
     sortedKeys.sort()
     print '-'*114
-    print '| %35s | Processing | Production | Merge      | Cleanup    | LogCollect |RelVal/Skim/Harv|   T0   |   Total      |' % description
+    print '| %24s | Proces. | Produc. | Merge   | Cleanup | LogCol. | RelVal/Sk/Hrv | T0      | Total   |' % description
     print '-'*114
     #['Processing', 'Production', 'Skim', 'Harvest', 'Merge', 'LogCollect', 'Cleanup', 'RelVal', 'T0']
     for site in sortedKeys:
-        print '| %25s | %10d | %10d | %10d | %10d | %10d | %10d | %10d | %8d |' % (site, dictionary[site]['Processing'],
+        print '| %24s | %7d | %7d | %7d | %7d | %7d | %13d | %7d | %7d |' % (site, dictionary[site]['Processing'],
                             dictionary[site]['Production'], dictionary[site]['Merge'],
                             dictionary[site]['Cleanup'], dictionary[site]['LogCollect'], 
                             dictionary[site]['RelVal'] + dictionary[site]['Skim'] + dictionary[site]['Harvest'],
@@ -289,10 +296,10 @@ def countJobsForSchedd(coll, schedd, dict_running, dict_pending):
         # Increase/append the dictionarry
         #running
         if jobStatus == 2:
-            increaseCounterInDict(dict_running, schedd, jobType)
+            increaseCounterInDict(dict_running, schedd, jobType, procId)
         #pending
         elif jobStatus == 1:
-            increaseCounterInDict(dict_pending, schedd, jobType)
+            increaseCounterInDict(dict_pending, schedd, jobType, procId)
         #else :
         #increaseCounterInDict(overview_other,schedd_fix,type)
 
@@ -350,12 +357,13 @@ def main():
     #Writing the json file
     jsonDict(overview_running, overview_pending, jsonCERN_name, date, hour, "CERN")
     # Handling jobs that failed task extraction logic
-    if jobs_failedTypeLogic != {}:
+    if jobs_failedTypeLogic:
         #command="bash failedLogic_email.sh \"%s\"" % str(jobs_failedTypeLogic)
         #proc = subprocess.Popen(command, stderr = subprocess.PIPE,stdout = subprocess.PIPE, shell = True)
         #out, err = proc.communicate()
         print 'ERROR: I find jobs that failed the type assignment logic, I will send an email'
-        #print jobs_failedTypeLogic
+        for l in jobs_failedTypeLogic:
+            print l
         #print out, '\n', "Error: ", '\n', err
 
     
