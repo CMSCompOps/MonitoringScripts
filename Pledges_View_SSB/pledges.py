@@ -3,9 +3,9 @@ import os, sys
 import simplejson
 import json
 import time
-import urllib, httplib
+import urllib, httplib, urllib2
 import string
-
+import xml.etree.ElementTree as ET
 #_____________________________________________________________________________
 
 # function needed to fetch a list of all pledges values from siteDB
@@ -51,12 +51,26 @@ def fetch_all_pledges(url,api):
   return pledgesSites
 #_____________________________________________________________________________
 
+def GetXMLFromURL(url):
+    obj  = urllib2.urlopen(url)
+    data = obj.read()
+    root = ET.fromstring(data)
+    return root
+
 # function matchs pledges values gets from siteDB with SiteName
 
 def matchPledges(pledgeList):
   pledges = {}
   sitesList =  ['T1_TW_ASGC','T1_FR_CCIN2P3','T1_CH_CERN','T1_IT_CNAF','T1_US_FNAL','T1_US_FNAL_Disk','T1_RU_JINR','T1_RU_JINR_Disk','T1_DE_KIT','T1_ES_PIC','T1_UK_RAL','T1_UK_RAL_Disk','T2_IT_Bari','T2_CN_Beijing','T2_K_SGrid_Bristol','T2_K_London_Brunel','T2_FR_CCIN2P3','T2_CH_CERN','T2_CH_CERN_AI','T2_CH_CERN_HLT','T2_CH_CERN_T0','T2_ES_CIEMAT','T2_CH_CSCS','T2_TH_CUNSTDA','T2_S_Caltech','T2_DE_DESY','T2_EE_Estonia','T2_S_Florida','T2_FR_GRIF_IRFU','T2_FR_GRIF_LLR','T2_BR_UERJ','T2_FI_HIP','T2_AT_Vienna','T2_HU_Budapest','T2_UK_London_IC','T2_ES_IFCA','T2_RU_IHEP','T2_BE_IIHE','T2_RU_INR', 'T2_FR_IPHC','T2_RU_ITEP','T2_GR_Ioannina','T2_RU_JINR','T2_UA_KIPT','T2_KR_KNU','T2_IT_Legnaro','T2_BE_UCL','T2_TR_METU','T2_US_MIT','T2_PT_NCG_Lisbon','T2_PK_NCP','T2_US_Nebraska','T2_RU_PNPI','T2_IT_Pisa','T2_US_Purde', 'T2_RU_RRC_KI','T2_DE_RWTH','T2_IT_Rome','T2_UK_SGrid_RALPP','T2_RU_SINP','T2_BR_SPRACE','T2_IN_TIFR','T2_TW_Taiwan','T2_US_UCSD','T2_MY_UPM_BIRUNI', 'T2_US_Vanderbilt','T2_PL_Warsaw','T2_US_Wisconsin']
-  matchList =  {"T1_TW_ASGC": "ASGC", "T1_FR_CCIN2P3": "CC-IN2P3", "T1_CH_CERN": "CERN","T1_IT_CNAF": "CNAF","T1_US_FNAL": "FNAL","T1_US_FNAL_Disk": "n/a","T1_RU_JINR": "JINR-T1","T1_RU_JINR_Disk": "JINR-T1DISK","T1_DE_KIT": "KIT","T1_ES_PIC": "PIC","T1_UK_RAL": "RAL","T1_UK_RAL_Disk": "n/a","T2_IT_Bari": "Bari","T2_CN_Beijing": "Beijing","T2_K_SGrid_Bristol": "Bristol","T2_K_London_Brunel": "Brunel","T2_FR_CCIN2P3": "CC-IN2P3 AF","T2_CH_CERN": "n/a","T2_CH_CERN_AI": "n/a","T2_CH_CERN_HLT": "n/a","T2_CH_CERN_T0": "n/a","T2_ES_CIEMAT": "CIEMAT","T2_CH_CSCS": "CSCS","T2_TH_CUNSTDA": "CUNSTDA","T2_S_Caltech": "Caltech","T2_DE_DESY": "DESY","T2_EE_Estonia": "Estonia","T2_S_Florida": "Florida","T2_FR_GRIF_IRFU": "GRIF_IRFU","T2_FR_GRIF_LLR": "GRIF_LLR","T2_BR_UERJ": "HEPGRID_UERJ","T2_FI_HIP": "Helsinki Institute of Physics","T2_AT_Vienna": "Hephy-Vienna","T2_HU_Budapest": "Hungary","T2_UK_London_IC": "IC","T2_ES_IFCA": "IFCA","T2_RU_IHEP": "IHEP","T2_BE_IIHE": "IIHE","T2_RU_INR": "INR","T2_FR_IPHC": "IPHC","T2_RU_ITEP": "ITEP","T2_GR_Ioannina": "Ioannina","T2_RU_JINR": "JINR","T2_UA_KIPT": "KIPT", "T2_KR_KNU": "KNU","T2_IT_Legnaro": "Legnaro","T2_BE_UCL": "Louvain","T2_TR_METU": "METU", "T2_US_MIT": "MIT", "T2_PT_NCG_Lisbon": "NCG-INGRID-PT","T2_PK_NCP": "NCP-LCG2","T2_US_Nebraska": "Nebraska","T2_RU_PNPI": "PNPI","T2_IT_Pisa": "Pisa","T2_US_Purde": "Purdue","T2_RU_RRC_KI": "RRC_KI","T2_DE_RWTH": "RWTH","T2_IT_Rome": "Rome","T2_UK_SGrid_RALPP": "Rutherford PPD","T2_RU_SINP": "SINP","T2_BR_SPRACE": "SPRACE","T2_IN_TIFR": "TIFR","T2_TW_Taiwan": "Taiwan","T2_US_UCSD": "UCSD","T2_MY_UPM_BIRUNI": "n/a","T2_US_Vanderbilt": "n/a","T2_PL_Warsaw": "Warsaw","T2_US_Wisconsin": "Wisconsin"}
+  reportRoot = GetXMLFromURL( "https://cmsweb.cern.ch/sitedb/reports/showXMLReport?reportid=naming_convention.ini")
+  result   = reportRoot.find('result')
+  matchList      = {}
+#________________________Get from Sites Name from https://cmsweb.cern.ch/sitedb/reports/showXMLReport?reportid=naming_convention.ini______________ 
+  for item in result.findall('item'):
+      site = item.find('site').text
+      cms  = item.find('cms').text
+      matchList[cms] = site
+#_____________________________________________________________________________
   for site in matchList:
     if pledgeList.has_key(matchList[site]):
     	valPos = str(pledgeList[matchList[site]]).find('.') 
@@ -109,3 +123,4 @@ if __name__ == '__main__':
   allPledgeList = fetch_all_pledges('cmsweb.cern.ch','/sitedb/data/prod/resource-pledges')
   pledges       = matchPledges(allPledgeList)
   savetoFile(pledges, year, outputfile_txt)
+
