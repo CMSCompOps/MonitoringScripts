@@ -288,6 +288,8 @@ def handleDict(dict, description, date, hour):
         file.write( "%s %s\t%s\t%s\t%s\t%s\n" % (date, hour, 'Overall', str(int(overall_type[type])), 'green' , overalls_link ))
         
     overalls += " %10s |" % int(total)
+    file = open('./'+description+"Total"+'.txt', 'a')
+    file.write( "%s %s\t%s\t%s\t%s\t%s\n" % (date, hour, 'Overall', str(int(total)), 'green', overalls_link ))
     print line2, '\n', overalls, '\n', line2, '\n'
 
 def jsonDict(json_name,currTime,date,hour):
