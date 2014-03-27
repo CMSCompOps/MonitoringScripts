@@ -79,43 +79,27 @@ def matchPledges(pledgeList):
       	pledges[site] = "n/a"
   return pledges
 #_______________________________________________________________________
-#____________________function creates JSON TXT HTML file________________
+#____________________function creates JSON TXT file________________
 def savetoFile(pledges, year,outputfile_txt):
   saveTime = time.strftime('%Y-%m-%d %H:%M:%S')
   url = " https://cmsweb.cern.ch/sitedb/prod/pledges "
   #_______________JSON__________________________________________________
-  filename = year + outputfile_txt + ".json"
+  filename = outputfile_txt + ".json"
   fileOp = open(filename, "w")
   fileOp.write(unicode(simplejson.dumps(pledges, ensure_ascii=False)))
   fileOp.close()
 
   #_______________the List_____________________________________________
-  filename = year + outputfile_txt + ".txt"
+  filename = outputfile_txt + ".txt"
   fileOp = open(filename, "w")
-  fileOp.write("Pledges[" + year + "]\n")
   for tmpPledges in pledges:
       if (pledges[tmpPledges]      == 0)     : color = 'yellow'
       if (pledges[tmpPledges]      > 0)      : color = 'green'
       if (str(pledges[tmpPledges]) == 'n/a') : color = 'white'
-      fileOp.write('%-0s %20s %10s %10s %10s\n' % (saveTime, tmpPledges, str(pledges[tmpPledges]), color, url ))
+      fileOp.write(saveTime + " " + tmpPledges +  "	" + str(pledges[tmpPledges]) + "	" + color +  "	" +  url + "\n" )
 
   fileOp.close()
 
-  #_______________html________________________________________________
-  filename = year + outputfile_txt + ".html"
-  fileOp = open(filename, "w")
-  html = ''
-  htmlTag    = '<html><body><h3>Pledges[' + year  + ']</h3><table>'
-  htmlBody   = ''
-  htmlEndTag = '</table></body></html>'
-
-  for tmpPledges in pledges:
-    htmlBody = htmlBody + "<tr><td>" + tmpPledges + "</td>" + "<td>" + str(pledges[tmpPledges]) + "</td></tr>";
-  html = htmlTag + htmlBody + htmlEndTag
-  fileOp.write(html) 
-  fileOp.close()
-
-# run program for last month, last 2 months and last 3 months
 if __name__ == '__main__':
   outputfile_txt=sys.argv[1]
   year = sys.argv[2]
