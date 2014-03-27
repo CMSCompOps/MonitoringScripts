@@ -25,6 +25,8 @@ totalRunningSite = {} # Total running per site
 jobs_failedTypeLogic = {} # Jobs that failed the type logic assignment
 json_name = "SSB_siteInfo.json" # Output json file name
 site_link = "http://dashb-ssb.cern.ch/dashboard/templates/sitePendingRunningJobs.html?site="
+overalls_link = "http://dashb-ssb-dev.cern.ch/dashboard/templates/sitePendingRunningJobs.html?site=All%20T3210"
+
 
 jobTypes = ['Processing', 'Production', 'Skim', 'Harvest', 'Merge', 'LogCollect', 'Cleanup', 'RelVal', 'T0']
 t0Types = ['Repack', 'Express', 'Reco']
@@ -283,7 +285,7 @@ def handleDict(dict, description, date, hour):
         
         # add overalls to 'description''type' file
         file = open('./'+description+type+'.txt', 'a')
-        file.write( "%s %s\t%s\t%s\t%s\tn/a\n" % (date, hour, 'Overall', str(int(overall_type[type])), 'green' ))
+        file.write( "%s %s\t%s\t%s\t%s\t%s\n" % (date, hour, 'Overall', str(int(overall_type[type])), 'green' , overalls_link ))
         
     overalls += " %10s |" % int(total)
     print line2, '\n', overalls, '\n', line2, '\n'
@@ -295,15 +297,11 @@ def jsonDict(json_name,currTime,date,hour):
     sorted_run = overview_running.keys() # Running and pending keys must be the same after fixOverviews()
     sorted_run.sort()
     
-    # Remove empty entries
-    while '' in sorted_run:
-        sorted_run.remove('')
-        
-    json_part= '{\"UPDATE\":{\"Date\":\"'+date+'\",\"Time\":\"'+hour+'\"},\"Sites\":['
-   
-    startingComma=""
+    jsonfile = open(json_name,'w+')
+    update = {"UPDATE" : {"Date" : date, "Time" : hour}, "Sites" : []}
+    
     for site in sorted_run:
-    	# Get site status
+        # Get site status
         s_status = 'on' # Default for sites that has been added (not in baseSiteList)
         if site in baseSiteList.keys():
             s_status = baseSiteList[site]
@@ -314,44 +312,35 @@ def jsonDict(json_name,currTime,date,hour):
             sumPending += overview_pending[site][type]
             sumRunning += overview_running[site][type]
             
-        json_site_part= startingComma+"{\"site\":\""+str(site)+"\""                     \
-              +",\"Pending\":\""+str(int(sumPending))+"\""                              \
-              +",\"TimeDate\":\""+str(currTime.strip())+"\""                            \
-              +",\"Running\":\""+str(sumRunning)+"\""                                   \
-              +",\"RunProc\":\""+str(overview_running[site]['Processing'])+"\""         \
-              +",\"RunProd\":\""+str(overview_running[site]['Production'])+"\""         \
-              +",\"RunSkim\":\""+str(overview_running[site]['Skim'])+"\""               \
-              +",\"RunHarvest\":\""+str(overview_running[site]['Harvest'])+"\""         \
-              +",\"RunMerge\":\""+str(overview_running[site]['Merge'])+"\""             \
-              +",\"RunClean\":\""+str(overview_running[site]['Cleanup'])+"\""           \
-              +",\"RunLog\":\""+str(overview_running[site]['LogCollect'])+"\""          \
-              +",\"RunRelVal\":\""+str(overview_running[site]['RelVal'])+"\""           \
-              +",\"RunT0\":\""+str(overview_running[site]['T0'])+"\""                   \
-              +",\"PenProc\":\""+str(int(overview_pending[site]['Processing']))+"\""    \
-              +",\"PenProd\":\""+str(int(overview_pending[site]['Production']))+"\""    \
-              +",\"PenSkim\":\""+str(int(overview_pending[site]['Skim']))+"\""          \
-              +",\"PenHarvest\":\""+str(int(overview_pending[site]['Harvest']))+"\""    \
-              +",\"PenMerge\":\""+str(int(overview_pending[site]['Merge']))+"\""        \
-              +",\"PenClean\":\""+str(int(overview_pending[site]['Cleanup']))+"\""      \
-              +",\"PenLog\":\""+str(int(overview_pending[site]['LogCollect']))+"\""     \
-              +",\"PenRelVal\":\""+str(int(overview_pending[site]['RelVal']))+"\""      \
-              +",\"PenT0\":\""+str(int(overview_pending[site]['T0']))+"\""              \
-              +",\"Status\":\""+str(s_status)+"\""                                      \
-              +"}"
-        startingComma="," # Set starting comma for the next cycle 
-        json_site_part_str=str(json_site_part).replace("('","").replace("')","")
+        json_site = dict()
+        json_site["site"] = str(site)
+        json_site["Pending"] = str(int(sumPending))
+        json_site["TimeDate"] = str(currTime.strip())
+        json_site["Running"] = str(int(sumRunning))
+        json_site["RunProc"] = str(int(overview_running[site]['Processing']))
+        json_site["RunProd"] = str(int(overview_running[site]['Production']))
+        json_site["RunSkim"] = str(int(overview_running[site]['Skim']))
+        json_site["RunHarvest"] = str(int(overview_running[site]['Harvest']))
+        json_site["RunMerge"] = str(int(overview_running[site]['Merge']))
+        json_site["RunClean"] = str(int(overview_running[site]['Cleanup']))
+        json_site["RunLog"] = str(int(overview_running[site]['LogCollect']))
+        json_site["RunRelval"] = str(int(overview_running[site]['RelVal']))
+        json_site["RunT0"] = str(int(overview_running[site]['T0']))
+        json_site["PenProc"] = str(int(overview_pending[site]['Processing']))
+        json_site["PenProd"] = str(int(overview_pending[site]['Production']))
+        json_site["PenSkim"] = str(int(overview_pending[site]['Skim']))
+        json_site["PenHarvest"] = str(int(overview_pending[site]['Harvest']))
+        json_site["PenMerge"] = str(int(overview_pending[site]['Merge']))
+        json_site["PenClean"] = str(int(overview_pending[site]['Cleanup']))
+        json_site["PenLog"] = str(int(overview_pending[site]['LogCollect']))
+        json_site["PenRelval"] = str(int(overview_pending[site]['RelVal']))
+        json_site["PenT0"] = str(int(overview_pending[site]['T0']))
+        json_site["Status"] = str(s_status)
         
-        # Add site to json report
-        json_part += json_site_part_str
-    
-    # Close json report
-    json_part+= ']}' 
-    json_part.replace(" ", "")
-
-    # Overwrite json output file
-    json_file=open(json_name,"w")
-    json_file.write(json_part)
-    json_file.close() 
+        update["Sites"].append(json_site)
+              
+    jsonfile.write(json.dumps(update,sort_keys=True, indent=3))
+    jsonfile.close()
 
 def main():
     """
