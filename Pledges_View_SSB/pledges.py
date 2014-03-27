@@ -96,7 +96,7 @@ def savetoFile(pledges, year,outputfile_txt):
       if (pledges[tmpPledges]      == 0)     : color = 'yellow'
       if (pledges[tmpPledges]      > 0)      : color = 'green'
       if (str(pledges[tmpPledges]) == 'n/a') : color = 'white'
-      fileOp.write(saveTime + " " + tmpPledges + "\t" + str(pledges[tmpPledges]) + "\t" + color + "\t" +  url + "\n" )
+      fileOp.write(saveTime + "\t" + tmpPledges + "\t" + str(pledges[tmpPledges]) + "\t" + color + "\t" +  url + "\n" )
 
   fileOp.close()
 
