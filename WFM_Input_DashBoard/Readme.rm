@@ -1,4 +1,3 @@
-# Sten Luyckx
 # Script in acrontab t1
 # 5,20,35,50 * * * * lxplus ssh vocms202 /afs/cern.ch/user/c/cmst1/scratch0/WFM_Input_DashBoard/runWFMonDBShort.sh &> /dev/null
 # json files are fetched by Dashboardteam, via a special way. Cant be changed by myself
