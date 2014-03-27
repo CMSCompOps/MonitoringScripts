@@ -41,7 +41,7 @@ fi
 
 #Run the script
 year="2014"
-txt="_pledges"  #postfix in code itself
+txt="pledges"  #postfix in code itself
 echo "python pledges.py $txt"
 python pledges.py $txt $year &> pledges.log
 
@@ -49,8 +49,7 @@ problem="$?"
 echo "problem: $problem"
 echo "The files were created succesfully."
 
-#cp $txt*.txt /afs/cern.ch/user/g/gkandemi/www/WFMon/
-#cp $txt.txt ./
-#echo "files copied to: Script Directory "
-rm scriptRunning.run
+cp $txt".txt"  /afs/cern.ch/user/c/cmst1/www/SST
+cp $txt".json"  /afs/cern.ch/user/c/cmst1/www/SST
 
+rm scriptRunning.run
