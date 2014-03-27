@@ -82,7 +82,7 @@ def matchPledges(pledgeList):
 #____________________function creates JSON TXT file________________
 def savetoFile(pledges, year,outputfile_txt):
   saveTime = time.strftime('%Y-%m-%d %H:%M:%S')
-  url = " https://cmsweb.cern.ch/sitedb/prod/pledges "
+  url = "https://cmsweb.cern.ch/sitedb/prod/pledges "
   #_______________JSON__________________________________________________
   filename = outputfile_txt + ".json"
   fileOp = open(filename, "w")
@@ -96,7 +96,7 @@ def savetoFile(pledges, year,outputfile_txt):
       if (pledges[tmpPledges]      == 0)     : color = 'yellow'
       if (pledges[tmpPledges]      > 0)      : color = 'green'
       if (str(pledges[tmpPledges]) == 'n/a') : color = 'white'
-      fileOp.write(saveTime + " " + tmpPledges +"	" + str(pledges[tmpPledges]) + "	" + color + "	" +  url + "\n" )
+      fileOp.write(saveTime + " " + tmpPledges + "\t" + str(pledges[tmpPledges]) + "\t" + color + "\t" +  url + "\n" )
 
   fileOp.close()
 
