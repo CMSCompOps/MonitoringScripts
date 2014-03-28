@@ -41,7 +41,7 @@ fi
 
 #Run the script
 year="2014"
-txt="pledges"  #postfix in code itself
+txt="pledge"  #postfix in code itself
 echo "python pledges.py $txt"
 python pledges.py $txt $year &> pledges.log
 
