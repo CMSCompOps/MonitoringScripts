@@ -127,7 +127,7 @@ def main_function(outputfile_txt, submonths,allSites):
   # write to file
   f1=open('./'+outputfile_txt, 'w+')
   f1.write('# This txt goes into SSB and shows the number of days a site has been in the Waiting Room for X months --> See filename)\n')
-  f1.write('# Readme:\n# https://cmsdoc.cern.ch/cms/LCG/SiteComm/MonitoringScripts/SR_View_SSB/WRDays/Readme.txt\n')
+  f1.write('# Readme:\n# https://raw.githubusercontent.com/CMSCompOps/MonitoringScripts/master/SR_View_SSB/WRDays/Readme.txt\n')
   now_write=(datetime.utcnow()).strftime("%Y-%m-%d %H:%M:%S")
   print "Local current time :", now_write
   link="https://dashb-ssb.cern.ch/dashboard/request.py/siteviewhistorywithstatistics?columnid=153#time=2184&start_date=&end_date=&use_downtimes=false&merge_colors=false&sites=all"

@@ -102,7 +102,7 @@ def main_function(outputfile_txt):
 
   # write file that can be loaded in SSB
   f1.write('# This txt goes into SSB and marks sites red when the site is in the waiting room:\n')
-  f1.write('# Readme:\n# https://cmsdoc.cern.ch/cms/LCG/SiteComm/MonitoringScripts/SR_View_SSB/WRControl/Readme.txt\n')
+  f1.write('# Readme:\n# https://raw.githubusercontent.com/CMSCompOps/MonitoringScripts/master/SR_View_SSB/WRControl/Readme.txt\n')
 
   print "Local current time :", now_write
   link = "https://cmst1.web.cern.ch/CMST1/WFMon/WaitingRoom_Sites.txt"
