@@ -1,6 +1,6 @@
 #!/bin/sh
 # before copying files please do a git pull at:
-base="/afs/cern.ch/cms/LCG/SiteComm/MonitoringScripts/"
+base="/afs/cern.ch/user/j/jartieda/MonitoringScripts/"
 cd $base
 git pull
 

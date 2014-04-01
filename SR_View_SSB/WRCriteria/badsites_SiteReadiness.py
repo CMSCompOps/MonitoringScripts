@@ -50,7 +50,7 @@ def main_function(outputfile_txt):
 
   f1.write('# This txt goes into SSB and marks sites red when the following condition is true:\n')
   f1.write('# Site Readiness percentage for both [last 1 week && last 3 months] < 60%\n')
-  f1.write('# Readme:\n# https://cmsdoc.cern.ch/cms/LCG/SiteComm/MonitoringScripts/SR_View_SSB/WRCriteria/Readme.txt\n')
+  f1.write('# Readme:\n# https://raw.githubusercontent.com/CMSCompOps/MonitoringScripts/master/SR_View_SSB/WRCriteria/Readme.txt\n')
   print "Local current time :", now_write
   link="https://dashb-ssb.cern.ch/dashboard/request.py/sitereadinessrank?columnid=45#time=2184&start_date=&end_date=&sites=T0/1/2"
   for k in badSites:

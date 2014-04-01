@@ -1,3 +1,4 @@
+
 THIS LIST IS THE BASIS FOR  ALL THE OTHER “Waiting Room” RELATED METRICS 
 in the SiteReadiness View in SSB
 
@@ -14,13 +15,13 @@ Any site that is not in this list will be automatically moved to the Waiting Roo
 --- INFO ---
 # acronjob in acrontab jartieda
 # 00 08 * * 1 => Every monday at 8AM
-# 00 08 * * 1 lxplus ssh vocms202 curl https://raw.github.com/CMSCompOps/MonitoringScripts/master/SR_View_SSB/ActiveSites/sActiveSites.sh > /afs/cern.ch/cms/LCG/SiteComm/MonitoringScripts/SR_View_SSB/ActiveSites/sActiveSites.sh &> /dev/null && /afs/cern.ch/cms/LCG/SiteComm/MonitoringScripts/SR_View_SSB/ActiveSites/sActiveSites.sh
+# 00 08 * * 1 lxplus curl https://raw.github.com/CMSCompOps/MonitoringScripts/master/SR_View_SSB/ActiveSites/sActiveSites.sh > /afs/cern.ch/user/j/jartieda/MonitoringScripts/SR_View_SSB/ActiveSites/sActiveSites.sh &> /dev/null && /afs/cern.ch/user/j/jartieda/MonitoringScripts/SR_View_SSB/ActiveSites/sActiveSites.sh
 
 Script name:
 	sActiveSites.sh
 
 Script Location:
-	/afs/cern.ch/cms/LCG/SiteComm/MonitoringScripts/SR_View_SSB/ActiveSites/
+	/afs/cern.ch/user/j/jartieda/MonitoringScripts/SR_View_SSB/ActiveSites/
 
 Github repository:
 	https://github.com/CMSCompOps/MonitoringScripts/SR_View_SSB/ActiveSites/

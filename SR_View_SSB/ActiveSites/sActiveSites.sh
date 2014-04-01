@@ -1,17 +1,12 @@
 #!/bin/sh
-# acronjob in acrontab jartieda
-# 00 08 * * 1 => Every monday at 8AM
-# 00 08 * * 1 lxplus ssh vocms202
-# curl https://raw.github.com/CMSCompOps/MonitoringScripts/master/SR_View_SSB/ActiveSites/sActiveSites.sh > /afs/cern.ch/cms/LCG/SiteComm/MonitoringScripts/SR_View_SSB/ActiveSites/sActiveSites.sh &> /dev/null
-# && /afs/cern.ch/cms/LCG/SiteComm/MonitoringScripts/SR_View_SSB/ActiveSites/sActiveSites.sh
 
 # Script and files location
-location="/afs/cern.ch/cms/LCG/SiteComm/MonitoringScripts/SR_View_SSB/ActiveSites/"
+location="/afs/cern.ch/user/j/jartieda/MonitoringScripts/SR_View_SSB/ActiveSites"
 githublocation="https://raw.github.com/CMSCompOps/MonitoringScripts/master/SR_View_SSB/ActiveSites/"
 outFile="./WasCommissionedT2ForSiteMonitor.txt"
 ssbfeed="/afs/cern.ch/cms/LCG/SiteComm/T2WaitingList/WasCommissionedT2ForSiteMonitor.txt"
 ssbfeedweb="https://cmsdoc.cern.ch/cms/LCG/SiteComm/T2WaitingList/WasCommissionedT2ForSiteMonitor.txt"
-Read="https://cmsdoc.cern.ch/cms/LCG/SiteComm/MonitoringScripts/SR_View_SSB/ActiveSites/README.txt"
+Read="https://raw.githubusercontent.com/CMSCompOps/MonitoringScripts/master/SR_View_SSB/ActiveSites/Readme.txt"
 
 echo "*** sActiveSites.sh SCRIPT STARTED ***"
 cd $location
@@ -57,6 +52,7 @@ EOF
 
 # Appending Sites that are not included in the python script feeder (do not include T1s or T3s)
 ActiveSitesList="
+T2_CH_CERN
 T2_CH_CERN_AI
 T2_CH_CERN_HLT
 T2_CH_CERN_T0
