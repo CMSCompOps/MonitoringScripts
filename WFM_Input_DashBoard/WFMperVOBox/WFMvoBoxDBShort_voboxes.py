@@ -19,7 +19,7 @@ schedd_file_prev = "voboxlist_prev.txt"
 schedd_file = "voboxlist.txt"
 
 currTime = None
-jobs_failedTypeLogic = set()
+jobs_failedTypeLogic = {}
 
 relvalAgents = ['vocms142.cern.ch', 'cmssrv113.fnal.gov']
 jobTypes = ['Processing', 'Production', 'Skim', 'Harvest', 'Merge', 'LogCollect', 'Cleanup', 'RelVal', 'T0']
@@ -53,7 +53,11 @@ def findTask(id,sched,typeToExtract):
         type = 'T0'
     else:
         type = 'Processing'
-        jobs_failedTypeLogic.add(sched+' '+typeToExtract)    
+        l = sched+' '+typeToExtract
+        if l not in jobs_failedTypeLogic:
+            jobs_failedTypeLogic[l] = 1
+        else:
+            jobs_failedTypeLogic[l] += 1
     return type
 
 def increaseCounterInDict(dictionary, schedd, jobType, jobId):
@@ -362,8 +366,8 @@ def main():
         #proc = subprocess.Popen(command, stderr = subprocess.PIPE,stdout = subprocess.PIPE, shell = True)
         #out, err = proc.communicate()
         print 'ERROR: I find jobs that failed the type assignment logic, I will send an email'
-        for l in jobs_failedTypeLogic:
-            print l
+        for (l,n) in jobs_failedTypeLogic.items():
+            print l,n
         #print out, '\n', "Error: ", '\n', err
 
     
