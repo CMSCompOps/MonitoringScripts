@@ -106,7 +106,7 @@ then
     EMAILMESSAGE="/tmp/emailmessage.txt"
     echo "sActiveSites.sh completed successfully: WR List updated!"> $EMAILMESSAGE
     echo $ssbfeedweb >>$EMAILMESSAGE
-    echo $Read >>>$EMAILMESSAGE
+    echo $Read >>$EMAILMESSAGE
     # send an email using /bin/mail
     /bin/mail -s "$SUBJECT" "$EMAIL" < $EMAILMESSAGE
 else
