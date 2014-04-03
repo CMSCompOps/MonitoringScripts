@@ -18,7 +18,7 @@ then
     # email subject
     SUBJECT="[MonitoringScripts] sActiveSites.sh is stuck!!"
     # Email To ?
-    EMAIL="artiedaj@fnal.gov, gokhan.kandemir@cern.ch, cms-comp-ops-site-support-team@cern.ch"
+    EMAIL="artiedaj@fnal.gov"
     # Email text/message
     if [ -f emailmessage.txt ];
     then
@@ -94,9 +94,9 @@ then
     echo "* new file copied to web location to feed SSB"
     echo "*** sActiveSites.sh SCRIPT COMPLETED SUCCESFULLY ***"
     # email subject
-    SUBJECT="[MonitoringScripts] sActiveSites.sh completed successfully!"
+    SUBJECT="[MonitoringScripts] sActiveSites.sh completed successfully: WR List updated!"
     # Email To ?
-    EMAIL="artiedaj@fnal.gov, gokhan.kandemir@cern.ch, cms-comp-ops-site-support-team@cern.ch"
+    EMAIL="artiedaj@fnal.gov, gokhan.kandemir@cern.ch"
     # Email text/message
     if [ -f emailmessage.txt ];
     then
@@ -104,8 +104,9 @@ then
     fi
     touch emailmessage.txt
     EMAILMESSAGE="/tmp/emailmessage.txt"
-    echo "sActiveSites.sh  completed successfully!"> $EMAILMESSAGE
-    echo $Read >>$EMAILMESSAGE
+    echo "sActiveSites.sh completed successfully: WR List updated!"> $EMAILMESSAGE
+    echo $ssbfeedweb >>$EMAILMESSAGE
+    echo $Read >>>$EMAILMESSAGE
     # send an email using /bin/mail
     /bin/mail -s "$SUBJECT" "$EMAIL" < $EMAILMESSAGE
 else
