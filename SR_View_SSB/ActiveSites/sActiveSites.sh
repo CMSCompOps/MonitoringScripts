@@ -18,7 +18,7 @@ then
     # email subject
     SUBJECT="[MonitoringScripts] sActiveSites.sh is stuck!!"
     # Email To ?
-    EMAIL="artiedaj@fnal.gov"
+    EMAIL="artiedaj@fnal.gov, gokhan.kandemir@cern.ch, cms-comp-ops-site-support-team@cern.ch"
     # Email text/message
     if [ -f emailmessage.txt ];
     then
@@ -36,10 +36,10 @@ else
 fi
 
 # updating files from github
-echo "* updating ActiveSites.py script from github"
-curl $githublocation/ActiveSites.py > ActiveSites.py
-echo "* updating README file from github"
-curl $githublocation/README.txt > README.txt
+# echo "* updating ActiveSites.py script from github"
+# curl $githublocation/ActiveSites.py > ActiveSites.py
+# echo "* updating README file from github"
+# curl $githublocation/README.txt > README.txt
 
 # creating output file
 cat <<EOF > $outFile
@@ -50,7 +50,7 @@ cat <<EOF > $outFile
 # $Read
 EOF
 
-# Appending Sites that are not included in the python script feeder (do not include T1s or T3s)
+# Appending Sites that are not included in the python script feeder (IMPORTANT: do not include T1s or T3s)
 ActiveSitesList="
 T2_CH_CERN
 T2_CH_CERN_AI
@@ -96,7 +96,7 @@ then
     # email subject
     SUBJECT="[MonitoringScripts] sActiveSites.sh completed successfully!"
     # Email To ?
-    EMAIL="artiedaj@fnal.gov"
+    EMAIL="artiedaj@fnal.gov, gokhan.kandemir@cern.ch, cms-comp-ops-site-support-team@cern.ch"
     # Email text/message
     if [ -f emailmessage.txt ];
     then
