@@ -1,0 +1,10 @@
+--INFO--
+Script for Dashboard metric 159: Prod [cores]
+Script responsible: John Artieda (artiedaj@fnal.gov)
+output dir 	/afs/cern.ch/user/c/cmst1/www/SST/
+output file 	prod.txt
+web		https://cmst1.web.cern.ch/CMST1/SST/prod.txt
+
+—-
+Script in acrontab jartieda
+*/05 * * * * lxplus /afs/cern.ch/user/j/jartieda/MonitoringScripts/Pledges_View_SSB/prod_cores/????.sh &> /dev/null
