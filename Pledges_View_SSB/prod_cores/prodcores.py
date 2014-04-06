@@ -1,6 +1,6 @@
 import urllib2
 import json, time, string
-
+#______________________get all datas from SSB___________________________
 def getDatafromURL():
 	url='http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=136&time=24&dateFrom=&dateTo=&site=T0_CH_CERN&sites=all&clouds=undefined&batch=1';
 	print "Getting the url %s" % url
@@ -8,7 +8,9 @@ def getDatafromURL():
 	data = obj.read()
 	rows = json.loads(data)
 	return rows
+#_______________________________________________________________________
 
+#______________________function calculates T1, T2, T3 prod[Cores] values.__________________________________
 def calculateProdCore(json):
 	saveTime = time.strftime('%Y-%m-%d %H:%M:%S')
 	urll = "mailto:cms-comp-ops-site-support-team@cern.ch?subject=Pledges_View_SSB"
@@ -51,7 +53,7 @@ def calculateProdCore(json):
 	j.write(jsonCode)
 	#___________________________________________________________________
 	#_______________________________________________________________
-
+#__________________________________________________________________________________________________________
 if __name__ == '__main__':
-	rows = getDatafromURL() #get all pledge from dashBoard
+	rows = getDatafromURL() #get all pledge from dashBoard SSB
 	calculateProdCore(rows)
