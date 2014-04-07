@@ -1,6 +1,7 @@
 #!/bin/bash
-# written by Gökhan Kandemir => gokhan.kandemir@cern.ch
 clear
+location="/afs/cern.ch/user/j/jartieda/MonitoringScripts/Pledges_View_SSB/prod_cores"
+cd $location
 # Email if things are running slowly
 if [ -f scriptRunning.run ];
 then
@@ -9,7 +10,7 @@ then
    # email subject
    SUBJECT="[Prod[Cores]] load Prod[Cores]"
    # Email To ?
-   EMAIL="gokhan.kandemir@cern.ch"
+   EMAIL="artiedaj@fnal.gov, gokhan.kandemir@cern.ch"
    # Email text/message
    if [ -f emailmessage.txt ];
    then
@@ -40,4 +41,3 @@ cp $txt".txt"  /afs/cern.ch/user/c/cmst1/www/SST
 cp $txt".json"  /afs/cern.ch/user/c/cmst1/www/SST
 
 rm scriptRunning.run
-
