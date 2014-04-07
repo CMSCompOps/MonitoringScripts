@@ -30,7 +30,7 @@ fi
 #Run the script
 txt="prod"
 echo "python prodcores.py"
-python prodcores.py &> prod.log
+python2.6 prodcores.py &> prod.log
 
 problem="$?"
 echo "problem: $problem"
