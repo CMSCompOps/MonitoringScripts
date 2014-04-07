@@ -28,12 +28,15 @@ def calculateProdCore(json):
 		#_______________Calculate Prod[Core]____________________________
 		if tierName != 'T0':
 			if (tierName == 'T1') or (tierName == 'T3' or siteName == 'T2_CH_CERN_AI' or siteName == 'T2_CH_CERN_HLT') :
-				prodCore = status
+				if color == 'white':
+					prodCore = 'n/a'
+				else:
+                    prodCore = value
 			elif(tierName == 'T2'):
 				if color == 'white':
 					prodCore = 'n/a'
 				else:
-					prodCore = float(value) * 0.5
+					prodCore = int(int(value) * 0.5)
 			if str(prodCore).find('.') >= 0 : prodCore = str(prodCore)[0:str(prodCore).find('.')]
 			jsonCode = jsonCode + "{" + '"siteName":"' + siteName + '", "prodCore":' + prodCore + ',' + '"color":"' + color + '",' + '"url":"' + urll + '"},'    
 			f.write(saveTime + "\t" + siteName + "\t" + prodCore + "\t" + color + "\t" + urll + "\n")

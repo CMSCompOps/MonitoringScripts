@@ -13,9 +13,9 @@
 2014-04-04 00:00:01	T2_BE_UCL	0	yellow	mailto:cms-comp-ops-site-support-team@cern.ch?subject=Pledges_View_SSB
 2014-04-04 00:00:01	T2_BR_SPRACE	896	green	mailto:cms-comp-ops-site-support-team@cern.ch?subject=Pledges_View_SSB
 2014-04-04 00:00:01	T2_BR_UERJ	2000	green	mailto:cms-comp-ops-site-support-team@cern.ch?subject=Pledges_View_SSB
-2014-04-04 00:00:01	T2_CH_CERN	n/a	white	mailto:cms-comp-ops-site-support-team@cern.ch?subject=Pledges_View_SSB
+2014-04-04 00:00:01	T2_CH_CERN	4400	green	mailto:cms-comp-ops-site-support-team@cern.ch?subject=Pledges_View_SSB
 2014-04-04 00:00:01	T2_CH_CERN_AI	8000	green	mailto:cms-comp-ops-site-support-team@cern.ch?subject=Pledges_View_SSB
-2014-04-04 00:00:01	T2_CH_CERN_HLT	16000	green	mailto:cms-comp-ops-site-support-team@cern.ch?subject=Pledges_View_SSB
+2014-04-04 00:00:01	T2_CH_CERN_HLT	8000	green	mailto:cms-comp-ops-site-support-team@cern.ch?subject=Pledges_View_SSB
 2014-04-04 00:00:01	T2_CH_CSCS	1040	green	mailto:cms-comp-ops-site-support-team@cern.ch?subject=Pledges_View_SSB
 2014-04-04 00:00:01	T2_CN_Beijing	480	green	mailto:cms-comp-ops-site-support-team@cern.ch?subject=Pledges_View_SSB
 2014-04-04 00:00:01	T2_DE_DESY	1900	green	mailto:cms-comp-ops-site-support-team@cern.ch?subject=Pledges_View_SSB
