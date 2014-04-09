@@ -26,8 +26,10 @@ def calculateProdCore(json):
 		color = row['COLORNAME']
 		#_______________Calculate Prod[Cores]____________________________
 		prodCore = 0 if value is None else value
-		if (tierName == 'T1') or (tierName == 'T3' or siteName == 'T2_CH_CERN_AI' or siteName == 'T2_CH_CERN_HLT') :
-			prodCore = int(prodCore)
+		if (tierName == 'T1'):
+			prodCore = int(int(prodCore) * 0.9)
+		elif (tierName == 'T3' or siteName == 'T2_CH_CERN_AI' or siteName == 'T2_CH_CERN_HLT'):
+			prodCore = int(int(prodCore) * 1)
 		elif (tierName == 'T2'):
 			prodCore = int(int(prodCore) * 0.5)
 		if color == 'white':
