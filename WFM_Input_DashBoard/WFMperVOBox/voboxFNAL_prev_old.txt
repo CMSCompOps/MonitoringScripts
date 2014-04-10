@@ -1,7 +1,0 @@
-cms-xen39_fnal_gov 
-cmssrv112_fnal_gov 
-vocms234_cern_ch 
-cmssrv113_fnal_gov
-vocms202_cern_ch
-cmssrv98_fnal_gov
-cmssrv101_fnal_gov

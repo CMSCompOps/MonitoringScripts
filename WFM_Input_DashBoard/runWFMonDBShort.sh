@@ -46,7 +46,7 @@ python WFMonDBShort.py &> WFMonDBcron.log
 problem="$?"
 echo "problem: $problem"
 
-cp SSB_siteInfo.json /afs/cern.ch/user/c/cmst1/www/WFMon/
+cp SSB*.json /afs/cern.ch/user/c/cmst1/www/WFMon/
 cp *.txt /afs/cern.ch/user/c/cmst1/www/WFMon/
 cp WFMonDBcron_prevlog.log WFMonDBcron_prevlog2.log
 cp WFMonDBcron.log WFMonDBcron_prevlog.log
