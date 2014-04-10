@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 """
-This scripts creates the overall jobs report for monitoring in SSB
-Should be set as a cron job @15 min
-Creates a json file
+This scripts creates the overall job reports for monitoring in SSB
+Should be set as a cronjob @15 min
+Creates the following files: SSB_siteInfo.json, Running*.txt and Pending*.txt ( * in types )
 """
 
 import sys,os,re,urllib,urllib2,subprocess,time
@@ -14,7 +14,9 @@ except ImportError:
 
 collectors = ['vocms97.cern.ch', 'vocms165.cern.ch']
 
-relvalAgents = ['vocms142.cern.ch', 'cmssrv113.fnal.gov']
+#The following groups should be updated according to https://twiki.cern.ch/twiki/bin/view/CMSPublic/CompOpsWorkflowTeamWmAgentRealeases
+relvalAgents = ['vocms142.cern.ch', 'vocms174.cern.ch', 'cmssrv113.fnal.gov']
+testAgents = ['cmssrv94.fnal.gov', 'cmssrv101.fnal.gov', 'vocms230.cern.ch', 'vocms231.cern.ch']
 
 baseSiteList = {} # Site list
 baseSitePledges = {} # Site pledges list
@@ -159,6 +161,8 @@ def findTask(id,sched,typeToExtract):
         type = 'Merge'
     elif any([x in typeToExtract for x in t0Types]):
         type = 'T0'
+    elif sched.strip() in testAgents:
+        type = 'Processing'
     else:
         type = 'Processing'
         jobs_failedTypeLogic[id]=dict(scheduler = sched, BaseType = typeToExtract)
