@@ -375,7 +375,7 @@ def jsonDict(json_name,currTime,date,hour,key):
             sumRunning += running[entry][type]
             
         json_entry = dict()
-        json_entry[key] = str(entry)
+        json_entry[key] = str(entry).replace(".","_")
         json_entry["Pending"] = str(int(sumPending))
         json_entry["TimeDate"] = str(currTime.strip())
         json_entry["Running"] = str(int(sumRunning))
