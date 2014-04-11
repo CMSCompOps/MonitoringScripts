@@ -32,7 +32,7 @@ json_name_sites = "SSB_siteInfo.json" # Output json file name
 ##Counting by vobox
 overview_running_vobox = {}# Running per vobox
 overview_pending_vobox = {}# Pending per vobox
-json_name_vobox = "SSB_voBoxInfo.json" # Output json file name
+json_name_vobox = "SSBCERN_voBoxInfo.json" # Output json file name
 
 ##SSB plot links
 site_link = "http://dashb-ssb.cern.ch/dashboard/templates/sitePendingRunningJobs.html?site="
