@@ -316,13 +316,13 @@ def handleDict(dict, description, date, hour, server):
             
             # add site/scheduler jobs per type to 'description''type' file
             file = open('./'+description+type+'.txt', 'a')
-            file.write( "%s %s\t%s\t%s\t%s\t%s%s%s\n" % (date, hour, entry, str(int(dict[entry][type])), 'green', site_link, entry.replace(".","_").strip(), endpoint_entry ))
+            file.write( "%s %s\t%s\t%s\t%s\t%s%s%s\n" % (date, hour, entry, str(int(dict[entry][type])), 'green', site_link, entry, endpoint_entry ))
             
         lineSite += " %10s |" % int(sum)
         
         # add site/scheduler total jobs to 'description'Total file
         file = open('./'+description+"Total"+'.txt', 'a')
-        file.write( "%s %s\t%s\t%s\t%s\t%s%s%s\n" % (date, hour, entry, str(int(sum)), 'green', site_link, entry.replace(".","_").strip(), endpoint_entry ))
+        file.write( "%s %s\t%s\t%s\t%s\t%s%s%s\n" % (date, hour, entry, str(int(sum)), 'green', site_link, entry, endpoint_entry ))
         
         print lineSite
     
@@ -375,7 +375,7 @@ def jsonDict(json_name,currTime,date,hour,key):
             sumRunning += running[entry][type]
             
         json_entry = dict()
-        json_entry[key] = str(entry).replace(".","_").strip()
+        json_entry[key] = str(entry)
         json_entry["Pending"] = str(int(sumPending))
         json_entry["TimeDate"] = str(currTime.strip())
         json_entry["Running"] = str(int(sumRunning))
@@ -450,7 +450,7 @@ def main():
             print "INFO: Handling condor_q on collector: %s scheduler: %s" % (col, sched)
             
             if not sched in overview_running_vobox.keys():
-                addVoBox(sched)
+                addVoBox(sched.replace(".","_").strip())
             
             for line in out.split('\n') :
                 if line == "" : 
@@ -492,10 +492,10 @@ def main():
                 
                 if status == "2":
                     increaseRunning(siteToExtract[0],type) # I assume one job can only run at one site
-                    increaseRunningVoBox(sched,type)
+                    increaseRunningVoBox(sched.replace(".","_").strip(),type)
                 elif status == "1":
                     temp_pending.append([type,siteToExtract])
-                    increasePendingVoBox(sched,type)
+                    increasePendingVoBox(sched.replace(".","_").strip(),type)
                 else: # We do not care about jobs in another status (condor job status: https://htcondor-wiki.cs.wisc.edu/index.cgi/wiki?p=MagicNumbers)
                     continue
     print "INFO: Full condor status pooling is done"
