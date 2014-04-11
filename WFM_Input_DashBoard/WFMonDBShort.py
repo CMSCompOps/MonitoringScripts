@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 """
-This scripts creates the overall jobs report for monitoring in SSB
-Should be set as a cron job @15 min
-Creates a json file
+This scripts creates the overall job reports for monitoring in SSB
+Should be set as a cronjob @15 min
+Creates the following files: SSB_siteInfo.json, SSB_voBoxInfo.json, Running*.txt and Pending*.txt ( * in types )
 """
 
 import sys,os,re,urllib,urllib2,subprocess,time
@@ -12,10 +12,14 @@ try:
 except ImportError:
     import simplejson as json
 
+## Job Collectors
 collectors = ['vocms97.cern.ch', 'vocms165.cern.ch']
 
-relvalAgents = ['vocms142.cern.ch', 'cmssrv113.fnal.gov']
+##The following groups should be updated according to https://twiki.cern.ch/twiki/bin/view/CMSPublic/CompOpsWorkflowTeamWmAgentRealeases
+relvalAgents = ['vocms142.cern.ch', 'vocms174.cern.ch', 'cmssrv113.fnal.gov']
+testAgents = ['cmssrv94.fnal.gov', 'cmssrv101.fnal.gov', 'vocms230.cern.ch', 'vocms231.cern.ch']
 
+## Counting by site
 baseSiteList = {} # Site list
 baseSitePledges = {} # Site pledges list
 overview_running = {} # Running per site/task
@@ -23,11 +27,18 @@ temp_pending = [] # temporal pending jobs variable
 overview_pending = {} # Pending per site/task
 totalRunningSite = {} # Total running per site
 jobs_failedTypeLogic = {} # Jobs that failed the type logic assignment
-json_name = "SSB_siteInfo.json" # Output json file name
+json_name_sites = "SSB_siteInfo.json" # Output json file name
+
+##Counting by vobox
+overview_running_vobox = {}# Running per vobox
+overview_pending_vobox = {}# Pending per vobox
+json_name_vobox = "SSB_voBoxInfo.json" # Output json file name
+
+##SSB plot links
 site_link = "http://dashb-ssb.cern.ch/dashboard/templates/sitePendingRunningJobs.html?site="
-overalls_link = "http://dashb-ssb-dev.cern.ch/dashboard/templates/sitePendingRunningJobs.html?site=All%20T3210"
+overalls_link = "http://dashb-ssb-dev.cern.ch/dashboard/templates/sitePendingRunningJobs.html?site=All%20"
 
-
+## Job expected types
 jobTypes = ['Processing', 'Production', 'Skim', 'Harvest', 'Merge', 'LogCollect', 'Cleanup', 'RelVal', 'T0']
 t0Types = ['Repack', 'Express', 'Reco']
 
@@ -110,7 +121,19 @@ def addSite(site):
     
     if site not in baseSiteList.keys():
         baseSiteList[site] = 'on'
+
+def addVoBox(VoBox):
+    """
+    Add a VoBox to all the VoBox dictionaries
+    """
+    print "INFO: Adding VoBox %s" % VoBox
+    overview_running_vobox[VoBox] = dict()
+    for type in jobTypes:
+        overview_running_vobox[VoBox][type] = 0
     
+    overview_pending_vobox[VoBox] = dict()
+    for type in jobTypes:
+        overview_pending_vobox[VoBox][type] = 0
 
 def increaseRunning(site,type):
     """
@@ -133,6 +156,20 @@ def increasePending(site,type,num):
     else:
         addSite(site)
         overview_pending[site][type] += num
+
+def increaseRunningVoBox(sched,type):
+    """
+    Increase the number of running jobs for the given sched and type
+    This always increase job count by 1
+    """
+    overview_running_vobox[sched][type] += 1
+
+def increasePendingVoBox(sched,type):
+    """
+    Increase the number of pending jobs for the given sched and type
+    This always increase job count by 1
+    """
+    overview_pending_vobox[sched][type] += 1
 
 def findTask(id,sched,typeToExtract):
     """
@@ -159,6 +196,8 @@ def findTask(id,sched,typeToExtract):
         type = 'Merge'
     elif any([x in typeToExtract for x in t0Types]):
         type = 'T0'
+    elif sched.strip() in testAgents:
+        type = 'Processing'
     else:
         type = 'Processing'
         jobs_failedTypeLogic[id]=dict(scheduler = sched, BaseType = typeToExtract)
@@ -203,7 +242,6 @@ def relativePending(siteToExtract):
     
     return relative, total
     
-    
 def fixOverviews():
     """
     Add the sites that has pending but not running to overview_running,
@@ -226,7 +264,7 @@ def fixOverviews():
             for type in jobTypes:
                 overview_running[site][type] = 0.0
 
-def handleDict(dict, description, date, hour):
+def handleDict(dict, description, date, hour, server):
     """
     1. Prints a report for the given dictionary
     2. Dashboard cannot read from the json file created for the site plots...
@@ -235,15 +273,27 @@ def handleDict(dict, description, date, hour):
     sorted = dict.keys()
     sorted.sort()
     
+    # Assign plot names
+    if server:
+        endpoint_entry = "&server"
+        entry_overall = "Servers"
+        endpoint_overall = "Servers"
+    else:
+        endpoint_entry = ""
+        entry_overall = "Sites"
+        endpoint_overall = "T3210"
+    
     overall_type = {}
     # Init overalls per type
     for type in jobTypes:
         overall_type[type] = 0.0
         # Init text output files
-        file = open('./'+description+type+'.txt', 'w+')
+        if not server:
+            file = open('./'+description+type+'.txt', 'w+')
+            file.close()
+    if not server:
+        file = open('./'+description+"Total"+'.txt', 'w+')
         file.close()
-    file = open('./'+description+"Total"+'.txt', 'w+')
-    file.close()
     
     # print Titles
     line1 = "| %25s |" % description
@@ -255,24 +305,24 @@ def handleDict(dict, description, date, hour):
     line2 += " %10s |" % ('-'*10)
     print line2, '\n', line1, '\n', line2
     
-    # Print jobs per site
-    for site in sorted: 
+    # Print jobs per site/scheduler
+    for entry in sorted: 
         sum = 0.0
-        lineSite = "| %25s |" % site
+        lineSite = "| %25s |" % entry
         for type in jobTypes:
-            lineSite += " %10s |" % int(dict[site][type])
-            sum += dict[site][type]
-            overall_type[type] += dict[site][type]
+            lineSite += " %10s |" % int(dict[entry][type])
+            sum += dict[entry][type]
+            overall_type[type] += dict[entry][type]
             
-            # add site jobs per type to 'description''type' file
+            # add site/scheduler jobs per type to 'description''type' file
             file = open('./'+description+type+'.txt', 'a')
-            file.write( "%s %s\t%s\t%s\t%s\t%s%s\n" % (date, hour, site, str(int(dict[site][type])), 'green', site_link, site ))
+            file.write( "%s %s\t%s\t%s\t%s\t%s%s%s\n" % (date, hour, entry, str(int(dict[entry][type])), 'green', site_link, entry.replace(".","_").strip(), endpoint_entry ))
             
         lineSite += " %10s |" % int(sum)
         
-        # add site total jobs to 'description'Total file
+        # add site/scheduler total jobs to 'description'Total file
         file = open('./'+description+"Total"+'.txt', 'a')
-        file.write( "%s %s\t%s\t%s\t%s\t%s%s\n" % (date, hour, site, str(int(sum)), 'green', site_link, site ))
+        file.write( "%s %s\t%s\t%s\t%s\t%s%s%s\n" % (date, hour, entry, str(int(sum)), 'green', site_link, entry.replace(".","_").strip(), endpoint_entry ))
         
         print lineSite
     
@@ -285,61 +335,71 @@ def handleDict(dict, description, date, hour):
         
         # add overalls to 'description''type' file
         file = open('./'+description+type+'.txt', 'a')
-        file.write( "%s %s\t%s\t%s\t%s\t%s\n" % (date, hour, 'Overall', str(int(overall_type[type])), 'green' , overalls_link ))
+        file.write( "%s %s\t%s%s\t%s\t%s\t%s%s\n" % (date, hour, 'Overall', entry_overall, str(int(overall_type[type])), 'green' , overalls_link, endpoint_overall ))
         
     overalls += " %10s |" % int(total)
     file = open('./'+description+"Total"+'.txt', 'a')
-    file.write( "%s %s\t%s\t%s\t%s\t%s\n" % (date, hour, 'Overall', str(int(total)), 'green', overalls_link ))
+    file.write( "%s %s\t%s%s\t%s\t%s\t%s%s\n" % (date, hour, 'Overall', entry_overall, str(int(total)), 'green', overalls_link, endpoint_overall ))
     print line2, '\n', overalls, '\n', line2, '\n'
 
-def jsonDict(json_name,currTime,date,hour):
+def jsonDict(json_name,currTime,date,hour,key):
     """
     This creates a json form text and writes it into the json_name output file
     """
-    sorted_run = overview_running.keys() # Running and pending keys must be the same after fixOverviews()
+    if key == 'site':
+        location = "Sites"
+        running = overview_running
+        pending = overview_pending
+    elif key == 'VOBox':
+        location = "CERN"
+        running = overview_running_vobox
+        pending = overview_pending_vobox
+    
+    sorted_run = running.keys() # Running and pending keys must be the same after fixOverviews()
     sorted_run.sort()
     
     jsonfile = open(json_name,'w+')
-    update = {"UPDATE" : {"Date" : date, "Time" : hour}, "Sites" : []}
+    update = {"UPDATE" : {"Date" : date, "Time" : hour}, location : []}
     
-    for site in sorted_run:
-        # Get site status
-        s_status = 'on' # Default for sites that has been added (not in baseSiteList)
-        if site in baseSiteList.keys():
-            s_status = baseSiteList[site]
+    for entry in sorted_run:
+        # Get site/scheduler status
+        s_status = 'on' # Default for sites/schedulers
+        # TODO: How to get scheduler status, don't use default
+        if entry in baseSiteList.keys() and key == 'site': # only when key is "site"
+            s_status = baseSiteList[entry]
          
         sumPending = 0.0
         sumRunning = 0
         for type in jobTypes:
-            sumPending += overview_pending[site][type]
-            sumRunning += overview_running[site][type]
+            sumPending += pending[entry][type]
+            sumRunning += running[entry][type]
             
-        json_site = dict()
-        json_site["site"] = str(site)
-        json_site["Pending"] = str(int(sumPending))
-        json_site["TimeDate"] = str(currTime.strip())
-        json_site["Running"] = str(int(sumRunning))
-        json_site["RunProc"] = str(int(overview_running[site]['Processing']))
-        json_site["RunProd"] = str(int(overview_running[site]['Production']))
-        json_site["RunSkim"] = str(int(overview_running[site]['Skim']))
-        json_site["RunHarvest"] = str(int(overview_running[site]['Harvest']))
-        json_site["RunMerge"] = str(int(overview_running[site]['Merge']))
-        json_site["RunClean"] = str(int(overview_running[site]['Cleanup']))
-        json_site["RunLog"] = str(int(overview_running[site]['LogCollect']))
-        json_site["RunRelval"] = str(int(overview_running[site]['RelVal']))
-        json_site["RunT0"] = str(int(overview_running[site]['T0']))
-        json_site["PenProc"] = str(int(overview_pending[site]['Processing']))
-        json_site["PenProd"] = str(int(overview_pending[site]['Production']))
-        json_site["PenSkim"] = str(int(overview_pending[site]['Skim']))
-        json_site["PenHarvest"] = str(int(overview_pending[site]['Harvest']))
-        json_site["PenMerge"] = str(int(overview_pending[site]['Merge']))
-        json_site["PenClean"] = str(int(overview_pending[site]['Cleanup']))
-        json_site["PenLog"] = str(int(overview_pending[site]['LogCollect']))
-        json_site["PenRelval"] = str(int(overview_pending[site]['RelVal']))
-        json_site["PenT0"] = str(int(overview_pending[site]['T0']))
-        json_site["Status"] = str(s_status)
+        json_entry = dict()
+        json_entry[key] = str(entry)
+        json_entry["Pending"] = str(int(sumPending))
+        json_entry["TimeDate"] = str(currTime.strip())
+        json_entry["Running"] = str(int(sumRunning))
+        json_entry["RunProc"] = str(int(running[entry]['Processing']))
+        json_entry["RunProd"] = str(int(running[entry]['Production']))
+        json_entry["RunSkim"] = str(int(running[entry]['Skim']))
+        json_entry["RunHarvest"] = str(int(running[entry]['Harvest']))
+        json_entry["RunMerge"] = str(int(running[entry]['Merge']))
+        json_entry["RunClean"] = str(int(running[entry]['Cleanup']))
+        json_entry["RunLog"] = str(int(running[entry]['LogCollect']))
+        json_entry["RunRelval"] = str(int(running[entry]['RelVal']))
+        json_entry["RunT0"] = str(int(running[entry]['T0']))
+        json_entry["PenProc"] = str(int(pending[entry]['Processing']))
+        json_entry["PenProd"] = str(int(pending[entry]['Production']))
+        json_entry["PenSkim"] = str(int(pending[entry]['Skim']))
+        json_entry["PenHarvest"] = str(int(pending[entry]['Harvest']))
+        json_entry["PenMerge"] = str(int(pending[entry]['Merge']))
+        json_entry["PenClean"] = str(int(pending[entry]['Cleanup']))
+        json_entry["PenLog"] = str(int(pending[entry]['LogCollect']))
+        json_entry["PenRelval"] = str(int(pending[entry]['RelVal']))
+        json_entry["PenT0"] = str(int(pending[entry]['T0']))
+        json_entry["Status"] = str(s_status)
         
-        update["Sites"].append(json_site)
+        update[location].append(json_entry)
               
     jsonfile.write(json.dumps(update,sort_keys=True, indent=3))
     jsonfile.close()
@@ -377,8 +437,8 @@ def main():
                 #print out2, '\n', "Error: ", '\n', err2
                 break
         for line in out.split('\n') :
-    	    if ('cern' in line) or ('fnal' in line):
-    		    listschedds.append(line)
+            if ('cern' in line) or ('fnal' in line):
+                listschedds.append(line)
         print "INFO: Condor status on collector %s has been started" % col
         
         # Get the running/pending jobs from condor for the given scheduler
@@ -388,6 +448,9 @@ def main():
             proc = subprocess.Popen(command, stderr = subprocess.PIPE,stdout = subprocess.PIPE, shell = True)
             out, err = proc.communicate()
             print "INFO: Handling condor_q on collector: %s scheduler: %s" % (col, sched)
+            
+            if not sched in overview_running_vobox.keys():
+                addVoBox(sched)
             
             for line in out.split('\n') :
                 if line == "" : 
@@ -429,8 +492,10 @@ def main():
                 
                 if status == "2":
                     increaseRunning(siteToExtract[0],type) # I assume one job can only run at one site
+                    increaseRunningVoBox(sched,type)
                 elif status == "1":
                     temp_pending.append([type,siteToExtract])
+                    increasePendingVoBox(sched,type)
                 else: # We do not care about jobs in another status (condor job status: https://htcondor-wiki.cs.wisc.edu/index.cgi/wiki?p=MagicNumbers)
                     continue
     print "INFO: Full condor status pooling is done"
@@ -469,15 +534,22 @@ def main():
     
     print 'INFO: Creating reports...'
     
-    # Prints a report and creates Dashboard feeder files (SSB can't take info from json for runnnig/pending views...)
-    handleDict( overview_running, "Running", date, hour)
-    handleDict( overview_pending, "Pending", date, hour)
+    # Prints a report and fills Dashboard feeder files (SSB can't take info from json for runnnig/pending views...)
+    # This handles jobs per site. This must run before handleDict for servers (this creates *.txt files)
+    handleDict( overview_running, "Running", date, hour, False)
+    handleDict( overview_pending, "Pending", date, hour, False)
+    
+    # Prints a report for jobs per vobox and fills Dashboard feeder files (for schedulers)
+    handleDict( overview_running_vobox, "Running", date, hour, True)
+    handleDict( overview_pending_vobox, "Pending", date, hour, True)
+    
+    # Creates json file for jobs per vobox
+    jsonDict( json_name_vobox, currTime, date, hour, 'VOBox')
     
     # Creates json file (This is needed for plots per site)
-    jsonDict( json_name, currTime, date, hour)
+    jsonDict( json_name_sites, currTime, date, hour, 'site')
     
     print 'INFO: The script has finished after: ', datetime.now()-starttime
 
 if __name__ == "__main__":
     main()
-
