@@ -1,7 +1,5 @@
 #!/usr/bin/python
 import os, sys
-#import simplejson
-#import jon
 import time
 import urllib, httplib, urllib2
 import string
