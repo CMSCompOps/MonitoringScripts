@@ -23,7 +23,7 @@ def match(xml, siteName):
   global T1Count, T2Count, file, jsonCode
   findTxt = "404 - Cannot find file"
   saveTime = time.strftime('%Y-%m-%d %H:%M:%S')
-  url = "https://cmsweb.cern.ch/gitweb/?p=siteconf/.git;a=tree"
+  url = "cmsweb.cern.ch/gitweb/?p=siteconf/.git;a=blob_plain;f=" + siteName + "/JobConfig/site-local-config.xml;hb=HEAD"
   if (findTxt in xml) == False:
     dom  = parseString(xml)
     tag  = dom.getElementsByTagName('site-local-config')[0].getElementsByTagName('site')[0].getElementsByTagName('statistics-destination')

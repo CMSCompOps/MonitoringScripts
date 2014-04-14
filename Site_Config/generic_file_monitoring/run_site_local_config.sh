@@ -34,7 +34,7 @@ fi
 
 
 #Run the script
-txt="tfc"
+txt="gfm"
 echo "python site_local_config.py > $txt.txt and $txt.json"
 python site_local_config.py $txt &> site_local_config.log
 
