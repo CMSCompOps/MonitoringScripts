@@ -27,14 +27,14 @@ def extractSitesAboveThreshold(dataRows, percentageThreshold):
     for row in dataRows['data']:
         siteName = row[0].split(' ')[0]
         sitePercentage = float(row[1][0][1])
-        if sitePercentage > percentageThreshold:
+        if sitePercentage >= percentageThreshold:
             sites.append(siteName)
     return sites
 
 oneWeekDataRows = getData(url % '168', headers={"Accept":"application/json"})
 threeMonthsDataRows = getData(url % '2184', headers={"Accept":"application/json"})
 
-# Active Sites = SR >60% for last week OR last 3 months
+# Active Sites = SR >=60% for last week OR last 3 months
 oneWeek = extractSitesAboveThreshold(oneWeekDataRows, percentageThreshold)
 threeMonths = extractSitesAboveThreshold(threeMonthsDataRows, percentageThreshold)
 activeSites = oneWeek
