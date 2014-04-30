@@ -1,6 +1,5 @@
 #!/bin/sh
 #
-# Sten Luyckx
 # Script in acrontab t1
 # 5,20,35,50 * * * * lxplus ssh vocms202 /afs/cern.ch/user/c/cmst1/scratch0/WFM_Input_DashBoard/runWFMonDBShort.sh &> /dev/null
 # json files are fetched by Dashboardteam, via a special way. Cant be changed by myself
@@ -12,6 +11,7 @@
 #Initialize
 source ~cmst1/.bashrc
 agentenv
+source /data/srv/wmagent/current/apps/wmagent/etc/profile.d/init.sh
 cd /afs/cern.ch/user/c/cmst1/scratch0/WFM_Input_DashBoard/ 
 
 # Email if things are running slowly
@@ -21,8 +21,8 @@ then
    # script to send simple email
    # email subject
    SUBJECT="[Monitoring] Condor History load"
-   # Email To ?
-   EMAIL="sten.luyckx@cern.ch"
+   # Email To workflow team
+   EMAIL="jbadillo@cern.ch"
    # Email text/message
    if [ -f emailmessage.txt ];
    then
@@ -46,7 +46,8 @@ python WFMonDBShort.py &> WFMonDBcron.log
 problem="$?"
 echo "problem: $problem"
 
-cp SSB_siteInfo.json /afs/cern.ch/user/c/cmst1/www/WFMon/
+cp SSB*.json /afs/cern.ch/user/c/cmst1/www/WFMon/
+cp *.txt /afs/cern.ch/user/c/cmst1/www/WFMon/
 cp WFMonDBcron_prevlog.log WFMonDBcron_prevlog2.log
 cp WFMonDBcron.log WFMonDBcron_prevlog.log
 rm scriptRunning.run

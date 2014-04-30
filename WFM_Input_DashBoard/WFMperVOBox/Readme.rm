@@ -1,9 +1,0 @@
-# Sten Luyckx
-# Script in acrontab t1
-# 5,20,35,50 * * * * lxplus ssh vocms202 /afs/cern.ch/user/c/cmst1/scratch0/WFM_Input_DashBoard/WFMperVOBox/runWFMonDBShort_voboxes.sh &> /dev/null
-# json files are fetched by Dashboardteam, via a special way. Cant be changed by myself
-# Script for Dashboard metric (part of) 137, 138: Running/Pending jobs . This metric is shared with that of the # on site instead of on p
-er schedular/vobox
-# outputfile SSBCERN_voBoxInfo.json
-# outputdir /afs/cern.ch/user/c/cmst1/www/WFMon/
-

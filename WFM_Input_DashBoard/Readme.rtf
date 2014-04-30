@@ -1,0 +1,13 @@
+{\rtf1\ansi\ansicpg1252\cocoartf1265\cocoasubrtf190
+{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+\margl1440\margr1440\vieww12600\viewh7800\viewkind0
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural
+
+\f0\fs24 \cf0 # Script in acrontab t1\
+# 5,20,35,50 * * * * lxplus ssh vocms202 /afs/cern.ch/user/c/cmst1/scratch0/WFM_Input_DashBoard/runWFMonDBShort.sh &> /dev/null\
+# json files are fetched by Dashboardteam, via a special way. Cant be changed by myself\
+# Script for Dashboard metric (part of) 137, 138: Running/Pending jobs . This metric is shared with that of the # on voboxes instead of only on per sites\
+# outputfile SB_siteInfo.json SSB_voBoxInfo.json Running*.txt Pending*.txt per Type of job \
+# outputdir /afs/cern.ch/user/c/cmst1/www/WFMon/\
+}
