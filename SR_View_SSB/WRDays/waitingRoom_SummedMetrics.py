@@ -39,10 +39,6 @@ def extractJson(col, startDate, endDate):
 
 # function needed to fetch a list of all sites from siteDB
 def fetch_all_sites(url,api):
-  # examples in:
-  # https://github.com/gutsche/old-scripts/blob/master/SiteDB/extract_site_executive_mail_addresses.py
-  # https://github.com/dballesteros7/dev-scripts/blob/master/src/reqmgr/input-blocks.py
-  # https://twiki.cern.ch/twiki/bin/view/CMSPublic/CompOpsWorkflowOperationsWMAgentScripts#Resubmit
   headers = {"Accept": "application/json"}
   if 'X509_USER_PROXY' in os.environ:
       print 'X509_USER_PROXY found'
@@ -64,6 +60,10 @@ def fetch_all_sites(url,api):
   conn.close()
 
   site_T2= []
+  for siteName in jn['result']:
+      if siteName[3][0:2] == 'T2':
+          site_T2.append(siteName[3]) 
+
   for i in jn['result']:
     if i[jn['desc']['columns'].index('type')]=='cms':
       sitedbname=i[jn['desc']['columns'].index('alias')]
@@ -142,7 +142,8 @@ def main_function(outputfile_txt, submonths,allSites):
 if __name__ == '__main__':
   outputfile_txt=sys.argv[1]
   print 'starting to fetch all sites from siteDB'
-  allSitesList = fetch_all_sites('cmsweb.cern.ch','/sitedb/data/prod/site-names')
+  #allSitesList = fetch_all_sites('cmsweb.cern.ch','/sitedb/data/prod/site-names')
+  allSitesList = fetch_all_sites('cmsweb.cern.ch','/sitedb/data/prod/federations-sites')
   main_function(outputfile_txt+'1MonthSum.txt',-1,allSitesList)
   print '__________________________________________________'
   print '__________________________________________________'
