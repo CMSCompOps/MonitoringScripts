@@ -1,7 +1,6 @@
 #!/bin/bash
 # written by Gökhan Kandemir => gokhan.kandemir@cern.ch
-# usercert and userkey files must be in folder .globus
-# this script fetchs all pledges values and matchs with siteName from siteDB.
+# this script calculates the number of T1s and T2s counts and writes results to console and file.
 clear
 echo "To Prevent ask typing password constantly, Registering your KEY and CERT to Grid Environment"
 source /afs/cern.ch/project/gd/LCG-share/new_3.2/etc/profile.d/grid_env.sh
@@ -34,10 +33,10 @@ fi
 
 
 #Run the script
-txt="tfc"
+txt="gfm"
 echo "python site_local_config.py > $txt.txt and $txt.json"
-#python site_local_config.py $txt &> site_local_config.log
-python site_local_config.py $txt
+python site_local_config.py $txt &> site_local_config.log
+
 problem="$?"
 echo "problem: $problem"
 echo "The files were created succesfully."
