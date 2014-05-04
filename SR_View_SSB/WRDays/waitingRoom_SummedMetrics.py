@@ -62,7 +62,7 @@ def fetch_all_sites(url,api):
   site_T2= []
   for siteName in jn['result']:
       if siteName[3][0:2] == 'T2':
-          site_T2.append(siteName[3]) 
+          site_T2.append(siteName[3])
 
   for i in jn['result']:
     if i[jn['desc']['columns'].index('type')]=='cms':

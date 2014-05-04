@@ -7,8 +7,6 @@
 # usercert and userkey files must be in folder "data"
 # this script read all of data from http://dashb-ssb.cern.ch/dashboard/ according to column, dateFrom, dateTo, sites and it calculates How many days Sites are in WaitingRoom as last 1 month, last 2 months, last 3 months. 
 clear
-echo "exporting KEY and CERT"
-
 #fixing access
 source /afs/cern.ch/project/gd/LCG-share/new_3.2/etc/profile.d/grid_env.sh
 voms-proxy-init -voms cms
