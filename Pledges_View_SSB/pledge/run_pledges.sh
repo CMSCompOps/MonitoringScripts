@@ -2,12 +2,8 @@
 # written by Gökhan Kandemir => gokhan.kandemir@cern.ch
 # outputfile [year]_pledges.txt
 # outputfile [year]_pledges.json
-# outputfile [year]_pledges.html
-# usercert and userkey files must be in folder "data"
 # this script fetchs all pledges values and matchs with siteName from siteDB.
 clear
-echo "exporting KEY and CERT"
-
 #fixing access
 source /afs/cern.ch/project/gd/LCG-share/new_3.2/etc/profile.d/grid_env.sh
 voms-proxy-init -voms cms

@@ -56,16 +56,20 @@ def fetch_all_pledges(url,api):
 
 def matchPledges(pledgeList):
   #_______________________fetch all siteName : FederationName because Pledges is defined by federation name not siteName._____________________
-  federation = "sitedb.json"
-  SiteDB_url = "https://cmsweb.cern.ch/sitedb/data/prod/federations-sites"
-  os.system("curl -ks --cert $X509_USER_PROXY --key $X509_USER_PROXY  '%s' > %s" % (SiteDB_url,federation))
-  f=file(federation,'r')
-  data = f.read()
-  rows = json.loads(data)
-  f.close()
-  os.system("rm '%s'" % (federation))
-  siteList=[]
+  headers = {"Accept": "application/json"}
+  url = "cmsweb.cern.ch"
+  api = "/sitedb/data/prod/federations-sites"
+  sitesList=[]
   matchList = {}
+  if 'X509_USER_PROXY' in os.environ:
+    print 'X509_USER_PROXY found'
+    conn = httplib.HTTPSConnection(url, cert_file = os.getenv('X509_USER_PROXY'), key_file = os.getenv('X509_USER_PROXY'))
+  r1=conn.request("GET",api, None, headers)
+  r2=conn.getresponse()
+  inputjson=r2.read()
+  jn = simplejson.loads(inputjson)
+  conn.close()
+
   for siteName in rows['result']:
       matchList[siteName[3]] = siteName[2]
       siteList.append(siteName[3])
