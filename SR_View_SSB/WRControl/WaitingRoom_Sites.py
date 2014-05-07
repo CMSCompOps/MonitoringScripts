@@ -9,7 +9,7 @@ import string
 import urllib, httplib, re
 import pickle 
 
-#extract nonwaitingroommsites
+#extract nonwaitingroommsites from ActiveSites script output
 url2 = "https://cmsdoc.cern.ch/cms/LCG/SiteComm/T2WaitingList/WasCommissionedT2ForSiteMonitor.txt"
 
 # function needed to fetch a list of all sites from siteDB
@@ -105,7 +105,7 @@ def main_function(outputfile_txt):
   f1.write('# Readme:\n# https://raw.githubusercontent.com/CMSCompOps/MonitoringScripts/master/SR_View_SSB/WRControl/Readme.txt\n')
 
   print "Local current time :", now_write
-  link = "https://cmst1.web.cern.ch/CMST1/WFMon/WaitingRoom_Sites.txt"
+  link = "https://dashb-ssb.cern.ch/dashboard/request.py/sitereadinessrank?columnid=45#time=2184&start_date=&end_date=&sites=T0/1/2"
   for k in waitingRoom_sites:
     print k, 'in', 'red'
     f1.write(now_write+'\t')        # timestamp
