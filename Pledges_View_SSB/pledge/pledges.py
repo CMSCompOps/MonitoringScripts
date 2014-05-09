@@ -70,9 +70,10 @@ def matchPledges(pledgeList):
   jn = simplejson.loads(inputjson)
   conn.close()
 
-  for siteName in rows['result']:
-      matchList[siteName[3]] = siteName[2]
-      siteList.append(siteName[3])
+  for siteName in jn['result']:
+      if siteName[3][0:2] == 'T2':
+         matchList[siteName[3]] = siteName[2]
+         sitesList.append(siteName[3])
   #___________________________________________________________________________________________________________________________
   pledges = {}
 #_____________________________________________________________________________
@@ -100,7 +101,6 @@ def savetoFile(pledges, outputfile_txt):
       if (pledges[tmpPledges]      > 0)      : color = 'green'
       if (str(pledges[tmpPledges]) == 'n/a') : color = 'white'
       fileOp.write(saveTime + "\t" + tmpPledges + "\t" + str(pledges[tmpPledges]) + "\t" + color + "\t" +  url + "\n" )
-
   fileOp.close()
 
 if __name__ == '__main__':
