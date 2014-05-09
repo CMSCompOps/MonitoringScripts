@@ -25,7 +25,7 @@ def fetch_all_sites(url, api):
   conn.close()
   sitesList=[]
   for site in jn['result']:
-    if site[3][0:2] == 'T2':
+    if site[3][0:2] != 'T3':
        sitesList.append(site[3])    
   #______________________________________________________________________________________
   # To get all site-local-config information.
