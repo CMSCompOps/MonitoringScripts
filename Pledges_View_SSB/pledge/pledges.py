@@ -71,7 +71,7 @@ def matchPledges(pledgeList):
   conn.close()
 
   for siteName in jn['result']:
-      if siteName[3][0:2] == 'T2':
+      if siteName[3][0:2] != 'T3':
          matchList[siteName[3]] = siteName[2]
          sitesList.append(siteName[3])
   #___________________________________________________________________________________________________________________________
