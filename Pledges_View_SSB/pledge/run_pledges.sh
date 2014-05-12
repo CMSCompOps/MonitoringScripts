@@ -2,15 +2,11 @@
 # written by Gökhan Kandemir => gokhan.kandemir@cern.ch
 # outputfile [year]_pledges.txt
 # outputfile [year]_pledges.json
-# outputfile [year]_pledges.html
-# usercert and userkey files must be in folder "data"
 # this script fetchs all pledges values and matchs with siteName from siteDB.
 clear
-echo "exporting KEY and CERT"
-
 #fixing access
-export X509_USER_CERT=./data/usercert.pem
-export X509_USER_KEY=./data/userkey.pem
+source /afs/cern.ch/project/gd/LCG-share/new_3.2/etc/profile.d/grid_env.sh
+voms-proxy-init -voms cms
 
 # Email if things are running slowly
 
@@ -40,10 +36,9 @@ fi
 
 
 #Run the script
-year="2014"
-txt="pledge"  #postfix in code itself
+txt="pledges"  #postfix in code itself
 echo "python pledges.py $txt"
-python pledges.py $txt $year &> pledges.log
+python pledges.py $txt &> pledges.log
 
 problem="$?"
 echo "problem: $problem"
@@ -53,3 +48,4 @@ cp $txt".txt"  /afs/cern.ch/user/c/cmst1/www/SST
 cp $txt".json"  /afs/cern.ch/user/c/cmst1/www/SST
 
 rm scriptRunning.run
+
