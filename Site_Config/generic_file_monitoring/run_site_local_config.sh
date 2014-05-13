@@ -1,6 +1,5 @@
 #!/bin/bash
 # written by Gökhan Kandemir => gokhan.kandemir@cern.ch
-# usercert and userkey files must be in folder .globus
 # this script calculates the number of T1s and T2s counts and writes results to console and file.
 clear
 echo "To Prevent ask typing password constantly, Registering your KEY and CERT to Grid Environment"
