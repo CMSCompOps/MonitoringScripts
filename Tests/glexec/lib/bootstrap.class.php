@@ -7,7 +7,6 @@ class bootstrap{
 	static function getNavBar($searchForm = false, $active = null, $brand = null, $disabled = false){
 		$home = ''; $siteOperations = ''; $wrList = ''; ; $notif = '';
 		if ($active == 'siteop') {$siteOperations = 'active';};
-		if ($disabled == false) {$disabled = '';} else {$disabled = 'disabled';};
 		echo '
 		<nav class="navbar navbar-inverse navbar-static-top" id = "sidebar">
 			<div class="container">
@@ -26,25 +25,7 @@ class bootstrap{
 				<div class="collapse navbar-collapse navbarSec">
 					<ul class="nav navbar-nav navbar-right">
 						
-						<li class="' . $siteOperations  . ' dropdown ' . $disabled . '"> 
-							<a href="#" class="dropdown-toggle" data-toggle="dropdown">Overview<b class="caret"></b> </a>
-							<ul class="dropdown-menu">
-								<li><a href="#">Summary </a></li>
-								<li><a href="#">Statistics</a></li> 
-								<li><a href="#">Tickets</a></li> 
-							</ul>
-						</li>
-
-						<li class="' . $wrList  . ' dropdown ' . $disabled . '"> 
-							<a href="#" class="dropdown-toggle" data-toggle="dropdown">Waiting Room<b class="caret"></b> </a>
-							<ul class="dropdown-menu">
-								<li> <a href="#">WaitingRoom List</a></li>
-								<li> <a href="#">Morgue List</a></li>
-								<li><a href="#">Add / Remove Site</a></li>
-							</ul>
-						</li>
-						
-						<li class="dropdown ' . $disabled . '"> 
+						<li class="dropdown"> 
 							<a href="#" class="dropdown-toggle" data-toggle="dropdown">Site Readiness<b class="caret"></b> </a>
 							<ul class="dropdown-menu">
 								<li> <a target = "new" href="https://dashb-ssb.cern.ch/dashboard/request.py/siteview?view=site_readiness#currentView=Site+Readiness&highlight=true">SSB</a></li>
@@ -52,7 +33,7 @@ class bootstrap{
 							</ul>
 						</li>
 						
-						<li class="dropdown ' . $disabled . '"> 
+						<li class="dropdown"> 
 							<a href="#" class="dropdown-toggle" data-toggle="dropdown">Site Support Team<b class="caret"></b> </a>
 							<ul class="dropdown-menu">
 								<li> <a target = "new" href="https://twiki.cern.ch/twiki/bin/view/CMSPublic/CompOpsSiteSupportTeam">Description</a></li>
