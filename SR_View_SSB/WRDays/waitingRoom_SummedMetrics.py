@@ -94,10 +94,11 @@ def main_function(outputfile_txt, submonths):
   print days_per_site
 
   # write to file
-  f1=open('./'+outputfile_txt, 'w+')
+  #f1=open('./'+outputfile_txt, 'w+')
+  f1=open('/afs/cern.ch/user/c/cmst1/scratch0/Waitingroom_Dashboard/Waitingroom_SummedMetric/'+outputfile_txt, 'w')
   f1.write('# This txt goes into SSB and shows the number of days a site has been in the Waiting Room for X months --> See filename)\n')
   f1.write('# Readme:\n# https://raw.githubusercontent.com/CMSCompOps/MonitoringScripts/master/SR_View_SSB/WRDays/Readme.txt\n')
-  now_write=(datetime.utcnow()).strftime("%Y-%m-%d %H:%M:%S")
+  now_write = time.strftime('%Y-%m-%d %H:%M:%S')
   print "Local current time :", now_write
   link="https://dashb-ssb.cern.ch/dashboard/request.py/siteviewhistorywithstatistics?columnid=153#time=2184&start_date=&end_date=&use_downtimes=false&merge_colors=false&sites=all"
   for key, number in days_per_site.iteritems():
@@ -118,4 +119,5 @@ if __name__ == '__main__':
   print '__________________________________________________'
   print '__________________________________________________'
   main_function(outputfile_txt+'3MonthSum.txt',-3)
+
 
