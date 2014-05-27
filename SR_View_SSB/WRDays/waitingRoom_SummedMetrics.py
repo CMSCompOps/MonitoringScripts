@@ -37,42 +37,16 @@ def extractJson(col, startDate, endDate):
 
 #_______________________________________________________________________
 
-# function needed to fetch a list of all sites from siteDB
-def fetch_all_sites(url,api):
-  headers = {"Accept": "application/json"}
-  if 'X509_USER_PROXY' in os.environ:
-      print 'X509_USER_PROXY found'
-      conn = httplib.HTTPSConnection(url, cert_file = os.getenv('X509_USER_PROXY'), key_file = os.getenv('X509_USER_PROXY'))
-  elif 'X509_USER_CERT' in os.environ and 'X509_USER_KEY' in os.environ:
-      print 'X509_USER_CERT and X509_USER_KEY found'
-      conn = httplib.HTTPSConnection(url, cert_file = os.getenv('X509_USER_CERT'), key_file = os.getenv('X509_USER_KEY'))
-  else:
-      print 'You need a valid proxy or cert/key files'
-      sys.exit()
-  print 'conn found in if else structure'
-  r1=conn.request("GET",api, None, headers)
-  print 'r1 passed'
-  r2=conn.getresponse()
-  print 'r2 passed'
-  inputjson=r2.read()
-  print '-------------------------------------------------------------'
-  jn = simplejson.loads(inputjson)
-  conn.close()
-
-  site_T2= []
-  for siteName in jn['result']:
-      if siteName[3][0:2] == 'T2':
-          site_T2.append(siteName[3])
-
-  for i in jn['result']:
-    if i[jn['desc']['columns'].index('type')]=='cms':
-      sitedbname=i[jn['desc']['columns'].index('alias')]
-      if 'T2' in sitedbname:
-        site_T2.append(sitedbname)
+# function needed to fetch a list of all sites from metric 153
+def fetch_all_sites(jsn):
+  site_T2 = []
+  for row in jsn['csvdata']:
+    if row['VOName'][0:2] == 'T2':
+      site_T2.append(row['VOName'])
   return site_T2
 #_______________________________________________________________________
 
-def main_function(outputfile_txt, submonths,allSites):
+def main_function(outputfile_txt, submonths):
   print outputfile_txt
   columnnumber='153'
   enddate=date.today() # query date
@@ -80,11 +54,7 @@ def main_function(outputfile_txt, submonths,allSites):
   start=startdate.strftime("%Y-%m-%d") # as string field to query
   end=enddate.strftime("%Y-%m-%d") # as string field to query
   jsn=extractJson(columnnumber, start, end) # results from dashboard extracts into JSON file
-  filename = 'tmpjson' + start + '.json'
-  f=open(filename,'w')
-  f.write(unicode(simplejson.dumps(jsn, ensure_ascii=False)))
-  f.close()
- 
+  allSites = fetch_all_sites(jsn) 
   # sum @ days 
   days_per_site={}
   for site in allSites: # Read all sites from allsites variable
@@ -123,7 +93,6 @@ def main_function(outputfile_txt, submonths,allSites):
     	print '------------------------------'
   print days_per_site
 
-
   # write to file
   f1=open('./'+outputfile_txt, 'w+')
   f1.write('# This txt goes into SSB and shows the number of days a site has been in the Waiting Room for X months --> See filename)\n')
@@ -142,13 +111,11 @@ def main_function(outputfile_txt, submonths,allSites):
 if __name__ == '__main__':
   outputfile_txt=sys.argv[1]
   print 'starting to fetch all sites from siteDB'
-  #allSitesList = fetch_all_sites('cmsweb.cern.ch','/sitedb/data/prod/site-names')
-  allSitesList = fetch_all_sites('cmsweb.cern.ch','/sitedb/data/prod/federations-sites')
-  main_function(outputfile_txt+'1MonthSum.txt',-1,allSitesList)
+  main_function(outputfile_txt+'1MonthSum.txt',-1)
   print '__________________________________________________'
   print '__________________________________________________'
-  main_function(outputfile_txt+'2MonthSum.txt',-2,allSitesList)
+  main_function(outputfile_txt+'2MonthSum.txt',-2)
   print '__________________________________________________'
   print '__________________________________________________'
-  main_function(outputfile_txt+'3MonthSum.txt',-3,allSitesList)
+  main_function(outputfile_txt+'3MonthSum.txt',-3)
 
