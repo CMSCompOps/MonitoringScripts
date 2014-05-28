@@ -12,34 +12,22 @@ import pickle
 #extract nonwaitingroommsites from ActiveSites script output
 url2 = "https://cmsdoc.cern.ch/cms/LCG/SiteComm/T2WaitingList/WasCommissionedT2ForSiteMonitor.txt"
 
-# function needed to fetch a list of all sites from siteDB
-def fetch_all_sites(url,api):
-  # example in
-  # https://github.com/gutsche/old-scripts/blob/master/SiteDB/extract_site_executive_mail_addresses.py
-  # https://github.com/dballesteros7/dev-scripts/blob/master/src/reqmgr/input-blocks.py
-  # https://twiki.cern.ch/twiki/bin/view/CMSPublic/CompOpsWorkflowOperationsWMAgentScripts#Resubmit
+def extractJson():
+  url = "http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153&time=24&dateFrom=&dateTo=&site=T2_AT_Vienna&sites=all&clouds=undefined&batch=1"
+  print "Getting the url %s" % url
+  request = urllib2.Request(url, headers = {"Accept":"application/json"})
+  response = urllib2.urlopen(request)
+  data = response.read()
+  rows = simplejson.loads(data)
+  return rows
 
-  headers = {"Accept": "application/json"}
-  if 'X509_USER_PROXY' in os.environ:
-    print 'X509_USER_PROXY found'
-    conn = httplib.HTTPSConnection(url, cert_file = os.getenv('X509_USER_PROXY'), key_file = os.getenv('X509_USER_PROXY'))
-  elif 'X509_USER_CERT' in os.environ and 'X509_USER_KEY' in os.environ:
-    print 'X509_USER_CERT and X509_USER_KEY found'
-    conn = httplib.HTTPSConnection(url, cert_file = os.getenv('X509_USER_CERT'), key_file = os.getenv('X509_USER_KEY'))
-  elif os.path.isfile('/data/certs/servicecert.pem') and os.path.isfile('/data/certs/servicekey.pem'):
-    conn = httplib.HTTPSConnection(url, cert_file = '/data/certs/servicecert.pem', key_file = '/data/certs/servicekey.pem')
-  else:
-    print 'You need a valid proxy or cert/key files'
-    sys.exit()
-  print 'conn found in if else structure'
-  r1=conn.request("GET",api, None, headers)
-  print 'r1 passed'
-  r2=conn.getresponse()
-  print 'r1 passed'
-  inputjson=r2.read()
-  result = simplejson.loads(inputjson)
-  conn.close()
-  return result
+# function needed to fetch a list of all sites from metric
+def fetch_all_sites(jsn):
+  site_T2 = []
+  for row in jsn['csvdata']:
+    if row['VOName'][0:2] == 'T2':
+      site_T2.append(row['VOName'])
+  return site_T2
 
 
 def getNonWaitingRoomSites(url):
@@ -53,8 +41,6 @@ def getNonWaitingRoomSites(url):
       if not row.strip().startswith("#"):
         split_row = row.split('\t')
         if len(split_row)>1:
-          #print split_row
-          #print split_row[1] 
           tmp_sites.append(split_row[1]) 
     return tmp_sites
 
@@ -67,23 +53,8 @@ def main_function(outputfile_txt):
   print '------------------------------------------'
 
   # all sites
-  print 'starting to fetch all sites from siteDB'
-  jn = fetch_all_sites('cmsweb.cern.ch','/sitedb/data/prod/site-names')
-
-  #json form:
-  #{"desc": {"columns": ["type", "site_name", "alias"]}, 
-  # "result": [
-  #             ["cms", "ASGC", "T1_TW_ASGC"],
-  #             ["cms", "BY-NCPHEP", "T3_BY_NCPHEP"]
-  #            ...
-
- #__________________siteDB v2_________________________
- 
-  site_T2 = []
-  for row in jn['result']:
-    if (row[0] == 'cms') and (row[2][0:2] == 'T2'):
-      site_T2.append(row[2])
- #____________________________________________________ 
+  print 'starting to fetch all sites from metric'
+  site_T2= fetch_all_sites(extractJson())
   print '--------------------------------------------------------'
   print 'Sites in waiting room:'
   waitingRoom_sites = [ site for site in site_T2 if not site in nonWaitingRoom_Sites]
@@ -91,6 +62,7 @@ def main_function(outputfile_txt):
   #write to file for SSB
   f1=open('./'+outputfile_txt, 'w+')
   now_write=(datetime.utcnow()).strftime("%Y-%m-%d %H:%M:%S")
+
 
   # write file that can be loaded in SSB
   f1.write('# This txt goes into SSB and marks sites red when the site is in the waiting room:\n')
