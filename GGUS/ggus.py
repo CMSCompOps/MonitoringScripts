@@ -99,7 +99,7 @@ if __name__ == '__main__':
   #____________________________________________________________________________________________________________
   saveTime = time.strftime('%Y-%m-%d %H:%M:%S')
   fileOp   = open("/afs/cern.ch/user/c/cmst1/scratch0/ggus/ggusticketmetrics.txt" , "w")
-  fileMeet = open("/afs/cern.ch/user/c/cmst1/scratch0/ggus/ticketmeeting.txt" , "w")
+  fileMeet = open("/afs/cern.ch/user/c/cmst1/scratch0/ggus/ggusticketmeeting.txt" , "w")
   fileMeet.write("| *Order* | *SiteName* | *Ticket Count* | *Tickets* |" + "\n")
   lcgNames =  convertLCGtoCMS(json, '', 'cms')
   order    = 0
@@ -115,7 +115,7 @@ if __name__ == '__main__':
     else:
       cmsSiteName = lcgNames[lcgName]
       ticketCount = 0
-    url = "https://ggus.eu/?mode=ticket_search&show_columns_check[]=TICKET_TYPE&show_columns_check[]=AFFECTED_VO&show_columns_check[]=AFFECTED_SITE&show_columns_check[]=PRIORITY&show_columns_check[]=RESPONSIBLE_UNIT&show_columns_check[]=STATUS&show_columns_check[]=DATE_OF_CHANGE&show_columns_check[]=SHORT_DESCRIPTION&ticket_id=&supportunit=&su_hierarchy=0&vo=cms&cms_su=&user=&keyword=&involvedsupporter=&assignedto=&affectedsite=" + lcgName + "&specattrib=none&status=open&priority=&typeofproblem=&ticket_category=all&mouarea=&date_type=creation+date&tf_radio=1&timeframe=any&from_date=&to_date=&untouched_date=&orderticketsby=REQUEST_ID&orderhow=desc&search_submit=GO!"
+    url = "http://para.ms/GGUS/" + lcgName 
     if ticketCount > 0 : color = "red"
     i = i + 1
      #________________________To write sites for metricg______________________________    
