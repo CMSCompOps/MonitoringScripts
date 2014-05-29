@@ -1,24 +1,15 @@
 #!/bin/bash
-# Sten Luyckx
 # Script in acrontab t1
 # 5,20,35,50 * * * * lxplus ssh vocms202 /afs/cern.ch/user/c/cmst1/scratch0/Waitingroom_Dashboard/Waitingroom_SummedMetric/run_WaitingRoom_Sites.sh &> /dev/null
 # Script for Dashboard metric 154, 155, 156
 # outputfile WaitingRoom_1MonthSum.txt
 # outputfile WaitingRoom_2MonthSum.txt
 # outputfile WaitingRoom_3MonthSum.txt
-# outputdir /afs/cern.ch/user/c/cmst1/www/WFMon/
-# usercert and userkey files must be in folder "data"
 # this script read all of data from http://dashb-ssb.cern.ch/dashboard/ according to column, dateFrom, dateTo, sites and it calculates How many days Sites are in WaitingRoom as last 1 month, last 2 months, last 3 months. 
 clear
-cd /afs/cern.ch/user/c/cmst1/scratch0/Waitingroom_Dashboard/Waitingroom_SummedMetric/
-
-echo "exporting KEY and CERT"
-
 #fixing access
-export X509_USER_CERT=/data/certs/servicecert.pem
-export X509_USER_KEY=/data/certs/servicekey.pem
-
-
+#source /afs/cern.ch/project/gd/LCG-share/new_3.2/etc/profile.d/grid_env.sh
+#voms-proxy-init -voms cms
 # Email if things are running slowly
 
 if [ -f scriptRunning.run ];

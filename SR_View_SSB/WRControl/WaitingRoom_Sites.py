@@ -12,33 +12,23 @@ import pickle
 #extract nonwaitingroommsites from ActiveSites script output
 url2 = "https://cmsdoc.cern.ch/cms/LCG/SiteComm/T2WaitingList/WasCommissionedT2ForSiteMonitor.txt"
 
-# function needed to fetch a list of all sites from siteDB
-def fetch_all_sites(url,api):
-  # examples in:
-  # https://github.com/gutsche/old-scripts/blob/master/SiteDB/extract_site_executive_mail_addresses.py
-  # https://github.com/dballesteros7/dev-scripts/blob/master/src/reqmgr/input-blocks.py
-  # https://twiki.cern.ch/twiki/bin/view/CMSPublic/CompOpsWorkflowOperationsWMAgentScripts#Resubmit
-  headers = {"Accept": "application/json"}
-  if 'X509_USER_PROXY' in os.environ:
-      print 'X509_USER_PROXY found'
-      conn = httplib.HTTPSConnection(url, cert_file = os.getenv('X509_USER_PROXY'), key_file = os.getenv('X509_USER_PROXY'))
-  elif 'X509_USER_CERT' in os.environ and 'X509_USER_KEY' in os.environ:
-      print 'X509_USER_CERT and X509_USER_KEY found'
-      conn = httplib.HTTPSConnection(url, cert_file = os.getenv('X509_USER_CERT'), key_file = os.getenv('X509_USER_KEY'))
-  else:
-      print 'You need a valid proxy or cert/key files'
-      sys.exit()
-  print 'conn found in if else structure'
-  r1=conn.request("GET",api, None, headers)
-  print 'r1 passed'
-  r2=conn.getresponse()
-  print 'r2 passed'
-  inputjson=r2.read()
-  print '-------------------------------------------------------------'
-  #print inputjson
-  result = simplejson.loads(inputjson)
-  conn.close()
-  return result
+def extractJson():
+  url = "http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153&time=24&dateFrom=&dateTo=&site=T2_AT_Vienna&sites=all&clouds=undefined&batch=1"
+  print "Getting the url %s" % url
+  request = urllib2.Request(url, headers = {"Accept":"application/json"})
+  response = urllib2.urlopen(request)
+  data = response.read()
+  rows = simplejson.loads(data)
+  return rows
+
+# function needed to fetch a list of all sites from metric
+def fetch_all_sites(jsn):
+  site_T2 = []
+  for row in jsn['csvdata']:
+    if row['VOName'][0:2] == 'T2':
+      site_T2.append(row['VOName'])
+  return site_T2
+
 
 def getNonWaitingRoomSites(url):
     tmp_sites = []
@@ -51,8 +41,6 @@ def getNonWaitingRoomSites(url):
       if not row.strip().startswith("#"):
         split_row = row.split('\t')
         if len(split_row)>1:
-          #print split_row
-          #print split_row[1] 
           tmp_sites.append(split_row[1]) 
     return tmp_sites
 
@@ -65,32 +53,8 @@ def main_function(outputfile_txt):
   print '------------------------------------------'
 
   # all sites
-  print 'starting to fetch all sites from siteDB'
-  jn = fetch_all_sites('cmsweb.cern.ch','/sitedb/data/prod/site-names') 
-  #json form:
-  #{"desc": {"columns": ["type", "site_name", "alias"]}, 
-  # "result": [
-  #             ["cms", "ASGC", "T1_TW_ASGC"],
-  #             ["cms", "BY-NCPHEP", "T3_BY_NCPHEP"]
-  #            ...
-  
-  # match the information
-  #print jn['result']
-  #site_T1= []
-  site_T2= []
-  #site_T3= []
-  #print 'printing i'
-  for i in jn['result']:
-    if i[jn['desc']['columns'].index('type')]=='cms':
-      sitedbname=i[jn['desc']['columns'].index('alias')]
-      #print sitedbname
-      #if 'T1' in sitedbname: 
-      #  site_T1.append(sitedbname)
-      if 'T2' in sitedbname:
-        site_T2.append(sitedbname)
-      #if 'T3' in sitedbname: 
-      #   site_T3.append(sitedbname)
-  #print site_T2
+  print 'starting to fetch all sites from metric'
+  site_T2= fetch_all_sites(extractJson())
   print '--------------------------------------------------------'
   print 'Sites in waiting room:'
   waitingRoom_sites = [ site for site in site_T2 if not site in nonWaitingRoom_Sites]
