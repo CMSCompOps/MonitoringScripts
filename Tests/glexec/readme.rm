@@ -1,0 +1,6 @@
+# Author : Gokhan Kandemir
+# E-mail : gokhan.kandemir@cern.ch
+# Script Responsible : Site Support Team
+# Description : The script is used for finding glexec test problems for each site and their CE. In order to do this script queries [1] and calculates data.
+
+[1] http://grid-monitoring.cern.ch/myegi/sam-pi latest_metric_results_in_profile/?vo_name=cms&profile_name=CMS_CRITICAL_FULL&service_hostname=&service_flavour=CREAM-CE
