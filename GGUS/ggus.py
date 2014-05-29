@@ -83,7 +83,7 @@ def getTicketNumbers(dom, lcgName):
 
 if __name__ == '__main__':
   json = getJSONfromSiteDB()
-  text = ReadXML('/afs/cern.ch/user/c/cmst1/scratch0/ggus/tickets.xml')
+  text = ReadXML('/afs/cern.ch/user/c/cmst1/scratch0/MonitoringScripts/GGUS/tickets.xml')
   dom  = parseString(text)
   tag  = dom.getElementsByTagName('tickets')[0].childNodes
   count = len(tag)
@@ -98,8 +98,8 @@ if __name__ == '__main__':
     sites[siteName] += 1
   #____________________________________________________________________________________________________________
   saveTime = time.strftime('%Y-%m-%d %H:%M:%S')
-  fileOp   = open("/afs/cern.ch/user/c/cmst1/scratch0/ggus/ggusticketmetrics.txt" , "w")
-  fileMeet = open("/afs/cern.ch/user/c/cmst1/scratch0/ggus/ggusticketmeeting.txt" , "w")
+  fileOp   = open("/afs/cern.ch/user/c/cmst1/scratch0/MonitoringScripts/GGUS/ggusticketmetrics.txt" , "w")
+  fileMeet = open("/afs/cern.ch/user/c/cmst1/scratch0/MonitoringScripts/GGUS/ggusticketmeeting.txt" , "w")
   fileMeet.write("| *Order* | *SiteName* | *Ticket Count* | *Tickets* |" + "\n")
   lcgNames =  convertLCGtoCMS(json, '', 'cms')
   order    = 0
