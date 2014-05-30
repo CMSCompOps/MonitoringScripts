@@ -41,12 +41,12 @@ fi
 #Run the script
 txt="WaitingRoom_"  #postfix in code itself
 echo "python waitingRoom_SummedMetrics.py $txt1"
-python waitingRoom_SummedMetrics.py $txt &> sites_WaitingRoom_SummedMetrics.log
-cat sites_WaitingRoom_SummedMetrics.log
+python /afs/cern.ch/user/c/cmst1/scratch0/Waitingroom_Dashboard/Waitingroom_SummedMetric/waitingRoom_SummedMetrics.py $txt &> /afs/cern.ch/user/c/cmst1/scratch0/Waitingroom_Dashboard/Waitingroom_SummedMetric/sites_WaitingRoom_SummedMetrics.log
+#cat sites_WaitingRoom_SummedMetrics.log
 
 problem="$?"
 echo "problem: $problem"
 
-cp $txt*.txt /afs/cern.ch/user/c/cmst1/www/WFMon/
+cp "/afs/cern.ch/user/c/cmst1/scratch0/Waitingroom_Dashboard/Waitingroom_SummedMetric/"$txt*.txt /afs/cern.ch/user/c/cmst1/www/WFMon/
 echo "WaitingRoom_XMonthSum.txt files copied to: /afs/cern.ch/user/c/cmst1/www/WFMon/ "
 rm scriptRunning.run
