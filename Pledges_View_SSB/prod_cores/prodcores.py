@@ -28,7 +28,7 @@ def calculateProdCore(json):
 		prodCore = 0 if value is None else value
 		if (tierName == 'T1'):
 			prodCore = int(int(prodCore) * 0.9)
-		elif (tierName == 'T3' or siteName == 'T2_CH_CERN_AI' or siteName == 'T2_CH_CERN_HLT'):
+		elif (tierName == 'T3' or siteName == 'T2_CH_CERN_AI' or siteName == 'T2_CH_CERN_HLT' or siteName == 'T2_CH_CERN_T0'):
 			prodCore = int(int(prodCore) * 1)
 		elif (tierName == 'T2'):
 			prodCore = int(int(prodCore) * 0.5)
