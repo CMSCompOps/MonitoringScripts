@@ -13,7 +13,7 @@ import pickle
 url2 = "https://cmsdoc.cern.ch/cms/LCG/SiteComm/T2WaitingList/WasCommissionedT2ForSiteMonitor.txt"
 
 def extractJson():
-  url = "http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153&time=24&dateFrom=&dateTo=&site=T2_AT_Vienna&sites=all&clouds=undefined&batch=1"
+  url = "http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=45&time=24&dateFrom=&dateTo=&site=T1_CH_CERN&sites=all&clouds=undefined&batch=1"
   print "Getting the url %s" % url
   request = urllib2.Request(url, headers = {"Accept":"application/json"})
   response = urllib2.urlopen(request)
