@@ -2,22 +2,11 @@
 
 use LWP::Simple;
 use Time::Local;
-use List::Util qw(max);
 
 # Commissioning criteria
-$thrsh = 50;   # Minimum quality
-$t1ft0 = 1;    # Minimum number of links from T0 for T1
-$t1ft1 = 2;    # Minimum number of links from T1 for T1
-$t1tt1 = 2;    # Minimum number of links to T1 for T1
-$t1tt2 = 10;   # Minimum number of links to T2 for T1
-$t2ft1 = 2;    # Minimum number of links from T1 for T2
-$t2tt1 = 1;    # Minimum number of links to T1 for T2
-
-$debug = 1;
+$thrsh = 50;   # Minimum success rate
 
 # Variable initialization
-$base_url_debug = "https://cmsweb.cern.ch/phedex/debug/Reports::DailyReport?reportfile=__date__.txt";
-$base_url_prod = "https://cmsweb.cern.ch/phedex/prod/Reports::DailyReport?reportfile=__date__.txt";
 %lup = %hup = %outcross = %incross = %ldown = %hdown = ();
 %t_lup = %t_hup = %t_outcross = %t_incross = %t_ldown = %t_hdown = ();
 
@@ -35,26 +24,15 @@ $date = $ARGV[0] if ( $ARGV[0] );
 # Time interval for PhEDEx plots
 ($start, $end) = &dategm($date);
 
-# HTML report locations
-$dir = '/afs/cern.ch/user/a/asciaba/www/links';
-$file = "link_qual_$date.html";
-$url_report = "http://cern.ch/asciaba/links/$file";
-
 # SSB input file
 $ssbdir = "/afs/cern.ch/cms/LCG/SiteComm";
-$ssbpath = "$ssbdir/links_quality.txt";
+#$ssbdir = "/tmp"; # remove after debugging
 
-# URL for PhEDEx reports
-$url_prod = $base_url_prod;
-$url_prod =~ s/__date__/$date/;
-$url_debug = $base_url_debug;
-$url_debug =~ s/__date__/$date/;
+$url_prod = &datasvc_url('prod', $start, $end);
+$url_debug = &datasvc_url('debug', $start, $end);
 
-$url_prod2 = &datasvc_url('prod', $start, $end);
-$url_debug2 = &datasvc_url('debug', $start, $end);
-
-%quality_debug = &get_quality($url_debug2);
-%quality_prod = &get_quality($url_prod2);
+%quality_debug = &get_quality($url_debug);
+%quality_prod = &get_quality($url_prod);
 %quality = &quality_combine(\%quality_debug, \%quality_prod);
 
 foreach ( keys %quality ) {
@@ -66,9 +44,9 @@ foreach ( keys %quality ) {
 $totlinks = 0;
 $goodlinks = 0;
 foreach my $site ( keys %quality ) {
-# Treat T0_CH_CERN as a T1
     my $tier = substr($site, 1, 1);
-    $tier = 1 if ($tier == 0);
+    my $stier = $tier;
+    $stier = 1 if ($stier == 0); # Treat T0_CH_CERN as a T1
     foreach my $dest ( keys %{$quality{$site}} ) {
 	my $dtier = substr($dest, 1, 1);
 	$dtier = 1 if ($dtier == 0);
@@ -84,82 +62,130 @@ foreach my $site ( keys %quality ) {
 	$goodlinks++ if ( $q >= $thrsh );
 
 # Uplinks
-	if ( $tier > $dtier ) {
+	if ( $stier > $dtier ) {
 	    $hup{$dest}++ if ( $q >= $thrsh );
 	    $lup{$site}++ if ( $q >= $thrsh );
 	    $t_hup{$dest}++;
 	    $t_lup{$site}++;
 
 # Links between Tier-1's
-	} elsif ( $tier == $dtier ) {
+	} elsif ( $stier == $dtier ) {
 	    $outcross{$site} += 1 if ( $q >= $thrsh );
 	    $incross{$dest} += 1 if ( $q >= $thrsh );
 	    $t_outcross{$site}++;
 	    $t_incross{$dest}++;
+	}
 
 # Downlinks
-	} elsif ( $tier < $dtier ) {
+	if ( $tier < $dtier ) {
 	    $ldown{$dest}++ if ( $q >= $thrsh );
 	    $hdown{$site}++ if ( $q >= $thrsh );
 	    $t_ldown{$dest}++;
 	    $t_hdown{$site}++;
-#	    if ( $tier == 0 ) {
-#		$outcross{'T1_CH_CERN_Buffer'}++ if ( $q >= $thrsh );
-#		$t_outcross{'T1_CH_CERN_Buffer'}++;
-#	    }
 	}
     }
 }
 
 print "Tot links: $totlinks  Good links: $goodlinks\n";
 
-# Correction for CERN (to express that link from CERN to CERN is good by definition)
-#$ldown{'T1_CH_CERN_Buffer'}++;
-#$t_ldown{'T1_CH_CERN_Buffer'}++;
-
-# Generate HTML report
-if ( $debug ) {
-    open(HTML, ">$dir/$file") or die "Cannot write HTML report\n";
-    print HTML &header;
-    foreach ( sort keys %quality ) {
-	my $tier = substr($_, 1, 1);
-	if ( $tier == 0 or $tier == 1 or $tier == 2) {
-	    print HTML &site_report($_);
-	}
+# Generate combined rows for Tier-1 sites
+@tsites = ();
+foreach my $site ( sort keys %quality ) {
+    my $t = substr($site, 1, 1);
+    $t = 1 if ($t == 0);  # Treat T0_CH_CERN as a T1
+    next if ( $t != 1 );
+    my $tsite = $site;
+    $tsite =~ s/_Export//;
+    $tsite =~ s/_Buffer//;
+    $tsite =~ s/_Disk//;
+    push @tsites, $tsite unless grep(/$tsite/, @tsites);
+    if (exists $outcross{$tsite}) {
+	$outcross{$tsite} += $outcross{$site};
+    } else {
+	$outcross{$tsite} = $outcross{$site}; 
     }
-    print HTML &footer;
-    close HTML;
-    unlink "$dir/link_qual_test_latest.html";
-    symlink "$dir/$file", "$dir/link_qual_test_latest.html";
+    if (exists $incross{$tsite}) {
+	$incross{$tsite} += $incross{$site};
+    } else {
+	$incross{$tsite} = $incross{$site}; 
+    }
+    if (exists $hup{$tsite}) {
+	$hup{$tsite} += $hup{$site};
+    } else {
+	$hup{$tsite} = $hup{$site}; 
+    }
+    if (exists $hdown{$tsite}) {
+	$hdown{$tsite} += $hdown{$site};
+    } else {
+	$hdown{$tsite} = $hdown{$site}; 
+    }
+    if (exists $ldown{$tsite}) {
+	$ldown{$tsite} += $ldown{$site};
+    } else {
+	$ldown{$tsite} = $ldown{$site}; 
+    }
+    if (exists $t_outcross{$tsite}) {
+	$t_outcross{$tsite} += $t_outcross{$site};
+    } else {
+	$t_outcross{$tsite} = $t_outcross{$site}; 
+    }
+    if (exists $t_incross{$tsite}) {
+	$t_incross{$tsite} += $t_incross{$site};
+    } else {
+	$t_incross{$tsite} = $t_incross{$site}; 
+    }
+    if (exists $t_hup{$tsite}) {
+	$t_hup{$tsite} += $t_hup{$site};
+    } else {
+	$t_hup{$tsite} = $t_hup{$site}; 
+    }
+    if (exists $t_hdown{$tsite}) {
+	$t_hdown{$tsite} += $t_hdown{$site};
+    } else {
+	$t_hdown{$tsite} = $t_hdown{$site}; 
+    }
+    if (exists $t_ldown{$tsite}) {
+	$t_ldown{$tsite} += $t_ldown{$site};
+    } else {
+	$t_ldown{$tsite} = $t_ldown{$site}; 
+    }
 }
 
 # Generate input files for SSB
-open(SSB, ">$ssbpath") or die "Cannot write SSB input file\n";
-foreach my $site ( sort keys %quality ) {
-    next if ( $site =~ /^T0/ );
-    my $timestamp = &timestamp;
-    my $status = 'no';
-    my $color = 'red';
-    my @status = &site_status($site);
-    if ( $status[0] ) {
-	$status = 'yes';
-	$color = 'green';
-    }
-    $site =~ s/_Export//;
-    $site =~ s/_Buffer//;
-    $site =~ s/_Disk//;
-    printf SSB "%s\t%s\t%s\t%s\t%s\n", $timestamp, $site, $status, $color,
-    $url_report;
-}
-close SSB;
-
+&generate_ssbfile("$ssbdir/links_quality_t1ft0.txt", 1, 1);
 &generate_ssbfile("$ssbdir/links_quality_t1ft1.txt", 1, 3);
 &generate_ssbfile("$ssbdir/links_quality_t1tt1.txt", 1, 2);
 &generate_ssbfile("$ssbdir/links_quality_t1ft2.txt", 1, 5);
 &generate_ssbfile("$ssbdir/links_quality_t1tt2.txt", 1, 4);
 &generate_ssbfile("$ssbdir/links_quality_t2ft1.txt", 2, 3);
 &generate_ssbfile("$ssbdir/links_quality_t2tt1.txt", 2, 2);
+&generate_combined_metric("$ssbdir/links_quality.txt");
 
+sub generate_combined_metric {
+    my $filename = shift;
+    open(SSB, ">$filename") or die "Cannot write SSB input file $filename\n";
+    my @sites = sort keys %quality;
+    push @sites, @tsites;
+    foreach my $site ( sort @sites ) {
+	my $t = substr($site, 1, 1);
+	$t = 1 if ($t == 0);  # Treat T0_CH_CERN as a T1
+	next if ( $site =~ /Buffer/ );
+	next if ( $site =~ /Disk/ );
+	my $timestamp = &timestamp;
+	my $url_report = 'http://dashb-ssb.cern.ch/dashboard/request.py/siteview?expand=86#currentView=default&highlight=true';
+	my $color = 'red';
+	my $value = 'ERROR';
+	my @status = &site_status($site);
+	if ( $status[0] ) {
+	    $color = 'green';
+	    $value = 'OK';
+	}
+	printf SSB "%s\t%s\t%s\t%s\t%s\n", $timestamp, $site, $value, $color,
+	$url_report;
+    }
+	close SSB;
+}
+    
 sub generate_ssbfile {
     my $filename = shift;
     my $tier = shift;
@@ -171,10 +197,11 @@ sub generate_ssbfile {
 	@map = ('', 'lup', 'ldown');
     }
     open(SSBL, ">$filename") or die "Cannot write SSB input file $filename\n";
-    foreach my $site ( sort keys %quality ) {
+    my @sites = sort keys %quality;
+    push @sites, @tsites;
+    foreach my $site ( sort @sites ) {
 	my $t = substr($site, 1, 1);
-	$t = 1 if ($t == 0);  # Treat T0_CH_CERN as a T1
-#	next if ( $site =~ /^T0/ );
+	$t = 1 if ($t == 0); # Treat T0_CH_CERN as a T1
 	next if ( $t != $tier );
 	my $timestamp = &timestamp;
 	my $goodlinks = ${$map[$index-1]}{$site};
@@ -185,9 +212,6 @@ sub generate_ssbfile {
 	if ( $status[$index] ) {
 	    $color = 'green';
 	}
-	$site =~ s/_Export//;
-	$site =~ s/_Buffer//;
-	$site =~ s/_Disk//;
 	printf SSBL "%s\t%s\t%s\t%s\t%s\n", $timestamp, $site,
 	"$goodlinks/$totlinks", $color, $url_report;
     }
@@ -201,16 +225,16 @@ sub site_status {
     my $tier = substr($site, 1, 1);
     $tier = 1 if ($tier == 0);  # Apply T1 rules to T0_CH_CERN
     if ( $tier == 1 ) {
-	$status[1] = ($ldown{$site} >= max(int(0.5*$t_ldown{$site}), 1));
-	$status[3] = ($incross{$site} >= max(int(0.5*$t_incross{$site}), 1));
-	$status[2] = ($outcross{$site} >= max(int(0.5*$t_outcross{$site}), 1));
-	$status[5] = ($hup{$site} >= max(int(0.5*$t_hup{$site}), 1));
-	$status[4] = ($hdown{$site} >= max(int(0.5*$t_hdown{$site}), 1));
+	$status[1] = ($ldown{$site} >= 0.5*$t_ldown{$site});
+	$status[2] = ($outcross{$site} >= 0.5*$t_outcross{$site});
+	$status[3] = ($incross{$site} >= 0.5*$t_incross{$site});
+	$status[4] = ($hdown{$site} >= 0.5*$t_hdown{$site});
+	$status[5] = ($hup{$site} >= 0.5*$t_hup{$site});
 	$status[0] = $status[1] && $status[2] && $status[3] &&
 	    $status[4] && $status[5];
     } elsif ( $tier == 2 ) {
-	$status[3] = ($ldown{$site} >= max(int(0.5*$t_ldown{$site}), 1));
-	$status[2] = ($lup{$site} >= max(int(0.5*$t_lup{$site}), 1));
+	$status[2] = ($lup{$site} >= 0.5*$t_lup{$site});
+	$status[3] = ($ldown{$site} >= 0.5*$t_ldown{$site});
 	$status[0] = $status[2] && $status[3];
     }
     return @status;
@@ -221,48 +245,6 @@ sub color {
     my $c = 'red';
     $c = 'white' if ( $s );
     return $c;
-}
-
-sub site_report {
-    my $site = $_;
-    my $output = "";
-    my $tier = substr($site, 1, 1);
-    $tier = 1 if ($tier == 0);  # Treat T0_CH_CERN as a T1
-    my @status = &site_status($site);
-    if ( $tier == 1 ) {
-	$output =
-	    "<tr><td bgcolor=" . &color($status[0]) . ">$site</td>" .
-	    "<td align=\"center\" bgcolor=" . &color($status[1]) .
-	    "><a href=\"".
-	    &phedex_link($site, 1) . "\">$ldown{$site}</a></td>" .
-	    "<td align=\"center\" bgcolor=" . &color($status[3]) .
-	    "><a href=\"".
-	    &phedex_link($site, 3) . "\">$incross{$site}</a></td>" .
-	    "<td align=\"center\" bgcolor=" . &color($status[2]) .
-	    "><a href=\"".
-	    &phedex_link($site, 2) . "\">$outcross{$site}</a></td>" .
-	    "<td align=\"center\" bgcolor=" . &color($status[5]) .
-	    "><a href=\"".
-	    &phedex_link($site, 5) . "\">$hup{$site}</a></td>" .
-	    "<td align=\"center\" bgcolor=" . &color($status[4]) .
-	    "><a href=\"".
-	    &phedex_link($site, 4) . "\">$hdown{$site}</a></td>" .
-	    "</tr>\n";
-    } elsif ( $tier == 2 ) {
-	$output =
-	    "<tr><td bgcolor=" . &color($status[0]) . ">$site</td>" .
-	    "<td>&nbsp;</td>" .
-	    "<td align=\"center\" bgcolor=" . &color($status[3]) .
-	    "><a href=\"".
-	    &phedex_link($site, 3) . "\">$ldown{$site}</a></td>" .
-	    "<td align=\"center\" bgcolor=" . &color($status[2]) .
-	    "><a href=\"".
-	    &phedex_link($site, 2) . "\">$lup{$site}</a></td>" .
-	    "<td>&nbsp;</td>" .
-	    "<td>&nbsp;</td>" .
-	    "</tr>\n";
-    }	
-    return $output
 }
 
 sub datasvc_url {
@@ -287,7 +269,6 @@ sub get_quality {
 	my $dest = $linkdata{'TO'};
 	next if ( $source =~ /MSS/ || $dest =~ /MSS/ );
 	next if ( $source =~ /^T3/ || $dest =~ /^T3/ );
-	next if ( $source =~ /Disk/ || $dest =~ /Disk/ ); #TODO: revisit in future
 	my $transfer = ${$linkdata{'TRANSFER'}}[0];
 	my %transferdata = %$transfer;
 	my $done = $transferdata{'DONE_FILES'};
@@ -339,19 +320,18 @@ sub phedex_link {
     my $type = shift;
     my $base_url = "https://cmsweb.cern.ch/phedex/graphs/quality_all?link=link&no_mss=true&to_node=__dest__&from_node=__src__&starttime=${start}&span=3600&endtime=${end}";
     my $tier = substr($site, 1, 1);
-    $tier = 1 if ($tier == 0);  # Treat T0_CH_CERN as a T1
+    $tier = 1 if ($tier == 0); # Treat T0_CH_CERN as a T1
     my $url = $base_url;
     if ( $tier == 1 ) {
 	if ( $type == 1 ) {              # CERN -> site
-	    $url =~ s/__src__/CERN_Export/;
+	    $url =~ s/__src__/T0_CH_CERN/;
 	    $url =~ s/__dest__/$site/;
 	} elsif ( $type == 2 ) {         # site -> T1
-#	    $site = 'T[01]_CH_CERN' if ( $site =~ /CERN/ );
 	    $url =~ s/__src__/$site/;
-	    $url =~ s/__dest__/T[01]/;  #TODO: match also T0
+	    $url =~ s/__dest__/T[01]/;
 	    
 	} elsif ( $type == 3 ) {         # T1 -> site
-	    $url =~ s/__src__/T[01]/;  #TODO: match also T0
+	    $url =~ s/__src__/T[01]/;
 	    $url =~ s/__dest__/$site/;
 	} elsif ( $type == 4 ) {         # site -> T2
 	    $url =~ s/__src__/$site/;
@@ -363,55 +343,13 @@ sub phedex_link {
     } elsif ( $tier == 2 ) {
 	if ( $type == 2 ) {              # site -> T1
 	    $url =~ s/__src__/$site/;
-	    $url =~ s/__dest__/T[01]/;  #TODO: match also T0
+	    $url =~ s/__dest__/T[01]/;
 	} elsif ( $type == 3 ) {         # T1 -> site
-	    $url =~ s/__src__/T[01]/;  #TODO: match also T0
+	    $url =~ s/__src__/T[01]/;
 	    $url =~ s/__dest__/$site/;
 	}
     }
     return $url;
-}
-
-sub header {
-    my $string = 
-	"<html><body>\n" .
-	"<title>Site link quality report $date</title>\n" .
-	"<h1>Number of good links per site</h1>\n" .
-	"<p>Links are classified as follows:</p>\n" .
-	"<table border=\"1\">\n" .
-	"<tr><td>link from T0</td><td>the downlink from CERN</td></tr>\n" .
-	"<tr><td>links from T1</td><td>for Tier-1 sites, the incoming links from other Tier-1 sites; for Tier-2 sites, the downlinks from Tier-1 sites</td></tr>\n" .
-	"<tr><td>links to T1</td><td>for Tier-1 sites, the outgoing links to other Tier-1 sites; for Tier-2 sites, the uplinks to Tier-1 sites</td><tr>\n" .
-	"<tr><td>links to T2</td><td>for Tier-1 sites, the downlinks to Tier-2 sites</td><tr>\n" .
-	"</table>\n" .
-	"<p>Links are counted only if they have a quality better than <b>$thrsh%</b> in the previous day. These are the minimum numbers of links per type:</p>\n" .
-	"<table border=\"1\">\n" .
-	"<tr><th>&nbsp;</th><th>Tier-1</th><th>Tier-2</th></tr>\n" .
-	"<tr><td>link from T0</td><td>$t1ft0</td><td>&nbsp;</td></tr>\n" .
-	"<tr><td>links from T1</td><td>$t1ft1</td><td>$t2ft1</td></tr>\n" .
-	"<tr><td>links to T1</td><td>$t1tt1</td><td>$t2tt1</td></tr>\n" .
-	"<tr><td>links to T2</td><td>$t1tt2</td><td>&nbsp;</td></tr>\n" .
-	"</table>\n" .
-	"<h2>Site status vs. good links</h2>\n" .
-	"<p>PhEDEx <a href=\"$url_debug\">debug report</a>.</p>\n" .
-	"<p>PhEDEx <a href=\"$url_prod\">production report</a>./p>\n" .
-	"<table border=\"1\">\n" .
-	"<colgroup span=\"6\">\n" .
-	"<col></col>\n" .
-	"<col width=\"80\"></col>\n" .
-	"<col width=\"80\"></col>\n" .
-	"<col width=\"80\"></col>\n" .
-	"<col width=\"80\"></col>\n" .
-	"<col width=\"80\"></col>\n" .
-	"<tr><th>Site</th> <th>link from T0</th> <th>links from T1</th> <th>links to T1</th> <th>links from T2</th><th>links to T2</th></tr>\n";
-    return $string;
-}
-
-sub footer {
-    my $string =
-	"</table>\n" .
-	"</body></html>\n";
-    return $string;
 }
 
 sub dategm {
