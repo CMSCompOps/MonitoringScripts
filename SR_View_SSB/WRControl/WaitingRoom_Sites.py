@@ -60,7 +60,7 @@ def main_function(outputfile_txt):
   waitingRoom_sites = [ site for site in site_T2 if not site in nonWaitingRoom_Sites]
   print waitingRoom_sites
   #write to file for SSB
-  f1=open('./'+outputfile_txt, 'w+')
+  f1=open('/afs/cern.ch/user/c/cmst1/scratch0/MonitoringScripts/SR_View_SSB/WRControl/'+outputfile_txt, 'w+')
   now_write=(datetime.utcnow()).strftime("%Y-%m-%d %H:%M:%S")
 
 
