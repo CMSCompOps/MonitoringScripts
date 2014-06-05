@@ -1,6 +1,7 @@
 #!/bin/bash
 
-cd /afs/cern.ch/user/c/cmst1/scratch0/Waitingroom_Dashboard
+#cd /afs/cern.ch/user/c/cmst1/scratch0/Waitingroom_Dashboard
+cd /afs/cern.ch/user/c/cmst1/scratch0/MonitoringScripts/SR_View_SSB/WRControl
 
 echo "exporting KEY and CERT"
 
@@ -25,26 +26,26 @@ then
    fi
    touch emailmessage.txt
    EMAILMESSAGE="/tmp/emailmessage.txt"
-   echo "run_WaitingRoom_Sites.sh  is running to slowly. See: /afs/cern.ch/user/c/cmst1/scratch0/Waitingroom_Dashboard/"> $EMAILMESSAGE
-   echo "/afs/cern.ch/user/c/cmst1/scratch0/Waitingroom_Dashboard/" >>$EMAILMESSAGE
+   echo "run_WaitingRoom_Sites.sh  is running to slowly. See: /afs/cern.ch/user/c/cmst1/scratch0/MonitoringScripts/SR_View_SSB/WRControl"> $EMAILMESSAGE
+   echo "/afs/cern.ch/user/c/cmst1/scratch0/MonitoringScripts/SR_View_SSB/WRControl" >>$EMAILMESSAGE
    # send an email using /bin/mail
    /bin/mail -s "$SUBJECT" "$EMAIL" < $EMAILMESSAGE
 
 else
      echo "bash run_WaitingRoom_Sites.sh succesfully"
-     touch scriptRunning.run
+     touch /afs/cern.ch/user/c/cmst1/scratch0/MonitoringScripts/SR_View_SSB/WRControl/scriptRunning.run
 fi
 
 
 #Run the script
 txt="WaitingRoom_Sites.txt"
-echo "python WaitingRoom_Sites.py $txt1"
-python WaitingRoom_Sites.py $txt &> sites_WaitingRoom.log
-cat sites_WaitingRoom.log
+echo "python WaitingRoom_Sites.py $txt"
+python /afs/cern.ch/user/c/cmst1/scratch0/MonitoringScripts/SR_View_SSB/WRControl/WaitingRoom_Sites.py $txt &> /afs/cern.ch/user/c/cmst1/scratch0/MonitoringScripts/SR_View_SSB/WRControl/sites_WaitingRoom.log
+cat /afs/cern.ch/user/c/cmst1/scratch0/MonitoringScripts/SR_View_SSB/WRControl/sites_WaitingRoom.log
 
 problem="$?"
 echo "problem: $problem"
 
-cp $txt /afs/cern.ch/user/c/cmst1/www/WFMon/
+cp /afs/cern.ch/user/c/cmst1/scratch0/MonitoringScripts/SR_View_SSB/WRControl/$txt /afs/cern.ch/user/c/cmst1/www/WFMon/
 echo "WaitingRoom_Sites.txt copied to: /afs/cern.ch/user/c/cmst1/www/WFMon/ "
-rm scriptRunning.run
+rm /afs/cern.ch/user/c/cmst1/scratch0/MonitoringScripts/SR_View_SSB/WRControl/scriptRunning.run
