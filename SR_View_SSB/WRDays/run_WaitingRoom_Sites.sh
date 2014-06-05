@@ -12,7 +12,7 @@ clear
 #voms-proxy-init -voms cms
 # Email if things are running slowly
 
-if [ -f scriptRunning.run ];
+if [ -f /afs/cern.ch/user/c/cmst1/scratch0/MonitoringScripts/SR_View_SSB/WRDays/scriptRunning.run ];
 then
    echo "run_WaitingRoom_SumMetrics.sh is already running. Will send an email to the admin."
    # script to send simple email
@@ -34,19 +34,19 @@ then
 
 else
      echo "bash run_WaitingRoom_SumMetrics.sh succesfully"
-     touch scriptRunning.run
+     touch /afs/cern.ch/user/c/cmst1/scratch0/MonitoringScripts/SR_View_SSB/WRDays/scriptRunning.run
 fi
 
 
 #Run the script
 txt="WaitingRoom_"  #postfix in code itself
-echo "python waitingRoom_SummedMetrics.py $txt1"
-python /afs/cern.ch/user/c/cmst1/scratch0/Waitingroom_Dashboard/Waitingroom_SummedMetric/waitingRoom_SummedMetrics.py $txt &> /afs/cern.ch/user/c/cmst1/scratch0/Waitingroom_Dashboard/Waitingroom_SummedMetric/sites_WaitingRoom_SummedMetrics.log
+echo "python waitingRoom_SummedMetrics.py $txt"
+python /afs/cern.ch/user/c/cmst1/scratch0/MonitoringScripts/SR_View_SSB/WRDays/waitingRoom_SummedMetrics.py $txt &> /afs/cern.ch/user/c/cmst1/scratch0/MonitoringScripts/SR_View_SSB/WRDays/sites_WaitingRoom_SummedMetrics.log
 #cat sites_WaitingRoom_SummedMetrics.log
 
 problem="$?"
 echo "problem: $problem"
 
-cp "/afs/cern.ch/user/c/cmst1/scratch0/Waitingroom_Dashboard/Waitingroom_SummedMetric/"$txt*.txt /afs/cern.ch/user/c/cmst1/www/WFMon/
+cp "/afs/cern.ch/user/c/cmst1/scratch0/MonitoringScripts/SR_View_SSB/WRDays/"$txt*.txt /afs/cern.ch/user/c/cmst1/www/WFMon/
 echo "WaitingRoom_XMonthSum.txt files copied to: /afs/cern.ch/user/c/cmst1/www/WFMon/ "
-rm scriptRunning.run
+rm /afs/cern.ch/user/c/cmst1/scratch0/MonitoringScripts/SR_View_SSB/WRDays/scriptRunning.run
