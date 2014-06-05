@@ -9,10 +9,11 @@
 # outputdir /afs/cern.ch/user/c/cmst1/www/WFMon/
 
 
-cd /afs/cern.ch/user/c/cmst1/scratch0/SiteReadiness_Dashboard
+#cd /afs/cern.ch/user/c/cmst1/scratch0/SiteReadiness_Dashboard
+cd /afs/cern.ch/user/c/cmst1/scratch0/MonitoringScripts/SR_View_SSB/WRCriteria/
 
 # Email if things are running slowly
-if [ -f scriptRunning.run ];
+if [ -f /afs/cern.ch/user/c/cmst1/scratch0/MonitoringScripts/SR_View_SSB/WRCriteria/scriptRunning.run ];
 then
    echo "bash run_badSites_SiteReadiness.sh is already running. Will send an email to the admin."
    # script to send simple email
@@ -27,25 +28,25 @@ then
    fi
    touch emailmessage.txt
    EMAILMESSAGE="/tmp/emailmessage.txt"
-   echo "Run_badSites_SiteReadiness.sh  is running to slowly. See: /afs/cern.ch/user/c/cmst1/scratch0/SiteReadiness_Dashboard"> $EMAILMESSAGE
-   echo "/afs/cern.ch/user/c/cmst1/scratch0/SiteReadiness_Dashboard" >>$EMAILMESSAGE
+   echo "Run_badSites_SiteReadiness.sh  is running to slowly. See: /afs/cern.ch/user/c/cmst1/scratch0/MonitoringScripts/SR_View_SSB/WRCriteria"> $EMAILMESSAGE
+   echo "/afs/cern.ch/user/c/cmst1/scratch0/MonitoringScripts/SR_View_SSB/WRCriteria" >>$EMAILMESSAGE
    # send an email using /bin/mail
    /bin/mail -s "$SUBJECT" "$EMAIL" < $EMAILMESSAGE
 
 else
      echo "bash Run_badSites_SiteReadiness.sh started succesfully"
-     touch scriptRunning.run
+     touch /afs/cern.ch/user/c/cmst1/scratch0/MonitoringScripts/SR_View_SSB/WRCriteria/scriptRunning.run
 fi
 
 #Run the script
 txt="BadSites_SiteReadiness.txt"
 echo "python badsites_SiteReadiness.py $txt1"
-python badsites_SiteReadiness.py $txt &> badSites_SiteReadiness.log
+python /afs/cern.ch/user/c/cmst1/scratch0/MonitoringScripts/SR_View_SSB/WRCriteria/badsites_SiteReadiness.py $txt &> /afs/cern.ch/user/c/cmst1/scratch0/MonitoringScripts/SR_View_SSB/WRCriteria/badSites_SiteReadiness.log
 
 
 problem="$?"
 echo "problem: $problem"
 
-cp $txt /afs/cern.ch/user/c/cmst1/www/WFMon/
+cp /afs/cern.ch/user/c/cmst1/scratch0/MonitoringScripts/SR_View_SSB/WRCriteria/$txt /afs/cern.ch/user/c/cmst1/www/WFMon/
 echo "BadSites_SiteReadiness.txt copied to: /afs/cern.ch/user/c/cmst1/www/WFMon/ "
-rm scriptRunning.run
+rm /afs/cern.ch/user/c/cmst1/scratch0/MonitoringScripts/SR_View_SSB/WRCriteria/scriptRunning.run
