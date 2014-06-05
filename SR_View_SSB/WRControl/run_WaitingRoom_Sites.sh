@@ -1,6 +1,8 @@
 #!/bin/bash
 
-cd /afs/cern.ch/user/c/cmst1/scratch0/Waitingroom_Dashboard
+location="/afs/cern.ch/user/c/cmst1/scratch0/MonitoringScripts/SR_View_SSB/WRControl"
+outputdir="/afs/cern.ch/user/c/cmst1/www/WFMon/"
+cd $location
 
 echo "exporting KEY and CERT"
 
@@ -15,7 +17,7 @@ then
    echo "run_WaitingRoom_Sites.sh is already running. Will send an email to the admin."
    # script to send simple email
    # email subject
-   SUBJECT="[MonitoringScripts] WRControl running slow"
+   SUBJECT="[MonitoringScripts] WRControl running slowly."
    # Email To ?
    EMAIL="artiedaj@fnal.gov"
    # Email text/message
@@ -25,13 +27,13 @@ then
    fi
    touch emailmessage.txt
    EMAILMESSAGE="/tmp/emailmessage.txt"
-   echo "run_WaitingRoom_Sites.sh  is running to slowly. See: /afs/cern.ch/user/c/cmst1/scratch0/Waitingroom_Dashboard/"> $EMAILMESSAGE
-   echo "/afs/cern.ch/user/c/cmst1/scratch0/Waitingroom_Dashboard/" >>$EMAILMESSAGE
+   echo "run_WaitingRoom_Sites.sh  is running slowly." > $EMAILMESSAGE
+   echo $location >> $EMAILMESSAGE
    # send an email using /bin/mail
    /bin/mail -s "$SUBJECT" "$EMAIL" < $EMAILMESSAGE
 
 else
-     echo "bash run_WaitingRoom_Sites.sh succesfully"
+     echo "bash run_WaitingRoom_Sites.sh started succesfully"
      touch scriptRunning.run
 fi
 
@@ -45,6 +47,6 @@ cat sites_WaitingRoom.log
 problem="$?"
 echo "problem: $problem"
 
-cp $txt /afs/cern.ch/user/c/cmst1/www/WFMon/
-echo "WaitingRoom_Sites.txt copied to: /afs/cern.ch/user/c/cmst1/www/WFMon/ "
+cp $txt $outputdir
+echo "WaitingRoom_Sites.txt copied to: " $outputdir
 rm scriptRunning.run

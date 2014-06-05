@@ -94,8 +94,7 @@ def main_function(outputfile_txt, submonths):
   print days_per_site
 
   # write to file
-  #f1=open('./'+outputfile_txt, 'w+')
-  f1=open('/afs/cern.ch/user/c/cmst1/scratch0/Waitingroom_Dashboard/Waitingroom_SummedMetric/'+outputfile_txt, 'w')
+  f1=open('./'+outputfile_txt, 'w+')
   f1.write('# This txt goes into SSB and shows the number of days a site has been in the Waiting Room for X months --> See filename)\n')
   f1.write('# Readme:\n# https://raw.githubusercontent.com/CMSCompOps/MonitoringScripts/master/SR_View_SSB/WRDays/Readme.txt\n')
   now_write = time.strftime('%Y-%m-%d %H:%M:%S')

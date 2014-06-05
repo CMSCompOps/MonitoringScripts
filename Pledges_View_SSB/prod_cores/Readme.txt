@@ -6,5 +6,5 @@ output file 	prod.txt
 web		https://cmst1.web.cern.ch/CMST1/SST/prod.txt
 
 —-
-Script in acrontab jartieda
-*/05 * * * * lxplus /afs/cern.ch/user/j/jartieda/MonitoringScripts/Pledges_View_SSB/prod_cores/run_prodcores.sh &> /dev/null
+Script in acrontab cmst1
+*/05 * * * * lxplus /afs/cern.ch/user/c/cmst1/scratch0/MonitoringScripts/Pledges_View_SSB/prod_cores/run_prodcores.sh &> /dev/null

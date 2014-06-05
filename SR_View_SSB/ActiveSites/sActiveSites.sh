@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # Script and files location
-location="/afs/cern.ch/user/j/jartieda/MonitoringScripts/SR_View_SSB/ActiveSites"
+location="/afs/cern.ch/user/c/cmst1/scratch0/MonitoringScripts/SR_View_SSB/ActiveSites"
 githublocation="https://raw.github.com/CMSCompOps/MonitoringScripts/master/SR_View_SSB/ActiveSites/"
 outFile="./WasCommissionedT2ForSiteMonitor.txt"
 ssbfeed="/afs/cern.ch/cms/LCG/SiteComm/T2WaitingList/WasCommissionedT2ForSiteMonitor.txt"
@@ -31,7 +31,7 @@ then
     # send an email using /bin/mail
     /bin/mail -s "$SUBJECT" "$EMAIL" < $EMAILMESSAGE
 else
-    echo "* previous bash sActiveSites.sh run succesfully"
+    echo "* previous bash sActiveSites.sh ran succesfully"
     touch scriptRunning.run
 fi
 
