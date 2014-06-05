@@ -26,7 +26,7 @@ $date = $ARGV[0] if ( $ARGV[0] );
 
 # SSB input file
 $ssbdir = "/afs/cern.ch/cms/LCG/SiteComm";
-#$ssbdir = "/tmp"; # remove after debugging
+$ssbdir = "/tmp"; # remove after debugging
 
 $url_prod = &datasvc_url('prod', $start, $end);
 $url_debug = &datasvc_url('debug', $start, $end);
@@ -171,11 +171,20 @@ sub generate_combined_metric {
 	$t = 1 if ($t == 0);  # Treat T0_CH_CERN as a T1
 	next if ( $site =~ /Buffer/ );
 	next if ( $site =~ /Disk/ );
+	next if ( $site =~ /Export/ );
 	my $timestamp = &timestamp;
 	my $url_report = 'http://dashb-ssb.cern.ch/dashboard/request.py/siteview?expand=86#currentView=default&highlight=true';
 	my $color = 'red';
 	my $value = 'ERROR';
 	my @status = &site_status($site);
+	if ($t == 1 &&
+	    !($site =~ /_Disk$/ or $site =~ /_Buffer$/) &&
+	    grep(/${site}_Buffer/, @sites) &&
+	    grep(/${site}_Disk/, @sites)) {
+	    my @status_disk = &site_status($site . "_Disk");
+	    my @status_buffer = &site_status($site . "_Buffer");
+	    $status[0] = $status_disk[0] && $status_buffer[0];
+	}
 	if ( $status[0] ) {
 	    $color = 'green';
 	    $value = 'OK';
@@ -209,6 +218,14 @@ sub generate_ssbfile {
 	my $color = 'red';
 	my $url_report = &phedex_link($site, $index);
 	my @status = &site_status($site);
+	if ($t == 1 &&
+	    !($site =~ /_Disk$/ or $site =~ /_Buffer$/) &&
+	    grep(/${site}_Buffer/, @sites) &&
+	    grep(/${site}_Disk/, @sites)) {
+	    my @status_disk = &site_status($site . "_Disk");
+	    my @status_buffer = &site_status($site . "_Buffer");
+	    $status[$index] = $status_disk[$index] && $status_buffer[$index];
+	}
 	if ( $status[$index] ) {
 	    $color = 'green';
 	}
