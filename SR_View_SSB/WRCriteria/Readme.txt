@@ -9,4 +9,4 @@
 # web	https://cmst1.web.cern.ch/CMST1/WFMon/BadSites_SiteReadiness.txt
 # Script in acrontab t1
 # 5,20,35,50 * * * * => Every 15 minutes every day (starting at 00:05)
-# 5,20,35,50 * * * * lxplus ssh vocms202 /afs/cern.ch/user/c/cmst1/scratch0/SiteReadiness_Dashboard/run_badSites_SiteReadiness.sh &> /dev/null 
+# 5,20,35,50 * * * * lxplus ssh vocms202 /afs/cern.ch/user/c/cmst1/scratch0/MonitoringScripts/SR_View_SSB/WRCriteria/run_badSites_SiteReadiness.sh &> /dev/null 

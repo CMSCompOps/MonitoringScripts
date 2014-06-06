@@ -1,15 +1,7 @@
 #!/bin/sh
-#
-# Sten Luyckx
-# Script in acrontab t1
-# 5,20,35,50 * * * * lxplus ssh vocms202 /afs/cern.ch/user/c/cmst1/scratch0/SiteReadiness_Dashboard/run_badSites_SiteReadiness.sh &> /dev/null 
-# Green red if : site readiness percentage is bigger or smaller than 60 % for both the last week as in the last 3 months
-# Script for Dashboard metric 152: SiteReadiness 1W&3M (>60%) 
-# outputfile BadSites_SiteReadiness.txt
-# outputdir /afs/cern.ch/user/c/cmst1/www/WFMon/
-
-
-cd /afs/cern.ch/user/c/cmst1/scratch0/SiteReadiness_Dashboard
+location="/afs/cern.ch/user/c/cmst1/scratch0/MonitoringScripts/SR_View_SSB/WRCriteria/"
+outputdir="/afs/cern.ch/user/c/cmst1/www/WFMon/"
+cd $location
 
 # Email if things are running slowly
 if [ -f scriptRunning.run ];
@@ -17,7 +9,7 @@ then
    echo "bash run_badSites_SiteReadiness.sh is already running. Will send an email to the admin."
    # script to send simple email
    # email subject
-   SUBJECT="[MonitoringScripts] WRCriteria is running slow"
+   SUBJECT="[MonitoringScripts] WRCriteria is running slowly"
    # Email To ?
    EMAIL="artiedaj@fnal.gov"
    # Email text/message
@@ -27,8 +19,8 @@ then
    fi
    touch emailmessage.txt
    EMAILMESSAGE="/tmp/emailmessage.txt"
-   echo "Run_badSites_SiteReadiness.sh  is running to slowly. See: /afs/cern.ch/user/c/cmst1/scratch0/SiteReadiness_Dashboard"> $EMAILMESSAGE
-   echo "/afs/cern.ch/user/c/cmst1/scratch0/SiteReadiness_Dashboard" >>$EMAILMESSAGE
+   echo "Run_badSites_SiteReadiness.sh  is running slowly."> $EMAILMESSAGE
+   echo $location >>$EMAILMESSAGE
    # send an email using /bin/mail
    /bin/mail -s "$SUBJECT" "$EMAIL" < $EMAILMESSAGE
 
@@ -46,6 +38,6 @@ python badsites_SiteReadiness.py $txt &> badSites_SiteReadiness.log
 problem="$?"
 echo "problem: $problem"
 
-cp $txt /afs/cern.ch/user/c/cmst1/www/WFMon/
-echo "BadSites_SiteReadiness.txt copied to: /afs/cern.ch/user/c/cmst1/www/WFMon/ "
+cp $txt $outputdir
+echo "BadSites_SiteReadiness.txt copied to: " $outputdir
 rm scriptRunning.run

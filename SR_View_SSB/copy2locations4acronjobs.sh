@@ -1,21 +1,18 @@
 #!/bin/sh
-# before copying files please do a git pull at:
-base="/afs/cern.ch/user/j/jartieda/MonitoringScripts/"
-cd $base
+location="/afs/cern.ch/user/c/cmst1/scratch0/MonitoringScripts/SR_View_SSB"
+cd $location
 git pull
-
-location=$base"SR_View_SSB/"
 
 #ActiveSites
 # Already in the right location: $location/ActiveSites/
 
 #WRControl
-cp -a $location/WRControl/. /afs/cern.ch/user/c/cmst1/scratch0/Waitingroom_Dashboard/
+#cp -a $location/WRControl/. /afs/cern.ch/user/c/cmst1/scratch0/Waitingroom_Dashboard/
 
 #WRCriteria
-cp -a $location/WRCriteria/. /afs/cern.ch/user/c/cmst1/scratch0/SiteReadiness_Dashboard/
+#cp -a $location/WRCriteria/. /afs/cern.ch/user/c/cmst1/scratch0/SiteReadiness_Dashboard/
 
 #WRDays
-cp -a $location/WRDays/. /afs/cern.ch/user/c/cmst1/scratch0/Waitingroom_Dashboard/Waitingroom_SummedMetric/
+#cp -a $location/WRDays/. /afs/cern.ch/user/c/cmst1/scratch0/Waitingroom_Dashboard/Waitingroom_SummedMetric/
 
-echo "*** All copies completed ***"
+#echo "*** All copies completed ***"

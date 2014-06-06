@@ -13,15 +13,15 @@ Active Sites:		SR >=60% last 1 week OR last 3 months
 Any site that is not in this list will be automatically moved to the Waiting Room.
 
 --- INFO ---
-# acronjob in acrontab jartieda
+# acronjob in acrontab cmst1
 # 00 08 * * 1 => Every monday at 8AM
-# 00 08 * * 1 lxplus /afs/cern.ch/user/j/jartieda/MonitoringScripts/SR_View_SSB/ActiveSites/sActiveSites.sh &> /dev/null
+# 00 08 * * 1 lxplus /afs/cern.ch/user/c/cmst1/scratch0/MonitoringScripts/SR_View_SSB/ActiveSites/sActiveSites.sh &> /dev/null
 
 Script name:
 	sActiveSites.sh
 
 Script Location:
-	/afs/cern.ch/user/j/jartieda/MonitoringScripts/SR_View_SSB/ActiveSites/
+	/afs/cern.ch/user/c/cmst1/scratch0/MonitoringScripts/SR_View_SSB/ActiveSites
 
 Github repository:
 	https://github.com/CMSCompOps/MonitoringScripts/SR_View_SSB/ActiveSites/
