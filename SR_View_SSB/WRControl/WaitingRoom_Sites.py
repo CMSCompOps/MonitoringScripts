@@ -10,7 +10,7 @@ import urllib, httplib, re, urllib2
 import pickle 
 import simplejson as json
 #extract nonwaitingroommsites from ActiveSites script output
-url2 = "https://cmsdoc.cern.ch/cms/LCG/SiteComm/T2WaitingList/WasCommissionedT2ForSiteMonitor.txt"
+url2 = "http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=39&time=24&dateFrom=&dateTo=&site=T2_AT_Vienna&sites=all&clouds=undefined&batch=1"
 
 def extractJson():
   url = "http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=45&time=24&dateFrom=&dateTo=&site=T1_CH_CERN&sites=all&clouds=undefined&batch=1"
@@ -30,20 +30,6 @@ def fetch_all_sites(jsn):
   return site_T2
 
 
-def dgetNonWaitingRoomSites(url):
-    tmp_sites = []
-    request = urllib2.Request(url)
-    response = urllib2.urlopen(request)
-    data = response.read()
-    d_split = data.split('\n')
-     
-    for row in d_split:
-      if not row.strip().startswith("#"):
-        split_row = row.split('\t')
-        if len(split_row)>1:
-          tmp_sites.append(split_row[1]) 
-    return tmp_sites
-
 def getNonWaitingRoomSites(url):
   print "Getting the url %s" % url
   request = urllib2.Request(url, headers = {"Accept":"application/json"})
@@ -59,7 +45,6 @@ def getNonWaitingRoomSites(url):
 def main_function(outputfile_txt):
   # non-waitingroom sites
   print 'Fetchting all the sites that are not in waitingroom'
-  url2 = "http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=39&time=24&dateFrom=&dateTo=&site=T2_AT_Vienna&sites=all&clouds=undefined&batch=1"
   nonWaitingRoom_Sites = getNonWaitingRoomSites(url2)
   print 'number of non waiting room  sites: ', len(nonWaitingRoom_Sites)
   print nonWaitingRoom_Sites
