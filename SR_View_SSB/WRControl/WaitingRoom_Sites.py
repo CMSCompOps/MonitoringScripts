@@ -28,7 +28,8 @@ def fetch_all_sites(jsn):
   site_T2 = []
   for row in jsn['csvdata']:
     if row['VOName'][0:2] == 'T2':
-      site_T2.append(row['VOName'])
+      if not row['VOName'] in site_T2:
+        site_T2.append(row['VOName'])
   return site_T2
 
 def getNonWaitingRoomSites(url):
