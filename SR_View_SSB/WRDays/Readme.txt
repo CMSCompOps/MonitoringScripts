@@ -1,7 +1,7 @@
 # --INFO--
 # Script for Dashboard metric 154, 155, 156: WR days/last x months
 # Script responsible: John Artieda (artiedaj@fnal.gov)
-# output dir /afs/cern.ch/user/c/cmst1/www/WFMon/
+# output dir /afs/cern.ch/user/c/cmst1/www/SST/
 # output file WaitingRoom_1MonthSum.txt
 # output file WaitingRoom_2MonthSum.txt
 # output file WaitingRoom_3MonthSum.txt
