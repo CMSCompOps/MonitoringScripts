@@ -22,7 +22,7 @@ collectors = ['vocms97.cern.ch', 'vocms165.cern.ch']
 
 ##The following groups should be updated according to https://twiki.cern.ch/twiki/bin/view/CMSPublic/CompOpsWorkflowTeamWmAgentRealeases
 relvalAgents = ['vocms142.cern.ch', 'vocms174.cern.ch', 'cmssrv113.fnal.gov']
-testAgents = ['cmssrv94.fnal.gov', 'cmssrv101.fnal.gov', 'vocms230.cern.ch', 'vocms231.cern.ch']
+testAgents = ['cmssrv94.fnal.gov', 'cmssrv101.fnal.gov', 'vocms230.cern.ch', 'vocms231.cern.ch', 'cmsgwms-submit1.fnal.gov']
 
 ## Counting by site
 baseSiteList = {} # Site list
@@ -52,7 +52,9 @@ jobTypes = ['Processing', 'Production', 'Skim', 'Harvest', 'Merge', 'LogCollect'
 t0Types = ['Repack', 'Express', 'Reco']
 
 # Mailing list for notifications
-mailingList = ['cms-comp-ops-workflow-team@cern.ch']
+mailingSender = 'cmst1@cern.ch'
+mailingList = ['luis89@fnal.gov']
+#mailingList = ['cms-comp-ops-workflow-team@cern.ch']
 
 def createSiteList():
     """
@@ -524,7 +526,7 @@ def main():
                 body_text = 'There is a problem with one of the collectors! The monitoring scripts will give false information:\n\n'
                 body_text += '    /afs/cern.ch/user/c/cmst1/scratch0/WFM_Input_DashBoard/WFMonDBShort.py\n\n'
                 body_text += 'See the log file in the same directory for the error output\n'
-                send_mail('luis89@fnal.gov',
+                send_mail(mailingSender,
                           mailingList,
                           '[Monitoring] Condor Collector %s Error' % col,
                           body_text)
@@ -621,10 +623,9 @@ def main():
     
     # Handling jobs that failed task extraction logic
     if jobs_failedTypeLogic != {}:      
-        body_text = 'There is a problem with the logic to deduce job type from the condor data.n'
-        body_text += 'Please have a look to the following jobs:\n\n'
-        body_text += '%s' % str(jobs_failedTypeLogic)
-        send_mail('luis89@fnal.gov',
+        body_text = 'There is a problem with the logic to deduce job type from the condor data.\n'
+        body_text += 'Please have a look to the following jobs:\n\n %s'% str(jobs_failedTypeLogic)
+        send_mail(mailingSender,
                   mailingList,
                   '[Monitoring] Failed task type logic problem',
                   body_text)
