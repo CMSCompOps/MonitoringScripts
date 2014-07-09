@@ -9,4 +9,4 @@
 # 5,20,35,50 * * * * lxplus ssh vocms202 /afs/cern.ch/user/c/cmst1/scratch0/MonitoringScripts/SR_View_SSB/morgue/run_morgue.sh &> /dev/null
 # Description : # Script finds which site should be in morgue and creates 1 file which is morgue.txt [1]
 
-[2] https://cmst1.web.cern.ch/CMST1/SST/morgue.txt
+[1] https://cmst1.web.cern.ch/CMST1/SST/morgue.txt
