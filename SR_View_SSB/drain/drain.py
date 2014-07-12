@@ -36,6 +36,10 @@ def getList(url, status): # status could have in, down, drain, SD, *
     rows = extractJson(url)
     site_list = []
     for row in rows['csvdata']:
+        if status == "saddlebrown":
+            if row["COLOR"] == 1:
+                if not row["VOName"] in site_list: site_list.append(row["VOName"])
+                return site_list
         if  status != "*":
             if row["Status"] == status:
                 if not row["VOName"] in site_list: site_list.append(row["VOName"])
@@ -138,12 +142,12 @@ def writeFile(siteList):
 def getAllInformation():
     #________________________________getting oldDrainList, oldDownList, wr list, morgue list, sr=SD List, full site list__________________________
 
-    fullSiteList  = getList(urlDrain, "*")                                                        # gets full site list from metric 158
-    wrList        = getList(urlWr, "in")                                                          # gets current waiting room list from metric 153
-    morgueList    = getList(urlMorgue, "in")                                                      # gets current morgue list from metric 199
-    oldDownList   = getList(urlDrain, "down")                                                     # gets old down list from metric 158 
-    oldDrainList  = getList(urlDrain, "drain")                                                    # gets old drain list from metric 158
-    srStatusList  = getList(urlSD, "OUTAGE SCHEDULED 1/1 SRMv2 down, 1/1 CREAM-CE down")          # gets site readiness status from metric 121
+    fullSiteList  = getList(urlDrain, "*")            # gets full site list from metric 158
+    wrList        = getList(urlWr, "in")              # gets current waiting room list from metric 153
+    morgueList    = getList(urlMorgue, "in")          # gets current morgue list from metric 199
+    oldDownList   = getList(urlDrain, "down")         # gets old down list from metric 158 
+    oldDrainList  = getList(urlDrain, "drain")        # gets old drain list from metric 158
+    srStatusList  = getList(urlSD, "saddlebrown")     # gets site readiness status from metric 121
     
     print 'starting to fetch all sites from DashBoard'
     daysBrown  = getDayCounts(urlSR, "brown")
