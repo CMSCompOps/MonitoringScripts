@@ -44,7 +44,7 @@ fi
 # creating output file
 cat <<EOF > $outFile
 # SSB:          metric 39 - Active T2s
-# Criteria:     ActiveSite = SR>=60% last 1 week OR last 3 months
+# Criteria:     ActiveSite = SR>=80% last 1 week OR last 3 months
 # Written by:   John Artieda <artiedaj@fnal.gov>
 # Readme:
 # $Read

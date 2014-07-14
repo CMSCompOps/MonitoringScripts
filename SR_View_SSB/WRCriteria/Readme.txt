@@ -1,8 +1,8 @@
 # --Waiting Room Criteria--
-# A site is moved into the WR if site readiness percentage is <60% for both: last week AND last 3 months
+# A site is moved into the WR if site readiness percentage is <80% for both: last week AND last 3 months
 
 # --INFO--
-# Script for Dashboard metric 152: SiteReadiness 1W&3M (>60%, yes=green, no=red) 
+# Script for Dashboard metric 152: SiteReadiness 1W&3M (>80%, yes=green, no=red) 
 # Script responsible: John Artieda (artiedaj@fnal.gov)
 # output dir:  /afs/cern.ch/user/c/cmst1/www/WFMon/
 # output file: BadSites_SiteReadiness.txt

@@ -8,7 +8,7 @@ from pprint import pprint
 import string
 
 # Criteria
-percentageThreshold = 0.6
+percentageThreshold = 0.8
 
 #T1+T2
 #url = "http://dashb-ssb.cern.ch/dashboard/request.py/getsitereadinessrankdata?columnid=45&time=%s"

@@ -7,7 +7,7 @@ and that presently are in "active" status.
 
 --- ACTIVE sites for  SSB ---
 SSB metric: 		39 - Active T2s
-Active Sites:		SR >=60% last 1 week OR last 3 months
+Active Sites:		SR >=80% last 1 week OR last 3 months
 
 --- WAITING ROOM LIST for SSB ---
 Any site that is not in this list will be automatically moved to the Waiting Room.
