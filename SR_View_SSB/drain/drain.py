@@ -36,10 +36,10 @@ def getList(url, status): # status could have in, down, drain, SD, *
     rows = extractJson(url)
     site_list = []
     for row in rows['csvdata']:
-        if  status == "SD":
+        if status == "SD":
             if row["COLOR"] == 1:
                 if not row["VOName"] in site_list: site_list.append(row["VOName"])
-        else if  status == "*":
+        elif status == "*":
             if row["VOName"][0:2] != 'T3':
                 if not row["VOName"] in site_list: site_list.append(row["VOName"])
         else:
