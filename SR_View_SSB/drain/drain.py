@@ -38,10 +38,10 @@ def getList(url, status): # status could have in, down, drain, SD, *
     for row in rows['csvdata']:
         if status == "SD":
             if row["COLOR"] == 1:
-                if not row["VOName"] in site_list: site_list.append(row["VOName"])
+                if row["VOName"][0:2] != 'T3':
+                    if not row["VOName"] in site_list: site_list.append(row["VOName"])
         elif status == "*":
-            if row["VOName"][0:2] != 'T3':
-                if not row["VOName"] in site_list: site_list.append(row["VOName"])
+            if not row["VOName"] in site_list: site_list.append(row["VOName"])
         else:
             if row["Status"] == status:
                 if not row["VOName"] in site_list: site_list.append(row["VOName"])
@@ -106,17 +106,19 @@ def getDayCounts(url, status):
 # SiteReadiness = (Ready(G) + Warning(Y)) / (totalDays - scheduleDowntime(B) - NoInfo(W))
 # but because this metric is so sensitive, Warning days can be ignored. We need perfect readiness
 
-def CalSiteReadRate(allSites, daysGreen, daysBrown, daysWhite):
+def CalSiteReadRate(allSites, daysGreen, daysBrown, daysWhite, daysYellow):
     average_per_site = {}                                                           # keeps all siteNames and their site readiness rate
     for site in allSites:
-        if (site in daysGreen) and (site in daysBrown) and (site in daysWhite) :  
+        readiness = 0.0
+        if site in daysGreen:  
             green  = daysGreen[site]
             brown  = daysBrown[site]
             white  = daysWhite[site]
-            readiness = 0.0
-            if brown != 7 :                                                         # if brown = 7 => script encounters "ZeroDivisionError" 
-                readiness = (green) / float(7 - brown - white) 
-            average_per_site[site] = readiness
+            yellow = daysYellow[site]
+            den = brown + white
+            if den != 7 :                                                         # if den = 7 => script encounters "ZeroDivisionError" 
+                readiness = (green + yellow) / float(7 - den) 
+        average_per_site[site] = readiness
     return average_per_site
 
 #__________________________________________________________________________________________________
@@ -152,6 +154,7 @@ def getAllInformation():
     daysBrown  = getDayCounts(urlSR, "brown")
     daysWhite  = getDayCounts(urlSR, "white")
     daysGreen  = getDayCounts(urlSR, "green")
+    daysYellow  = getDayCounts(urlSR, "yellow")
     
     #_______________________________ calculates site readiness ranking for last week per site. __________________________
     
@@ -164,7 +167,7 @@ if __name__ == '__main__':
     oldDrainList, tmpDrainList, oldDownList, tmpDownList, wrList, morgueList, srStatusList, fullSiteList, average_per_site = getAllInformation()
     
     for site in oldDrainList:                   # firstly add old drain list
-        if not average_per_site[site] >= 0.8 :  # if last week siteRanking > 80% remove from drainList
+        if average_per_site[site] < 0.8 :       # if last week siteRanking < 80% keep in drainList
             if not site in tmpDrainList: tmpDrainList.append(site)
 
     for site in fullSiteList:
