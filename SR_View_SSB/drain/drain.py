@@ -8,8 +8,10 @@ from datetime import date
 
 urlDrain  = "http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=158&time=24&dateFrom=&dateTo=&site=T0_CH_CERN&sites=all&clouds=undefined&batch=1"
 urlWr     = "http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153&time=24&dateFrom=&dateTo=&site=T2_AT_Vienna&sites=all&clouds=undefined&batch=1"
+urlWrTxt  = "https://cmst1.web.cern.ch/CMST1/WFMon/WaitingRoom_Sites.txt"
 urlSR     = "http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=45&time=168&dateFrom=&dateTo=&site=T1_DE_KIT&sites=all&clouds=undefined&batch=1"
 urlSD     = "http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=121&time=48&dateFrom=&dateTo=&site=T0_CH_CERN&sites=all&clouds=undefined&batch=1"
+urlSDTxt  = "https://cms-site-readiness.web.cern.ch/cms-site-readiness/SiteReadinessAnalysis/toSSB/UsableSites_SSBfeed.txt"
 urlMorgue = "http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=199&time=24&dateFrom=&dateTo=&site=T2_AT_Vienna&sites=all&clouds=undefined&batch=1"
 
 daysBrown    = {}  # keeps down days count
@@ -37,17 +39,29 @@ def getList(url, status): # status could have in, down, drain, SD, *
     site_list = []
     for row in rows['csvdata']:
         if status == "SD":
-            if row["COLOR"] == 1:
-                if row["VOName"][0:2] != 'T3':
-                    if not row["VOName"] in site_list: site_list.append(row["VOName"])
+            if row['COLORNAME'] == "saddlebrown":
+                #if row['VOName'][0:2] != 'T3':
+                if not row['VOName'] in site_list: site_list.append(row["VOName"])
         elif status == "*":
-            if not row["VOName"] in site_list: site_list.append(row["VOName"])
+            if not row['VOName'] in site_list: site_list.append(row["VOName"])
         else:
-            if row["Status"] == status:
-                if not row["VOName"] in site_list: site_list.append(row["VOName"])
+            if row['Status'] == status:
+                if not row['VOName'] in site_list: site_list.append(row["VOName"])
     return site_list
 
-#_____________________________________________________________________________________________________
+#___________________function to read info from txt file___________________________________________
+def getTxtList(url, status):
+  print "Getting the url %s" % url
+  sites_in_txt = []
+  for line in urllib2.urlopen(url).readlines():
+    row = line.split("\t")
+    if len(row) == 5 :
+        siteName = row[1]
+        value    = row[2]
+        
+        if value == status:
+            if not siteName in sites_in_txt: sites_in_txt.append(siteName) 
+  return sites_in_txt
 
 #_________________________the function calculates day counts in last week_____________________________
 
@@ -126,15 +140,14 @@ def CalSiteReadRate(allSites, daysGreen, daysBrown, daysWhite, daysYellow):
 def writeFile(siteList):
     saveTime = time.strftime('%Y-%m-%d %H:%M:%S')
     filename = "drain"
-    path = "/afs/cern.ch/user/c/cmst1/scratch0/MonitoringScripts/SR_View_SSB/drain/"
-    url = "https://cmst1.web.cern.ch/CMST1/SST/drain.txt"
-    f = open(path + filename + ".txt", "w")
+    url = "https://cmst1.web.cern.ch/CMST1/SST/drain_log.txt"
+    f = open(filename + ".txt", "w")
     for rows in siteList:
         color = "green"
         if siteList[rows] == "drain" : color = "yellow"
         if siteList[rows] == "down" : color  = "red"
         f.write(saveTime + "\t" + rows + "\t" + siteList[rows] + "\t" + color + "\t" + url + "\n")
-    print "List has been created successfully"
+    print "\n*** List has been created successfully ***"
 
 
 #________________________________________________________________________
@@ -144,11 +157,11 @@ def getAllInformation():
     #________________________________getting oldDrainList, oldDownList, wr list, morgue list, sr=SD List, full site list__________________________
 
     fullSiteList  = getList(urlDrain, "*")          # gets full site list from metric 158
-    wrList        = getList(urlWr, "in")            # gets current waiting room list from metric 153
+    wrList        = getTxtList(urlWrTxt, "in")      # gets current waiting room list from metric 153 txt file
     morgueList    = getList(urlMorgue, "in")        # gets current morgue list from metric 199
     oldDownList   = getList(urlDrain, "down")       # gets old down list from metric 158 
     oldDrainList  = getList(urlDrain, "drain")      # gets old drain list from metric 158
-    srStatusList  = getList(urlSD, "SD")            # gets site readiness status from metric 121
+    srStatusList  = getTxtList(urlSDTxt, "scheduled_downtime")      # gets downtime status from metric 134 txt file
     
     print 'starting to fetch all sites from DashBoard'
     daysBrown  = getDayCounts(urlSR, "brown")
@@ -158,7 +171,7 @@ def getAllInformation():
     
     #_______________________________ calculates site readiness ranking for last week per site. __________________________
     
-    average_per_site = CalSiteReadRate(fullSiteList, daysGreen, daysBrown, daysWhite) 
+    average_per_site = CalSiteReadRate(fullSiteList, daysGreen, daysBrown, daysWhite, daysYellow) 
 
     return (oldDrainList, tmpDrainList, oldDownList, tmpDownList, wrList, morgueList,srStatusList, fullSiteList, average_per_site)
 
@@ -166,21 +179,33 @@ def getAllInformation():
 if __name__ == '__main__':
     oldDrainList, tmpDrainList, oldDownList, tmpDownList, wrList, morgueList, srStatusList, fullSiteList, average_per_site = getAllInformation()
     
+    print "\n*** Previous Drain & SR last 7 days (if SR < 0.8 = drain) ***"
     for site in oldDrainList:                   # firstly add old drain list
+        print "%s\t%s" % (site, average_per_site[site])
         if average_per_site[site] < 0.8 :       # if last week siteRanking < 80% keep in drainList
             if not site in tmpDrainList: tmpDrainList.append(site)
 
+    print "\n*** WR (drain) ***"
     for site in fullSiteList:
         if site in wrList:                      # add site into drainNewList if wr = in for site
+            print site
             if not site in tmpDrainList: tmpDrainList.append(site)
+    
+    print "\n*** SD (drain) ***"
+    for site in fullSiteList:
         if site in srStatusList:                # add site into drainNewList if srstatus = sd for site
+            print site
             if not site in tmpDrainList: tmpDrainList.append(site)
 
+    print "\n*** Previous (down) ***"
     for site in oldDownList:                    # firstly add old down list 
+        print (site)
         if not site in tmpDownList: tmpDownList.append(site)
 
+    print "\n*** MORGUE (down) ***"
     for site in fullSiteList:
         if site in morgueList:                  # add site into downNewList if morgue = in for site
+            print (site)
             if not site in tmpDownList: tmpDownList.append(site)
 
     #________________________________ crate new list ______________________________________
