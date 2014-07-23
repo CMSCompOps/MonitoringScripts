@@ -523,9 +523,10 @@ def main():
         out, err = proc.communicate()
         for line in err.split('\n') :
             if 'Error' in line:
-                body_text = 'There is a problem with one of the collectors! The monitoring scripts will give false information:\n\n'
-                body_text += '    /afs/cern.ch/user/c/cmst1/scratch0/WFM_Input_DashBoard/WFMonDBShort.py\n\n'
-                body_text += 'See the log file in the same directory for the error output\n'
+                body_text = 'There is a problem with one of the collectors! The monitoring script may give false information. These are the logs:\n\n'
+                body_text += err
+                body_text += '\nSee the log file in this directory for more output logs:\n\n'
+                body_text += '    /afs/cern.ch/user/c/cmst1/scratch0/MonitoringScripts/WFM_Input_DashBoard\n'
                 send_mail(mailingSender,
                           mailingList,
                           '[Monitoring] Condor Collector %s Error' % col,
