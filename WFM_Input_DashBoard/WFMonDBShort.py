@@ -53,7 +53,7 @@ t0Types = ['Repack', 'Express', 'Reco']
 
 # Mailing list for notifications
 mailingSender = 'cmst1@cern.ch'
-mailingList = ['luis89@fnal.gov']
+mailingList = ['luis89@fnal.gov','dmason@fnal.gov']
 #mailingList = ['cms-comp-ops-workflow-team@cern.ch']
 
 def createSiteList():
