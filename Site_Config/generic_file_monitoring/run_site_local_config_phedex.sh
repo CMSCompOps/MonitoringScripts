@@ -30,10 +30,10 @@ fi
 
 
 #Run the script
-txt="gfm"
-findText="statistics-destination"
+txt="phedex_node_value"
+findText="local-stage-out"
 echo "python site_local_config.py > $txt.txt and $txt.json"
-python site_local_config.py $txt $findText &> site_local_config.log
+python site_local_config.py $txt $findText &> site_local_config_phedex_node_value.log
 problem="$?"
 echo "problem: $problem"
 echo "The files were created succesfully."
