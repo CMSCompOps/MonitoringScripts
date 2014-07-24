@@ -1,19 +1,20 @@
 #!/bin/bash
+# written by John Artieda
 
+# set up a proxy to read site config files
 #clear
 #source /afs/cern.ch/project/gd/LCG-share/new_3.2/etc/profile.d/grid_env.sh
 #voms-proxy-init -voms cms
 
 # Email if things are running slowly
-
 if [ -f scriptRunning.run ];
 then
-   echo "run_site_local_config.sh is already running. Will send an email to the admin."
+   echo "run_phedex_node.sh is already running. Will send an email to the admin."
    # script to send simple email
    # email subject
-   SUBJECT="[TFC] load site-local-config"
+   SUBJECT="[TFC] load phedex_node"
    # Email To ?
-   EMAIL="gokhan.kandemir@cern.ch"
+   EMAIL="cms-comp-ops-site-support-team@cern.ch"
    # Email text/message
    if [ -f emailmessage.txt ];
    then
@@ -21,27 +22,25 @@ then
    fi
    touch emailmessage.txt
    EMAILMESSAGE="/tmp/emailmessage.txt"
-   echo "run_site_local_config.sh  is running to slowly."
+   echo "run_phedex_node.sh  is running slowly."
    # send an email using /bin/mail
    /bin/mail -s "$SUBJECT" "$EMAIL" < $EMAILMESSAGE
-
 else
-     echo "bash run_site_local_config.sh succesfully"
+     echo "bash run_phedex_node.sh completed succesfully"
      touch scriptRunning.run
 fi
 
-
 #Run the script
-txt="gfm"
-echo "python site_local_config.py > $txt.txt and $txt.json"
+txt="phedex_node"
+echo "python phedex_node.py > $txt.txt and $txt.json"
 
-findText="statistics-destination"
-python site_local_config.py $txt $findText &> site_local_config.log
+findText="phedex-node"
+python phedex_node.py $txt $findText &> phedex_node.log
 
 problem="$?"
 echo "problem: $problem"
 echo "The files were created succesfully."
 
-cp $txt".txt" /afs/cern.ch/user/c/cmst1/www/SST
+cp $txt".txt" /afs/cern.ch/user/c/cmst1/www/SST/
 
 rm scriptRunning.run
