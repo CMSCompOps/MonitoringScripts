@@ -2,9 +2,9 @@
 # written by John Artieda
 
 # set up a proxy to read site config files
-#clear
-#source /afs/cern.ch/project/gd/LCG-share/new_3.2/etc/profile.d/grid_env.sh
-#voms-proxy-init -voms cms
+clear
+source /afs/cern.ch/project/gd/LCG-share/new_3.2/etc/profile.d/grid_env.sh
+voms-proxy-init -voms cms
 
 # Email if things are running slowly
 if [ -f scriptRunning.run ];

@@ -1,8 +1,8 @@
 #!/bin/bash
 
-#clear
-#source /afs/cern.ch/project/gd/LCG-share/new_3.2/etc/profile.d/grid_env.sh
-#voms-proxy-init -voms cms
+clear
+source /afs/cern.ch/project/gd/LCG-share/new_3.2/etc/profile.d/grid_env.sh
+voms-proxy-init -voms cms
 
 # Email if things are running slowly
 
@@ -29,7 +29,6 @@ else
      echo "bash run_site_local_config.sh succesfully"
      touch scriptRunning.run
 fi
-
 
 #Run the script
 cd /afs/cern.ch/user/j/jartieda/MonitoringScripts/Site_Config/generic_file_monitoring
