@@ -88,6 +88,7 @@ def getXmlfromURL(url,api):
 #_____________________________________________________________________________
 if __name__ == '__main__':
   outputfile_txt=sys.argv[1]
+  print outputfile_txt
   findText=sys.argv[2]
   print findText
   print 'starting to fetch all site and calculate the number of T1s and T2s counts.'

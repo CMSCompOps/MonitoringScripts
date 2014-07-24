@@ -2,6 +2,9 @@
 # written by Gökhan Kandemir => gokhan.kandemir@cern.ch
 # this script calculates the number of T1s and T2s counts and writes results to console and file.
 clear
+echo "To Prevent ask typing password constantly, Registering your KEY and CERT to Grid Environment"
+#source /afs/cern.ch/project/gd/LCG-share/new_3.2/etc/profile.d/grid_env.sh
+#voms-proxy-init -voms cms
 # Email if things are running slowly
 
 if [ -f scriptRunning.run ];
@@ -28,18 +31,18 @@ else
      touch scriptRunning.run
 fi
 
-
 #Run the script
-txt="gfm"
+fileName="gfm"
 findText="statistics-destination"
+sourcePath="/afs/cern.ch/user/c/cmst1/scratch0/MonitoringScripts/Site_Config/generic_file_monitoring"
+txt=$sourcePath"/"$fileName
 echo "python site_local_config.py > $txt.txt and $txt.json"
-python site_local_config.py $txt $findText &> site_local_config.log
+python $sourcePath"/"site_local_config.py $txt $findText &> $sourcePath"/"site_local_config_phedex_node_value.log
 problem="$?"
 echo "problem: $problem"
 echo "The files were created succesfully."
 
-cp $txt".txt" /afs/cern.ch/user/c/cmst1/www/SST
-cp $txt".json"  /afs/cern.ch/user/c/cmst1/www/SST
-
+python $sourcePath"/"site_local_config.py &> $sourcePath"/"site_local_config.log
+cp $txt".txt" /afs/cern.ch/user/c/cmst1/www/SST/
+cp $txt".json" /afs/cern.ch/user/c/cmst1/www/SST/
 rm scriptRunning.run
-

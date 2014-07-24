@@ -30,16 +30,18 @@ fi
 
 
 #Run the script
-txt="phedex_node_value"
+fileName="phedex_node_value"
 findText="local-stage-out"
+sourcePath="/afs/cern.ch/user/c/cmst1/scratch0/MonitoringScripts/Site_Config/generic_file_monitoring"
+txt=$sourcePath"/"$fileName
 echo "python site_local_config.py > $txt.txt and $txt.json"
-python site_local_config.py $txt $findText &> site_local_config_phedex_node_value.log
+python $sourcePath"/"site_local_config.py $txt $findText &> $sourcePath"/"site_local_config_phedex_node_value.log
 problem="$?"
 echo "problem: $problem"
 echo "The files were created succesfully."
 
-cp $txt".txt" /afs/cern.ch/user/c/cmst1/www/SST
-cp $txt".json"  /afs/cern.ch/user/c/cmst1/www/SST
-
+python $sourcePath"/"site_local_config.py &> $sourcePath"/"site_local_config.log
+cp $txt".txt" /afs/cern.ch/user/c/cmst1/www/SST/
+cp $txt".json" /afs/cern.ch/user/c/cmst1/www/SST/
 rm scriptRunning.run
 
