@@ -1,10 +1,9 @@
 #!/bin/bash
-# written by Gökhan Kandemir => gokhan.kandemir@cern.ch
-# this script calculates the number of T1s and T2s counts and writes results to console and file.
-clear
-echo "To Prevent ask typing password constantly, Registering your KEY and CERT to Grid Environment"
-source /afs/cern.ch/project/gd/LCG-share/new_3.2/etc/profile.d/grid_env.sh
-voms-proxy-init -voms cms
+
+#clear
+#source /afs/cern.ch/project/gd/LCG-share/new_3.2/etc/profile.d/grid_env.sh
+#voms-proxy-init -voms cms
+
 # Email if things are running slowly
 
 if [ -f scriptRunning.run ];
@@ -35,7 +34,9 @@ fi
 #Run the script
 txt="gfm"
 echo "python site_local_config.py > $txt.txt and $txt.json"
-python site_local_config.py $txt &> site_local_config.log
+
+findText="statistics-destination"
+python site_local_config.py $txt $findText &> site_local_config.log
 
 problem="$?"
 echo "problem: $problem"
