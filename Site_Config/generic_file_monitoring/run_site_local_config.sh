@@ -32,7 +32,7 @@ fi
 
 
 #Run the script
-cd /afs/cern.ch/user/c/cmst1/scratch0/MonitoringScripts/Site_Config/generic_file_monitoring
+cd /afs/cern.ch/user/j/jartieda/MonitoringScripts/Site_Config/generic_file_monitoring
 txt="gfm"
 echo "python site_local_config.py > $txt.txt and $txt.json"
 

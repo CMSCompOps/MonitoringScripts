@@ -31,7 +31,7 @@ else
 fi
 
 #Run the script
-cd /afs/cern.ch/user/c/cmst1/scratch0/MonitoringScripts/Site_Config/phedex-node
+cd /afs/cern.ch/user/j/jartieda/MonitoringScripts/Site_Config/phedex-node
 txt="phedex_node"
 echo "python phedex_node.py > $txt.txt and $txt.json"
 
