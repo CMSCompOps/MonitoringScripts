@@ -22,7 +22,7 @@ collectors = ['vocms97.cern.ch', 'vocms165.cern.ch']
 
 ##The following groups should be updated according to https://twiki.cern.ch/twiki/bin/view/CMSPublic/CompOpsWorkflowTeamWmAgentRealeases
 relvalAgents = ['vocms142.cern.ch', 'vocms174.cern.ch', 'cmssrv113.fnal.gov']
-testAgents = ['cmssrv94.fnal.gov', 'cmssrv101.fnal.gov', 'vocms230.cern.ch', 'vocms231.cern.ch', 'cmsgwms-submit1.fnal.gov']
+testAgents = ['cmssrv94.fnal.gov', 'cmssrv101.fnal.gov', 'vocms230.cern.ch', 'vocms231.cern.ch', 'cmsgwms-submit1.fnal.gov', '_condor@vocms227.cern.ch']
 
 ## Counting by site
 baseSiteList = {} # Site list
