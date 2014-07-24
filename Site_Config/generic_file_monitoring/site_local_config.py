@@ -17,8 +17,8 @@ def fetch_all_sites(url, api):
     #________________fetch all siteName from siteDB v2________________________________
     headers = {"Accept": "application/json"}
     if 'X509_USER_PROXY' in os.environ:
-      print 'X509_USER_PROXY found'
-      conn = httplib.HTTPSConnection(url, cert_file = os.getenv('X509_USER_PROXY'), key_file = os.getenv('X509_USER_PROXY'))
+        print 'X509_USER_PROXY found'
+        conn = httplib.HTTPSConnection(url, cert_file = os.getenv('X509_USER_PROXY'), key_file = os.getenv('X509_USER_PROXY'))
     elif 'X509_USER_CERT' in os.environ and 'X509_USER_KEY' in os.environ:
         print 'X509_USER_CERT and X509_USER_KEY found'
         conn = httplib.HTTPSConnection(url, cert_file = os.getenv('X509_USER_CERT'), key_file = os.getenv('X509_USER_KEY'))
@@ -70,22 +70,22 @@ def match(xml, siteName, findText):
 #_______________________________________________________________________________
 # function reads  your certificate and gets site-local-config.xml from URL
 def getXmlfromURL(url,api):
-  headers = {"Accept": "application/xml"}
-  if 'X509_USER_PROXY' in os.environ:
-      print 'X509_USER_PROXY found'
-      conn = httplib.HTTPSConnection(url, cert_file = os.getenv('X509_USER_PROXY'), key_file = os.getenv('X509_USER_PROXY'))
-  elif 'X509_USER_CERT' in os.environ and 'X509_USER_KEY' in os.environ:
-      print 'X509_USER_CERT and X509_USER_KEY found'
-      conn = httplib.HTTPSConnection(url, cert_file = os.getenv('X509_USER_CERT'), key_file = os.getenv('X509_USER_KEY'))
-  elif os.path.isfile('/data/certs/servicecert.pem') and os.path.isfile('/data/certs/servicekey.pem'):
-      conn = httplib.HTTPSConnection(url, cert_file = '/data/certs/servicecert.pem', key_file = '/data/certs/servicekey.pem')
-  else:
-      print 'You need a valid proxy or cert/key files'
-      sys.exit()
-  r1=conn.request("GET",api, None, headers)
-  r2=conn.getresponse()
-  xml = r2.read()
-  return xml
+    headers = {"Accept": "application/xml"}
+    if 'X509_USER_PROXY' in os.environ:
+        print 'X509_USER_PROXY found'
+        conn = httplib.HTTPSConnection(url, cert_file = os.getenv('X509_USER_PROXY'), key_file = os.getenv('X509_USER_PROXY'))
+    elif 'X509_USER_CERT' in os.environ and 'X509_USER_KEY' in os.environ:
+        print 'X509_USER_CERT and X509_USER_KEY found'
+        conn = httplib.HTTPSConnection(url, cert_file = os.getenv('X509_USER_CERT'), key_file = os.getenv('X509_USER_KEY'))
+    elif os.path.isfile('/data/certs/servicecert.pem') and os.path.isfile('/data/certs/servicekey.pem'):
+        conn = httplib.HTTPSConnection(url, cert_file = '/data/certs/servicecert.pem', key_file = '/data/certs/servicekey.pem')
+    else:
+        print 'You need a valid proxy or cert/key files'
+        sys.exit()
+    r1=conn.request("GET",api, None, headers)
+    r2=conn.getresponse()
+    xml = r2.read()
+    return xml
 #_____________________________________________________________________________
 if __name__ == '__main__':
   outputfile_txt=sys.argv[1]
