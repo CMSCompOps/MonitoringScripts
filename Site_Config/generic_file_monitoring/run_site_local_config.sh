@@ -42,7 +42,5 @@ echo "problem: $problem"
 echo "The files were created succesfully."
 
 cp $txt".txt" /afs/cern.ch/user/c/cmst1/www/SST
-cp $txt".json"  /afs/cern.ch/user/c/cmst1/www/SST
 
 rm scriptRunning.run
-
