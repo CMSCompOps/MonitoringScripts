@@ -56,15 +56,15 @@ def match(xml, siteName, findText):
       file.write(saveTime + "\t" + siteName + "\t" + "yes" + "\t" + "green" + "\t" + url + "\n")
       jsonCode = jsonCode + "{" + '"siteName":"' + siteName + '", "yes_no":' + '"yes"' + ',' + '"color":"green' + '",' + '"url":"' + url + '"},'    
     else:                           # findText not found in file
-      print saveTime + "\t" + siteName + "\t" + "no" + "\t" + "yellow" + "\t" + url
-      file.write(saveTime + "\t" + siteName + "\t" + "no" + "\t" + "yellow" + "\t" + url + "\n")
-      jsonCode = jsonCode + "{" + '"siteName":"' + siteName + '", "yes_no":' + '"no"' + ',' + '"color":"yellow' + '",' + '"url":"' + url + '"},'
+      print saveTime + "\t" + siteName + "\t" + "no" + "\t" + "red" + "\t" + url
+      file.write(saveTime + "\t" + siteName + "\t" + "no" + "\t" + "red" + "\t" + url + "\n")
+      jsonCode = jsonCode + "{" + '"siteName":"' + siteName + '", "yes_no":' + '"no"' + ',' + '"color":"red' + '",' + '"url":"' + url + '"},'
       if (siteName[0:2] == "T1") : T1Count = T1Count + 1
       if (siteName[0:2] == "T2") : T2Count = T2Count + 1 
   else:                             # couldn't find site-local-config file
-    print saveTime + "\t" + siteName + "\t" + "no" + "\t" + "red" + "\t" + url
-    file.write(saveTime + "\t" + siteName + "\t" + "no" + "\t" + "red" + "\t" + url + "\n")
-    jsonCode = jsonCode + "{" + '"siteName":"' + siteName + '", "yes_no":' + '"no"' + ',' + '"color":"red' + '",' + '"url":"' + url + '"},'
+    print saveTime + "\t" + siteName + "\t" + "no" + "\t" + "white" + "\t" + url
+    file.write(saveTime + "\t" + siteName + "\t" + "no" + "\t" + "white" + "\t" + url + "\n")
+    jsonCode = jsonCode + "{" + '"siteName":"' + siteName + '", "yes_no":' + '"no"' + ',' + '"color":"white' + '",' + '"url":"' + url + '"},'
     if (siteName[0:2] == "T1") : T1Count = T1Count + 1
     if (siteName[0:2] == "T2") : T2Count = T2Count + 1
 #_______________________________________________________________________________
