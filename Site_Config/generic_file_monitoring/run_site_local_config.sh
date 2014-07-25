@@ -21,7 +21,7 @@ then
       rm emailmessage.txt
    fi
    touch emailmessage.txt
-   echo "run_site_local_config.sh  is running to slowly." > emailmessage.txt
+   echo "run_site_local_config.sh  is running slowly." > emailmessage.txt
    # send an email using /bin/mail
    /bin/mail -s "$SUBJECT" "$EMAIL" < emailmessage.txt
 else
