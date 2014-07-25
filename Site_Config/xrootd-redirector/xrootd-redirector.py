@@ -39,7 +39,7 @@ def fetch_all_sites(url, api):
     #______________________________________________________________________________________
     # To get all site-local-config information.
     for siteName in sitesList:
-        xml = getXmlfromURL('cmsweb.cern.ch','/gitweb/?p=siteconf/.git;a=blob_plain;f=' + siteName + '/JobConfig/site-local-config.xml;hb=HEAD')
+        xml = getXmlfromURL('cmsweb.cern.ch','/gitweb/?p=siteconf/.git;a=blob_plain;f=' + siteName + '/PhEDEx/storage.xml;hb=HEAD')
         match(xml, siteName, findText1, findText2)
 #__________________________________________________________________________________________
 # function calculates the number of T1s and T2s counts and writes results to console and file.
@@ -50,10 +50,10 @@ def match(xml, siteName, findText1, findText2):
   url = "https://cmsweb.cern.ch/gitweb/?p=siteconf/.git;a=blob_plain;f=" + siteName + "/PhEDEx/storage.xml;hb=HEAD"
   if (findTxt in xml) == False:     # site-local-config file found
     dom = parseString(xml)
-    tag = dom.getElementsByTagName('storage-mapping')[0].getElementsByTagName('lfn-to-pfn')
+    tag = dom.getElementsByTagName('lfn-to-pfn')
     val = 0
     for s in tag:
-        if (s.getAttribute('result') == findText1) or (s.getAttribute('result') == findText2) :
+        if (s.getAttribute('result') == findText1) or (s.getAttribute('result') == findText2):
             val = 1
     if val == 1:                    # findText found in file
       print saveTime + "\t" + siteName + "\t" + "yes" + "\t" + "green" + "\t" + url
@@ -73,10 +73,10 @@ def match(xml, siteName, findText1, findText2):
 def getXmlfromURL(url,api):
   headers = {"Accept": "application/xml"}
   if 'X509_USER_PROXY' in os.environ:
-      print 'X509_USER_PROXY found'
+      #print 'X509_USER_PROXY found'
       conn = httplib.HTTPSConnection(url, cert_file = os.getenv('X509_USER_PROXY'), key_file = os.getenv('X509_USER_PROXY'))
   elif 'X509_USER_CERT' in os.environ and 'X509_USER_KEY' in os.environ:
-      print 'X509_USER_CERT and X509_USER_KEY found'
+      #print 'X509_USER_CERT and X509_USER_KEY found'
       conn = httplib.HTTPSConnection(url, cert_file = os.getenv('X509_USER_CERT'), key_file = os.getenv('X509_USER_KEY'))
   elif os.path.isfile('/data/certs/servicecert.pem') and os.path.isfile('/data/certs/servicekey.pem'):
       conn = httplib.HTTPSConnection(url, cert_file = '/data/certs/servicecert.pem', key_file = '/data/certs/servicekey.pem')
