@@ -5,7 +5,6 @@ import urllib, httplib, urllib2
 import string
 import simplejson
 from xml.dom.minidom import parse, parseString
-from xml import xpath
 #_____________________________________________________________________________
 siteList = {}
 global findText

@@ -1,11 +1,12 @@
 #!/bin/bash
+# written by John Artieda
 
-clear
-source /afs/cern.ch/project/gd/LCG-share/new_3.2/etc/profile.d/grid_env.sh
-voms-proxy-init -voms cms
+# set up a proxy to read site config files
+#clear
+#source /afs/cern.ch/project/gd/LCG-share/new_3.2/etc/profile.d/grid_env.sh
+#voms-proxy-init -voms cms
 
 # Email if things are running slowly
-
 if [ -f scriptRunning.run ];
 then
    echo "run_site_local_config.sh is already running. Will send an email to the admin."
@@ -13,30 +14,28 @@ then
    # email subject
    SUBJECT="[TFC] load site-local-config"
    # Email To ?
-   EMAIL="gokhan.kandemir@cern.ch"
+   EMAIL="cms-comp-ops-site-support-team@cern.ch"
    # Email text/message
    if [ -f emailmessage.txt ];
    then
       rm emailmessage.txt
    fi
    touch emailmessage.txt
-   EMAILMESSAGE="/tmp/emailmessage.txt"
-   echo "run_site_local_config.sh  is running to slowly."
+   echo "run_site_local_config.sh  is running to slowly." > emailmessage.txt
    # send an email using /bin/mail
-   /bin/mail -s "$SUBJECT" "$EMAIL" < $EMAILMESSAGE
-
+   /bin/mail -s "$SUBJECT" "$EMAIL" < emailmessage.txt
 else
      echo "bash run_site_local_config.sh succesfully"
      touch scriptRunning.run
 fi
 
 #Run the script
-cd /afs/cern.ch/user/j/jartieda/MonitoringScripts/Site_Config/generic_file_monitoring
-txt="gfm"
-echo "python site_local_config.py > $txt.txt and $txt.json"
-
+path="/afs/cern.ch/user/j/jartieda/MonitoringScripts/Site_Config/generic_file_monitoring"
+txt=$path"/gfm"
 findText="statistics-destination"
-python site_local_config.py $txt $findText &> site_local_config.log
+
+echo "python site_local_config.py > $txt.txt and $txt.json"
+python $path"/"site_local_config.py $txt $findText &> $path"/"site_local_config.log
 
 problem="$?"
 echo "problem: $problem"

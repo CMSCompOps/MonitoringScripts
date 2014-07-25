@@ -2,9 +2,9 @@
 # written by John Artieda
 
 # set up a proxy to read site config files
-clear
-source /afs/cern.ch/project/gd/LCG-share/new_3.2/etc/profile.d/grid_env.sh
-voms-proxy-init -voms cms
+#clear
+#source /afs/cern.ch/project/gd/LCG-share/new_3.2/etc/profile.d/grid_env.sh
+#voms-proxy-init -voms cms
 
 # Email if things are running slowly
 if [ -f scriptRunning.run ];
@@ -21,22 +21,21 @@ then
       rm emailmessage.txt
    fi
    touch emailmessage.txt
-   EMAILMESSAGE="/tmp/emailmessage.txt"
-   echo "run_phedex_node.sh  is running slowly."
+   echo "run_phedex_node.sh  is running slowly." > emailmessage.txt
    # send an email using /bin/mail
-   /bin/mail -s "$SUBJECT" "$EMAIL" < $EMAILMESSAGE
+   /bin/mail -s "$SUBJECT" "$EMAIL" < emailmessage.txt
 else
      echo "bash run_phedex_node.sh completed succesfully"
      touch scriptRunning.run
 fi
 
 #Run the script
-cd /afs/cern.ch/user/j/jartieda/MonitoringScripts/Site_Config/phedex-node
-txt="phedex_node"
-echo "python phedex_node.py > $txt.txt and $txt.json"
-
+path="/afs/cern.ch/user/j/jartieda/MonitoringScripts/Site_Config/phedex-node"
+txt=$path"/phedex_node"
 findText="phedex-node"
-python phedex_node.py $txt $findText &> phedex_node.log
+
+echo "python phedex_node.py > $txt.txt and $txt.json"
+python $path"/"phedex_node.py $txt $findText &> $path"/"phedex_node.log
 
 problem="$?"
 echo "problem: $problem"
