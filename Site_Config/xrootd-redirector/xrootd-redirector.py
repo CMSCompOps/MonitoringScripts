@@ -62,22 +62,30 @@ def match(xml, siteName, findText1, findText2):
                 print saveTime + "\t" + siteName + "\t" + "yes" + "\t" + "green" + "\t" + url
                 file.write(saveTime + "\t" + siteName + "\t" + "yes" + "\t" + "green" + "\t" + url + "\n")    
             else:                           # findText not found in file
-                n = n + 1
+                if (siteName[0:2] == "T1"): n = n + 1
+                else: n = 3
+                
                 if n == 1:
                     xml = getXmlfromURL('cmsweb.cern.ch','/gitweb/?p=siteconf/.git;a=blob_plain;f=' + siteName + '/PhEDEx/storage-disk.xml;hb=HEAD')
+                    url = "https://cmsweb.cern.ch/gitweb/?p=siteconf/.git;a=blob_plain;f=" + siteName + "/PhEDEx/storage-disk.xml;hb=HEAD"
                 elif n == 2:
                     xml = getXmlfromURL('cmsweb.cern.ch','/gitweb/?p=siteconf/.git;a=blob_plain;f=' + siteName + '/PhEDEx/storage_disk.xml;hb=HEAD')
+                    url = "https://cmsweb.cern.ch/gitweb/?p=siteconf/.git;a=blob_plain;f=" + siteName + "/PhEDEx/storage_disk.xml;hb=HEAD"
                 else:
                     print saveTime + "\t" + siteName + "\t" + "no" + "\t" + "red" + "\t" + url
                     file.write(saveTime + "\t" + siteName + "\t" + "no" + "\t" + "red" + "\t" + url + "\n")
                     if (siteName[0:2] == "T1") : T1Count = T1Count + 1
                     if (siteName[0:2] == "T2") : T2Count = T2Count + 1 
         else:                             # couldn't find site-local-config file
-            n = n + 1
+            if (siteName[0:2] == "T1"): n = n + 1
+            else: n = 3
+            
             if n == 1:
                 xml = getXmlfromURL('cmsweb.cern.ch','/gitweb/?p=siteconf/.git;a=blob_plain;f=' + siteName + '/PhEDEx/storage-disk.xml;hb=HEAD')
+                url = "https://cmsweb.cern.ch/gitweb/?p=siteconf/.git;a=blob_plain;f=" + siteName + "/PhEDEx/storage-disk.xml;hb=HEAD"
             elif n == 2:
                 xml = getXmlfromURL('cmsweb.cern.ch','/gitweb/?p=siteconf/.git;a=blob_plain;f=' + siteName + '/PhEDEx/storage_disk.xml;hb=HEAD')
+                url = "https://cmsweb.cern.ch/gitweb/?p=siteconf/.git;a=blob_plain;f=" + siteName + "/PhEDEx/storage_disk.xml;hb=HEAD"
             else:
                 print saveTime + "\t" + siteName + "\t" + "no" + "\t" + "white" + "\t" + url
                 file.write(saveTime + "\t" + siteName + "\t" + "no" + "\t" + "white" + "\t" + url + "\n")
