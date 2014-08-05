@@ -96,7 +96,7 @@ then
     # email subject
     SUBJECT="[MonitoringScripts] sActiveSites.sh completed successfully: WR List updated!"
     # Email To ?
-    EMAIL="artiedaj@fnal.gov, gokhan.kandemir@cern.ch"
+    EMAIL="artiedaj@fnal.gov, ali.mehmet.altundag@cern.ch"
     # Email text/message
     if [ -f emailmessage.txt ];
     then
