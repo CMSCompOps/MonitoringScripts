@@ -12,6 +12,7 @@ import simplejson as json
 
 #extract nonwaitingroommsites from ActiveSites SSB metric 39 output
 url2 = "http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=39&time=24&dateFrom=&dateTo=&site=T2_AT_Vienna&sites=all&clouds=undefined&batch=1"
+url2t = "https://cmsdoc.cern.ch/cms/LCG/SiteComm/T2WaitingList/WasCommissionedT2ForSiteMonitor.txt"
 
 # Read SSB metric 45 to get complete list of sites considered in SR Status
 def extractJson():
@@ -42,11 +43,21 @@ def getNonWaitingRoomSites(url):
   for row in rows['csvdata']:
     sites.append(row['VOName'])
   return sites
+  
+def getNonWaitingRoomSitesText(url): #function to read info from txt file
+  print "Getting the txt %s" % url
+  sites = []
+  for line in urllib2.urlopen(url).readlines():
+    row = line.split("\t")
+    if len(row) == 5 :
+        siteName = row[1]
+        sites.append(siteName) 
+  return sites
 
 def main_function(outputfile_txt):
   # non-waitingroom sites
   print 'Fetchting all the sites that are not in waitingroom'
-  nonWaitingRoom_Sites = getNonWaitingRoomSites(url2)
+  nonWaitingRoom_Sites = getNonWaitingRoomSitesText(url2t)
   print 'number of non waiting room  sites: ', len(nonWaitingRoom_Sites)
   print nonWaitingRoom_Sites
   print '------------------------------------------'
