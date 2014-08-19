@@ -40,7 +40,7 @@ def GetSites():
             ret[siteName].append(serviceName)
     return ret
 
-url       = 'http://dashb-cms-sum.cern.ch/dashboard/request.py/getTestResults?profile_name=CMS_CRITICAL_FULL&hostname=%s&flavours=CREAM-CE,SRMv2&metrics=org.cms.WN-xrootd-fallback&time_range=individual&start_time=%s&end_time=%s'
+url       = 'http://dashb-cms-sum.cern.ch/dashboard/request.py/getTestResults?profile_name=CMS_CRITICAL_FULL&hostname=%s&flavours=CREAM-CE,OSG-CE&metrics=org.cms.WN-xrootd-fallback&time_range=individual&start_time=%s&end_time=%s'
 template  = Read('template.html')
 sites     = GetSites()
 
