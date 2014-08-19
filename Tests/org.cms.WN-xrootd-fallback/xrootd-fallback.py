@@ -1,4 +1,5 @@
 #aaltunda - ali.mehmet.altundag@cern.ch
+
 import urllib2, time, json, datetime
 import xml.etree.ElementTree as ET
 
@@ -34,6 +35,7 @@ def GetSites():
         services = site.findall('service')
         ret[siteName] = []
         for service in services:
+            if 'SRMv2' in service.attrib['flavour']: continue
             serviceName = service.attrib['hostname']
             ret[siteName].append(serviceName)
     return ret
@@ -45,6 +47,7 @@ sites     = GetSites()
 now       = time.time()
 endTime   = time.strftime("%Y-%m-%dZT%H:%M:00Z", time.localtime(int(now)))
 startTime = time.strftime("%Y-%m-%dZT%H:%M:00Z", time.localtime(int(now-24*60*60)))
+print startTime, endTime
 
 hTable    = ''
 siteNames = sites.keys()
@@ -53,7 +56,6 @@ for site in siteNames:
     print site
     for hostName in sites[site]:
         #ignore all SRMs
-        if 'srm' in hostName and 'cmsrm' not in hostName: continue
         hRow = '<tr><td> <b>%s</b> - %s </td>' % (site, hostName)
         print '\t', hostName
         dest = url % (hostName, startTime, endTime)
