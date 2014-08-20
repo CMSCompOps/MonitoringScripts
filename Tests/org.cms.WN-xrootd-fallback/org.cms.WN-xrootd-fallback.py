@@ -73,6 +73,7 @@ for site in siteNames:
             hCellClass = 'unknown'
             if 'OK' in stat: hCellClass = 'success'
             elif 'WARNING' in stat: hCellClass = 'warning'
+            elif 'MISSING' in stat: hCellClass = 'error'
             hRow = hRow + '<div class="box %s"> <div><b>%s</b> - %s</div> </div>' % (hCellClass, date, stat)
         hRow = hRow + '<td></tr>\n'
         hTable = hTable + hRow
