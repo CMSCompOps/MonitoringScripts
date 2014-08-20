@@ -46,8 +46,9 @@ template  = Read('template.html')
 sites     = GetSites()
 
 now       = time.time()
+slot      = 36*60*60
 endTime   = time.strftime("%Y-%m-%dZT%H:%M:00Z", time.localtime(int(now)))
-startTime = time.strftime("%Y-%m-%dZT%H:%M:00Z", time.localtime(int(now-24*60*60)))
+startTime = time.strftime("%Y-%m-%dZT%H:%M:00Z", time.localtime(int(now-slot)))
 print startTime, endTime
 
 hTable    = ''
@@ -79,5 +80,6 @@ for site in siteNames:
         hTable = hTable + hRow
 
 template = template.replace('%%DATE%%', time.strftime("%Y-%m-%d %H:%M"))
+template = template.replace('%%TIME_RANGE%%', '%s, %s (%s hours)' % (startTime, endTime, slot/(60*60)))
 template = template.replace('%%TABLE_CONTENT%%', hTable)
 Write('org.cms.WN-xrootd-fallback.html', template)
