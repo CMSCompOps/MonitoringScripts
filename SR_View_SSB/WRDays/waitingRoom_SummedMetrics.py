@@ -63,8 +63,6 @@ def main_function(outputfile_txt, submonths):
     temp = 0  
     for k in jsn['csvdata']: # JSON file reads.
       if k['VOName'] != site: continue
-      elif k['COLORNAME'] == 'green': continue # if the site is green continue
-      elif k['COLORNAME'] == 'white' : continue # if the site is white continue
       # startime of entry
 #************************************************Modifications**************************************
       elif k['COLORNAME'] == 'red': # if the site is red then calculate wrDays
