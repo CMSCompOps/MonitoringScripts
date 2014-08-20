@@ -5,14 +5,15 @@
 <style>
 body{font-family: Arial; margin-bottom: 128px;}
 table.content {}
-table.content td {padding: 2px;}
-table.content thead th {background: #e8e6e8; padding: 2px}
-table.content tr:nth-child(even) {background: #f9f9f9}
-table.content tr:nth-child(odd)  {background: #fff}
+table.content td {padding: 0px;}
+table.content thead th {background: #EBDACB; padding: 3px}
+table.content tr:nth-child(even) {background: #f8f2e4}
+table.content tr:nth-child(odd)  {background: #fbf8f1}
 div.box{
-    height: 24px;
-    width: 24px;
+    height: 16px;
+    width: 16px;
     border-right: solid 1px #000;
+    border-bottom: solid 1px #000;
     display:inline-block;
 }
 div.box div
@@ -34,7 +35,7 @@ div.box:hover div
 div.warning{
     color: #8a6d3b;
     background-color: #FFEB68;
-    border-color: #FFE431;
+    border-color: #F0D524;
 }
 div.success{
     color: #3c763d;
@@ -67,6 +68,7 @@ $(document).ready(function(){
 
 <body>
 <h1> org.cms.WN-xrootd-fallback %%DATE%% </h1>
+<h2> Time range: %%TIME_RANGE%% </h2>
 <table class="content" cellspacing="0">
 <thead>
     <tr>
