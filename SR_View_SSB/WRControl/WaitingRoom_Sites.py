@@ -125,8 +125,8 @@ def main_function(outputfile_txt):
       print k, 'w', 'yellow'
       f1.write(now_write+'\t')    # timestamp
       f1.write(''.join(k))        # sitename
-      f1.write('\tw')           # value
-      f1.write('\tyellow\t')       # color
+      f1.write('\tw')             # value
+      f1.write('\tyellow\t')      # color
       f1.write(''.join(link))     # link
       f1.write('\n')
       continue
