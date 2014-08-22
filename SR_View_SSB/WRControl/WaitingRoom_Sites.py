@@ -1,5 +1,4 @@
 import os, sys, errno
-import urllib2
 import simplejson
 from datetime import datetime
 from datetime import timedelta
@@ -13,6 +12,7 @@ import simplejson as json
 #extract nonwaitingroommsites from ActiveSites SSB metric 39 output
 url2 = "http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=39&time=24&dateFrom=&dateTo=&site=T2_AT_Vienna&sites=all&clouds=undefined&batch=1"
 url2t = "https://cmsdoc.cern.ch/cms/LCG/SiteComm/T2WaitingList/WasCommissionedT2ForSiteMonitor.txt"
+urlSRRanking = "http://cms-site-readiness.web.cern.ch/cms-site-readiness/SiteReadiness/toSSB/SiteReadinessRanking_SSBfeed_last15days.txt"
 
 # Read SSB metric 45 to get complete list of sites considered in SR Status
 def extractJson():
@@ -54,6 +54,36 @@ def getNonWaitingRoomSitesText(url): #function to read info from txt file
         sites.append(siteName) 
   return sites
 
+# dashboard entry structure
+class Entry:
+  def __init__(self, row = (None, None, None, None, None)):
+    self.Date  = row[0]
+    self.Name  = row[1]
+    self.Value = row[2]
+    self.Color = row[3]
+    self.URL   = row[4]
+
+# returns parsed metric entries in the class structure
+def ParseMetric(url):
+  # get the metric content
+  urlObj  = urllib2.urlopen(url)
+  data    = urlObj.read()
+  # parse the metric
+  parsed  = re.findall(r'(.*?)\t(.*?)\t(.*?)\t(.*?)\t(.*?)\n', data, re.M)
+  entries = []
+  for i in parsed:
+    entry = Entry(i)
+    entries.append(entry) 
+  entries.sort(key=lambda x: x.Name)
+  return entries
+
+SRRanking = ParseMetric(urlSRRanking)
+def IsMarkedRed(siteName):
+  for site in SRRanking:
+    # find the site and if it is marked as red in SRRanking, return True
+    if site.Name == siteName and site.Color == 'red': return True
+  return False
+
 def main_function(outputfile_txt):
   # non-waitingroom sites
   print 'Fetchting all the sites that are not in waitingroom'
@@ -88,14 +118,25 @@ def main_function(outputfile_txt):
     f1.write(''.join(link))         # link
     f1.write('\n')
   for k in site_T2:
-    if not k in waitingRoom_sites:
-        print k, 'out', 'green'
-        f1.write(now_write+'\t')    # timestamp
-        f1.write(''.join(k))        # sitename
-        f1.write('\tout')           # value
-        f1.write('\tgreen\t')       # color
-        f1.write(''.join(link))     # link
-        f1.write('\n')
+    # skip the site if it is in the waiting room
+    if k in waitingRoom_sites: continue
+    # if the site marked as red in SRRanking metric
+    if IsMarkedRed(k):
+      print k, 'w', 'yellow'
+      f1.write(now_write+'\t')    # timestamp
+      f1.write(''.join(k))        # sitename
+      f1.write('\tw')           # value
+      f1.write('\tyellow\t')       # color
+      f1.write(''.join(link))     # link
+      f1.write('\n')
+      continue
+    print k, 'out', 'green'
+    f1.write(now_write+'\t')    # timestamp
+    f1.write(''.join(k))        # sitename
+    f1.write('\tout')           # value
+    f1.write('\tgreen\t')       # color
+    f1.write(''.join(link))     # link
+    f1.write('\n')
 
 if __name__ == '__main__':
   outputfile_txt=sys.argv[1]
