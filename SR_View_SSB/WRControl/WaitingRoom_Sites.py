@@ -1,143 +1,110 @@
-import os, sys, errno
-import simplejson
-from datetime import datetime
-from datetime import timedelta
-import time
-from pprint import pprint
-import string
-import urllib, httplib, re, urllib2
-import pickle 
-import simplejson as json
+import urllib2, time, re, sys
+from datetime import *
+try: import json
+except: import simplejson as json
+import xml.etree.ElementTree as ET
 
-#extract nonwaitingroommsites from ActiveSites SSB metric 39 output
-url2 = "http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=39&time=24&dateFrom=&dateTo=&site=T2_AT_Vienna&sites=all&clouds=undefined&batch=1"
-url2t = "https://cmsdoc.cern.ch/cms/LCG/SiteComm/T2WaitingList/WasCommissionedT2ForSiteMonitor.txt"
-urlSRRanking = "http://cms-site-readiness.web.cern.ch/cms-site-readiness/SiteReadiness/toSSB/SiteReadinessRanking_SSBfeed_last15days.txt"
+urlSRRanking   = "http://cms-site-readiness.web.cern.ch/cms-site-readiness/SiteReadiness/toSSB/SiteReadinessRanking_SSBfeed_last15days.txt"
+urlWaitingRoom = "https://cmsdoc.cern.ch/cms/LCG/SiteComm/T2WaitingList/WasCommissionedT2ForSiteMonitor.txt"
+urlMetric      = "https://dashb-ssb.cern.ch/dashboard/request.py/sitereadinessrank?columnid=45#time=2184&start_date=&end_date=&sites=T0/1/2"
 
-# Read SSB metric 45 to get complete list of sites considered in SR Status
-def extractJson():
-  url = "http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=45&time=24&dateFrom=&dateTo=&site=T1_CH_CERN&sites=all&clouds=undefined&batch=1"
-  print "Getting the url %s" % url
-  request = urllib2.Request(url, headers = {"Accept":"application/json"})
-  response = urllib2.urlopen(request)
-  data = response.read()
-  rows = simplejson.loads(data)
-  return rows
+def write(data, fileName):
+    fh = open(fileName, 'w')
+    fh.write(data)
+    fh.close()
 
-# function needed to fetch a list of all sites from metric
-def fetch_all_sites(jsn):
-  site_T2 = []
-  for row in jsn['csvdata']:
-    if row['VOName'][0:2] == 'T2':
-      if not row['VOName'] in site_T2:
-        site_T2.append(row['VOName'])
-  return site_T2
+def urlRead(url):
+    """read content from the web"""
+    urlObj = urllib2.urlopen(url)
+    data   = urlObj.read()
+    return data
 
-def getNonWaitingRoomSites(url):
-  print "Getting the url %s" % url
-  request = urllib2.Request(url, headers = {"Accept":"application/json"})
-  response = urllib2.urlopen(request)
-  data = response.read()
-  rows = simplejson.loads(data)
-  sites = []
-  for row in rows['csvdata']:
-    sites.append(row['VOName'])
-  return sites
-  
-def getNonWaitingRoomSitesText(url): #function to read info from txt file
-  print "Getting the txt %s" % url
-  sites = []
-  for line in urllib2.urlopen(url).readlines():
-    row = line.split("\t")
-    if len(row) == 5 :
-        siteName = row[1]
-        sites.append(siteName) 
-  return sites
+def getT2Sites():
+    """return all T2 site names"""
+    xml   = urlRead('http://dashb-cms-vo-feed.cern.ch/dashboard/request.py/cmssitemapbdii')
+    xml   = ET.fromstring(xml)
+    sites = xml.findall('atp_site')
+    ret   = []
+    for site in sites:
+        groups   = site.findall('group')
+        t2Flag = False
+        tName  = None
+        for group in groups:
+            # set the t2 flag if it is tier 2
+            if group.attrib['name'] == 'Tier-2': t2Flag = True
+            # find the tier name
+            if group.attrib['type'] == 'CMS_Site': tName = group.attrib['name']
+        # if it is tier-2 side, push it the ret list
+        if t2Flag: ret.append(tName)
+    ret.sort()
+    return ret
 
 # dashboard entry structure
-class Entry:
-  def __init__(self, row = (None, None, None, None, None)):
-    self.Date  = row[0]
-    self.Name  = row[1]
-    self.Value = row[2]
-    self.Color = row[3]
-    self.URL   = row[4]
+class dashboardEntry:
+    def __init__(self, row = (None, None, None, None, None)):
+        self.date  = row[0]
+        self.name  = row[1]
+        self.value = row[2]
+        self.color = row[3]
+        self.url   = row[4]
 
-# returns parsed metric entries in the class structure
-def ParseMetric(url):
-  # get the metric content
-  urlObj  = urllib2.urlopen(url)
-  data    = urlObj.read()
-  # parse the metric
-  parsed  = re.findall(r'(.*?)\t(.*?)\t(.*?)\t(.*?)\t(.*?)\n', data, re.M)
-  entries = []
-  for i in parsed:
-    entry = Entry(i)
-    entries.append(entry) 
-  entries.sort(key=lambda x: x.Name)
-  return entries
+    def __str__(self):
+        return "%s\t%s\t%s\t%s\t%s" % (self.date, self.name, self.value, self.color, self.url)
 
-SRRanking = ParseMetric(urlSRRanking)
-def IsMarkedRed(siteName):
-  for site in SRRanking:
-    # find the site and if it is marked as red in SRRanking, return True
-    if site.Name == siteName and site.Color == 'red': return True
-  return False
+def parseMetric(url):
+    """return parsed metric entries in the class structure"""
+    # get the metric content
+    urlObj  = urllib2.urlopen(url)
+    data    = urlObj.read()
+    # parse the metric
+    parsed  = re.findall(r'(.*?)\t(.*?)\t(.*?)\t(.*?)\t(.*?)\n', data, re.M)
+    entries = []
+    for i in parsed:
+        entry = dashboardEntry(i)
+        entries.append(entry) 
+    entries.sort(key=lambda x: x.name)
+    return entries
 
-def main_function(outputfile_txt):
-  # non-waitingroom sites
-  print 'Fetchting all the sites that are not in waitingroom'
-  nonWaitingRoom_Sites = getNonWaitingRoomSitesText(url2t)
-  print 'number of non waiting room  sites: ', len(nonWaitingRoom_Sites)
-  print nonWaitingRoom_Sites
-  print '------------------------------------------'
-  # all sites
-  print 'starting to fetch all sites from metric'
-  site_T2= fetch_all_sites(extractJson())
-  print '--------------------------------------------------------'
-  print 'Sites in waiting room:'
-  waitingRoom_sites = [ site for site in site_T2 if not site in nonWaitingRoom_Sites]
-  print waitingRoom_sites
+srRanking = parseMetric(urlSRRanking)
+def isRedInSRRanking(siteName):
+    """return true if the site is marked as red in SRRanking metric"""
+    for site in srRanking:
+        # find the site and if it is marked as red in SRRanking, return True
+        if site.name == siteName and site.color == 'red': return True
+    return False
 
-  # write to file for SSB
-  f1=open('./'+outputfile_txt, 'w+')
-  now_write=(datetime.utcnow()).strftime("%Y-%m-%d %H:%M:%S")
+wr        = parseMetric(urlWaitingRoom)
+def isInWaitingRoom(siteName):
+    """return true if the site is not in the waiting room"""
+    for site in wr:
+        if site.name == siteName and site.color == 'green': return False
+    return True
 
+def main(fileName = None):
+    entries = []
+    t2Sites = getT2Sites()
+    for i in t2Sites:
+        entry = dashboardEntry()
+        entry.name  = i
+        entry.url   = urlMetric
+        entry.date  = (datetime.utcnow()).strftime("%Y-%m-%d %H:%M:%S")
+        if isInWaitingRoom(i):
+            entry.color = 'red'
+            entry.value = 'in'
+        elif isRedInSRRanking(i):
+            entry.color = 'yellow'
+            entry.value = 'w'
+        else:
+            entry.color = 'green'
+            entry.value = 'out'
+        entries.append(entry)
 
-  # write file that can be loaded in SSB
-  f1.write('# This txt goes into SSB and marks sites red when the site is in the waiting room:\n')
-  f1.write('# Readme:\n# https://raw.githubusercontent.com/CMSCompOps/MonitoringScripts/master/SR_View_SSB/WRControl/Readme.txt\n')
-  print "Local current time :", now_write
-  link = "https://dashb-ssb.cern.ch/dashboard/request.py/sitereadinessrank?columnid=45#time=2184&start_date=&end_date=&sites=T0/1/2"
-  for k in waitingRoom_sites:
-    print k, 'in', 'red'
-    f1.write(now_write+'\t')        # timestamp
-    f1.write(''.join(k))            # sitename
-    f1.write('\tin')                # value
-    f1.write('\tred\t')             # color
-    f1.write(''.join(link))         # link
-    f1.write('\n')
-  for k in site_T2:
-    # skip the site if it is in the waiting room
-    if k in waitingRoom_sites: continue
-    # if the site marked as red in SRRanking metric
-    if IsMarkedRed(k):
-      print k, 'w', 'yellow'
-      f1.write(now_write+'\t')    # timestamp
-      f1.write(''.join(k))        # sitename
-      f1.write('\tw')             # value
-      f1.write('\tyellow\t')      # color
-      f1.write(''.join(link))     # link
-      f1.write('\n')
-      continue
-    print k, 'out', 'green'
-    f1.write(now_write+'\t')    # timestamp
-    f1.write(''.join(k))        # sitename
-    f1.write('\tout')           # value
-    f1.write('\tgreen\t')       # color
-    f1.write(''.join(link))     # link
-    f1.write('\n')
+    buffer  = '# This txt goes into SSB and marks sites red when the site is in the waiting room:\n'
+    buffer  = buffer + '# Readme:\n# https://raw.githubusercontent.com/CMSCompOps/MonitoringScripts/master/SR_View_SSB/WRControl/Readme.txt\n'
+    buffer  = buffer + '\n'.join(str(i) for i in entries)
+    if fileName: write(buffer, fileName)
+    else: print buffer
 
 if __name__ == '__main__':
-  outputfile_txt=sys.argv[1]
-  main_function(outputfile_txt)
+   if len(sys.argv) > 1: main(sys.argv[1])
+   else: main()
