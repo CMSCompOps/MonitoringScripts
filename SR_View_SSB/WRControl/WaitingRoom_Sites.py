@@ -1,9 +1,9 @@
 import urllib2, time, re, sys
 from datetime import *
 try: import json
-except: import simplejson as json
+except ImportError: import simplejson as json
 try: import xml.etree.ElementTree as ET
-except: from elementtree import ElementTree as ET
+except ImportError: from elementtree import ElementTree as ET
 
 urlSRRanking   = "http://cms-site-readiness.web.cern.ch/cms-site-readiness/SiteReadiness/toSSB/SiteReadinessRanking_SSBfeed_last15days.txt"
 urlWaitingRoom = "https://cmsdoc.cern.ch/cms/LCG/SiteComm/T2WaitingList/WasCommissionedT2ForSiteMonitor.txt"
