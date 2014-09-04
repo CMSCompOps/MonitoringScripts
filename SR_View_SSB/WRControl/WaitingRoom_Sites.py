@@ -27,7 +27,7 @@ def getT2Sites():
     sites = xml.findall('atp_site')
     ret   = []
     for site in sites:
-        groups   = site.findall('group')
+        groups = site.findall('group')
         t2Flag = False
         tName  = None
         for group in groups:
@@ -35,7 +35,7 @@ def getT2Sites():
             if group.attrib['name'] == 'Tier-2': t2Flag = True
             # find the tier name
             if group.attrib['type'] == 'CMS_Site': tName = group.attrib['name']
-        # if it is tier-2 side, push it the ret list
+        # if it is tier-2 site, push it the ret list
         if t2Flag: ret.append(tName)
     ret.sort()
     return ret
