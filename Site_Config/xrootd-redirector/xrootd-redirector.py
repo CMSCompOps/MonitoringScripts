@@ -55,7 +55,7 @@ def match(xml, siteName, findText1, findText2):
             tag = dom.getElementsByTagName('lfn-to-pfn')
             val = 0
             for s in tag:
-                if (s.getAttribute('result') == findText1) or (s.getAttribute('result') == findText2):
+                if (findText1 in s.getAttribute('result')) or (findText2 in s.getAttribute('result')):
                     val = 1
             if val == 1:                    # findText found in file
                 n = 3
