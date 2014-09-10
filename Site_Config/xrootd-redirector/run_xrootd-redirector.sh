@@ -9,8 +9,8 @@
 path="/afs/cern.ch/user/j/jartieda/MonitoringScripts/Site_Config/xrootd-redirector"
 fileName="xrootd-redirector"
 txt=$path"/"$fileName
-findText1="root://xrootd-cms.infn.it//store/\$1"
-findText2="root://cmsxrootd.fnal.gov//store/\$1"
+findText1="root://xrootd-cms.infn.it"
+findText2="root://cmsxrootd.fnal.gov"
 
 echo "python $fileName.py > $txt.txt"
 python $txt".py" $txt $findText1 $findText2 &> $txt".log"
