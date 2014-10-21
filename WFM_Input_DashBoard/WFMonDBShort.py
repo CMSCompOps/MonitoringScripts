@@ -17,8 +17,11 @@ try:
 except ImportError:
     import simplejson as json
 
-## Job Collectors
-collectors = ['vocms97.cern.ch', 'vocms165.cern.ch']
+## Job Collectors (Condor pools)
+collectors = ['vocms97.cern.ch', 'vocms097.cern.ch']
+
+## The following machines should be ignored (Crab Schedulers)
+crab_scheds = ['vocms83.cern.ch']
 
 ##The following groups should be updated according to https://twiki.cern.ch/twiki/bin/view/CMSPublic/CompOpsWorkflowTeamWmAgentRealeases
 relvalAgents = ['vocms142.cern.ch', 'vocms174.cern.ch', 'cmssrv113.fnal.gov', 'cmsgwms-submit1.fnal.gov']
@@ -52,7 +55,7 @@ jobTypes = ['Processing', 'Production', 'Skim', 'Harvest', 'Merge', 'LogCollect'
 t0Types = ['Repack', 'Express', 'Reco']
 
 # Mailing list for notifications
-mailingSender = 'cmst1@cern.ch'
+mailingSender = 'noreply@cern.ch'
 mailingList = ['luis89@fnal.gov','dmason@fnal.gov']
 #mailingList = ['cms-comp-ops-workflow-team@cern.ch']
 
@@ -538,9 +541,17 @@ def main():
             if ('cern' in line) or ('fnal' in line):
                 listschedds.append(line)
         print "INFO: Condor status on collector %s has been started" % col
+        print "DEBUG: Schedulers ", listschedds
         
         # Get the running/pending jobs from condor for the given scheduler
         for sched in listschedds:
+            
+            # Ignore Analysis schedulers 
+            if 'crab' in sched or sched.strip() in crab_scheds:
+                print "DEBUG: Ignoring crab scheduler ", sched
+                continue
+            
+            # Get all the jobs for the given scheduler
             command='condor_q -pool '+col+' -name ' + sched
             command=command+"""  -format "%i." ClusterID -format "%s||" ProcId  -format "%i||" JobStatus  -format "%s||" WMAgent_SubTaskName -format "%s||" DESIRED_Sites -format "\%s||" WMAgent_SubTaskType -format "%s||" MATCH_EXP_JOBGLIDEIN_CMSSite -format "\n" Owner"""
             proc = subprocess.Popen(command, stderr = subprocess.PIPE,stdout = subprocess.PIPE, shell = True)
