@@ -57,6 +57,8 @@ def parseMetric(url):
     # get the metric content
     urlObj  = urllib2.urlopen(url)
     data    = urlObj.read()
+    # remove python style comments
+    data    = re.sub(re.compile(r'#.*$', re.MULTILINE), "", data)
     # parse the metric
     parsed  = re.findall(r'(.*?)\t(.*?)\t(.*?)\t(.*?)\t(.*?)\n', data, re.M)
     entries = []
