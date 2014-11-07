@@ -18,13 +18,13 @@ except ImportError:
     import simplejson as json
 
 ## Job Collectors (Condor pools)
-collectors = ['vocms97.cern.ch', 'vocms097.cern.ch']
+collectors = ['vocms97.cern.ch', 'vocms097.cern.ch', 'vocms099.cern.ch']
 
 ## The following machines should be ignored (Crab Schedulers)
-crab_scheds = ['vocms83.cern.ch']
+crab_scheds = ['vocms83.cern.ch','stefanovm.cern.ch']
 
 ##The following groups should be updated according to https://twiki.cern.ch/twiki/bin/view/CMSPublic/CompOpsWorkflowTeamWmAgentRealeases
-relvalAgents = ['vocms142.cern.ch', 'vocms174.cern.ch', 'cmssrv113.fnal.gov', 'cmsgwms-submit1.fnal.gov']
+relvalAgents = ['vocms142.cern.ch']
 testAgents = ['cmssrv94.fnal.gov', 'cmssrv101.fnal.gov', 'vocms230.cern.ch', 'vocms231.cern.ch', '_condor@vocms227.cern.ch']
 
 ## Counting by site
@@ -53,6 +53,7 @@ overalls_link = "http://dashb-ssb-dev.cern.ch/dashboard/templates/sitePendingRun
 ## Job expected types
 jobTypes = ['Processing', 'Production', 'Skim', 'Harvest', 'Merge', 'LogCollect', 'Cleanup', 'RelVal', 'T0']
 t0Types = ['Repack', 'Express', 'Reco']
+backfillTypes = ['SMP', 'RECO', 'DIGI', 'Prod', 'MinBias']
 
 # Mailing list for notifications
 mailingSender = 'noreply@cern.ch'
@@ -238,7 +239,7 @@ def findTask(id,sched,typeToExtract):
     This deduces job type from given info about scheduler and taskName
     """
     type = ''
-    if sched.strip() in relvalAgents:
+    if sched in relvalAgents:
         type = 'RelVal'
     elif 'Cleanup' in typeToExtract:
         type = 'Cleanup'
@@ -252,13 +253,13 @@ def findTask(id,sched,typeToExtract):
         type = 'Harvest'
     elif 'Production' in typeToExtract or 'MonteCarloFromGEN' in typeToExtract:
         type = 'Production'
-    elif 'Processing' in typeToExtract or 'StepOneProc' in typeToExtract or 'StepTwoProc' in typeToExtract:
+    elif any([x in typeToExtract for x in ['Processing','StepOneProc','StepTwoProc','StepThreeProc']]):
         type = 'Processing'
     elif 'StoreResults' in typeToExtract:
         type = 'Merge'
     elif any([x in typeToExtract for x in t0Types]):
         type = 'T0'
-    elif sched.strip() in testAgents:
+    elif sched in testAgents or any(x in typeToExtract for x in backfillTypes):
         type = 'Processing'
     else:
         type = 'Processing'
@@ -269,10 +270,10 @@ def fixArray(array):
     """
     Sometimes (I dont know why) condor return different formats. Parse all to string
     """
-    fixexArray = []
+    strings_array = []
     for entry in array:
-        fixexArray.append(str(entry))
-    return fixexArray
+        strings_array.append(str(entry))
+    return strings_array
 
 def relativePending(siteToExtract):
     """
@@ -520,8 +521,8 @@ def main():
     #Going through each collector and process a job list for each scheduler
     for col in collectors:
         # Get the list of scheduler for the given collector
-        listschedds=[]
-        listcommand="condor_status -pool "+col+" -schedd -format \"%s \n\" Name"
+        schedds={}
+        listcommand="condor_status -pool "+col+""" -schedd -format "%s||" Name -format "%s||" CMSGWMS_Type -format "\n" Owner"""
         proc = subprocess.Popen(listcommand, stderr = subprocess.PIPE,stdout = subprocess.PIPE, shell = True)
         out, err = proc.communicate()
         for line in err.split('\n') :
@@ -537,33 +538,36 @@ def main():
                 print 'ERROR: I find a problem while getting schedulers for collector %s, I will send an email to: %s' % (col, str(mailingList))
                 #print out2, '\n', "Error: ", '\n', err2
                 break
-        for line in out.split('\n') :
-            if ('cern' in line) or ('fnal' in line):
-                listschedds.append(line)
+        for line in out.split('\n'):
+            if not line: continue # remove empty lines from split('\n')
+            schedd_info = line.split("||")
+            # schedd_info[0] is the Schedd Name
+            # schedd_info[1] is the Schedd type if available, if not is set ''
+            schedds[schedd_info[0].strip()] = schedd_info[1].strip()
+                
         print "INFO: Condor status on collector %s has been started" % col
-        print "DEBUG: Schedulers ", listschedds
+        print "DEBUG: Schedulers ", schedds.keys()
         
         # Get the running/pending jobs from condor for the given scheduler
-        for sched in listschedds:
+        for sched in schedds.keys():
             
             # Ignore Analysis schedulers 
-            if 'crab' in sched or sched.strip() in crab_scheds:
+            if 'crabschedd' == schedds[sched] or sched in crab_scheds or 'crab' in sched:
                 print "DEBUG: Ignoring crab scheduler ", sched
                 continue
             
             # Get all the jobs for the given scheduler
             command='condor_q -pool '+col+' -name ' + sched
-            command=command+"""  -format "%i." ClusterID -format "%s||" ProcId  -format "%i||" JobStatus  -format "%s||" WMAgent_SubTaskName -format "%s||" DESIRED_Sites -format "\%s||" WMAgent_SubTaskType -format "%s||" MATCH_EXP_JOBGLIDEIN_CMSSite -format "\n" Owner"""
+            command=command+"""  -format "%i." ClusterID -format "%s||" ProcId  -format "%i||" JobStatus  -format "%s||" WMAgent_SubTaskName -format "%s||" DESIRED_Sites -format "%s||" MATCH_EXP_JOBGLIDEIN_CMSSite -format "\n" Owner"""
             proc = subprocess.Popen(command, stderr = subprocess.PIPE,stdout = subprocess.PIPE, shell = True)
             out, err = proc.communicate()
             print "INFO: Handling condor_q on collector: %s scheduler: %s" % (col, sched)
             
             if not sched in overview_running_vobox.keys():
-                addVoBox(sched.replace(".","_").strip())
+                addVoBox(sched.replace(".","_"))
             
-            for line in out.split('\n') :
-                if line == "" : 
-                    continue # remove empty lines
+            for line in out.split('\n'):
+                if not line: continue # remove empty lines from split('\n')
                 
                 array = line.split("||")
                 if len(array) < 5: 
@@ -574,39 +578,30 @@ def main():
                 # array[1] JobStatus
                 # array[2] WMAgent_SubTaskName
                 # array[3] DESIRED_Sites
-                    # only when it is the new software: array[4] WMAgent_SubTaskType
-                    # only when job is already running: array[5] MATCH_EXP_JOBGLIDEIN_CMSSite
-                # array[6] ''    --> nothing
+                    # only when job is already running: array[4] MATCH_EXP_JOBGLIDEIN_CMSSite
+                # array[5] ''    --> nothing
                 # --> standard len(array) {5,6} depending if the job is already running in a site
-                # --> new software len(array) ={6,7} depending if the job is already running in a site
                 id = array[0]
                 status = array[1]
                 workflow = array[2].split('/')[1]
                 task = array[2].split('/')[-1]
                 siteToExtract = array[3].replace(' ', '').split(",")
                 
-                typeToExtract = task
                 # Task Extraction
-                #if array[4] is not a site it is the type, only for new software (len(array)>5)
-                if len(array) > 5 and not siteName(array[4]) and array[4] != "":
-                    typeToExtract = array[4]
-                type = findTask(id,sched,typeToExtract)
+                type = findTask(id,sched,task)
                 
                 # Site Extraction
                 # use array[5]/[4] if it is a site name (depending on new/old software)
-                if len(array) > 5 :
-                    if len(array) == 7 and siteName(array[5]):
-                        siteToExtract = [array[5]]
-                    elif siteName(array[4]):
-                        siteToExtract = [array[4]]
+                if siteName(array[4]):
+                    siteToExtract = [array[4]]
                 
                 if status == "2":
                     increaseRunning(siteToExtract[0],type) # I assume one job can only run at one site
-                    increaseRunningVoBox(sched.replace(".","_").strip(),type)
+                    increaseRunningVoBox(sched.replace(".","_"),type)
                     increaseRunningWorkflow(workflow,siteToExtract[0])
                 elif status == "1":
                     temp_pending.append([type,siteToExtract])
-                    increasePendingVoBox(sched.replace(".","_").strip(),type)
+                    increasePendingVoBox(sched.replace(".","_"),type)
                     increasePendingWorkflow(workflow,siteToExtract)
                 else: # We do not care about jobs in another status (condor job status: https://htcondor-wiki.cs.wisc.edu/index.cgi/wiki?p=MagicNumbers)
                     continue
