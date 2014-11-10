@@ -51,8 +51,7 @@ site_link = "http://dashb-ssb.cern.ch/dashboard/templates/sitePendingRunningJobs
 overalls_link = "http://dashb-ssb-dev.cern.ch/dashboard/templates/sitePendingRunningJobs.html?site=All%20"
 
 ## Job expected types
-jobTypes = ['Processing', 'Production', 'Skim', 'Harvest', 'Merge', 'LogCollect', 'Cleanup', 'RelVal', 'T0']
-t0Types = ['Repack', 'Express', 'Reco']
+jobTypes = ['Processing', 'Production', 'Skim', 'Harvest', 'Merge', 'LogCollect', 'Cleanup', 'RelVal', 'Express', 'Repack', 'Reco']
 backfillTypes = ['SMP', 'RECO', 'DIGI', 'Prod', 'MinBias']
 
 # Mailing list for notifications
@@ -243,22 +242,26 @@ def findTask(id,sched,typeToExtract):
         type = 'RelVal'
     elif 'Cleanup' in typeToExtract:
         type = 'Cleanup'
-    elif 'Merge' in typeToExtract:
-        type = 'Merge'
     elif 'LogCollect' in typeToExtract:
         type = 'LogCollect'
-    elif 'skim' in typeToExtract.lower():
-        type = 'Skim'
     elif 'harvest' in typeToExtract.lower():
         type = 'Harvest'
+    elif 'Merge' in typeToExtract:
+        type = 'Merge'
+    elif 'skim' in typeToExtract.lower():
+        type = 'Skim'
+    elif 'Express' in typeToExtract:
+        type = 'Express'
+    elif 'Repack' in typeToExtract:
+        type = 'Repack'
+    elif 'Reco' in typeToExtract:
+        type = 'Reco'
     elif 'Production' in typeToExtract or 'MonteCarloFromGEN' in typeToExtract:
         type = 'Production'
     elif any([x in typeToExtract for x in ['Processing','StepOneProc','StepTwoProc','StepThreeProc']]):
         type = 'Processing'
     elif 'StoreResults' in typeToExtract:
         type = 'Merge'
-    elif any([x in typeToExtract for x in t0Types]):
-        type = 'T0'
     elif sched in testAgents or any(x in typeToExtract for x in backfillTypes):
         type = 'Processing'
     else:
@@ -450,7 +453,9 @@ def jsonDict(json_name,currTime,date,hour,key):
         json_entry["RunClean"] = str(int(running[entry]['Cleanup']))
         json_entry["RunLog"] = str(int(running[entry]['LogCollect']))
         json_entry["RunRelval"] = str(int(running[entry]['RelVal']))
-        json_entry["RunT0"] = str(int(running[entry]['T0']))
+        json_entry["RunExpress"] = str(int(running[entry]['Express']))
+        json_entry["RunRepack"] = str(int(running[entry]['Repack']))
+        json_entry["RunReco"] = str(int(running[entry]['Reco']))
         json_entry["PenProc"] = str(int(pending[entry]['Processing']))
         json_entry["PenProd"] = str(int(pending[entry]['Production']))
         json_entry["PenSkim"] = str(int(pending[entry]['Skim']))
@@ -459,7 +464,9 @@ def jsonDict(json_name,currTime,date,hour,key):
         json_entry["PenClean"] = str(int(pending[entry]['Cleanup']))
         json_entry["PenLog"] = str(int(pending[entry]['LogCollect']))
         json_entry["PenRelval"] = str(int(pending[entry]['RelVal']))
-        json_entry["PenT0"] = str(int(pending[entry]['T0']))
+        json_entry["PenExpress"] = str(int(pending[entry]['Express']))
+        json_entry["PenRepack"] = str(int(pending[entry]['Repack']))
+        json_entry["PenReco"] = str(int(pending[entry]['Reco']))
         json_entry["Status"] = str(s_status)
         
         update[location].append(json_entry)
@@ -563,7 +570,7 @@ def main():
             out, err = proc.communicate()
             print "INFO: Handling condor_q on collector: %s scheduler: %s" % (col, sched)
             
-            if not sched in overview_running_vobox.keys():
+            if not sched.replace(".","_") in overview_running_vobox.keys():
                 addVoBox(sched.replace(".","_"))
             
             for line in out.split('\n'):
