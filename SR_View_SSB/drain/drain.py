@@ -182,11 +182,12 @@ if __name__ == '__main__':
     
     print "\n*** Previous Drain & SR last 7 days (if SR < 0.8 = drain) ***"
     for site in oldDrainList:                   # firstly add old drain list
-        print "%s\t\t%s" % (site, average_per_site[site])
-        if site[0:1] != 'T1':
+        if site[0:2] != 'T1':
+            print "%s\t\t%s" % (site, average_per_site[site])
             if average_per_site[site] < 0.8 :   # if last week siteRanking < 80% keep in drainList
                 if not site in tmpDrainList: tmpDrainList.append(site)
         else:
+            print "\n%s\t\t%s" % (site, average_per_site[site])
             if not site in tmpDrainList: tmpDrainList.append(site)
 
     print "\n*** WR (drain) ***"
