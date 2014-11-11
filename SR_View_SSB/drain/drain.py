@@ -159,8 +159,10 @@ def getAllInformation():
     fullSiteList  = getList(urlDrain, "*")          # gets full site list from metric 158
     wrList        = getTxtList(urlWrTxt, "in")      # gets current waiting room list from metric 153 txt file
     morgueList    = getList(urlMorgue, "in")        # gets current morgue list from metric 199
-    oldDownList   = getList(urlDrain, "down")       # gets old down list from metric 158 
     oldDrainList  = getList(urlDrain, "drain")      # gets old drain list from metric 158
+    mDrainList    = getList(urlDrain, "drain1")     # gets manual drain list from metric 158
+    oldDownList   = getList(urlDrain, "down")       # gets old down list from metric 158 
+    tier0List     = getList(urlDrain, "tier0")      # gets tier0 list from metric 158
     srStatusList  = getTxtList(urlSDTxt, "scheduled_downtime")      # gets downtime status from metric 134 txt file
     
     print 'starting to fetch all sites from DashBoard'
@@ -173,17 +175,22 @@ def getAllInformation():
     
     average_per_site = CalSiteReadRate(fullSiteList, daysGreen, daysBrown, daysWhite, daysYellow) 
 
-    return (oldDrainList, tmpDrainList, oldDownList, tmpDownList, wrList, morgueList,srStatusList, fullSiteList, average_per_site)
+    return (fullSiteList, wrList, morgueList, oldDrainList, mDrainList, tmpDrainList, oldDownList, tmpDownList, tier0List, srStatusList, average_per_site)
 
 
 if __name__ == '__main__':
-    oldDrainList, tmpDrainList, oldDownList, tmpDownList, wrList, morgueList, srStatusList, fullSiteList, average_per_site = getAllInformation()
+    fullSiteList, wrList, morgueList, oldDrainList, mDrainList, tmpDrainList, oldDownList, tmpDownList, tier0List, srStatusList, average_per_site = getAllInformation()
     
     print "\n*** Previous Drain & SR last 7 days (if SR < 0.8 = drain) ***"
     for site in oldDrainList:                   # firstly add old drain list
-        print "%s\t%s" % (site, average_per_site[site])
+        print "%s\t\t%s" % (site, average_per_site[site])
         if average_per_site[site] < 0.8 :       # if last week siteRanking < 80% keep in drainList
             if not site in tmpDrainList: tmpDrainList.append(site)
+    
+    print "\n*** Manual Drain ***"
+    for site in mDrainList:                     # add site into drainNewList if in manual drainlist
+        print "%s\t\t%s" % (site, average_per_site[site])
+        if not site in tmpDrainList: tmpDrainList.append(site)
 
     print "\n*** WR (drain) ***"
     for site in fullSiteList:
@@ -208,7 +215,11 @@ if __name__ == '__main__':
             print (site)
             if not site in tmpDownList: tmpDownList.append(site)
 
-    #________________________________ crate new list ______________________________________
+    print "\n*** tier0 ***"
+    for site in tier0List:                   
+        print (site)
+
+    #________________________________ create new list ______________________________________
     for site in fullSiteList:
         if not site in newDrainList:
             if site in tmpDrainList:
@@ -216,6 +227,9 @@ if __name__ == '__main__':
             else:
                 newDrainList[site] = "on"
             
+            if site in tier0List:
+                newDrainList[site] = "tier0"
+                
             if site in tmpDownList:
                 newDrainList[site] = "down"
                 
