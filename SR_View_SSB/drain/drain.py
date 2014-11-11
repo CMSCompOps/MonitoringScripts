@@ -187,7 +187,7 @@ if __name__ == '__main__':
             if average_per_site[site] < 0.8 :   # if last week siteRanking < 80% keep in drainList
                 if not site in tmpDrainList: tmpDrainList.append(site)
         else:
-            print "\n%s\t\t%s" % (site, average_per_site[site])
+            print "%s\t\t%s\tmanual" % (site, average_per_site[site])
             if not site in tmpDrainList: tmpDrainList.append(site)
 
     print "\n*** WR (drain) ***"
