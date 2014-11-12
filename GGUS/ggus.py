@@ -115,7 +115,7 @@ if __name__ == '__main__':
     else:
       cmsSiteName = lcgNames[lcgName]
       ticketCount = 0
-    url = "http://para.ms/GGUS/" + lcgName 
+    url = "https://ggus.eu/?mode=ticket_search"
     if ticketCount > 0 : color = "red"
     i = i + 1
      #________________________To write sites for metricg______________________________    
