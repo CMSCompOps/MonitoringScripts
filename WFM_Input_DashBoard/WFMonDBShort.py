@@ -152,74 +152,74 @@ def addVoBox(VoBox):
     for type in jobTypes:
         overview_pending_vobox[VoBox][type] = 0
 
-def increaseRunning(site,type):
+def increaseRunning(site,type,cores):
     """
     Increase the number of running jobs for the given site and type
     This always increase job count by 1
     """
     if site in overview_running.keys():
-        overview_running[site][type] += 1
+        overview_running[site][type] += cores
     else:
         addSite(site)
-        overview_running[site][type] += 1
+        overview_running[site][type] += cores
         
-def increasePending(site,type,num):
+def increasePending(site,type,num,cores):
     """
     Increase the number of pending jobs for the given site and type
     This handles smart counting: sum the relative pending 'num'
     """
     if site in overview_pending.keys():
-        overview_pending[site][type] += num
+        overview_pending[site][type] += num*cores
     else:
         addSite(site)
-        overview_pending[site][type] += num
+        overview_pending[site][type] += num*cores
 
-def increaseRunningVoBox(sched,type):
+def increaseRunningVoBox(sched,type,cores):
     """
     Increase the number of running jobs for the given sched and type
     This always increase job count by 1
     """
-    overview_running_vobox[sched][type] += 1
+    overview_running_vobox[sched][type] += cores
 
-def increasePendingVoBox(sched,type):
+def increasePendingVoBox(sched,type,cores):
     """
     Increase the number of pending jobs for the given sched and type
     This always increase job count by 1
     """
-    overview_pending_vobox[sched][type] += 1
+    overview_pending_vobox[sched][type] += cores
 
-def increaseRunningWorkflow(workflow,siteToExtract):
+def increaseRunningWorkflow(workflow,siteToExtract,cores):
     """
     Increases the number of running jobs per workflow
     """
     if workflow not in overview_workflows.keys():
         addWorkflow(workflow)
         if siteToExtract in overview_workflows[workflow]['runningJobs'].keys():
-            overview_workflows[workflow]['runningJobs'][siteToExtract] += 1
-            overview_workflows[workflow]['condorJobs'] += 1
+            overview_workflows[workflow]['runningJobs'][siteToExtract] += cores
+            overview_workflows[workflow]['condorJobs'] += cores
         else:
-            overview_workflows[workflow]['runningJobs'][siteToExtract] = 1
-            overview_workflows[workflow]['condorJobs'] += 1
+            overview_workflows[workflow]['runningJobs'][siteToExtract] = cores
+            overview_workflows[workflow]['condorJobs'] += cores
     else:
         if siteToExtract in overview_workflows[workflow]['runningJobs'].keys():
-            overview_workflows[workflow]['runningJobs'][siteToExtract] += 1
-            overview_workflows[workflow]['condorJobs'] += 1
+            overview_workflows[workflow]['runningJobs'][siteToExtract] += cores
+            overview_workflows[workflow]['condorJobs'] += cores
         else:
-            overview_workflows[workflow]['runningJobs'][siteToExtract] = 1
-            overview_workflows[workflow]['condorJobs'] += 1
+            overview_workflows[workflow]['runningJobs'][siteToExtract] = cores
+            overview_workflows[workflow]['condorJobs'] += cores
     
-def increasePendingWorkflow(workflow,siteToExtract):
+def increasePendingWorkflow(workflow,siteToExtract,cores):
     """
     Increases the number of pending jobs per workflow
     """
     if workflow not in overview_workflows.keys():
         addWorkflow(workflow)
-        overview_workflows[workflow]['condorJobs'] += 1
-        overview_workflows[workflow]['pendingJobs'] += 1
+        overview_workflows[workflow]['condorJobs'] += cores
+        overview_workflows[workflow]['pendingJobs'] += cores
         overview_workflows[workflow]['desiredSites'] = overview_workflows[workflow]['desiredSites'].union(set(siteToExtract))
     else:
-        overview_workflows[workflow]['condorJobs'] += 1
-        overview_workflows[workflow]['pendingJobs'] += 1
+        overview_workflows[workflow]['condorJobs'] += cores
+        overview_workflows[workflow]['pendingJobs'] += cores
         overview_workflows[workflow]['desiredSites'] = overview_workflows[workflow]['desiredSites'].union(set(siteToExtract))
 
 def addWorkflow(workflow):
@@ -565,7 +565,7 @@ def main():
             
             # Get all the jobs for the given scheduler
             command='condor_q -pool '+col+' -name ' + sched
-            command=command+"""  -format "%i." ClusterID -format "%s||" ProcId  -format "%i||" JobStatus  -format "%s||" WMAgent_SubTaskName -format "%s||" DESIRED_Sites -format "%s||" MATCH_EXP_JOBGLIDEIN_CMSSite -format "\n" Owner"""
+            command=command+"""  -format "%i." ClusterID -format "%s||" ProcId  -format "%i||" JobStatus  -format "%s||" WMAgent_SubTaskName -format "%s||" RequestCpus -format "%s||" DESIRED_Sites -format "%s||" MATCH_EXP_JOBGLIDEIN_CMSSite -format "\n" Owner"""
             proc = subprocess.Popen(command, stderr = subprocess.PIPE,stdout = subprocess.PIPE, shell = True)
             out, err = proc.communicate()
             print "INFO: Handling condor_q on collector: %s scheduler: %s" % (col, sched)
@@ -577,39 +577,40 @@ def main():
                 if not line: continue # remove empty lines from split('\n')
                 
                 array = line.split("||")
-                if len(array) < 5: 
+                if len(array) < 6: 
                     continue # ignore bad lines (incomplete info lines)
                 array = fixArray(array)
                 
                 # array[0] ClusterID.ProcId
                 # array[1] JobStatus
                 # array[2] WMAgent_SubTaskName
-                # array[3] DESIRED_Sites
-                    # only when job is already running: array[4] MATCH_EXP_JOBGLIDEIN_CMSSite
-                # array[5] ''    --> nothing
-                # --> standard len(array) {5,6} depending if the job is already running in a site
+                # array[3] RequestCpus
+                # array[4] DESIRED_Sites
+                    # only when job is already running: array[5] MATCH_EXP_JOBGLIDEIN_CMSSite
+                # array[6] ''    --> nothing
+                # --> standard len(array) {6,7} depending if the job is already running in a site
                 id = array[0]
                 status = array[1]
                 workflow = array[2].split('/')[1]
                 task = array[2].split('/')[-1]
-                siteToExtract = array[3].replace(' ', '').split(",")
+                cpus = int(array[3])
+                siteToExtract = array[4].replace(' ', '').split(",")
                 
                 # Task Extraction
                 type = findTask(id,sched,task)
                 
-                # Site Extraction
-                # use array[5]/[4] if it is a site name (depending on new/old software)
-                if siteName(array[4]):
-                    siteToExtract = [array[4]]
+                # If job is running, use that site name
+                if siteName(array[5]):
+                    siteToExtract = [array[5]]
                 
                 if status == "2":
-                    increaseRunning(siteToExtract[0],type) # I assume one job can only run at one site
-                    increaseRunningVoBox(sched.replace(".","_"),type)
-                    increaseRunningWorkflow(workflow,siteToExtract[0])
+                    increaseRunning(siteToExtract[0],type,cpus) # I assume one job can only run at one site
+                    increaseRunningVoBox(sched.replace(".","_"),type,cpus)
+                    increaseRunningWorkflow(workflow,siteToExtract[0],cpus)
                 elif status == "1":
-                    temp_pending.append([type,siteToExtract])
-                    increasePendingVoBox(sched.replace(".","_"),type)
-                    increasePendingWorkflow(workflow,siteToExtract)
+                    temp_pending.append([type,siteToExtract,cpus])
+                    increasePendingVoBox(sched.replace(".","_"),type,cpus)
+                    increasePendingWorkflow(workflow,siteToExtract,cpus)
                 else: # We do not care about jobs in another status (condor job status: https://htcondor-wiki.cs.wisc.edu/index.cgi/wiki?p=MagicNumbers)
                     continue
     print "INFO: Full condor status pooling is done"
@@ -632,7 +633,7 @@ def main():
         relative, total = relativePending(siteToExtract) # total != 0 always
         for penSite in siteToExtract:
             relative_pending = relative[penSite]/total # calculate relative pending weight
-            increasePending(penSite, type, relative_pending) 
+            increasePending(penSite, type, relative_pending, job[2]) 
     print "INFO: Smart pending site counting done \n"
     
     # Handling jobs that failed task extraction logic
