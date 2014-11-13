@@ -98,7 +98,15 @@ sub timestamp {
 sub ptime {
 
     my @time = @_;
-    my $t = sprintf("%s-%02d-%02d",
+    my $t = sprintf("%s%s%02d%s%02d",
+			1900 + $time[5], '%2F', 1 + $time[4], '%2F', $time[3]);
+    return $t;
+}
+
+sub atime {
+
+    my @time = @_;
+    my $t = sprintf("%s-%02d-%02dT",
 			1900 + $time[5], 1 + $time[4], $time[3]);
     return $t;
 }
@@ -107,15 +115,19 @@ sub get_avail {
 
     my $site = shift;
     my $avail = 'NA';
-    my $url = "http://dashb-cms-sum.cern.ch/dashboard/request.py/getAvailabilityResults?profile_name=CMS_CRITICAL_FULL&view=siteavl&time_range=last24&plot_type=ranking&group_name=${site}";
-    my $cmd = "curl -H \'Accept: text/xml\' \'$url\' 2> /dev/null";
-    open(SUM,"$cmd | xmllint --format - |") or warn 'Cannot query SUM\n';
-    my $a = '';
-    while (<SUM>) {
-	chomp;
-	if (/<item>(\d*\.+\d*)<\/item>/) {
-	    $avail = sprintf "%.3f", $1;
-            $avail = $avail * 100.;
+    my $start = &atime(gmtime(time-86400)) . "00:00:00Z";
+    my $end = &atime(gmtime(time-86400)) . "23:00:00Z";
+    my $url = "http://wlcg-sam-cms.cern.ch/dashboard/request.py/getstatsresultsmin?profile_name=CMS_CRITICAL_FULL&plot_type=quality&start_time=$start&end_time=$end&granularity=single&group_name=${site}&view=siteavl";
+    my $ua = LWP::UserAgent->new;
+    my $response = $ua->get($url) or die "Cannot retrieve availability\n";
+    my $ref = decode_json($response->decoded_content);
+    my @data = @{$ref->{'data'}};
+    if ( @data ) {
+	my $ok = $data[0]->{'data'}[0]->{'OK'};
+	my $crit = $data[0]->{'data'}[0]->{'CRIT'};
+	my $sched = $data[0]->{'data'}[0]->{'SCHED'};
+	if ($ok + $crit + $sched > 0.) {
+	    $avail = $ok / ($ok + $crit + $sched) * 100.;
 	}
     }
     return $avail;
@@ -124,9 +136,9 @@ sub get_avail {
 sub avail_url {
 
     my $site = shift;
-    my $start = &ptime(gmtime(time));
-    my $end = &ptime(gmtime(time+86400));
-    my $url = "http://dashb-cms-sum.cern.ch/dashboard/request.py/historicalsmryview-sum#view=siteavl&time%5B%5D=individual&starttime=$start&endtime=$end&profile=CMS_CRITICAL_FULL&group=AllGroups&site%5B%5D=$site&type=quality";
+    my $start = &ptime(gmtime(time-86400)) . "%2000%3A00";
+    my $end = &ptime(gmtime(time-86400)) . "%2023%3A00";
+    my $url = "http://wlcg-sam-cms.cern.ch/templates/ember/#/historicalsmry/heatMap?end_time=$end&granularity=Default&group=AllGroups&profile=CMS_CRITICAL_FULL&site=$site&site_metrics=undefined&start_time=$start&time=Enter%20Date...&type=Availability%20Ranking%20Plot&view=Site%20Availability";
     return $url;
 }
 
