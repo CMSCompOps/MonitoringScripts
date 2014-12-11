@@ -434,9 +434,16 @@ sub get_phedex_info {
     my $node = shift;
     my ($s, $c, $n) = (-1, -1, -1);
     my $url = "https://cmsweb.cern.ch/phedex/datasvc/xml/prod/nodeusage?node=$node";
-    my $doc = get($url);
+    my $doc;
+    my $count = 0;
+    while ($count < 3) {
+	$doc = get($url);
+	last if (defined $doc);
+	sleep 5;
+	$count++;
+    }
     if (! defined $doc) {
-	warn "Could not get node info: $url\n";
+	warn "Could not get node info after 3 attempts: $url\n";
 	return ($s, $c, $n, $url);
     }
 
