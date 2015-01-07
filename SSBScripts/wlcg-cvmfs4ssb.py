@@ -18,6 +18,7 @@ class c4s :
     self.topologyURL = 'http://dashb-cms-vo-feed.cern.ch/dashboard/request.py/cmssitemapbdii'
     self.wlcgBaseUrl = 'http://wlcg-mon.cern.ch/dashboard/request.py/'
     self.wlcgGetUrl = self.wlcgBaseUrl+'getplotdata?columnid=%d&time=24&sites=all&batch=1'
+    self.wlcgExpBaseUrl = 'http://wlcg-sam-cms.cern.ch/dashboard/request.py/'
     self.ssbMetrics = ['CvmfsVersion','CvmfsRepoRevision','CvmfsMountPoint','CvmfsProbeTime', 'CvmfsStratumOnes', 'CvmfsNumSquids', 'CvmfsProbeNoInfo', 'CvmfsProbeLink']
     self.ssbData = {}
     for k in self.ssbMetrics : self.ssbData[k] = {}
@@ -207,7 +208,7 @@ class c4s :
       dTime = self.ssbData['CvmfsProbeTime'].get(site)
       if ( not dTime ) or ( datetime.datetime.strptime(dTime, self.ssbTimePat) < tTime ) :  
         if dTime : self.clearSsbData(site)
-        tl = urllib.urlopen(self.wlcgBaseUrl+metricInf['URL']).read().split('\n')
+        tl = urllib.urlopen(self.wlcgExpBaseUrl+metricInf['URL']).read().split('\n')
         for metr in self.ssbMetrics : eval('self.getVal'+metr)(site, tl, metricInf)
     for site in self.topoDict['WLCG'].keys() : 
       if not self.ssbData['CvmfsProbeTime'].get(site) : 
@@ -223,7 +224,7 @@ class c4s :
         now = str(datetime.datetime.now())
         (val, color) = eval(fun)(colData[site], site)
         url = self.dontpanic
-        if self.ssbData['CvmfsProbeLink'].get(site): url = self.wlcgBaseUrl+self.ssbData['CvmfsProbeLink'][site]
+        if self.ssbData['CvmfsProbeLink'].get(site): url = self.wlcgExpBaseUrl+self.ssbData['CvmfsProbeLink'][site]
         f.write('%s\t%s\t%s\t%s\t%s\n' % (now, site, val, color, url))
       f.close()
 
