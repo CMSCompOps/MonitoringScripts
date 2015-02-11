@@ -7,6 +7,7 @@ from datetime import timedelta
 from datetime import date
 
 urlDrain  = "http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=158&time=24&dateFrom=&dateTo=&site=T0_CH_CERN&sites=all&clouds=undefined&batch=1"
+urlManual = "http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=139&time=24&dateFrom=&dateTo=&site=T0_CH_CERN&sites=all&clouds=undefined&batch=1"
 urlWr     = "http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153&time=24&dateFrom=&dateTo=&site=T2_AT_Vienna&sites=all&clouds=undefined&batch=1"
 urlWrTxt  = "https://cmst1.web.cern.ch/CMST1/WFMon/WaitingRoom_Sites.txt"
 urlSR     = "http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=45&time=168&dateFrom=&dateTo=&site=T1_DE_KIT&sites=all&clouds=undefined&batch=1"
@@ -154,13 +155,15 @@ def writeFile(siteList):
 
 
 def getAllInformation():
-    #________________________________getting oldDrainList, oldDownList, wr list, morgue list, sr=SD List, full site list__________________________
+    #________________________________getting oldDrainList, manualDrain, oldDownList, wr list, morgue list, sr=SD List, full site list__________________________
 
     fullSiteList  = getList(urlDrain, "*")          # gets full site list from metric 158
     wrList        = getTxtList(urlWrTxt, "in")      # gets current waiting room list from metric 153 txt file
     morgueList    = getList(urlMorgue, "in")        # gets current morgue list from metric 199
     oldDrainList  = getList(urlDrain, "drain")      # gets old drain list from metric 158
-    oldDownList   = getList(urlDrain, "down")       # gets old down list from metric 158 
+    manualDrain   = getList(urlManual, "drain")     # gets manual drain list from metric 139
+    oldDownList   = getList(urlDrain, "down")       # gets old down list from metric 158
+    manualDown    = getList(urlManual, "down")      # gets manual down list from metric 139
     tier0List     = getList(urlDrain, "tier0")      # gets tier0 list from metric 158
     srStatusList  = getTxtList(urlSDTxt, "scheduled_downtime")      # gets downtime status from metric 134 txt file
     
@@ -174,22 +177,27 @@ def getAllInformation():
     
     average_per_site = CalSiteReadRate(fullSiteList, daysGreen, daysBrown, daysWhite, daysYellow) 
 
-    return (fullSiteList, wrList, morgueList, oldDrainList, tmpDrainList, oldDownList, tmpDownList, tier0List, srStatusList, average_per_site)
+    return (fullSiteList, wrList, morgueList, oldDrainList, manualDrain, tmpDrainList, oldDownList, manualDown, tmpDownList, tier0List, srStatusList, average_per_site)
 
 
 if __name__ == '__main__':
-    fullSiteList, wrList, morgueList, oldDrainList, tmpDrainList, oldDownList, tmpDownList, tier0List, srStatusList, average_per_site = getAllInformation()
+    fullSiteList, wrList, morgueList, oldDrainList, manualDrain, tmpDrainList, oldDownList, manualDown, tmpDownList, tier0List, srStatusList, average_per_site = getAllInformation()
     
     print "\n*** Previous Drain & SR last 7 days (if SR < 0.8 = drain) ***"
     for site in oldDrainList:                   # firstly add old drain list
-        if site[0:2] != 'T1':
+        #if site[0:2] != 'T1':
             print "%s\t\t%s" % (site, average_per_site[site])
             if average_per_site[site] < 0.8 :   # if last week siteRanking < 80% keep in drainList
                 if not site in tmpDrainList: tmpDrainList.append(site)
-        else:
-            print "%s\t\t%s\tmanual" % (site, average_per_site[site])
-            if not site in tmpDrainList: tmpDrainList.append(site)
+        #else:
+        #    print "%s\t\t%s\tmanual" % (site, average_per_site[site])
+        #    if not site in tmpDrainList: tmpDrainList.append(site)
 
+    print "\n*** Manual (drain) ***"
+    for site in manualDrain:                    # add site into drainNewList if in Prod status Manual metric
+        print site
+        if not site in tmpDrainList: tmpDrainList.append(site)
+    
     print "\n*** WR (drain) ***"
     for site in fullSiteList:
         if site in wrList:                      # add site into drainNewList if wr = in for site
@@ -202,11 +210,11 @@ if __name__ == '__main__':
             print site
             if not site in tmpDrainList: tmpDrainList.append(site)
 
-    print "\n*** Previous (down) ***"
-    for site in oldDownList:                    # firstly add old down list 
-        print (site)
+    print "\n*** Manual (down) ***"
+    for site in manualDown:                     # add site into downNewList if in Prod status Manual metric
+        print site
         if not site in tmpDownList: tmpDownList.append(site)
-
+        
     print "\n*** MORGUE (down) ***"
     for site in fullSiteList:
         if site in morgueList:                  # add site into downNewList if morgue = in for site
