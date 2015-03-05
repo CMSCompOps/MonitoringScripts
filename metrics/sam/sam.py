@@ -1,3 +1,5 @@
+# cloned from: https://git.cern.ch/web/sitecomm.git/blob/HEAD:/SSBScripts/site_avail_sum.pl
+
 import sys, time, urllib
 from lib import fileOps, url, dashboard, sites
 try: import json

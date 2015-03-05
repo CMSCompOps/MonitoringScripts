@@ -1,3 +1,5 @@
+# cloned from: https://git.cern.ch/web/sitecomm.git/blob/HEAD:/SSBScripts/jr_successrate.pl
+
 import sys, time, urllib
 from lib import fileOps, sites, url, dashboard
 
