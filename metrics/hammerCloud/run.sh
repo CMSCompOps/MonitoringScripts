@@ -17,4 +17,5 @@ if [ ! -d "$TMP" ]; then
     mkdir -p $TMP
 fi
 
-python hammerCloud.py hctest $OUT/hctest.txt
+python hammerCloud.py hctest 24  $OUT/hctest_24h.txt
+python hammerCloud.py hctest 6   $OUT/hctest_6h.txt

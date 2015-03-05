@@ -6,9 +6,11 @@ from lib import fileOps, sites, url, dashboard
 try: import xml.etree.ElementTree as ET
 except ImportError: from elementtree import ElementTree as ET
 
-if len(sys.argv) < 3:
+if len(sys.argv) < 4:
     print 'not enough parameters'
     sys.exit(1)
+
+range    = int(sys.argv[2])
 
 siteList = sites.getSites()
 # HC test entries will be stored in the results variable.
@@ -25,7 +27,7 @@ for site in siteList:
 # prepare dashboard link parameters
 now      = time.time()
 # one day time range
-start    = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(now - 24*60*60))
+start    = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(now - range*60*60))
 start    = urllib.quote(start)
 end      = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(now))
 end      = urllib.quote(end)
@@ -81,4 +83,4 @@ for i in results:
 
     metric.append(dashboard.entry(None, name, value, color, url))
 
-fileOps.write(sys.argv[2], "\n".join(str(row) for row in metric))
+fileOps.write(sys.argv[3], "\n".join(str(row) for row in metric))
