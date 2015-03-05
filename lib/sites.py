@@ -2,12 +2,18 @@ import url, re
 try: import xml.etree.ElementTree as ET
 except ImportError: from elementtree import ElementTree as ET
 
-t1Pattern = r'^(T1)_([^_]*?)_([^_]*?)$'
-t2Pattern = r'^(T2)_([^_]*?)_([^_]*?)$'
-t3Pattern = r'^(T3)_([^_]*?)_([^_]*?)$'
+cmsSiteName = re.compile(r'^(T[0,1,2,3])_([^_]{1,}?)_(.*?)$')
+t1Pattern   = re.compile(r'^(T1)_([^_]{1,}?)_(.*)$')
+t2Pattern   = re.compile(r'^(T2)_([^_]{1,}?)_(.*)$')
+t3Pattern   = re.compile(r'^(T3)_([^_]{1,}?)_(.*)$')
 
-def parseSiteName(pattern, site):
-    match = re.match(pattern, site)
+def isValidCMSSiteName(site):
+    match = cmsSiteName.match(site)
+    if match: return True
+    return False
+
+def parseSiteName(compiledPattern, site):
+    match = compiledPattern.match(site)
     if match: return match.groups()
     return False
 
@@ -40,4 +46,8 @@ def getSites():
     return ret
 
 if __name__ == '__main__':
-    print getSites()
+    siteList = getSites()
+    for i in siteList:
+       print 'isValidCMSSiteName:\t', isValidCMSSiteName(i), i
+       print 'parseSiteName:\t', parseSiteName(cmsSiteName, i)
+       print 'getTier:\t', getTier(i)
