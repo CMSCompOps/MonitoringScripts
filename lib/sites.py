@@ -28,7 +28,7 @@ def parseSiteName(compiledPattern, site):
 def getTier(site):
     """return tier number of given cms site name"""
     # check if not cms site name
-    if not isValidCMSSiteName(site): return False
+    if not isValidCMSSiteName(site): return None
     try:
         return int(site[1:2])
     except ValueError:
