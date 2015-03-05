@@ -1,23 +1,32 @@
+# aaltunda - ali.mehmet.altundag@cern.ch
+
 import url, re
 try: import xml.etree.ElementTree as ET
 except ImportError: from elementtree import ElementTree as ET
 
+# general cms site name pattern. notice the last section,
+# '_' is not excluded because we have sites named: T2_RU_RRC_KI,
+# T2_UK_London_Brunel, T2_PT_NCG_Lisbon...
 cmsSiteName = re.compile(r'^(T[0,1,2,3])_([^_]{1,}?)_(.*?)$')
+
 t1Pattern   = re.compile(r'^(T1)_([^_]{1,}?)_(.*)$')
 t2Pattern   = re.compile(r'^(T2)_([^_]{1,}?)_(.*)$')
 t3Pattern   = re.compile(r'^(T3)_([^_]{1,}?)_(.*)$')
 
 def isValidCMSSiteName(site):
+    """return True if it is cms site name"""
     match = cmsSiteName.match(site)
     if match: return True
     return False
 
 def parseSiteName(compiledPattern, site):
+    """parse cms site name and return its sub-sections"""
     match = compiledPattern.match(site)
     if match: return match.groups()
     return False
 
 def getTier(site):
+    """return tier number of given cms site name"""
     try:
         return int(site[1:2])
     except ValueError:
@@ -48,6 +57,6 @@ def getSites():
 if __name__ == '__main__':
     siteList = getSites()
     for i in siteList:
-       print 'isValidCMSSiteName:\t', isValidCMSSiteName(i), i
-       print 'parseSiteName:\t', parseSiteName(cmsSiteName, i)
-       print 'getTier:\t', getTier(i)
+       print 'isValidCMSSiteName:', i, isValidCMSSiteName(i)
+       print 'parseSiteName     :', parseSiteName(cmsSiteName, i)
+       print 'getTier           :', getTier(i)
