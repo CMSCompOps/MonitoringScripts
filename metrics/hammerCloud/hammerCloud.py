@@ -19,7 +19,7 @@ for site in siteList:
     # also for T3s in future, in that case you will need to
     # edit this filter. you will also need to update thresholds
     # for tiers.
-    if (sites.parseSiteName(sites.t1Pattern, site) or sites.parseSiteName(sites.t2Pattern, site)):
+    if sites.getTier(site) in [1, 2]:
         results[site] = 'n/a'
 
 # prepare dashboard link parameters

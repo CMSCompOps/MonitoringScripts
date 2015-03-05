@@ -7,11 +7,11 @@ except ImportError: from elementtree import ElementTree as ET
 # general cms site name pattern. notice the last section,
 # '_' is not excluded because we have sites named: T2_RU_RRC_KI,
 # T2_UK_London_Brunel, T2_PT_NCG_Lisbon...
-cmsSiteName = re.compile(r'^(T[0,1,2,3])_([^_]{1,}?)_(.*?)$')
+cmsSiteName       = re.compile(r'^(T[0,1,2,3])_([^_]{1,}?)_(.*?)$')
 
-t1Pattern   = re.compile(r'^(T1)_([^_]{1,}?)_(.*)$')
-t2Pattern   = re.compile(r'^(T2)_([^_]{1,}?)_(.*)$')
-t3Pattern   = re.compile(r'^(T3)_([^_]{1,}?)_(.*)$')
+t1CompiledPattern = re.compile(r'^(T1)_([^_]{1,}?)_(.*)$')
+t2CompiledPattern = re.compile(r'^(T2)_([^_]{1,}?)_(.*)$')
+t3compiledPattern = re.compile(r'^(T3)_([^_]{1,}?)_(.*)$')
 
 def isValidCMSSiteName(site):
     """return True if it is cms site name"""
@@ -19,7 +19,7 @@ def isValidCMSSiteName(site):
     if match: return True
     return False
 
-def parseSiteName(compiledPattern, site):
+def parseSiteName(site, compiledPattern = cmsSiteName):
     """parse cms site name and return its sub-sections"""
     match = compiledPattern.match(site)
     if match: return match.groups()
