@@ -30,8 +30,9 @@ class entry:
 
 def parseMetric(data):
     # remove python style comments
-    data    = re.sub(re.compile(r'#.*$', re.MULTILINE), "", data)
-    rows = re.findall(r'(.*?)\t(.*?)\t(.*?)\t(.*?)\t(.*?)\n', data, re.M)
+    data    = re.sub(re.compile(r'^#.*$', re.MULTILINE), "", data)
+    # kudos to jbalcas for the dashboard entry pattern!
+    rows = re.findall(r'([0-9-: ]*)\t(T[0-3][_A-Za-z0-9]*)\t([A-Za-z\.0-9]*)\t([A-Za-z]*)\t(.*)', data, re.M)
     ret  = []
     # convert them into dashboard entry structure
     for row in rows:
@@ -44,3 +45,4 @@ if __name__ == '__main__':
     wr    = parseMetric(url.read(wrURL))
     for site in wr:
         print str(site)
+    print 'Number of rows:', len(wr)
