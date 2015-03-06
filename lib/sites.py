@@ -7,11 +7,11 @@ except ImportError: from elementtree import ElementTree as ET
 # general cms site name pattern. notice the last section,
 # '_' is not excluded because we have sites named: T2_RU_RRC_KI,
 # T2_UK_London_Brunel, T2_PT_NCG_Lisbon...
-cmsSiteName       = re.compile(r'^(T[0,1,2,3])_([^_]{1,}?)_(.*?)$')
+cmsSiteName       = re.compile(r'^(T[0,1,2,3])_([^_]{2})_(.*)$')
 
-t1CompiledPattern = re.compile(r'^(T1)_([^_]{1,}?)_(.*)$')
-t2CompiledPattern = re.compile(r'^(T2)_([^_]{1,}?)_(.*)$')
-t3compiledPattern = re.compile(r'^(T3)_([^_]{1,}?)_(.*)$')
+t1CompiledPattern = re.compile(r'^(T1)_([^_]{2})_(.*)$')
+t2CompiledPattern = re.compile(r'^(T2)_([^_]{2})_(.*)$')
+t3compiledPattern = re.compile(r'^(T3)_([^_]{2})_(.*)$')
 
 def isValidCMSSiteName(site):
     """return True if it is cms site name"""
@@ -60,5 +60,5 @@ if __name__ == '__main__':
     siteList = getSites()
     for i in siteList:
        print 'isValidCMSSiteName:', i, isValidCMSSiteName(i)
-       print 'parseSiteName     :', parseSiteName(cmsSiteName, i)
+       print 'parseSiteName     :', parseSiteName(i)
        print 'getTier           :', getTier(i)
