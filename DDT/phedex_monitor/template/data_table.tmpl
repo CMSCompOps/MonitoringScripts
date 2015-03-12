@@ -1,0 +1,399 @@
+
+<html>
+<head>
+<META http-equiv="Content-Style-Type" content="text/css">
+
+	<style type="text/css">
+	
+		table.main_table {
+			border-collapse: collapse;
+			border:2px solid black;
+		}
+	
+		th {
+			border: 1px solid black;
+		}
+	
+		table.inner_table {
+			border-collapse: collapse;
+			border: 0px;
+			spacing-bottom: 0px;
+			padding-bottom: 0px;
+			height: 100%;
+			width: 100%;
+		}
+	
+		td {
+			font-size: 10px;
+			text-align: center
+		}
+	
+		td.bidirectional_cell {
+			padding: 0px 0px 0px 0px;
+			border: 1px solid black;
+			cell-padding: 0, 0, 0, 0;
+		}
+	
+		td.link_with_itself {
+			background-color: gray;
+		}
+		
+		td.link_cell {
+			height: 40px;
+		}
+		
+		td.link_cell_compact {
+			height: 15px;
+			width: 50px;
+			text-align: center
+		}
+		
+		td.link_cell_compact_t0 {
+                        padding: 0px 0px 0px 0px;
+			height: 30px;
+			width: 50px;
+			text-align: center
+		}
+		
+    a {
+			color: black;
+			text-decoration:underline;
+		}
+
+    a:hover {
+			color: #bf4d0b;
+			text-decoration:underline;
+    }
+		
+	
+		/* Following sets the cells' background colors depending on links' different states */
+	
+		td#commissioned {
+			background-color: #5ffe43;
+		}
+		td#suspended {
+			background-color: #5ffe43;
+		}
+		td#pending-commissioning {
+			background-color: #B0E0E6; /* Powder Blue */
+		}
+
+		td#commissioned-danger {
+		/*	background-color: yellow;*/
+			background-color: #ff5353;
+		}
+
+		td#problem-rate {
+		/*	background-color: #ff5353;*/
+			background-color: yellow;
+		}
+		
+		td#not-tested {
+			background-color: white;
+		}
+	
+		td#pending-rate {
+			background-color: #A52A2A; /* Brown */
+		}
+	
+	
+		/* Following sets the font colors for each metric value, currently differentiating:
+				 - values < 300Gb transferred a day
+				 - values > 300Gb && < 500Gb  transferred a day
+				 - values > 500Gb transferred a day
+	  */
+	
+		span.lt_5mbs {
+			font-style: italic;
+			color: #CC0000;
+		}
+		
+		span.gt_5_lt_20mbs {
+			color: #CC0000;
+			font-weight:bold;
+		}
+	
+		span.gt_20mbs {
+			color: black;
+			font-weight:bold;
+		}
+
+	</style>
+</head>
+
+<body>
+
+<!--<a href="set_state_manually" target="_blank">Set link's state manually</a>-->
+
+<br />
+
+<h1>CMS "Debugging Data Transfers" Commissioning Information</h1>
+
+<br />
+<p>Legend located at bottom of page</p>
+<br />
+
+<h2>Tier 1 to/from Tier 1 Transfer Table</h2>
+
+<table class="main_table">
+    <tr>
+        <th>&nbsp;</th>
+        #for $from_node in $dto["tier_one_nodes"]
+             <th>$from_node.shortname</th>
+        #end for
+    </tr>
+
+    #set counter=0
+    #for $from_node in $dto["tier_one_nodes"]
+        <tr>
+            <th>$from_node.shortname</th>
+                #for $to_node in $dto["tier_one_nodes"]
+                    #set $bid_link = $dto["tier_one"][$counter]
+                    #if $bid_link.from_node.name == $bid_link.to_node.name
+                         <td class="link_with_itself">&nbsp;</td>
+                    #else
+                         <td class="bidirectional_cell">
+                             <table class="inner_table">
+                                 <tr>
+                                     <td class="link_cell_compact" id="$bid_link.from_link.state.state.lower()">
+                                          &nbsp;
+                                          #if $bid_link.from_link.overridden == True and $bid_link.from_link.calculated_state.state != $bid_link.from_link.state.state
+                                              Override
+                                          #end if
+                                     </td>
+                                 </tr>
+                                 <tr>
+                                     <td class="link_cell_compact" id="$bid_link.to_link.state.state.lower()">
+                                          &nbsp;
+                                          #if $bid_link.to_link.overridden == True and $bid_link.to_link.calculated_state.state != $bid_link.to_link.state.state
+                                              Override
+                                          #end if
+                                     </td>
+                                 </tr>
+                             </table>
+                         </td>
+                    #end if
+                    #set counter += 1
+                #end for
+        </tr>
+    #end for
+
+</table>
+<h3>Tier 1 - Tier 1 Link Counts</h3>
+<ul>
+    #for $state, $count in $dto["state_count_t1_t1"].items()
+        <li>There are $count T1-&gt;T1 links in state '$state'</li>
+    #end for
+</ul>
+<br /><br />
+
+<h2> Tier 1 to/from Tier 2 Transfer Table </h2>
+
+<table class="main_table">
+    <tr>
+        <th>&nbsp;</th>
+        #for $from_node in $dto["tier_one_nodes"]
+             <th>$from_node.shortname</th>
+        #end for
+    </tr>
+
+    #set counter=0
+    #for $from_node in $dto["tier_two_nodes"]
+        <tr>
+            <th>$from_node.shortname</th>
+                #for $to_node in $dto["tier_one_nodes"]
+                    #set $bid_link = $dto["tier_two"][$counter]
+                    #if $bid_link.from_node.name == $bid_link.to_node.name
+                         <td class="link_with_itself">&nbsp;</td>
+                    #else
+                         <td class="bidirectional_cell">
+                             <table class="inner_table">
+                                 <tr>
+                                     <td class="link_cell_compact" id="$bid_link.from_link.state.state.lower()">
+                                          &nbsp;
+                                          #if $bid_link.from_link.overridden == True and $bid_link.from_link.calculated_state.state != $bid_link.from_link.state.state
+                                              Override
+                                          #end if
+                                     </td>
+                                 </tr>
+                                 <tr>
+                                     <td class="link_cell_compact" id="$bid_link.to_link.state.state.lower()">
+                                          &nbsp;
+                                          #if $bid_link.to_link.overridden == True and $bid_link.to_link.calculated_state.state != $bid_link.to_link.state.state
+                                              Override
+                                          #end if
+                                     </td>
+                                 </tr>
+                             </table>
+                         </td>
+                    #end if
+                    #set counter += 1
+                #end for
+        </tr>
+    #end for
+
+</table>
+<h3>Tier 1 - Tier 2 Link Counts</h3>
+<ul>
+    #for $state, $count in $dto["state_count_t1_t2"].items()
+        <li>There are $count T1&lt;-&gt;T2 links in state '$state'</li>
+    #end for
+</ul>
+<br /><br />
+
+<h2>Expanded Transfer Table</h2>
+
+<table class="main_table">
+    <tr>
+        <th>&nbsp;</th>
+        #for $from_node in $dto["tier_one_nodes"]
+             <th>$from_node.shortname</th>
+        #end for
+    </tr>
+
+    #set counter=0
+    #for $from_node in $dto["nodes"]
+        <tr>
+            <th>$from_node.shortname</th>
+                #for $to_node in $dto["tier_one_nodes"]
+                    #set $bid_link = $dto["bid_links"][$counter]
+                    #if $bid_link.from_node.name == $bid_link.to_node.name
+                         <td class="link_with_itself">&nbsp;</td>
+                    #else
+                         <td class="bidirectional_cell">
+                             <table class="inner_table">
+                                 <tr>
+                                     <td class="link_cell" id="$bid_link.from_link.state.state.lower()">
+                                         <a href="$bid_link.from_link.url_to_graph">From:</a>
+                                         $bid_link.from_link.formatted_history 
+                                         #if $bid_link.from_link.overridden == True and $bid_link.from_link.calculated_state.state != $bid_link.from_link.state.state
+                                             <p>Link Manually Overridden</p>
+                                             <p>Real state: $bid_link.from_link.calculated_state.state</p>
+                                         #end if
+                                     </td>
+                                 </tr>
+                                 <tr>
+                                     <td class="link_cell" id="$bid_link.to_link.state.state.lower()">
+                                         <a href="$bid_link.to_link.url_to_graph">To:</a>
+                                         $bid_link.to_link.formatted_history
+                                         #if $bid_link.to_link.overridden == True and $bid_link.to_link.calculated_state.state != $bid_link.to_link.state.state
+                                             <p>Link Manually Overridden</p>
+                                             <p>Real state: $bid_link.to_link.calculated_state.state</p>
+                                         #end if
+                                     </td>
+                                 </tr>
+                             </table>
+                         </td>
+                    #end if
+                    #set counter += 1
+                #end for
+        </tr>
+    #end for
+
+</table>
+<h3>Tier 1 - * Link Counts</h3>
+<ul>
+    #for $state, $count in $dto["state_count_t1_all"].items()
+        <li>There are $count T1&lt;-&gt;* links in state '$state'</li>
+    #end for
+</ul>
+<br /><br />
+
+<h2>Legend:</h2>
+
+<table class="main_table">
+
+        <tr>
+                <th>Site</th>
+                <th>T1_CERN_Buffer</th>
+        </tr>
+
+        <tr>
+                <th>T1_CERN_Buffer</th>
+                <td class="link_with_itself">[link with itself]</td>
+        </tr>
+        <tr>
+                <th>T2_Pisa_Buffer</th>
+                <td class="bidirectional_cell">
+                        <table class="inner_table">
+
+                                <tr><td class="link_cell">
+                                        From: <i>[status of link from T2_Pisa_Buffer to T1_CERN_Buffer] </i>
+                                </td></tr>
+
+                                <tr><td class="link_cell">
+                                        To: <i>[status of link from T1_CERN_Buffer to T2_Pisa_Buffer] </i>
+                                </td></tr>
+                        </table>
+                </td>
+        </tr>
+
+        <tr>
+                <th>T2_Nebraska_Buffer</th>
+                <td class="bidirectional_cell">
+                        <table class="inner_table">
+
+                                <tr><td class="link_cell" id="commissioned">
+                                        <i>[status=COMMISSIONED-EXERCISED]</i>
+                                </td></tr>
+
+                                <tr><td class="link_cell" id="pending-commissioning">
+                                        <i>[status=PENDING-COMMISSIONING]</i>
+                                </td></tr>
+                        </table>
+                </td>
+        </tr>
+
+        <tr>
+                <th>T2_Nebraska_Buffer</th>
+                <td class="bidirectional_cell">
+                        <table class="inner_table">
+
+                                <tr><td class="link_cell" id="problem-rate">
+                                        <i>[status=COMMISSIONED-NOT_EXERCISED]</i>
+                                </td></tr>
+
+                                <tr><td class="link_cell" id="not-tested">
+                                        <i>[status=NOT_TESTED]</i>
+                                </td></tr>
+                        </table>
+                </td>
+        </tr>
+
+        <tr>
+                <th>T1_FNAL_Buffer</th>
+                <td class="bidirectional_cell">
+                        <table class="inner_table">
+
+                                <tr><td class="link_cell" id="pending-rate">
+                                        <i>[status=PENDING_RATE]</i>
+                                </td></tr>
+
+                                <tr><td class="link_cell" id="commissioned-danger">
+                                        <i>[status=COMMISSIONED_DANGER]</i>
+                                </td></tr>
+                        </table>
+                </td>
+        </tr>
+
+        <tr>
+                <th>T1_IN2P3_Buffer</th>
+                <td class="bidirectional_cell">
+                        <table class="inner_table">
+
+                                <tr><td class="link_cell">
+                                        From: ?, ? <span class="lt_5mbs">12 [less than 5 MB/s - 17.6 GB/hour]</span>, ?, ?, ?,
+                                                                <span class="gt_5_lt_20mbs">43 [between 5 & 20 MB/s - 17.6 & 70.3 GB/hour]</span>, ?, ?, ?
+                                </td></tr>
+
+                                <tr><td class="link_cell">
+                                        To: ?, ?, ?, ?, <span class="gt_20mbs">123 [more than 20 MB/s - 70.3 GB/hour]</span>, ?, ?, ?, ?, ?
+                                </td></tr>
+                        </table>
+                </td>
+        </tr>
+
+</table>
+
+</body>
+</html>

@@ -1,0 +1,226 @@
+#!/usr/local/bin/perl -w
+#####################################################################
+#
+# - geting space information from DBS 
+#
+# $Id: InfoFromDBS_html,v 1.1 2008/11/12 07:11:33 xmzhang Exp $
+#
+#####################################################################
+
+use warnings;
+
+use File::stat;
+use File::Find;
+
+my ($sum, $begin, $FHSITE, $FHSE);
+my (@T0, @T1, @T2, @T3);
+
+$begin = 0;
+system("wget --no-check-certificate https://cmsweb.cern.ch/sitedb/sitedb/xml/index/SitetoCMSName?name -O sitename -q");
+open(FHSITE, "sitename");
+open(FHHTML, " > /var/www/html/siteSpaceMonitor.html");
+print FHHTML "<html  xmlns='http://www.w3.org/1999/xhtml'>\n";
+print FHHTML "<head>\n";
+print FHHTML "  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8' />\n";
+print FHHTML "  <title>Site Space Monitoring</title>\n";
+print FHHTML "</head>\n";
+print FHHTML "<body>\n";
+print FHHTML "  <div class='toparea'>\n";
+print FHHTML "     <h1>Site Space Monitoring</h1>\n";
+print FHHTML "  </div>\n";
+
+while ($lineT = <FHSITE>) {
+  if ($lineT =~ m"<name>(.*)</name>") {
+    #print "InfoFromDBS DEBUG: SITENAME--$1****************************************************************************\n";
+    my $sitetemp = $1;
+    if ($sitetemp =~ m"T0(.*)") {
+      push(@T0, $sitetemp);
+    }
+    elsif ($sitetemp =~ m"T1(.*)") {
+      push(@T1, $sitetemp);
+    }
+    elsif ($sitetemp =~ m"T2(.*)") {
+      push(@T2, $sitetemp);
+    }
+    else {
+      push(@T3, $sitetemp);
+    }
+  }
+}
+
+
+#TO space monitoring
+print FHHTML "  <div class='left leftborder'>\n";
+print FHHTML "      <h5>Tier 0 centres</h5>\n";
+print FHHTML "      <table width='90%' border='1'>\n";
+print FHHTML "        <tr>\n";
+print FHHTML "        <th>SITE</th>\n";
+print FHHTML "        <th>SE</th>\n";
+print FHHTML "        <th>Space Used</th>\n";
+print FHHTML "        </tr>\n";
+for ($counter = 0; $counter < @T0; $counter++) {
+    print FHHTML "        <tr>\n";
+    print FHHTML "          <td>$T0[$counter]</td>\n";
+    system("wget --no-check-certificate https://cmsweb.cern.ch/sitedb/sitedb/xml/index/CMSNametoSE?name=$T0[$counter] -O sename -q");
+    open(FHSE, "sename");
+    while ($lineSE = <FHSE>) {
+      if ($lineSE =~ m"<name>(.*)</name>") {
+        print "InfoFromDBS DEBUG: SENAME--$1*******************************************************************************\n";
+        print FHHTML "          <td>  $1</td>\n";
+        open(BLOCKS, "python dbsCommandLine.py -c lsb --report --sepattern=$1|");
+        $sum = 0;
+        while ($lineB = <BLOCKS>) {
+          if ($lineB =~ m"BlockSize") {
+            #print "InfoFromDBS DEBUG: $lineB\n";
+            $lineB =~ m"^\D+(\d+)$";
+            $sum = $sum + $1;
+          }
+        }
+        print "InfoFromDBS DEBUG: $sum\n\n";
+        print FHHTML "          <td>  $sum</td>\n";
+      }
+    }
+    close(FHSE);
+    close(BLOCKS);
+    print FHHTML "        </tr>\n";
+}
+print FHHTML "      </table>\n";
+print FHHTML "  </div>\n";
+
+
+#T1 space monitoring
+print FHHTML "  <div class='left leftborder'>\n";
+print FHHTML "      <h5>Tier 1 centres</h5>\n";
+print FHHTML "      <table width='90%' border='1'>\n";
+print FHHTML "        <tr>\n";
+print FHHTML "        <th>SITE</th>\n";
+print FHHTML "        <th>SE1</th>\n";
+print FHHTML "        <th>Space Used</th>\n";
+print FHHTML "        <th>SE2</th>\n";
+print FHHTML "        <th>Space Used</th>\n";
+print FHHTML "        <th>SE3</th>\n";
+print FHHTML "        <th>Space Used</th>\n";
+print FHHTML "        <th>SE4</th>\n";
+print FHHTML "        <th>Space Used</th>\n";
+print FHHTML "        </tr>\n";
+
+for ($counter = 0; $counter < @T1; $counter++) {
+    print FHHTML "        <tr>\n";
+    print FHHTML "          <td>$T1[$counter]</td>\n";
+    system("wget --no-check-certificate https://cmsweb.cern.ch/sitedb/sitedb/xml/index/CMSNametoSE?name=$T1[$counter] -O sename -q");
+    open(FHSE, "sename");
+    while ($lineSE = <FHSE>) {
+      if ($lineSE =~ m"<name>(.*)</name>") {
+        print "InfoFromDBS DEBUG: SENAME--$1*******************************************************************************\n";
+        print FHHTML "          <td>  $1</td>\n";
+        open(BLOCKS, "python dbsCommandLine.py -c lsb --report --sepattern=$1|");
+        $sum = 0;
+        while ($lineB = <BLOCKS>) {
+          if ($lineB =~ m"BlockSize") {
+            #print "InfoFromDBS DEBUG: $lineB\n";
+            $lineB =~ m"^\D+(\d+)$";
+            $sum = $sum + $1;
+          }
+        }
+        print "InfoFromDBS DEBUG: $sum\n\n";
+        print FHHTML "          <td>  $sum</td>\n";
+      }
+    }
+    close(FHSE);
+    close(BLOCKS);
+    print FHHTML "        </tr>\n";
+}
+print FHHTML "      </table>\n";
+print FHHTML "  </div>\n";
+
+
+#T2 space monitoring
+print FHHTML "  <div class='left leftborder'>\n";
+print FHHTML "      <h5>Tier 2 centres</h5>\n";
+print FHHTML "      <table width='90%' border='1'>\n";
+print FHHTML "        <tr>\n";
+print FHHTML "        <th>SITE</th>\n";
+print FHHTML "        <th>SE1</th>\n";
+print FHHTML "        <th>Space Used</th>\n";
+print FHHTML "        <th>SE2</th>\n";
+print FHHTML "        <th>Space Used</th>\n";
+print FHHTML "        </tr>\n";
+
+for ($counter = 0; $counter < @T2; $counter++) {
+    print FHHTML "        <tr>\n";
+    print FHHTML "          <td>$T2[$counter]</td>\n";
+    system("wget --no-check-certificate https://cmsweb.cern.ch/sitedb/sitedb/xml/index/CMSNametoSE?name=$T2[$counter] -O sename -q");
+    open(FHSE, "sename");
+    while ($lineSE = <FHSE>) {
+      if ($lineSE =~ m"<name>(.*)</name>") {
+        print "InfoFromDBS DEBUG: SENAME--$1*******************************************************************************\n";
+        print FHHTML "          <td>  $1</td>\n";
+        open(BLOCKS, "python dbsCommandLine.py -c lsb --report --sepattern=$1|");
+        $sum = 0;
+        while ($lineB = <BLOCKS>) {
+          if ($lineB =~ m"BlockSize") {
+            #print "InfoFromDBS DEBUG: $lineB\n";
+            $lineB =~ m"^\D+(\d+)$";
+            $sum = $sum + $1;
+          }
+        }
+        print "InfoFromDBS DEBUG: $sum\n\n";
+        print FHHTML "          <td>  $sum</td>\n";
+      }
+    }
+    close(FHSE);
+    close(BLOCKS);
+    print FHHTML "        </tr>\n";
+}
+print FHHTML "      </table>\n";
+print FHHTML "  </div>\n";
+
+
+#T3 space monitoring
+print FHHTML "  <div class='left leftborder'>\n";
+print FHHTML "      <h5>Tier 3 centres</h5>\n";
+print FHHTML "      <table width='90%' border='1'>\n";
+print FHHTML "        <tr>\n";
+print FHHTML "        <th>SITE</th>\n";
+print FHHTML "        <th>SE1</th>\n";
+print FHHTML "        <th>Space Used</th>\n";
+print FHHTML "        <th>SE2</th>\n";
+print FHHTML "        <th>Space Used</th>\n";
+print FHHTML "        </tr>\n";
+
+for ($counter = 0; $counter < @T3; $counter++) {
+    print FHHTML "        <tr>\n";
+    print FHHTML "          <td>$T3[$counter]</td>\n";
+    system("wget --no-check-certificate https://cmsweb.cern.ch/sitedb/sitedb/xml/index/CMSNametoSE?name=$T3[$counter] -O sename -q");
+    open(FHSE, "sename");
+    while ($lineSE = <FHSE>) {
+      if ($lineSE =~ m"<name>(.*)</name>") {
+        print "InfoFromDBS DEBUG: SENAME--$1*******************************************************************************\n";
+        print FHHTML "          <td>  $1</td>\n";
+        open(BLOCKS, "python dbsCommandLine.py -c lsb --report --sepattern=$1|");
+        $sum = 0;
+        while ($lineB = <BLOCKS>) {
+          if ($lineB =~ m"BlockSize") {
+            #print "InfoFromDBS DEBUG: $lineB\n";
+            $lineB =~ m"^\D+(\d+)$";
+            $sum = $sum + $1;
+          }
+        }
+        print "InfoFromDBS DEBUG: $sum\n\n";
+        print FHHTML "          <td>  $sum</td>\n";
+      }
+    }
+    close(FHSE);
+    close(BLOCKS);
+    print FHHTML "        </tr>\n";
+}
+print FHHTML "      </table>\n";
+print FHHTML "  </div>\n";
+
+
+print FHHTML "</body>\n";
+print FHHTML "</html>\n";
+close(FHHTML);
+
+
+exit 0;

@@ -1,0 +1,625 @@
+<?xml-stylesheet type='text/xsl' href='space.xsl' ?>
+<html>
+<body>
+<sitelist>
+  <T0>
+    <site>
+      <name>T0_CH_CERN</name>
+      <pledge>0TB</pledge>
+      <subscriptions>221.4 GB</subscriptions>
+      <on-site>218.1 GB</on-site>
+      <used>2421.42TB</used>
+  </site>
+    </T0>
+  <T1>
+    <site>
+      <name>T1_TW_ASGC</name>
+      <pledge>488.28TB</pledge>
+      <subscriptions>223.3 TB</subscriptions>
+      <on-site>181.7 TB</on-site>
+      <used>186.34TB</used>
+  </site>
+    <site>
+      <name>T1_FR_CCIN2P3</name>
+      <pledge>880.0TB</pledge>
+      <subscriptions>399.6 TB</subscriptions>
+      <on-site>436.0 TB</on-site>
+      <used>476.10TB</used>
+  </site>
+    <site>
+      <name>T1_CH_CERN</name>
+      <pledge>0TB</pledge>
+      <subscriptions>1.0 PB</subscriptions>
+      <on-site>812.0 TB</on-site>
+      <used>2421.42TB</used>
+  </site>
+    <site>
+      <name>T1_IT_CNAF</name>
+      <pledge>0TB</pledge>
+      <subscriptions>276.7 TB</subscriptions>
+      <on-site>138.3 TB</on-site>
+      <used>148.13TB</used>
+  </site>
+    <site>
+      <name>T1_US_FNAL</name>
+      <pledge>600.0TB</pledge>
+      <subscriptions>912.7 TB</subscriptions>
+      <on-site>972.9 TB</on-site>
+      <used>1346.20TB</used>
+  </site>
+    <site>
+      <name>T1_DE_FZK</name>
+      <pledge>900.0TB</pledge>
+      <subscriptions>245.9 TB</subscriptions>
+      <on-site>218.3 TB</on-site>
+      <used>316.51TB</used>
+  </site>
+    <site>
+      <name>T1_ES_PIC</name>
+      <pledge>731.0TB</pledge>
+      <subscriptions>140.8 TB</subscriptions>
+      <on-site>69.8 TB</on-site>
+      <used>103.27TB</used>
+  </site>
+    <site>
+      <name>T1_UK_RAL</name>
+      <pledge>0.0TB</pledge>
+      <subscriptions>240.4 TB</subscriptions>
+      <on-site>196.5 TB</on-site>
+      <used>186.46TB</used>
+  </site>
+    </T1>
+  <T2>
+    <site>
+      <name>T2_IT_Bari</name>
+      <pledge>15.0TB</pledge>
+      <subscriptions>35.9 TB</subscriptions>
+      <subscriptions>38.5 TB</subscriptions>
+      <subscriptions>24.3 TB</subscriptions>
+      <subscriptions>26.8 TB</subscriptions>
+      <subscriptions>5.7 TB</subscriptions>
+      <on-site>4.9 TB</on-site>
+      <used>29.26TB</used>
+  </site>
+    <site>
+      <name>T2_CN_Beijing</name>
+      <pledge>20.0TB</pledge>
+      <subscriptions>12.1 TB</subscriptions>
+      <on-site>10.8 TB</on-site>
+      <used>10.12TB</used>
+  </site>
+    <site>
+      <name>T2_BE_IIHE</name>
+      <pledge>70.0TB</pledge>
+      <subscriptions>48.3 TB</subscriptions>
+      <on-site>52.7 TB</on-site>
+      <used>58.21TB</used>
+  </site>
+    <site>
+      <name>T2_BE_UCL</name>
+      <pledge>70.0TB</pledge>
+      <subscriptions>32.1 TB</subscriptions>
+      <on-site>32.6 TB</on-site>
+      <used>34.85TB</used>
+  </site>
+    <site>
+      <name>T2_UK_SGrid_Bristol</name>
+      <pledge>0TB</pledge>
+      <subscriptions>2.3 TB</subscriptions>
+      <on-site>1.6 TB</on-site>
+      <used>1.49TB</used>
+  </site>
+    <site>
+      <name>T2_FR_CCIN2P3</name>
+      <pledge>0TB</pledge>
+      <used>0.00TB</used>
+  </site>
+    <site>
+      <name>T2_ES_CIEMAT</name>
+      <pledge>128.0TB</pledge>
+      <subscriptions>28.2 TB</subscriptions>
+      <subscriptions>31.4 TB</subscriptions>
+      <subscriptions>30.4 TB</subscriptions>
+      <on-site>29.1 TB</on-site>
+      <used>36.74TB</used>
+  </site>
+    <site>
+      <name>T2_CH_CSCS</name>
+      <pledge>80.0TB</pledge>
+      <subscriptions>34.6 TB</subscriptions>
+      <on-site>35.8 TB</on-site>
+      <used>34.97TB</used>
+  </site>
+    <site>
+      <name>T2_US_Caltech</name>
+      <pledge>238.0TB</pledge>
+      <subscriptions>85.7 TB</subscriptions>
+      <subscriptions>88.1 TB</subscriptions>
+      <subscriptions>64.4 TB</subscriptions>
+      <on-site>67.0 TB</on-site>
+      <used>94.30TB</used>
+  </site>
+    <site>
+      <name>T2_DE_DESY</name>
+      <pledge>50.0TB</pledge>
+      <subscriptions>26.1 TB</subscriptions>
+      <subscriptions>29.5 TB</subscriptions>
+      <subscriptions>39.3 TB</subscriptions>
+      <subscriptions>41.3 TB</subscriptions>
+      <subscriptions>10.6 TB</subscriptions>
+      <on-site>8.4 TB</on-site>
+      <used>30.82TB</used>
+  </site>
+    <site>
+      <name>T2_EE_Estonia</name>
+      <pledge>35.0TB</pledge>
+      <subscriptions>10.6 TB</subscriptions>
+      <on-site>8.4 TB</on-site>
+      <used>9.37TB</used>
+  </site>
+    <site>
+      <name>T2_US_Florida</name>
+      <pledge>63.0TB</pledge>
+      <subscriptions>64.4 TB</subscriptions>
+      <on-site>67.0 TB</on-site>
+      <used>75.16TB</used>
+  </site>
+    <site>
+      <name>T2_FR_GRIF_IRFU</name>
+      <pledge>0TB</pledge>
+      <subscriptions>4.8 TB</subscriptions>
+      <subscriptions>4.8 TB</subscriptions>
+      <subscriptions>30.0 GB</subscriptions>
+      <subscriptions>248.9 GB</subscriptions>
+      <subscriptions>15.5 TB</subscriptions>
+      <on-site>6.3 TB</on-site>
+      <used>5.27TB</used>
+  </site>
+    <site>
+      <name>T2_FR_GRIF_LLR</name>
+      <pledge>0TB</pledge>
+      <subscriptions>15.5 TB</subscriptions>
+      <on-site>6.3 TB</on-site>
+      <used>6.71TB</used>
+  </site>
+    <site>
+      <name>T2_FR_GRIF_LPNHE</name>
+      <pledge>0TB</pledge>
+      <subscriptions>30.0 GB</subscriptions>
+      <on-site>16.3 GB</on-site>
+      <used>0.02TB</used>
+  </site>
+    <site>
+      <name>T2_FR_GRIF_LAL</name>
+      <pledge>0TB</pledge>
+      <subscriptions>30.0 GB</subscriptions>
+      <subscriptions>248.9 GB</subscriptions>
+      <subscriptions>15.5 TB</subscriptions>
+      <on-site>6.3 TB</on-site>
+      <used>0.27TB</used>
+  </site>
+    <site>
+      <name>T2_BR_UERJ</name>
+      <pledge>98.7TB</pledge>
+      <subscriptions>9.0 TB</subscriptions>
+      <on-site>7.2 TB</on-site>
+      <used>5.11TB</used>
+  </site>
+    <site>
+      <name>T2_FI_HIP</name>
+      <pledge>0TB</pledge>
+      <subscriptions>18.6 TB</subscriptions>
+      <on-site>18.4 TB</on-site>
+      <used>20.23TB</used>
+  </site>
+    <site>
+      <name>T2_AT_Vienna</name>
+      <pledge>35.0TB</pledge>
+      <subscriptions>16.3 TB</subscriptions>
+      <on-site>12.4 TB</on-site>
+      <used>13.53TB</used>
+  </site>
+    <site>
+      <name>T2_HU_Budapest</name>
+      <pledge>0TB</pledge>
+      <subscriptions>17.9 TB</subscriptions>
+      <on-site>11.5 TB</on-site>
+      <used>12.68TB</used>
+  </site>
+    <site>
+      <name>T2_ES_IFCA</name>
+      <pledge>105.0TB</pledge>
+      <subscriptions>30.4 TB</subscriptions>
+      <on-site>29.1 TB</on-site>
+      <used>31.70TB</used>
+  </site>
+    <site>
+      <name>T2_FR_IPHC</name>
+      <pledge>30.0TB</pledge>
+      <subscriptions>14.8 TB</subscriptions>
+      <on-site>9.8 TB</on-site>
+      <used>9.38TB</used>
+  </site>
+    <site>
+      <name>T2_KR_KNU</name>
+      <pledge>45.0TB</pledge>
+      <subscriptions>11.6 TB</subscriptions>
+      <on-site>8.6 TB</on-site>
+      <used>9.39TB</used>
+  </site>
+    <site>
+      <name>T2_PT_LIP_Coimbra</name>
+      <pledge>0TB</pledge>
+      <subscriptions>1.5 TB</subscriptions>
+      <on-site>1.1 TB</on-site>
+      <used>1.00TB</used>
+  </site>
+    <site>
+      <name>T2_PT_LIP_Lisbon</name>
+      <pledge>0TB</pledge>
+      <subscriptions>280.9 GB</subscriptions>
+      <on-site>148.0 GB</on-site>
+      <used>0.20TB</used>
+  </site>
+    <site>
+      <name>T2_IT_Legnaro</name>
+      <pledge>35.0TB</pledge>
+      <subscriptions>24.5 TB</subscriptions>
+      <subscriptions>26.8 TB</subscriptions>
+      <subscriptions>5.7 TB</subscriptions>
+      <on-site>4.9 TB</on-site>
+      <used>30.10TB</used>
+  </site>
+    <site>
+      <name>T2_UK_London_QMUL</name>
+      <pledge>35.8TB</pledge>
+      <subscriptions>31.8 GB</subscriptions>
+      <subscriptions>2.2 TB</subscriptions>
+      <subscriptions>2.2 TB</subscriptions>
+      <subscriptions>2.3 TB</subscriptions>
+      <on-site>1.6 TB</on-site>
+      <used>0.00TB</used>
+  </site>
+    <site>
+      <name>T2_UK_London_Brunel</name>
+      <pledge>35.8TB</pledge>
+      <subscriptions>2.2 TB</subscriptions>
+      <subscriptions>4.0 TB</subscriptions>
+      <subscriptions>22.2 TB</subscriptions>
+      <on-site>20.9 TB</on-site>
+      <used>3.91TB</used>
+  </site>
+    <site>
+      <name>T2_UK_London_RHUL</name>
+      <pledge>35.8TB</pledge>
+      <subscriptions>2.2 TB</subscriptions>
+      <subscriptions>2.2 TB</subscriptions>
+      <subscriptions>2.3 TB</subscriptions>
+      <on-site>1.6 TB</on-site>
+      <used>0.00TB</used>
+  </site>
+    <site>
+      <name>T2_UK_London_IC</name>
+      <pledge>35.8TB</pledge>
+      <subscriptions>22.2 TB</subscriptions>
+      <on-site>20.9 TB</on-site>
+      <used>21.47TB</used>
+  </site>
+    <site>
+      <name>T2_TR_METU</name>
+      <pledge>0TB</pledge>
+      <subscriptions>234.8 GB</subscriptions>
+      <subscriptions>20.1 TB</subscriptions>
+      <on-site>16.6 TB</on-site>
+      <used>0.00TB</used>
+  </site>
+    <site>
+      <name>T2_US_MIT</name>
+      <pledge>30.0TB</pledge>
+      <subscriptions>57.1 TB</subscriptions>
+      <on-site>58.7 TB</on-site>
+      <used>65.29TB</used>
+  </site>
+    <site>
+      <name>T2_US_Nebraska</name>
+      <pledge>130.0TB</pledge>
+      <subscriptions>122.9 TB</subscriptions>
+      <subscriptions>125.5 TB</subscriptions>
+      <subscriptions>45.9 TB</subscriptions>
+      <subscriptions>49.9 TB</subscriptions>
+      <subscriptions>46.2 TB</subscriptions>
+      <subscriptions>49.1 TB</subscriptions>
+      <subscriptions>63.2 TB</subscriptions>
+      <subscriptions>68.2 TB</subscriptions>
+      <subscriptions>668.2 GB</subscriptions>
+      <subscriptions>668.2 GB</subscriptions>
+      <subscriptions>18.2 GB</subscriptions>
+      <subscriptions>935.1 GB</subscriptions>
+      <on-site>165.5 GB</on-site>
+      <used>150.56TB</used>
+  </site>
+    <site>
+      <name>T2_IT_Pisa</name>
+      <pledge>70.0TB</pledge>
+      <subscriptions>5.7 TB</subscriptions>
+      <on-site>4.9 TB</on-site>
+      <used>5.43TB</used>
+  </site>
+    <site>
+      <name>T2_US_Purdue</name>
+      <pledge>430.0TB</pledge>
+      <subscriptions>45.9 TB</subscriptions>
+      <subscriptions>49.9 TB</subscriptions>
+      <subscriptions>46.2 TB</subscriptions>
+      <subscriptions>49.1 TB</subscriptions>
+      <subscriptions>63.2 TB</subscriptions>
+      <subscriptions>68.2 TB</subscriptions>
+      <subscriptions>668.2 GB</subscriptions>
+      <subscriptions>668.2 GB</subscriptions>
+      <subscriptions>18.2 GB</subscriptions>
+      <subscriptions>935.1 GB</subscriptions>
+      <on-site>165.5 GB</on-site>
+      <used>54.53TB</used>
+  </site>
+    <site>
+      <name>T2_DE_RWTH</name>
+      <pledge>100.0TB</pledge>
+      <subscriptions>39.3 TB</subscriptions>
+      <subscriptions>41.3 TB</subscriptions>
+      <subscriptions>10.6 TB</subscriptions>
+      <on-site>8.4 TB</on-site>
+      <used>44.12TB</used>
+  </site>
+    <site>
+      <name>T2_IT_Rome</name>
+      <pledge>68.0TB</pledge>
+      <subscriptions>17.8 TB</subscriptions>
+      <on-site>18.2 TB</on-site>
+      <used>18.36TB</used>
+  </site>
+    <site>
+      <name>T2_RU_IHEP</name>
+      <pledge>0TB</pledge>
+      <subscriptions>1.1 TB</subscriptions>
+      <on-site>30.0 GB</on-site>
+      <used>0.00TB</used>
+  </site>
+    <site>
+      <name>T2_RU_PNPI</name>
+      <pledge>0TB</pledge>
+      <subscriptions>1.1 TB</subscriptions>
+      <on-site>851.6 MB</on-site>
+      <used>0.00TB</used>
+  </site>
+    <site>
+      <name>T2_RU_SINP</name>
+      <pledge>0TB</pledge>
+      <subscriptions>2.5 TB</subscriptions>
+      <subscriptions>2.5 TB</subscriptions>
+      <subscriptions>234.8 GB</subscriptions>
+      <subscriptions>20.1 TB</subscriptions>
+      <on-site>16.6 TB</on-site>
+      <used>2.75TB</used>
+  </site>
+    <site>
+      <name>T2_RU_INR</name>
+      <pledge>0TB</pledge>
+      <subscriptions>1.1 TB</subscriptions>
+      <subscriptions>6.1 TB</subscriptions>
+      <on-site>2.5 TB</on-site>
+      <used>0.00TB</used>
+  </site>
+    <site>
+      <name>T2_RU_JINR</name>
+      <pledge>0TB</pledge>
+      <subscriptions>3.8 TB</subscriptions>
+      <on-site>3.0 TB</on-site>
+      <used>3.28TB</used>
+  </site>
+    <site>
+      <name>T2_RU_RRC_KI</name>
+      <pledge>0TB</pledge>
+      <subscriptions>1.1 TB</subscriptions>
+      <subscriptions>2.5 TB</subscriptions>
+      <subscriptions>2.5 TB</subscriptions>
+      <subscriptions>234.8 GB</subscriptions>
+      <subscriptions>20.1 TB</subscriptions>
+      <on-site>16.6 TB</on-site>
+      <used>0.00TB</used>
+  </site>
+    <site>
+      <name>T2_RU_ITEP</name>
+      <pledge>0TB</pledge>
+      <subscriptions>6.1 TB</subscriptions>
+      <on-site>2.5 TB</on-site>
+      <used>2.62TB</used>
+  </site>
+    <site>
+      <name>T2_UK_SGrid_RALPP</name>
+      <pledge>0TB</pledge>
+      <subscriptions>23.6 TB</subscriptions>
+      <on-site>19.8 TB</on-site>
+      <used>18.31TB</used>
+  </site>
+    <site>
+      <name>T2_BR_SPRACE</name>
+      <pledge>9.0TB</pledge>
+      <subscriptions>7.1 TB</subscriptions>
+      <on-site>7.5 TB</on-site>
+      <used>4.99TB</used>
+  </site>
+    <site>
+      <name>T2_IN_TIFR</name>
+      <pledge>0TB</pledge>
+      <subscriptions>1.4 TB</subscriptions>
+      <subscriptions>35.9 TB</subscriptions>
+      <subscriptions>38.5 TB</subscriptions>
+      <subscriptions>24.5 TB</subscriptions>
+      <subscriptions>26.8 TB</subscriptions>
+      <subscriptions>5.7 TB</subscriptions>
+      <on-site>4.9 TB</on-site>
+      <used>0.00TB</used>
+  </site>
+    <site>
+      <name>T2_TW_Taiwan</name>
+      <pledge>38.9TB</pledge>
+      <subscriptions>20.1 TB</subscriptions>
+      <on-site>16.6 TB</on-site>
+      <used>17.05TB</used>
+  </site>
+    <site>
+      <name>T2_US_UCSD</name>
+      <pledge>20.0TB</pledge>
+      <subscriptions>46.2 TB</subscriptions>
+      <subscriptions>49.1 TB</subscriptions>
+      <subscriptions>63.2 TB</subscriptions>
+      <subscriptions>68.2 TB</subscriptions>
+      <subscriptions>668.2 GB</subscriptions>
+      <subscriptions>668.2 GB</subscriptions>
+      <subscriptions>18.2 GB</subscriptions>
+      <subscriptions>935.1 GB</subscriptions>
+      <on-site>165.5 GB</on-site>
+      <used>54.01TB</used>
+  </site>
+    <site>
+      <name>T2_TR_ULAKBIM</name>
+      <pledge>0TB</pledge>
+      <used>0.00TB</used>
+  </site>
+    <site>
+      <name>T2_PL_Warsaw</name>
+      <pledge>9.0TB</pledge>
+      <subscriptions>9.5 TB</subscriptions>
+      <subscriptions>11.2 TB</subscriptions>
+      <subscriptions>1.5 TB</subscriptions>
+      <on-site>1.1 TB</on-site>
+      <used>12.35TB</used>
+  </site>
+    <site>
+      <name>T2_US_Wisconsin</name>
+      <pledge>100.0TB</pledge>
+      <subscriptions>63.2 TB</subscriptions>
+      <subscriptions>68.2 TB</subscriptions>
+      <subscriptions>668.2 GB</subscriptions>
+      <subscriptions>668.2 GB</subscriptions>
+      <subscriptions>18.2 GB</subscriptions>
+      <subscriptions>935.1 GB</subscriptions>
+      <on-site>165.5 GB</on-site>
+      <used>76.43TB</used>
+  </site>
+    </T2>
+  <T3>
+    <site>
+      <name>T3_CN_PKU</name>
+      <pledge>0TB</pledge>
+      <used>0.00TB</used>
+  </site>
+    <site>
+      <name>T3_US_Cornell</name>
+      <pledge>0TB</pledge>
+      <used>0.00TB</used>
+  </site>
+    <site>
+      <name>T3_GR_Demokritos</name>
+      <pledge>20.0TB</pledge>
+      <subscriptions>18.2 GB</subscriptions>
+      <subscriptions>935.1 GB</subscriptions>
+      <on-site>165.5 GB</on-site>
+      <used>0.00TB</used>
+  </site>
+    <site>
+      <name>T3_GR_IASA</name>
+      <pledge>0TB</pledge>
+      <used>0.00TB</used>
+  </site>
+    <site>
+      <name>T3_FR_IPNL</name>
+      <pledge>0TB</pledge>
+      <subscriptions>668.2 GB</subscriptions>
+      <subscriptions>668.2 GB</subscriptions>
+      <subscriptions>18.2 GB</subscriptions>
+      <subscriptions>935.1 GB</subscriptions>
+      <on-site>165.5 GB</on-site>
+      <used>0.72TB</used>
+  </site>
+    <site>
+      <name>T3_US_Kansas</name>
+      <pledge>0TB</pledge>
+      <used>0.00TB</used>
+  </site>
+    <site>
+      <name>T3_DE_Karlsruhe</name>
+      <pledge>0TB</pledge>
+      <used>0.00TB</used>
+  </site>
+    <site>
+      <name>T3_US_Minnesota</name>
+      <pledge>0TB</pledge>
+      <subscriptions>13.5 TB</subscriptions>
+      <on-site>4.8 TB</on-site>
+      <used>0.00TB</used>
+  </site>
+    <site>
+      <name>T3_IT_Napoli</name>
+      <pledge>0TB</pledge>
+      <used>0.00TB</used>
+  </site>
+    <site>
+      <name>T3_ES_Oviedo</name>
+      <pledge>2.0TB</pledge>
+      <used>0.00TB</used>
+  </site>
+    <site>
+      <name>T3_IT_Perugia</name>
+      <pledge>0TB</pledge>
+      <subscriptions>935.1 GB</subscriptions>
+      <on-site>165.5 GB</on-site>
+      <used>0.00TB</used>
+  </site>
+    <site>
+      <name>T3_US_Princeton</name>
+      <pledge>0TB</pledge>
+      <subscriptions>57.0 GB</subscriptions>
+      <on-site>12.8 GB</on-site>
+      <used>0.00TB</used>
+  </site>
+    <site>
+      <name>T3_US_TTU</name>
+      <pledge>0TB</pledge>
+      <subscriptions>12.9 TB</subscriptions>
+      <on-site>4.5 TB</on-site>
+      <used>0.00TB</used>
+  </site>
+    <site>
+      <name>T3_IT_Trieste</name>
+      <pledge>0.0TB</pledge>
+      <used>0.00TB</used>
+  </site>
+    <site>
+      <name>T3_US_UCR</name>
+      <pledge>0TB</pledge>
+      <subscriptions>6.9 TB</subscriptions>
+      <on-site>6.7 TB</on-site>
+      <used>0.00TB</used>
+  </site>
+    <site>
+      <name>T3_US_UCLA</name>
+      <pledge>0TB</pledge>
+      <used>0.00TB</used>
+  </site>
+    <site>
+      <name>T3_US_UIowa</name>
+      <pledge>0TB</pledge>
+      <used>0.00TB</used>
+  </site>
+    <site>
+      <name>T3_US_Vanderbilt</name>
+      <pledge>0TB</pledge>
+      <subscriptions>325.9 GB</subscriptions>
+      <on-site>107.2 GB</on-site>
+      <used>0.12TB</used>
+  </site>
+    </T3>
+</sitelist>
+</body>
+</html>

@@ -1,0 +1,88 @@
+Pealkiri:  	maatrix etc
+Saatja:  	"Mario Kadastik" <mario.kadastik@cern.ch>
+Kuupäev:  	K, 18. juuli, 18:57
+Saaja:  	sander_s@ut.ee
+Tähtsus:  	Tavaline
+Seadistused:  	Näita täielikku päist |  Näita trükivaadet  | Salvesta failina
+
+
+
+Hei,
+
+kuidas vahepeal edeneb? Panen kirja lõppu siis selle Briani kirja  
+mille kättesaamisega on raskusi olnud viimasel ajal sul :)
+
+Mida tahaksin siis, et oleks vähe täpsemalt teada:
+
+* kuna Brian tegi enamuse info kogumise tööst ära korjates selle kõik  
+kokku ühte pyytoni skripti, siis edasi peaks olema lihtsam asja arendada
+* unusta ära see vajadus eraldi serveri kohta, output staatilise HTML- 
+na on juba magnifico.
+* hetkel teeb Briani script vaid eristuse, et mis on commissioned ja  
+mis on problem-rate jne vastavalt tingimustele mis oleme kirjutanud  
+protseduuri, selleks aga, et seda otsust teha mis olekus link on,  
+peab ta hankima kogu vajaliku info juba kokku kuskilt. Sinu ülesanne  
+oleks seda nüüd esitada teisel kujul
+* see kuju oleks veebis maatriksina:
+** Tabel kus veergudeks on kõiki T1 keskused ja ridadeks on kõik  
+keskused. Tabeli lahtrites on siis vastava lingi mõlemas suunas  
+transporditud andmete kogus päevas viimase 10 päeva kohta (eraldatud  
+komadega, ühikuks GB ja ümmardatud täisarvuni).
+** edasiarendustena oleks alla 300GB (defineeritav kas confifailis  
+või koodis alguses) asjad punased, üle oleks rohelised (taust peab  
+olema normaalse värviga siis)
+** taustavärvid peaks eristama linkide staatusi (hetkel pole olemas,  
+hiljem teeb juurde kui selleni jõuab).
+
+Tegin mingi lühikese näite,et paremini visualiseerida ka: http:// 
+hep.kbfi.ee/dbg/sample.html siin värvid ja taust jne puudub. To ja  
+ From osa täpne seletus oleks siis, et ühel juhul oleks veeru saidist  
+rea saiti ja teisel juhul vastupidi, kuid kumba pidi on loogilisem  
+hetkel ei tea, tee ühte pidi ära ja siis saab legendi kuhugile  
+algusse ja/või lõppu lisada, et teised ka aru saaks.
+
+Saidi linkidest aru saamiseks on notatsioon üldiselt nii:
+
+T{0,1,2,3}_SITENAME_{SUBSITENAME | STORAGE TYPE}
+
+Ehk siis näiteks:
+
+T0_CERN_Export
+T1_RAL_MSS
+T2_Estonia_Buffer
+T2_SouthGrid_Bristol
+
+see kuidas peaks erinevate storage tüüpide korral linke eraldama või  
+mitte on asi mis tuleb arutluse alla homme meil, esialgu ma arvan, et  
+liidaks kokku kõik (MSS+Disk+Buffer lõpud on siis võimalikud,  
+ülejäänute puhul tõenäoline, et tegemist alamsaidiga).
+
+Kui sul on küsimusi, siis küsi. Loodan, et enamuse infost mida vajad  
+saad Briani pythoni skriptist kätte ja selle lihtsa modimisega saad  
+hakata modima ka seda tabelit valma, kuid kui ei, siis Brian on vast  
+parim koht küsimiseks mis puudutab skripti sisu ja sellest aru  
+saamist ning mina, et ülesandest kui sellisest aru saada.
+
+Kui selle osaga valmis millaski saad, siis saab edasi murda seda  
+eristamise värki ja ka linkide staatusi jne paika ajama hakata.
+
+Mario
+
+Kiri siis ise:
+
+
+Update on this.  I decided that, instead of creating a giant SQL
+query, I'd provide you with a nice script to parse the existing web
+interface.
+
+The file is now available at:
+
+svn://t2.unl.edu/GraphUsers/ddt/calculate_links.py
+
+PS! kuna meetrika ütleb hetkel, et kasutada ainult viimast 7 päeva,  
+siis tõenäoliselt tema infokogumine hetkel samuti vaid 7 päeva kohta,  
+sul vaja tõenäoliselt 10 päeva (või tegelt võiks olla konfitav  
+parameeter, et mitu päeva). 
+
+
+  

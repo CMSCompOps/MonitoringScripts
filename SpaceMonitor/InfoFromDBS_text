@@ -1,0 +1,470 @@
+#!/usr/local/bin/perl -w
+#####################################################################
+#
+# - geting space information from DBS 
+#
+# $Id: InfoFromDBS_text,v 1.2 2009/09/04 06:50:27 xmzhang Exp $
+#
+#####################################################################
+
+use warnings;
+
+use File::stat;
+use File::Find;
+use Time::localtime;
+use Time::gmtime;
+
+my ($sum, $sumall, $FHSITE, $FHSE, $FHCUS, $FHPLEDGE, $FHSUB);
+my ($lineSUB);
+my (@T0, @T1, @T2, @T3);
+my ($sitetemp_sub, $sitetemp);
+my ($nameS, $nameP, $nameC, $nameN);
+my ($Vpledge_cus, $Vpledge_noncus, $Vsubscription);
+my ($cus_sub, $cus_arr);
+#my $DBSCMD_HOME="/home/sgmcms01/slc4_ia32_gcc345/cms/dbs-client/DBS_1_0_8/lib/Clients/Python/DBSAPI";
+my $DBSCMD_HOME=$ENV{'DBSCMD_HOME'};
+print "InfoFromDBS DEBUG: DBSCMD_HOME--$DBSCMD_HOME****************************************************************************\n";
+
+
+system("wget --no-check-certificate https://cmsweb.cern.ch/sitedb/sitedb/xml/index/SitetoCMSName?name -O sitename -q");
+open(FHSITE, "sitename");
+open(FHTXT_pl, " > /var/www/html/pledge.txt");
+open(FHTXT_pl_disk, " > /var/www/html/pledge_disk.txt");
+open(FHTXT_pl_tape, " > /var/www/html/pledge_tape.txt");
+open(FHTXT_sub, " > /var/www/html/subscription.txt");
+open(FHTXT_cus, " > /var/www/html/custodial.txt");
+open(FHTXT_noncus, " > /var/www/html/noncustodial.txt");
+open(FHTXT_dbs, " > /var/www/html/dbs.txt");
+open(FHTXT_cus_sub, " > /var/www/html/cus_sub.txt");
+open(FHTXT_cus_arr, " > /var/www/html/cus_arr.txt");
+open(FHTXT_used, " > /var/www/html/used.txt");
+open(FHTXT_avail, " > /var/www/html/available.txt");
+open(FHTXT_FreeOnline, " > /var/www/html/freeOnline.txt");
+open(FHTXT_UsedOnline, " > /var/www/html/usedOnline.txt");
+open(FHTXT_FreeNearline, " > /var/www/html/freeNearline.txt");
+open(FHTXT_UsedNearline, " > /var/www/html/usedNearline.txt");
+#$tm=localtime;
+$tm=gmtime;
+
+
+$T1c = 0;
+$T2c = 0;
+$T3c = 0;
+$done = 0;
+
+while ($lineT = <FHSITE>) {
+  if ($lineT =~ m"<name>(.*)</name>") {
+    #print "InfoFromDBS DEBUG: CMS SITENAME--$1****************************************************************************\n";
+    my $sitetemp = $1;
+    if ($sitetemp =~ m"T0(.*)") {
+      $T0[0] = "CERN Tier-0";
+      $T0[0][0] = $sitetemp;
+      $T0[0][0][0] = $sitetemp."_MSS";
+      #print "InfoFromDBS DEBUG: T0 site--$T0[0]; CMS--$T0[0][0]; PhEDEX--$T0[0][0][0]**********************************\n";
+    }
+    elsif ($sitetemp =~ m"T1_(.*)_(.*)") {
+      $sitetemp_sub = $2;
+      if ($sitetemp =~ m"T1_FR_CCIN2P3") {
+         $T1[$T1c] = "CC-IN2P3";
+      }
+      else {
+         $T1[$T1c] = $sitetemp_sub;
+      }
+      $T1[$T1c][$T1c] = $sitetemp;
+      $T1[$T1c][$T1c][$T1c] = $sitetemp."_MSS";
+      $T1c = $T1c + 1;
+    }
+    elsif ($sitetemp =~ m"T2_(.*)_(.*)") {
+      if ($1 =~ m"BE") {
+         $T2[$T2c] = "Belgium";
+      }
+      elsif ($2 =~ m"CCIN2P3") { 
+        $T2[$T2c] = "CCIN2P3 AF";
+      }
+      elsif ($2 =~ m"GRIF") {
+        $T2[$T2c] = "GRIF";
+      }
+      elsif ($2 =~ m"UERJ") {
+        $T2[$T2c] = "HEPGRID_UERJ";
+      }
+      elsif ($2 =~ m"HIP") {
+        $T2[$T2c] = "Helsinki Institute of Physics";
+      }
+      elsif ($2 =~ m"Vienna") {
+        $T2[$T2c] = "Hephy-Vienna";
+      }
+      elsif ($2 =~ m"T2_HU_Budapest") {
+        $T2[$T2c] = "Hungary";
+      }
+      elsif ($1 =~ m"London") {
+        $T2[$T2c] = "London";
+      }
+      elsif ($1 =~ m"RU") {
+        $T2[$T2c] = "Russia";
+      }
+      elsif ($2 =~ m"SouthGrid") {
+        $T2[$T2c] = "Rutherford PPD";
+      }
+      else {
+        $T2[$T2c] = $2;
+      }
+      $T2[$T2c][$T2c] = $sitetemp;
+      $T2[$T2c][$T2c][$T2c] = $sitetemp;
+      if ($sitetemp =~ m"T2_RU_IHEP"){
+        $T2[$T2c][$T2c][$T2c] = "T2_RU_IHEP_Disk";
+      }
+      $T2c = $T2c + 1;
+    }
+    elsif ($sitetemp =~ m"T3_(.*)_(.*)") {
+      if ($2 =~ m"UCR") {
+        $T3[$T3c] = "UC Riverside";
+      }
+      elsif ($2 =~ m"PKU") {
+        $T3[$T3c] = "CN_PKU";
+      }
+      elsif ($2 =~ m"UCLA") {
+        $T3[$T3c] = "UCLA Saxon";
+      }
+      elsif ($2 =~ m"Vanderbilt") {
+        $done = $done + 1;
+        if ($done != 2) {
+           $T3[$T3c] = "Vanderbilt";
+        }
+      }
+      else {
+        $T3[$T3c] = $2;
+      }
+      if ($done <=1 ) {
+        $T3[$T3c][$T3c] = $sitetemp;
+        $T3[$T3c][$T3c][$T3c] = $sitetemp;
+        $T3c = $T3c + 1;
+      }
+    }
+  }
+}
+
+#for ($counter = 0; $counter < $T1c; $counter++) {
+#   print "InfoFromDBS DEBUG: T1 site--$T1[$counter]; $T1[$counter][$counter]; $T1[$counter][$counter][$counter]**********************************\n";
+#}
+#for ($counter = 0; $counter < $T2c; $counter++) {
+#   print "InfoFromDBS DEBUG: T2 site--$T2[$counter]; $T2[$counter][$counter]; $T2[$counter][$counter][$counter]**********************************\n";
+#}
+#for ($counter = 0; $counter < $T3c; $counter++) {
+#   print "InfoFromDBS DEBUG: T3 site--$T3[$counter]; $T3[$counter][$counter]; $T3[$counter][$counter][$counter]**********************************\n";
+#}
+
+
+#TO space monitoring
+getInfo("T0", 1, @T0);
+
+#T1 space monitoring
+getInfo("T1", $T1c, @T1);
+
+#T2 space monitoring
+getInfo("T2", $T2c, @T2);
+
+#T3 space monitoring
+getInfo("T3", $T3c, @T3);
+
+
+sub getInfo
+{
+   my ($tier, $Tc, @tiers)=@_;
+   for ($counter = 0; $counter < $Tc; $counter++) {
+     printf FHTXT_pl ("%04d-%02d-%02d %02d:%02d     ",$tm->year+1900,($tm->mon)+1,$tm->mday,$tm->hour,$tm->min);
+     printf FHTXT_pl_disk ("%04d-%02d-%02d %02d:%02d     ",$tm->year+1900,($tm->mon)+1,$tm->mday,$tm->hour,$tm->min);
+     printf FHTXT_pl_tape ("%04d-%02d-%02d %02d:%02d     ",$tm->year+1900,($tm->mon)+1,$tm->mday,$tm->hour,$tm->min);
+     printf FHTXT_sub ("%04d-%02d-%02d %02d:%02d     ",$tm->year+1900,($tm->mon)+1,$tm->mday,$tm->hour,$tm->min);
+     printf FHTXT_dbs ("%04d-%02d-%02d %02d:%02d     ",$tm->year+1900,($tm->mon)+1,$tm->mday,$tm->hour,$tm->min);
+     printf FHTXT_cus ("%04d-%02d-%02d %02d:%02d     ",$tm->year+1900,($tm->mon)+1,$tm->mday,$tm->hour,$tm->min);
+     printf FHTXT_noncus ("%04d-%02d-%02d %02d:%02d     ",$tm->year+1900,($tm->mon)+1,$tm->mday,$tm->hour,$tm->min);
+     printf FHTXT_cus_sub ("%04d-%02d-%02d %02d:%02d     ",$tm->year+1900,($tm->mon)+1,$tm->mday,$tm->hour,$tm->min);
+     printf FHTXT_cus_arr ("%04d-%02d-%02d %02d:%02d     ",$tm->year+1900,($tm->mon)+1,$tm->mday,$tm->hour,$tm->min);
+     printf FHTXT_used ("%04d-%02d-%02d %02d:%02d     ",$tm->year+1900,($tm->mon)+1,$tm->mday,$tm->hour,$tm->min);
+     printf FHTXT_avail ("%04d-%02d-%02d %02d:%02d     ",$tm->year+1900,($tm->mon)+1,$tm->mday,$tm->hour,$tm->min);
+     printf FHTXT_FreeOnline ("%04d-%02d-%02d %02d:%02d     ",$tm->year+1900,($tm->mon)+1,$tm->mday,$tm->hour,$tm->min);
+     printf FHTXT_UsedOnline ("%04d-%02d-%02d %02d:%02d     ",$tm->year+1900,($tm->mon)+1,$tm->mday,$tm->hour,$tm->min);
+     printf FHTXT_FreeNearline ("%04d-%02d-%02d %02d:%02d     ",$tm->year+1900,($tm->mon)+1,$tm->mday,$tm->hour,$tm->min);
+     printf FHTXT_UsedNearline ("%04d-%02d-%02d %02d:%02d     ",$tm->year+1900,($tm->mon)+1,$tm->mday,$tm->hour,$tm->min);
+     $nameS = $tiers[$counter];
+     $nameC = $tiers[$counter][$counter];
+     $nameP = $tiers[$counter][$counter][$counter];
+     print "the phedex name is: $nameP\n";
+     print FHTXT_pl "$nameC      ";
+     print FHTXT_pl_disk "$nameC      ";
+     print FHTXT_pl_tape "$nameC      ";
+     print FHTXT_sub "$nameC      ";
+     print FHTXT_cus "$nameC      ";
+     print FHTXT_noncus "$nameC      ";
+     print FHTXT_dbs "$nameC      ";
+     print FHTXT_cus_sub "$nameC      ";
+     print FHTXT_cus_arr "$nameC      ";
+     print FHTXT_used "$nameC      ";
+     print FHTXT_avail "$nameC      ";
+     print FHTXT_FreeOnline "$nameC      ";
+     print FHTXT_UsedOnline "$nameC      ";
+     print FHTXT_FreeNearline "$nameC      ";
+     print FHTXT_UsedNearline "$nameC      ";
+
+     # get the pledge resource of each site
+     open(FHPLEDGE, "pledge");
+     while ($linePLEDGE = <FHPLEDGE>) {
+        if ($linePLEDGE =~ m"(\d+)\s+$nameC\s+(\d+)\s+(\d+)\s+(\d+)") {
+            $nameN = $1;
+            $disk = $3;
+            $tape = $4;
+            $Vpledge_tape = $tape;
+            $Vpledge = $disk;
+            $Vpledge_disk = $disk;
+        }
+     }
+     print FHTXT_pl_tape "$Vpledge_tape      ";
+     print FHTXT_pl "$Vpledge       ";
+     print FHTXT_pl_disk "$Vpledge_disk       ";
+
+     if ($Vpledge_tape == 0) {
+       print FHTXT_pl_tape "red     ";
+     }
+     else {
+       print FHTXT_pl_tape "green     ";
+     }
+
+     if ($Vpledge_disk == 0) {
+       print FHTXT_pl_disk "red     ";
+     }
+     else {
+       print FHTXT_pl_disk "green     ";
+     }
+
+     if ($Vpledge == 0) {
+       print FHTXT_pl "red     ";
+     }
+     else {
+       print FHTXT_pl "green     ";
+     }
+
+
+     print FHTXT_pl_tape "https://cmsweb.cern.ch/sitedb/sitedb/xml/index/Pledge?site=$nameN\n";
+     print FHTXT_pl "https://cmsweb.cern.ch/sitedb/sitedb/xml/index/Pledge?site=$nameN\n";
+     print FHTXT_pl_disk "https://cmsweb.cern.ch/sitedb/sitedb/xml/index/Pledge?site=$nameN\n";
+
+     # count the space of subscription, non_custodial, custodial 
+     $Vsubscription = 0;
+     $Vphedex_cus = 0;
+     $Vphedex_noncus = 0;
+     
+     system("wget --no-check-certificate http://vocms32.cern.ch/phedex/datasvc/xml/prod/nodeusage?node=$nameP -O phedex_sub -q");
+     open(FHSUB, "phedex_sub");
+     while ($lineSUB = <FHSUB>) {
+        if ($lineSUB =~ m/cust_node_bytes='(\d+)'(.*)cust_dest_bytes='(\d+)'(.*)noncust_dest_bytes='(\d+)'(.*)noncust_node_bytes='(\d+)'/) {
+          $noncust_dest_bytes = $5;
+          $cust_dest_bytes = $3;
+          $cust_node_bytes = $1;
+          $noncust_node_bytes = $7;
+          $Vsubscription = getTB($cust_dest_bytes + $noncust_dest_bytes - $cust_node_bytes - $noncust_node_bytes); 
+          $Vphedex_cus = getTB($cust_node_bytes);
+          $Vphedex_noncus = getTB($noncust_node_bytes);
+        }
+     }
+     printf FHTXT_sub "%.2f          ", $Vsubscription;
+     print FHTXT_sub "green          ";
+     print FHTXT_sub "http://vocms32.cern.ch/phedex/datasvc/xml/prod/nodeusage?node=$nameP \n";
+
+     printf FHTXT_cus "%.2f          ", $Vphedex_cus;
+     print FHTXT_cus "green          ";
+     print FHTXT_cus "http://vocms32.cern.ch/phedex/datasvc/xml/prod/nodeusage?node=$nameP \n";
+
+     printf FHTXT_noncus "%.2f          ", $Vphedex_noncus;
+     print FHTXT_noncus "green         ";
+     print FHTXT_noncus "http://vocms32.cern.ch/phedex/datasvc/xml/prod/nodeusage?node=$nameP \n";
+
+     # count the space used and available in DBS and BDII
+   system("wget --no-check-certificate https://cmsweb.cern.ch/phedex/datasvc/xml/prod/nodes?node=$nameP -O sename -q");
+   open(FHSE, "sename");
+   $sumall = 0;
+   $sumall_avail = 0;
+   $sumall_used = 0;
+   $sumall_FreeOnline = 0;
+   $sumall_UsedOnline = 0;
+   $sumall_FreeNearline = 0;
+   $sumall_UsedNearline = 0;
+   
+   while ($lineSE = <FHSE>) {
+     if ($lineSE =~ m"se='(\S+)'") {
+       $nameSE = $1;    
+       open(BLOCKS, "python $DBSCMD_HOME/dbsCommandLine.py -c lsb --report --sepattern=$nameSE|");
+       #open(BLOCKS, "python /home/sgmcms01/slc4_ia32_gcc345/cms/dbs-client/DBS_1_0_8/lib/Clients/Python/DBSAPI/dbsCommandLine.py -c lsb --report --sepattern=$nameSE|");
+       $sum = 0;
+       while ($lineB = <BLOCKS>) {
+         if ($lineB =~ m"BlockSize") {
+           #print ("InfoFromDBS DEBUG:$lineB\n");
+           $lineB =~ m"^\D+(\d+)$";
+           $sum = $sum + $1;
+           #print ("InfoFromDBS DEBUG:$sum\n");
+         }
+       }
+       $sumall = $sumall + $sum;
+
+       $Vavail = 0;
+       $Vused = 0;
+      system("ldapsearch -xLLL -h lcg-bdii.cern.ch -p 2170 -b 'o=grid' '(&(objectclass=GlueSA)(|(GlueSAAccessControlBaseRule='cms')(GlueSAAccessControlBaseRule='VO:cms'))(GlueChunkKey='GlueSEUniqueId=$nameSE'))' GlueSAStateAvailableSpace GlueSAStateUsedSpace > bdii_space");
+       open(FHUSED, bdii_space);
+       while ($lineUSED = <FHUSED>) {
+         if ($lineUSED =~ m"GlueSAStateAvailableSpace:\s*(\d+)") {
+           $Vavail = $Vavail+$1;
+           #printf ("InfoFromDBS DEBUG_Vavail: %.4fTB\n", $Vavail);
+         }
+         elsif ($lineUSED =~ m"GlueSAStateUsedSpace:\s*(\d+)") {
+           $Vused = $Vused+$1;
+           #printf ("InfoFromDBS DEBUG_Vused: %.4fTB\n", $Vused);
+         }
+       }
+       $sumall_avail = $sumall_avail + $Vavail;
+       $sumall_used = $sumall_used + $Vused;
+
+       $VFreeOnline = 0; 
+       $VUsedOnline = 0; 
+       $VFreeNearline = 0; 
+       $VUsedNearline = 0;
+       #system("ldapsearch -xLLL -h lcg-bdii.cern.ch -p 2170 -b 'o=grid' '(&(objectclass=GlueSA)(|(GlueSAAccessControlBaseRule='cms')(GlueSAAccessControlBaseRule='VO:cms'))(GlueChunkKey='GlueSEUniqueId=$nameSE'))' GlueSAStateAvailableSpace GlueSAStateUsedSpace > bdii_space");
+       system(" ldapsearch -xLLL -h lcg-bdii.cern.ch -p 2170 -b 'o=grid' '(&(objectclass=GlueSA)(|(GlueSAAccessControlBaseRule='cms')(GlueSAAccessControlBaseRule='VO:cms')(GlueSAAccessControlBaseRule='VO:cms')(GlueSAAccessControlBaseRule=VOMS:/cms/*))(GlueChunkKey='GlueSEUniqueId=$nameSE'))'  GlueSAFreeOnlineSize GlueSAUsedOnlineSize GlueSAFreeNearlineSize GlueSAUsedNearlineSize > bdii_space");
+       open(FHUSED, bdii_space);
+       while ($lineUSED = <FHUSED>) {
+         if ($lineUSED =~ m"GlueSAFreeOnlineSize:\s*(\d+)") {
+           $VFreeOnline = $VFreeOnline + $1;
+         }
+         elsif ($lineUSED =~ m"GlueSAUsedOnlineSize:\s*(\d+)") {
+           $VUsedOnline = $VUsedOnline + $1;
+         }
+         elsif ($lineUSED =~ m"GlueSAFreeNearlineSize:\s*(\d+)") {
+           $VFreeNearline = $VFreeNearline + $1;
+           #printf ("InfoFromDBS DEBUG_Vused: %.4fTB\n", $Vused);
+         }
+         elsif ($lineUSED =~ m"GlueSAUsedNearlineSize:\s*(\d+)") {
+           $VUsedNearline = $VUsedNearline + $1;
+           #printf ("InfoFromDBS DEBUG_Vused: %.4fTB\n", $Vused);
+         }
+       }
+       $sumall_FreeOnline = $sumall_FreeOnline + $VFreeOnline;
+       $sumall_UsedOnline = $sumall_UsedOnline + $VUsedOnline;
+       $sumall_FreeNearline = $sumall_FreeNearline + $VFreeNearline;
+       $sumall_UsedNearline = $sumall_UsedNearline + $VUsedNearline;
+     }
+   }
+   $Vdbs = $sumall;
+   $sumall = getTB($sumall);
+   $sumall_avail = $sumall_avail/1000000000;
+   $sumall_used = $sumall_used/1000000000;
+   $sumall_FreeOnline = $sumall_FreeOnline/1000;
+   $sumall_UsedOnline = $sumall_UsedOnline/1000;
+   $sumall_FreeNearline = $sumall_FreeNearline/1000;
+   $sumall_UsedNearline = $sumall_UsedNearline/1000;
+   if ($Vdbs == 0) {
+     print FHTXT_dbs "n/a       white       n/a\n";  
+   }
+   else {
+     printf FHTXT_dbs ("%.2f      ", $sumall);
+     print FHTXT_dbs "green     ";
+     print FHTXT_dbs "https://cmsweb.cern.ch/dbs_discovery/getData?dbsInst=cms_dbs_prod_global&site=$nameSE&group=*&app=*&primD=*&tier=*&proc=*&primType=*&date=*&_idx=0&ajax=0&userMode=user&pagerStep=10\n";
+   }
+
+   if ($sumall_avail == 0 && $sumall_used == 0) {
+     print FHTXT_used "n/a       white       n/a\n";
+     print FHTXT_avail "n/a       white       n/a\n";
+   }
+   else {
+     printf FHTXT_used ("%.2f       green      n/a\n", $sumall_used);
+     printf FHTXT_avail ("%.2f      green      n/a\n", $sumall_avail);
+   }
+
+   if ($sumall_FreeOnline == 0 && $sumall_UsedOnline == 0) {
+     print FHTXT_FreeOnline "n/a       white       n/a\n";
+     print FHTXT_UsedOnline "n/a       white       n/a\n";
+   }
+   else {
+     printf FHTXT_FreeOnline ("%.2f       green      n/a\n", $sumall_FreeOnline);
+     printf FHTXT_UsedOnline ("%.2f      green      n/a\n", $sumall_UsedOnline);
+   }
+
+   if ($sumall_FreeNearline == 0 && $sumall_UsedNearline == 0) {
+     print FHTXT_FreeNearline "n/a       white       n/a\n";
+     print FHTXT_UsedNearline "n/a       white       n/a\n";
+   }
+   else {
+     printf FHTXT_FreeNearline ("%.2f       green      n/a\n", $sumall_FreeNearline);
+     printf FHTXT_UsedNearline ("%.2f      green      n/a\n", $sumall_UsedNearline);
+   }
+
+
+    # count the custodial subscription and on-site for T1
+   system("wget --no-check-certificate http://cmsweb.cern.ch/phedex/prod/Reports::SiteUsage?node=$nameP# -O cus -q");
+   $cus_sub = 0;
+   $cus_arr = 0;
+   open(FHCUS, "cus");
+   if ($tier =~ m"T1") {
+     while ($lineCUS = <FHCUS>) {
+       if ($lineCUS =~ m"<td>Custodial</td><td>(.*)B</td><td>(.*)B</td>") {
+         $cus_sub = getTB($1);
+         $cus_arr = getTB($2);
+         print FHTXT_cus_sub "$cus_sub         green        ";
+         print FHTXT_cus_arr "$cus_arr          green        ";
+         print FHTXT_cus_sub "http://cmsweb.cern.ch/phedex/prod/Reports::SiteUsage?node=$nameP#\n";
+         print FHTXT_cus_arr "http://cmsweb.cern.ch/phedex/prod/Reports::SiteUsage?node=$nameP#\n";
+       }
+     }
+   }
+   else {
+       print FHTXT_cus_sub "n/a                               white                       n/a\n";
+       print FHTXT_cus_arr "n/a                               white                       n/a\n";
+   }
+  }#if
+}#sub
+
+
+sub getTB
+{
+   my ($orivalue)=@_;
+   if ($orivalue =~ m"(.*)T") {
+       $value = $1;
+   }
+   elsif ($orivalue =~ m"(.*)M") {
+       $value = $1/1000000;
+   }
+   elsif ($orivalue =~ m"(.*)G") {
+       $value = $1/1000;
+   }
+   elsif ($orivalue =~ m"(.*)P") {
+       $value = $1*1000;
+   }
+   elsif ($orivalue =~ m"(.*)K") {
+       $value = $1/1000000000;
+   }
+   else {
+       $value = $orivalue/1000000000000;
+   }
+   return $value;
+}
+
+
+close(FHSITE);
+close(FHSE);
+close(FHSUB);
+close(FHCUS);
+close(FHPLEDGE);
+close(FHUSED);
+
+close(FHTXT_pl);
+close(FHTXT_pl_tape);
+close(FHTXT_pl_disk);
+close(FHTXT_cus);
+close(FHTXT_noncus);
+close(FHTXT_dbs);
+close(FHTXT_cus_sub);
+close(FHTXT_cus_arr);
+close(FHTXT_used);
+close(FHTXT_avail);
+close(FHTXT_FreeOnline);
+close(FHTXT_UsedOnline);
+close(FHTXT_FreeNearline);
+close(FHTXT_UsedNearline);
+exit 0;

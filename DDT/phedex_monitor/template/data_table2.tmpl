@@ -1,0 +1,437 @@
+
+<html>
+<head>
+<META http-equiv="Content-Style-Type" content="text/css">
+
+	<style type="text/css">
+	
+		table.main_table {
+			border-collapse: collapse;
+			border:2px solid black;
+		}
+	
+		th {
+			border: 1px solid black;
+		}
+	
+		table.inner_table {
+			border-collapse: collapse;
+			border: 0px;
+			spacing-bottom: 0px;
+			padding-bottom: 0px;
+			height: 100%;
+			width: 100%;
+		}
+	
+		td {
+			font-size: 10px;
+			text-align: center
+		}
+	
+		td.bidirectional_cell {
+			padding: 0px 0px 0px 0px;
+			border: 1px solid black;
+			cell-padding: 0, 0, 0, 0;
+		}
+	
+		td.link_with_itself {
+			background-color: gray;
+		}
+		
+		td.link_cell {
+			height: 40px;
+		}
+		
+		td.link_cell_compact {
+			height: 15px;
+			width: 50px;
+		}
+		
+		
+    a {
+			color: black;
+			text-decoration:underline;
+		}
+
+    a:hover {
+			color: #bf4d0b;
+			text-decoration:underline;
+    }
+		
+	
+		/* Following sets the cells' background colors depending on links' different states */
+	
+		td#commissioned {
+			background-color: #5ffe43;
+		}
+		td#suspended {
+			background-color: #5ffe43;
+		}
+		td#pending-commissioning {
+			background-color: yellow;
+		}
+	
+		td#problem-rate {
+			background-color: #ff5353;
+		}
+		
+		td#not-tested {
+			background-color: white;
+		}
+	
+		td#pending-rate {
+			background-color: brown;
+		}
+	
+	
+		/* Following sets the font colors for each metric value, currently differentiating:
+				 - values < 300Gb transferred a day
+				 - values > 300Gb && < 500Gb  transferred a day
+				 - values > 500Gb transferred a day
+	  */
+	
+		span.lt_300gb {
+			font-style: italic;
+			color: #CC0000;
+		}
+		
+		span.gt_300_lt_500gb {
+			color: black;
+		}
+	
+		span.gt_500gb {
+			color: black;
+			font-weight:bold;
+		}
+
+	</style>
+</head>
+
+<body>
+
+<a href="update_data" target="_blank">Force data update</a> [this will take about 3 minutes!!!] <br />
+<a href="set_state_manually" target="_blank">Set link's state manually</a>
+
+<br /><br /><br />
+
+<h3>Legend:</h3>
+
+<table class="main_table">
+
+	<tr>
+		<th>Site</th>
+		<th>T1_CERN_Buffer</th>
+	</tr>
+	
+	<tr>
+		<th>T1_CERN_Buffer</th>
+		<td class="link_with_itself">[link with itself]</td>
+	</tr>	
+	<tr>
+		<th>T2_Pisa_Buffer</th>
+		<td class="bidirectional_cell">
+			<table class="inner_table">
+
+				<tr><td class="link_cell">
+					From: <i>[status of link from T2_Pisa_Buffer to T1_CERN_Buffer] </i>
+				</td></tr>
+
+				<tr><td class="link_cell">
+					To: <i>[status of link from T1_CERN_Buffer to T2_Pisa_Buffer] </i>
+				</td></tr>
+			</table>
+		</td>	
+	</tr>
+
+	<tr>
+		<th>T2_Nebraska_Buffer</th>
+		<td class="bidirectional_cell">
+			<table class="inner_table">
+
+				<tr><td class="link_cell" id="commissioned">
+					<i>[status=COMMISSIONED]</i>
+				</td></tr>
+
+				<tr><td class="link_cell" id="pending-commissioning">
+					<i>[status=PENDING-COMMISSIONING]</i>
+				</td></tr>
+			</table>
+		</td>	
+	</tr>
+
+	<tr>
+		<th>T2_Nebraska_Buffer</th>
+		<td class="bidirectional_cell">
+			<table class="inner_table">
+
+				<tr><td class="link_cell" id="problem-rate">
+					<i>[status=PROBLEM_RATE]</i>
+				</td></tr>
+
+				<tr><td class="link_cell" id="not-tested">
+					<i>[status=NOT_TESTED]</i>
+				</td></tr>
+			</table>
+		</td>	
+	</tr>
+
+	<tr>
+		<th>T1_FNAL_Buffer</th>
+		<td class="bidirectional_cell">
+			<table class="inner_table">
+
+				<tr><td class="link_cell" id="pending-rate">
+					<i>[status=PENDING_RATE]</i>
+				</td></tr>
+
+				<tr><td class="link_cell">
+					&nbsp;
+				</td></tr>
+			</table>
+		</td>	
+	</tr>
+
+	<tr>
+		<th>T1_IN2P3_Buffer</th>
+		<td class="bidirectional_cell">
+			<table class="inner_table">
+
+				<tr><td class="link_cell">
+					From: ?, ? <span class="lt_300gb">123 [less than 300Gb/day]</span>, ?, ?, ?,
+								<span class="gt_300_lt_500gb">432 [between 300 & 500 Gb/day]</span>, ?, ?, ?
+				</td></tr>
+
+				<tr><td class="link_cell">
+					To: ?, ?, ?, ?, <span class="gt_500gb">1237 [more than 500 Gb/day]</span>, ?, ?, ?, ?, ?
+				</td></tr>
+			</table>
+		</td>	
+	</tr>
+	
+</table>
+
+<br /><br />
+
+<table class="main_table">
+	<tr>
+		<th>&nbsp;</th>
+		#for $node in $dto["tier_one_nodes"]
+		   #if $node.shortname != "CERN"
+			<th>$node.shortname</th>
+		   #end if
+		#end for
+	</tr>
+	
+	#for $node in $dto["tier_zero_nodes"]
+	<tr>
+		<th>&nbsp; T0 &nbsp;</th>
+		
+		#for $i in range(len($dto["tier_one_nodes"]))
+			#for $link in $node.bidir_links_with_t1s
+				#if $dto["tier_one_nodes"][$i] == $link.to_node
+					#if $link.to_node.shortname == "CERN"
+						&nbsp;
+					#else
+						<td class="bidirectional_cell">
+							<table class="inner_table">
+
+
+								#if $link.from_link != None
+									<tr><td class="link_cell_compact" id="$link.from_link.state.name.lower()">
+										&nbsp;
+									</td></tr>
+								#else
+									<tr><td class="link_cell_compact">-</td></tr>
+								#end if
+
+
+								#if $link.to_link != None
+									<tr><td class="link_cell_compact" id="$link.to_link.state.name.lower()">
+										&nbsp;
+									</td></tr>
+								#else
+									<tr><td class="link_cell_compact">-</td></tr>
+								#end if	
+	
+							</table>
+						</td>
+					#end if
+				
+				#end if
+			#end for
+		#end for
+	</tr>
+
+	#end for
+
+</table>
+<br /><br />
+
+<table class="main_table">
+	<tr>
+		<th>&nbsp;</th>
+		#for $node in $dto["tier_one_nodes"]
+			<th>$node.shortname</th>
+		#end for
+	</tr>
+	
+	#for $node in $dto["tier_one_nodes"]
+	<tr>
+		<th>$node.shortname</th>
+		
+		#for $i in range(len($dto["tier_one_nodes"]))
+			#for $link in $node.bidir_links_with_t1s
+				#if $dto["tier_one_nodes"][$i] == $link.to_node
+					#if $link.from_node == $link.to_node
+						<td class="link_with_itself">&nbsp;</td>
+					#else
+						<td class="bidirectional_cell">
+							<table class="inner_table">
+
+
+								#if $link.from_link != None
+									<tr><td class="link_cell_compact" id="$link.from_link.state.name.lower()">
+										&nbsp;
+									</td></tr>
+								#else
+									<tr><td class="link_cell_compact">-</td></tr>
+								#end if
+
+
+								#if $link.to_link != None
+									<tr><td class="link_cell_compact" id="$link.to_link.state.name.lower()">
+										&nbsp;
+									</td></tr>
+								#else
+									<tr><td class="link_cell_compact">-</td></tr>
+								#end if	
+	
+							</table>
+						</td>
+					#end if
+				
+				#end if
+			#end for
+		#end for
+	</tr>
+
+	#end for
+
+</table>
+
+
+<br /><br />
+
+<table class="main_table">
+	<tr>
+		<th>&nbsp;</th>
+		#for $node in $dto["tier_one_nodes"]
+			<th>$node.shortname</th>
+		#end for
+	</tr>
+	
+	#for $node in $dto["tier_two_nodes"]
+	<tr>
+		<th>$node.shortname</th>
+		
+		#for $i in range(len($dto["tier_one_nodes"]))
+			#for $link in $node.bidir_links_with_t1s
+				#if $dto["tier_one_nodes"][$i] == $link.to_node
+					#if $link.from_node == $link.to_node
+						<td class="link_with_itself">&nbsp;</td>
+					#else
+						<td class="bidirectional_cell">
+							<table class="inner_table">
+
+
+								#if $link.from_link != None
+									<tr><td class="link_cell_compact" id="$link.from_link.state.name.lower()">
+										&nbsp;
+									</td></tr>
+								#else
+									<tr><td class="link_cell_compact">-</td></tr>
+								#end if
+
+
+								#if $link.to_link != None
+									<tr><td class="link_cell_compact" id="$link.to_link.state.name.lower()">
+										&nbsp;
+									</td></tr>
+								#else
+									<tr><td class="link_cell_compact">-</td></tr>
+								#end if	
+	
+							</table>
+						</td>
+					#end if
+				
+				#end if
+			#end for
+		#end for
+	</tr>
+
+	#end for
+
+</table>
+
+<br /><br />
+
+
+<table class="main_table">
+
+	<tr>
+		<th>All nodes \ T1 nodes</th>
+		#for $node in $dto["tier_one_nodes"]
+			<th>$node.shortname</th>
+		#end for
+	</tr>
+	
+	#for $node in $dto["nodes"]
+	<tr>
+		<th>$node.shortname</th>
+		
+		#for $i in range(len($dto["tier_one_nodes"]))
+			#for $link in $node.bidir_links_with_t1s
+				#if $dto["tier_one_nodes"][$i] == $link.to_node
+					#if $link.from_node == $link.to_node
+						<td class="link_with_itself">&nbsp;</td>
+					#else
+						<td class="bidirectional_cell">
+							<table class="inner_table">
+
+
+								#if $link.from_link != None
+									<tr><td class="link_cell" id="$link.from_link.state.name.lower()">
+										<a href="$link.from_link.url_to_graph">From:</a>
+											$link.from_link.link_string
+									</td></tr>
+								#else
+									<tr><td class="link_cell">-</td></tr>
+								#end if
+
+
+								#if $link.to_link != None
+									<tr><td class="link_cell" id="$link.to_link.state.name.lower()">
+										<a href="$link.to_link.url_to_graph">To:</a>
+											$link.to_link.link_string
+									</td></tr>
+								#else
+									<tr><td class="link_cell">-</td></tr>
+								#end if	
+	
+							</table>
+						</td>
+					#end if
+				
+				#end if
+			#end for
+		#end for
+	</tr>
+
+	#end for
+</table>
+
+<br /><br />
+
+</body>
+</html>

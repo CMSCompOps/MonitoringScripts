@@ -1,0 +1,44 @@
+#
+# this file is /afs/cern.ch/user/s/samcms/acrontab.dat
+#
+#   check  the schedule with  'acrontab -l'
+#   update schedule from file with  'acrontab < acrontab.dat'
+#
+# format: minute hour day month day-of-the-week host command
+# see man acrontab
+#  also man -S 5 crontab
+# note that command is executed in /bin/sh shell (not tcsh !!)
+#
+#
+#=========== JOB ROBOT STUFF ===================================
+# JobRobot cleanup
+0 2 * * * vocms36.cern.ch /data/JobRobot/code/reports/crono_clean.py --lag 3 > /data/JobRobot/code/reports/robot_clean.log 2>&1
+#
+# JR reports
+0 * * * * vocms36.cern.ch /data/JobRobot/code/reports/crono_reports.py --lag 0 >> /data/JobRobot/code/reports/robot_post.log 2>&1
+45 1,3,5 * * * vocms36.cern.ch /data/JobRobot/code/reports/crono_reports.py --lag 1 > /data/JobRobot/code/reports/robot_post.log 2>&1
+#
+# JR quality plots
+10 5,9,17 * * * vocms36.cern.ch /data/JobRobot/code/reports/quality_plots.sh week
+15 6,14 * * * vocms36.cern.ch /data/JobRobot/code/reports/quality_plots.sh month
+#
+# renew proxy for running JobRobot
+40 10,22 * * * vocms36.cern.ch /bin/cp -f /data/JobRobot/work/sciaba/.px /data/JobRobot/work/SiteComm/PRN/.PRX/samcms-as; /bin/chmod 0600 /data/JobRobot/work/SiteComm/PRN/.PRX/samcms-as
+#
+# redelegate proxy to WMProxy
+13 12 * * * vocms36.cern.ch cd /data/JobRobot/work/SiteComm; source SETUP.sh > /dev/null; /data/JobRobot/work/SiteComm/delegation.pl > /dev/null
+#
+#============== SITE STATUS BOARD STUFF ==========================
+10 8,17 * * * lxplus $HOME/COMP/SITECOMM/SSBScripts//EnabledLinksForSiteMonitor.sh > $HOME/COMP/SITECOMM/SSBScripts/EnabledLinksForSiteMonitor.log
+18,48 * * * * lxplus $HOME/COMP/SITECOMM/SSBScripts/JRobotForSiteComm.py.old > /afs/cern.ch/cms/LCG/SiteComm/JobRobot.txt
+55 0 * * * lxplus $HOME/COMP/SITECOMM/SSBScripts/JRobotForSiteComm.sh
+50 0 * * * lxplus $HOME/COMP/SITECOMM/SSBScripts/site_avail_nagios.pl
+50 0 * * * lxplus $HOME/COMP/SITECOMM/SSBScripts/site_avail_sum.pl
+55 0 * * * lxplus $HOME/COMP/SITECOMM/SSBScripts/jr_successrate.pl jobrobot
+55 0 * * * lxplus $HOME/COMP/SITECOMM/SSBScripts/jr_successrate.pl hcjobrobot
+#
+#============== THIS IS FOR SAM TESTS ============================
+30 * * * * lxplus /afs/cern.ch/user/s/samcms/mybin/list-tags.sh > /dev/null
+#0 0,2,4,6,8,10,12,14,16,18,20,22 * * * vocms36 cd /data/sam2/same-cron; ./same-cron-srm.sh 2>&1 | ./add_time.pl >> ./same-cron-srm.log
+#0,15,30,45 * * * * vocms36 cd /data/sam2/same-cron; ./same-cron-ce-prod.sh 2>&1 | ./add_time.pl >> ./same-cron-ce-prod.log
+#30 0,2,4,6,8,10,12,14,16,18,20,22 * * * vocms36 cd /data/sam2/same-cron; ./same-cron-ce.sh 2>&1 | ./add_time.pl >> ./same-cron-ce.log
