@@ -1,0 +1,6 @@
+*.pyc
+*.tmp
+*_.xml
+output/
+certs/
+tmp/

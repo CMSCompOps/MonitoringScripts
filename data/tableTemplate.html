@@ -1,0 +1,82 @@
+<html>
+
+<head>
+<title> %%TITLE%% </title>
+<style>
+body{font-family: Arial; margin-bottom: 128px;}
+table.content {}
+table.content td {padding: 0px;}
+table.content thead th {background: #EBDACB; padding: 3px}
+table.content tr:nth-child(even) {background: #f8f2e4}
+table.content tr:nth-child(odd)  {background: #fbf8f1}
+div.box{
+    height: 16px;
+    width: 16px;
+    border-right: solid 1px #000;
+    border-bottom: solid 1px #000;
+    display:inline-block;
+}
+div.box div
+{
+    position: fixed;
+    top: 0px;
+    left: 0px;
+    display: none;
+}
+div.box:hover div
+{
+    display: block;
+    background: #f5f5f5;
+    color: #444;
+    border: solid 1px #ddd;
+    border-radius: 3px;
+    padding: 4px;
+}
+div.warning{
+    color: #8a6d3b;
+    background-color: #FFEB68;
+    border-color: #F0D524;
+}
+div.success{
+    color: #3c763d;
+    background-color: #A1C764;
+    border-color: #8CBA19;
+}
+div.unknown{
+    color: #333;
+    background-color: #dedede;
+    border-color: #ccc;
+}
+div.error{
+    color: #70090b;
+    background-color: #f66e67;
+    border-color: #ed1e24;
+}
+</style>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+<script>
+$(document).ready(function(){
+    $("div.box").mousemove(function(event){
+        var message = $(this).find("div");
+        if(!message.length) return;
+        message.css("left", (event.clientX + 16) + "px");
+        message.css("top",  (event.clientY + 16) + "px");
+    });
+});
+</script>
+</head>
+
+<body>
+<h1> %%HEAD1%% </h1>
+<h2> %%HEAD2%% </h2>
+<table class="content" cellspacing="0">
+<thead>
+%%TABLE_HEAD%%
+</thead>
+<tbody>
+%%TABLE_CONTENT%%
+</tbody>
+</table>
+</body>
+
+</html>

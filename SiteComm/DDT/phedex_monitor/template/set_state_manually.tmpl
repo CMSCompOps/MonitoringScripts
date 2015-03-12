@@ -1,0 +1,56 @@
+
+<html>
+<head>
+<META http-equiv="Content-Style-Type" content="text/css">
+
+	<style type="text/css">
+		
+		#submit_button {
+			border: 1px solid black;
+		}
+		
+	
+	</style>
+</head>
+
+<body>
+
+	<form action="set_state_manually" method="post">
+		<table>
+			<tr>
+				<td> Set the state of link from node 
+					<select name="from_node">
+						#for $node in $data.nodes
+							<option value="$node">$node</option>
+						#end for
+					</select>
+				</td>
+				<td> to node 
+					<select name="to_node">
+						#for $node in $data.nodes
+							<option value="$node">$node</option>
+						#end for
+					</select>
+				</td>
+				<td> to new state 
+					<select name="new_state">
+						#for $state in $data.states
+							<option value="$state">$state</option>
+						#end for
+					</select>
+				</td>
+				<td>
+				</td>
+			</tr>
+			<tr>
+				<td colspan="3" align="right">
+					<input type="submit" value="submit state update" id="submit_button" />
+				</tr>
+			</tr>
+		</table>
+	</form>
+
+
+
+</body>
+</html>

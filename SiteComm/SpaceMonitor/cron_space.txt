@@ -1,0 +1,1 @@
+00 */4 * * * /home/sgmcms01/slc4_ia32_gcc345/cms/dbs-client/DBS_1_0_8/lib/Clients/Python/space_mon 
