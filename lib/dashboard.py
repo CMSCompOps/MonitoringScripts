@@ -14,7 +14,7 @@ white  = 'white'
 class entry:
     def __init__(self, date = None, name = None, value = None, color = None, url = None):
         if date == None:
-            self.date = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+            self.date = self.dateTimeNow()
         else:
             self.date  = date
         self.name  = name
@@ -25,6 +25,9 @@ class entry:
         else:
             self.url = url
 
+    def dateTimeNow(self):
+        self.date = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+
     def __str__(self):
         return "%s\t%s\t%s\t%s\t%s" % (self.date, self.name, self.value, self.color, self.url)
 
@@ -32,12 +35,13 @@ class entry:
 class metric:
     def __init__(self):
         self.entries = []
-
-    def append(self, entry):
-        self.entries.append(entry)
+        self._currentIndex = 0
 
     def __str__(self):
         return "\n".join(str(row) for row in self.entries)
+
+    def append(self, entry):
+        self.entries.append(entry)
 
     def hasSite(self, siteName):
         for i in self.entries:
