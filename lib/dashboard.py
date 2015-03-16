@@ -28,13 +28,30 @@ class entry:
     def __str__(self):
         return "%s\t%s\t%s\t%s\t%s" % (self.date, self.name, self.value, self.color, self.url)
 
+# dashboard metric class
+class metric:
+    def __init__(self):
+        self.entries = []
+
+    def append(self, entry):
+        self.entries.append(entry)
+
+    def __str__(self):
+        return "\n".join(str(row) for row in self.entries)
+
+    def hasSite(self, siteName):
+        for i in self.entries:
+            if siteName == i.name: return i
+        return False
+
 def parseMetric(data):
     # remove python style comments
     data    = re.sub(re.compile(r'^#.*$', re.MULTILINE), "", data)
     # kudos to jbalcas for the dashboard entry pattern!
     rows = re.findall(r'([0-9-: ]*)\t(T[0-3][_A-Za-z0-9]*)\t([A-Za-z\.0-9]*)\t([A-Za-z]*)\t(.*)', data, re.M)
-    ret  = []
-    # convert them into dashboard entry structure
+    # create metric object to return the result in this structure
+    ret  = metric()
+    # append parsed entries to the metric object
     for row in rows:
         ret.append(entry(row[0], row[1], row[2], row[3], row[4]))
     return ret
