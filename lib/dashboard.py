@@ -16,7 +16,7 @@ white  = 'white'
 class entry:
     def __init__(self, date = None, name = None, value = None, color = None, url = None):
         if date == None:
-            self.date = self.dateTimeNow()
+            self.dateTimeNow()
         elif type(date) == float or type(date) == int:
             self.date = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(date))
         else:
@@ -52,6 +52,18 @@ class metric:
             if siteName == i.name: return i
         return False
 
+def parseMetric(data):
+    # remove python style comments
+    data    = re.sub(re.compile(r'^#.*$', re.MULTILINE), "", data)
+    # kudos to jbalcas for the dashboard entry pattern!
+    rows = re.findall(r'([0-9-: ]*)\t(T[0-3][_A-Za-z0-9]*)\t([A-Za-z\.0-9]*)\t([A-Za-z]*)\t(.*)', data, re.M)
+    # create metric object to return the result in this structure
+    obj  = metric()
+    # append parsed entries to the metric object
+    for row in rows:
+        obj.append(entry(row[0], row[1], row[2], row[3], row[4]))
+    return obj
+
 # dashboard json interface metric format
 # since we get the metric data from the dashboard interface, we also
 # have time information that defines slots in the metric plot.
@@ -64,25 +76,8 @@ class metric:
 # entries['siteName' : {TheEndTime : dashboard.entry, 
 #                       TheEndTime : dashboard.entry...}, ...]
 class jsonMetric:
-    def __init__(self, inJSON = '{}'):
-        self.data  = json.loads(inJSON)
-        self.slots = self.data['csvdata']
+    def __init__(self):
         self.entries    = {}
-        self._parse()
-
-    def _parse(self):
-        for slot in self.slots:
-            # get start & end time in unix time
-            time     = self.dashboardTime2UnixTime(slot['Time'])
-            endTime  = self.dashboardTime2UnixTime(slot['EndTime'])
-            siteName = slot['VOName']
-            value    = slot['Status']
-            color    = slot['COLORNAME']
-            url      = slot['URL']
-            # add site names from the metric
-            if not siteName in self.entries:
-                self.entries[siteName] = {}
-            self.entries[siteName][endTime] = entry(time, siteName, value, color, url)
 
     def dashboardTime2UnixTime(self, dashboardTime):
         # keep in mind that it will be returned in GMT!
@@ -90,6 +85,13 @@ class jsonMetric:
 
     def unixTime2DashboardTime(self, unixTime):
         return time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(unixTime))
+
+    def hasSite(self, siteName):
+        if siteName in self.entries: return True
+        return False
+
+    def getSites(self):
+        return self.entries.keys()
 
     def getSiteEntries(self, siteName):
         if self.entries.has_key(siteName): return self.entries[siteName]
@@ -102,17 +104,23 @@ class jsonMetric:
         entryKeys.sort(reverse=True)
         return entries[entryKeys[0]]
 
-def parseMetric(data):
-    # remove python style comments
-    data    = re.sub(re.compile(r'^#.*$', re.MULTILINE), "", data)
-    # kudos to jbalcas for the dashboard entry pattern!
-    rows = re.findall(r'([0-9-: ]*)\t(T[0-3][_A-Za-z0-9]*)\t([A-Za-z\.0-9]*)\t([A-Za-z]*)\t(.*)', data, re.M)
-    # create metric object to return the result in this structure
-    ret  = metric()
-    # append parsed entries to the metric object
-    for row in rows:
-        ret.append(entry(row[0], row[1], row[2], row[3], row[4]))
-    return ret
+def parseJSONMetric(data):
+    data  = json.loads(data)
+    slots = data['csvdata']
+    obj   = jsonMetric()
+    for slot in slots:
+        # get start & end time in unix time
+        time     = obj.dashboardTime2UnixTime(slot['Time'])
+        endTime  = obj.dashboardTime2UnixTime(slot['EndTime'])
+        siteName = slot['VOName']
+        value    = slot['Status']
+        color    = slot['COLORNAME']
+        url      = slot['URL']
+        # add site names from the metric
+        if not siteName in obj.entries:
+            obj.entries[siteName] = {}
+        obj.entries[siteName][endTime] = entry(time, siteName, value, color, url)
+    return obj
 
 if __name__ == '__main__':
     import url
