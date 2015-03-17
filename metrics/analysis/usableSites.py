@@ -1,4 +1,4 @@
-import sys
+import sys, time
 from lib import sites, dashboard, url, fileOps
 
 if len(sys.argv) < 6:
@@ -9,8 +9,10 @@ if len(sys.argv) < 6:
 usableSitesMC = dashboard.parseMetric(url.read(sys.argv[1]))
 # morgue list
 morgue        = dashboard.parseMetric(url.read(sys.argv[2]))
-# hammercloud metric url
-hammerCloud   = dashboard.parseJSONMetric(url.read(sys.argv[3]))
+# prepare hammercloud metric url for last 3 days!
+hcURL         = sys.argv[3] % (time.strftime("%Y-%m-%d", time.localtime(time.time()-3*24*60*60)),
+                               time.strftime("%Y-%m-%d", time.localtime(time.time())))
+hammerCloud   = dashboard.parseJSONMetric(url.read(hcURL))
 # get the url stamp for the dashboard input file
 urlStamp      = sys.argv[4]
 # get the output file location
