@@ -12,6 +12,8 @@ if [ ! -d "$OUT" ]; then
     mkdir -p $OUT
 fi
 
-python usableSitesManualChanges.py 'https://cmst1.web.cern.ch/CMST1/SST/analysis/usableSitesManualChanges.txt' $OUT/usableSitesManualChanges.txt
+usableSitesManualChangesMetricUrl="http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=211&time=24&dateFrom=&dateTo=&sites=all&clouds=undefined&batch=1"
+
+python usableSitesManualChanges.py $usableSitesManualChangesMetricUrl= $OUT/usableSitesManualChanges.txt
 
 cp $OUT/* /afs/cern.ch/user/c/cmst1/www/SST/analysis

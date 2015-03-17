@@ -17,17 +17,19 @@ output        = sys.argv[2]
 # get the source metric url
 metricURL     = sys.argv[1]
 # get the entries of the metric
-updatedMetric = dashboard.parseMetric(url.read(metricURL))
+metric        = dashboard.parseJSONMetric(url.read(metricURL))
+updatedMetric = dashboard.metric()
 
-# get site list and loop it
 for i in sites.getSites():
     # if the site is not in the list add it (this is the
     # case that will be happaned when they create new site
     # in the site db)
-    if not updatedMetric.hasSite(i):
+    if not metric.hasSite(i):
         updatedMetric.append(dashboard.entry(None, i, 'on', dashboard.green, metricURL))
+    else:
+        latestEntry = metric.getLatestEntry(i)
+        print latestEntry
+        updatedMetric.append(dashboard.entry(None, i, latestEntry.value, latestEntry.color, metricURL))
 
-for i in updatedMetric.entries:
-    i.dateTimeNow()
 
 fileOps.write(output, str(updatedMetric))
