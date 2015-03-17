@@ -100,9 +100,7 @@ class jsonMetric:
     def getLatestEntry(self, siteName):
         entries = self.getSiteEntries(siteName)
         if len(entries) == 0: return None
-        entryKeys = entries.keys()
-        entryKeys.sort(reverse=True)
-        return entries[entryKeys[0]]
+        return entries[max(entries)]
 
 def parseJSONMetric(data):
     data  = json.loads(data)
