@@ -39,7 +39,6 @@ class entry:
 class metric:
     def __init__(self):
         self.entries = []
-        self._currentIndex = 0
 
     def __str__(self):
         return "\n".join(str(row) for row in self.entries)
@@ -49,8 +48,19 @@ class metric:
 
     def hasSite(self, siteName):
         for i in self.entries:
-            if siteName == i.name: return i
+            if siteName == i.name: return True
         return False
+
+    def getSites(self):
+        siteList = []
+        for i in self.entries:
+            siteList.append(i.name)
+        return siteList
+
+    def getSiteEntry(self, siteName):
+        for i in self.entries:
+            if siteName == i.name: return i
+        return None
 
 def parseMetric(data):
     # remove python style comments
