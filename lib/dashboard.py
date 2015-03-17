@@ -1,5 +1,7 @@
 # aaltunda - ali.mehmet.altundag@cern.ch
 
+try: import json
+except ImportError: import simplejson as json
 import time, re
 
 green  = 'green'
@@ -10,11 +12,13 @@ cyan   = 'cyan'
 grey   = 'grey'
 white  = 'white'
 
-# dashboard entry structure
+# dashboard input entry structure
 class entry:
     def __init__(self, date = None, name = None, value = None, color = None, url = None):
         if date == None:
             self.date = self.dateTimeNow()
+        elif type(date) == float or type(date) == int:
+            self.date = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(date))
         else:
             self.date  = date
         self.name  = name
@@ -31,7 +35,7 @@ class entry:
     def __str__(self):
         return "%s\t%s\t%s\t%s\t%s" % (self.date, self.name, self.value, self.color, self.url)
 
-# dashboard metric class
+# dashboard input metric class
 class metric:
     def __init__(self):
         self.entries = []
@@ -47,6 +51,56 @@ class metric:
         for i in self.entries:
             if siteName == i.name: return i
         return False
+
+# dashboard json interface metric format
+# since we get the metric data from the dashboard interface, we also
+# have time information that defines slots in the metric plot.
+# it is obvious that dashboard input entry structure does not have
+# enough time field to support slots (it does only have entry creation
+# time stamp, but in the dashboard we have slot start time and end time
+# to define time range). in order to get rid of this problem, we will
+# use end time of the slot as key value in the python dict type (entries)
+# The structure for the jsonMetric.entries will be like following:
+# entries['siteName' : {TheEndTime : dashboard.entry, 
+#                       TheEndTime : dashboard.entry...}, ...]
+class jsonMetric:
+    def __init__(self, inJSON = '{}'):
+        self.data  = json.loads(inJSON)
+        self.slots = self.data['csvdata']
+        self.entries    = {}
+        self._parse()
+
+    def _parse(self):
+        for slot in self.slots:
+            # get start & end time in unix time
+            time     = self.dashboardTime2UnixTime(slot['Time'])
+            endTime  = self.dashboardTime2UnixTime(slot['EndTime'])
+            siteName = slot['VOName']
+            value    = slot['Status']
+            color    = slot['COLORNAME']
+            url      = slot['URL']
+            # add site names from the metric
+            if not siteName in self.entries:
+                self.entries[siteName] = {}
+            self.entries[siteName][endTime] = entry(time, siteName, value, color, url)
+
+    def dashboardTime2UnixTime(self, dashboardTime):
+        # keep in mind that it will be returned in GMT!
+        return time.mktime(time.strptime(dashboardTime, "%Y-%m-%dT%H:%M:%S"))
+
+    def unixTime2DashboardTime(self, unixTime):
+        return time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(unixTime))
+
+    def getSiteEntries(self, siteName):
+        if self.entries.has_key(siteName): return self.entries[siteName]
+        return {}
+
+    def getLatestEntry(self, siteName):
+        entries = self.getSiteEntries(siteName)
+        if len(entries) == 0: return None
+        entryKeys = entries.keys()
+        entryKeys.sort(reverse=True)
+        return entries[entryKeys[0]]
 
 def parseMetric(data):
     # remove python style comments
