@@ -12,8 +12,16 @@ if [ ! -d "$OUT" ]; then
     mkdir -p $OUT
 fi
 
-usableSitesManualChangesMetricUrl="http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=211&time=24&dateFrom=&dateTo=&sites=all&clouds=undefined&batch=1"
+# usable sites manual changes URL
+usableSitesMCJSON="http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=211&time=24&dateFrom=&dateTo=&sites=all&clouds=undefined&batch=1"
+python usableSitesManualChanges.py $usableSitesMCJSON $OUT/usableSitesManualChanges.txt
 
-python usableSitesManualChanges.py $usableSitesManualChangesMetricUrl= $OUT/usableSitesManualChanges.txt
+# usable sites manual changes JSON URL
+usableSitesMCTEXT="https://cmst1.web.cern.ch/CMST1/SST/analysis/usableSitesManualChanges.txt"
+morgueTEXT="https://cmst1.web.cern.ch/CMST1/SST/morgue.txt"
+# notice the time '%s' stamps for the start and 
+hammerCloudJSON="http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=135&time=custom&dateFrom=2015-03-14&dateTo=2015-03-17&sites=all&clouds=undefined&debug=1&batch=1"
+dashboardURLStamp="https://cmst1.web.cern.ch/CMST1/SST/analysis/usableSites.txt"
+python usableSites.py $usableSitesMCTEXT $morgueTEXT $hammerCloudJSON $dashboardURLStamp $OUT/usableSites.txt
 
 cp $OUT/* /afs/cern.ch/user/c/cmst1/www/SST/analysis
