@@ -25,11 +25,9 @@ for i in sites.getSites():
     # case that will be happaned when they create new site
     # in the site db)
     if not metric.hasSite(i):
-        updatedMetric.append(dashboard.entry(None, i, 'on', dashboard.green, metricURL))
+        updatedMetric.append(dashboard.entry(None, i, 'ready', dashboard.green, metricURL))
     else:
         latestEntry = metric.getLatestEntry(i)
-        print latestEntry
         updatedMetric.append(dashboard.entry(None, i, latestEntry.value, latestEntry.color, metricURL))
-
 
 fileOps.write(output, str(updatedMetric))
