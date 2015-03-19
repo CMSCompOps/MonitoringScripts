@@ -22,14 +22,15 @@ output        = sys.argv[5]
 metric = dashboard.metric()
 
 def hasBadHistory(siteName):
-    # if the sie is not in the hc metric, return False
+    # if the site is not in the hc metric, return False
+
     # (you don't have any idea about the site, you cannot
     # talk about it!)
     if not siteName in hammerCloud.getSites():
         return False
 
     # if site has at least one green slot in the given time range
-    # (please see the hammerCloud link given as a parameter to see
+    # (please check the hammerCloud link given as a parameter to see
     # the time range), return False
     slots = hammerCloud.getSiteEntries(siteName).values()
     for slot in slots:
