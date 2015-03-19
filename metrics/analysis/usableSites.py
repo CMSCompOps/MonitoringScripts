@@ -1,3 +1,7 @@
+# please have a look at the site support team metric script
+# development documentation:
+# https://twiki.cern.ch/twiki/bin/view/CMSPublic/SiteSupportMonitoringScripts
+
 import sys, time
 from lib import sites, dashboard, url, fileOps
 
