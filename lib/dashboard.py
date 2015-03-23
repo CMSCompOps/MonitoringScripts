@@ -12,15 +12,31 @@ cyan   = 'cyan'
 grey   = 'grey'
 white  = 'white'
 
+def dashboardTime2UnixTime(dashboardTime):
+    # try to convert dashboard input time format
+    try:
+        return time.mktime(time.strptime(dashboardTime, "%Y-%m-%d %H:%M:%S"))
+    # try to convert dashboard JSON interface dashboard interface
+    except ValueError:
+        return time.mktime(time.strptime(dashboardTime, "%Y-%m-%dT%H:%M:%S"))
+
+def unixTime2DashboardTime(unixTime):
+    # the same story with the dashboardTime2UnixTime...
+    try:
+        return time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(unixTime))
+    except ValueError:
+        return time.strftime("%Y-%m-%dT%H:%M:%S", time.localtime(unixTime))
+
 # dashboard input entry structure
 class entry:
     def __init__(self, date = None, name = None, value = None, color = None, url = None):
+        self.date = 0
         if date == None:
-            self.dateTimeNow()
+            self.date = int(time.time())
         elif type(date) == float or type(date) == int:
-            self.date = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(date))
-        else:
-            self.date  = date
+            self.date = date
+        elif type(date) == str:
+            self.date = dashboardTime2UnixTime(date)
         self.name  = name
         self.value = value
         self.color = color
@@ -29,11 +45,8 @@ class entry:
         else:
             self.url = url
 
-    def dateTimeNow(self):
-        self.date = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
-
     def __str__(self):
-        return "%s\t%s\t%s\t%s\t%s" % (self.date, self.name, self.value, self.color, self.url)
+        return "%s\t%s\t%s\t%s\t%s" % (unixTime2DashboardTime(self.date), self.name, self.value, self.color, self.url)
 
 # dashboard input metric class
 class metric:
@@ -89,13 +102,6 @@ class jsonMetric:
     def __init__(self):
         self.entries    = {}
 
-    def dashboardTime2UnixTime(self, dashboardTime):
-        # keep in mind that it will be returned in GMT!
-        return time.mktime(time.strptime(dashboardTime, "%Y-%m-%dT%H:%M:%S"))
-
-    def unixTime2DashboardTime(self, unixTime):
-        return time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(unixTime))
-
     def hasSite(self, siteName):
         if siteName in self.entries: return True
         return False
@@ -118,8 +124,8 @@ def parseJSONMetric(data):
     obj   = jsonMetric()
     for slot in slots:
         # get start & end time in unix time
-        time     = obj.dashboardTime2UnixTime(slot['Time'])
-        endTime  = obj.dashboardTime2UnixTime(slot['EndTime'])
+        time     = dashboardTime2UnixTime(slot['Time'])
+        endTime  = dashboardTime2UnixTime(slot['EndTime'])
         siteName = slot['VOName']
         value    = slot['Status']
         color    = slot['COLORNAME']
