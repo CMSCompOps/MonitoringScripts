@@ -11,7 +11,7 @@ try: import xml.etree.ElementTree as ET
 except ImportError: from elementtree import ElementTree as ET
 
 if len(sys.argv) < 4:
-    print 'not enough parameter!'
+    sys.stderr.write('not enough parameter!\n')
     sys.exit(1)
 
 siteList     = sites.getSites()
@@ -47,7 +47,7 @@ for site in siteList:
         # get the ratio of OKs to all samples
         samAccess[site] = 100.0 * (numOfOK / numOfSample)
 
-## for hammercloud test results
+## for hammercloud:: test results
 # generate time stamp
 now     = time.time()
 # 2 weeks time range (notice the calculation over the unix time)
@@ -72,9 +72,8 @@ for i in entries:
     result = (succ - unsucc) / (term - canc - unkn) * 100.;
     # check extreme cases
     if (result < 0.0 or result > 100.0) or (term - canc - unkn < 0.0):
-        # TODO: route the following output to stderr
-        print "something went really wrong! extreme case:"
-        print "site:%s, app-succeeded:%s, unsuccess:%s, terminated:%s, allunk:%s, cancelled:%s" % (name, succ, unsucc, term, unkn, canc)
+        sys.stderr.write("something went really wrong! extreme case:\n")
+        sys.stderr.write("site:%s, app-succeeded:%s, unsuccess:%s, terminated:%s, allunk:%s, cancelled:%s" % (name, succ, unsucc, term, unkn, canc))
         continue
     result = result
     if name in hammerCloud: hammerCloud[name] = result
