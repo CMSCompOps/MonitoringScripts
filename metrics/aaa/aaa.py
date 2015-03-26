@@ -84,7 +84,7 @@ metric = dashboard.metric()
 for site in siteList:
     badSiteFlag = False
 
-    # condition to mark a site as bad
+    # conditions to mark a site as bad
     if samAccess[site] < 50.0:
         badSiteFlag = True
     elif hammerCloud[site] < 80.0:
