@@ -51,29 +51,32 @@ class entry:
 # dashboard input metric class
 class metric:
     def __init__(self):
-        self.entries = []
+        self.__entries = []
 
     def __str__(self):
-        return "\n".join(str(row) for row in self.entries)
+        return "\n".join(str(row) for row in self.__entries)
 
     def append(self, entry):
-        self.entries.append(entry)
+        self.__entries.append(entry)
 
     def hasSite(self, siteName):
-        for i in self.entries:
+        for i in self.__entries:
             if siteName == i.name: return True
         return False
 
     def getSites(self):
         siteList = []
-        for i in self.entries:
+        for i in self.__entries:
             siteList.append(i.name)
         return siteList
 
     def getSiteEntry(self, siteName):
-        for i in self.entries:
+        for i in self.__entries:
             if siteName == i.name: return i
         return None
+
+    def getEntries(self):
+        return self.__entries
 
 def parseMetric(data):
     # remove python style comments
@@ -100,23 +103,28 @@ def parseMetric(data):
 #                       TheEndTime : dashboard.entry...}, ...]
 class jsonMetric:
     def __init__(self):
-        self.entries    = {}
+        self.__entries    = {}
 
     def hasSite(self, siteName):
-        if siteName in self.entries: return True
+        if siteName in self.__entries: return True
         return False
 
     def getSites(self):
-        return self.entries.keys()
+        return self.__entries.keys()
 
     def getSiteEntries(self, siteName):
-        if self.entries.has_key(siteName): return self.entries[siteName]
+        if self.__entries.has_key(siteName): return self.__entries[siteName]
         return {}
 
     def getLatestEntry(self, siteName):
         entries = self.getSiteEntries(siteName)
         if len(entries) == 0: return None
         return entries[max(entries)]
+
+    def append(self, siteName, endTime, inEntry):
+        if not siteName in self.__entries:
+            self.__entries[siteName] = {}
+        self.__entries[siteName][endTime] = inEntry
 
 def parseJSONMetric(data):
     data  = json.loads(data)
@@ -131,9 +139,7 @@ def parseJSONMetric(data):
         color    = slot['COLORNAME']
         url      = slot['URL']
         # add site names from the metric
-        if not siteName in obj.entries:
-            obj.entries[siteName] = {}
-        obj.entries[siteName][endTime] = entry(time, siteName, value, color, url)
+        obj.append(siteName, endTime, entry(time, siteName, value, color, url))
     return obj
 
 if __name__ == '__main__':
