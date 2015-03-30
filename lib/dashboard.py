@@ -37,9 +37,9 @@ class entry:
             self.date = date
         elif type(date) == str:
             self.date = dashboardTime2UnixTime(date)
-        self.name  = name
+        self.name  = name.strip()
         self.value = value
-        self.color = color
+        self.color = color.strip()
         if url == None:
             self.url = '#'
         else:
@@ -55,6 +55,12 @@ class metric:
 
     def __str__(self):
         return "\n".join(str(row) for row in self.__entries)
+
+    def __list__(self):
+        ret = []
+        for i in self.__entries:
+            ret.append(i.__dict__)
+        return ret
 
     def append(self, entry):
         self.__entries.append(entry)
