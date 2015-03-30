@@ -4,8 +4,10 @@
 
 import sys, time
 from lib import sites, dashboard, url, fileOps
+try: import json
+except ImportError: import simplejson as json
 
-if len(sys.argv) < 6:
+if len(sys.argv) < 7:
     print 'not enough parameter!'
     sys.exit(1)
 
@@ -19,8 +21,10 @@ hcURL         = sys.argv[3] % (time.strftime("%Y-%m-%d", time.localtime(time.tim
 hammerCloud   = dashboard.parseJSONMetric(url.read(hcURL))
 # get the url stamp for the dashboard input file
 urlStamp      = sys.argv[4]
-# get the output file location
-output        = sys.argv[5]
+# text output file location
+txtOutput     = sys.argv[5]
+# json output file location
+jsonOutput    = sys.argv[6]
 
 # create new metric object
 metric = dashboard.metric()
@@ -59,4 +63,5 @@ for i in sites.getSites():
     else:
         metric.append(dashboard.entry(None, i, 'usable', dashboard.green, urlStamp))
 
-fileOps.write(output, str(metric))
+fileOps.write(txtOutput, str(metric))
+fileOps.write(jsonOutput, json.dumps(metric.__list__(), indent=2))
