@@ -75,7 +75,6 @@ for i in entries:
         sys.stderr.write("something went really wrong! extreme case:\n")
         sys.stderr.write("site:%s, app-succeeded:%s, unsuccess:%s, terminated:%s, allunk:%s, cancelled:%s" % (name, succ, unsucc, term, unkn, canc))
         continue
-    result = result
     if name in hammerCloud: hammerCloud[name] = result
 
 metric = dashboard.metric()
