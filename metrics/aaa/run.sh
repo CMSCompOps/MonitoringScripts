@@ -19,3 +19,5 @@ samURL="http://wlcg-sam-cms.cern.ch/dashboard/request.py/getTestResults?profile_
 hcURL="http://dashb-cms-job.cern.ch/dashboard/request.py/jobsummary-plot-or-table?activity=hcxrootd&date1={0}&date2={1}&sortby=inputse&scale=linear&check=terminated"
 
 python aaa.py $samURL $hcURL $OUT/aaa.txt
+
+cp $OUT/* /afs/cern.ch/user/c/cmst1/www/SST/
