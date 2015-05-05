@@ -10,25 +10,44 @@ except ImportError: import simplejson as json
 try: import xml.etree.ElementTree as ET
 except ImportError: from elementtree import ElementTree as ET
 
-if len(sys.argv) < 4:
+if len(sys.argv) < 5:
     sys.stderr.write('not enough parameter!\n')
     sys.exit(1)
 
 siteList     = sites.getSites()
-samAccessURL = sys.argv[1]
+ggusXMLFile  = fileOps.read(sys.argv[1])
+ggus         = []
+samAccessURL = sys.argv[2]
 samAccess    = {}
-hcURL        = sys.argv[2]
+hcURL        = sys.argv[3]
 hammerCloud  = {}
-output       = sys.argv[3]
+output       = sys.argv[4]
+
 for site in siteList:
     samAccess[site] = 'n/a'
     hammerCloud[site] = 'n/a'
+
+## parse ggus xml file
+for ticket in ET.fromstring(ggusXMLFile).findall('ticket'):
+    cmsSiteName  = ticket.find('cms_site').text
+    realSiteName = ticket.find('affected_site').text
+
+    # if you don't have CMS site name AND have real site name,
+    # try to find its CMS name and add it to the ggus array
+    if not cmsSiteName and realSiteName:
+        for site in siteList:
+            if siteList[site]['name'] == realSiteName:
+                cmsSiteName = site
+
+    if not cmsSiteName: continue
+
+    ggus.append(cmsSiteName)
 
 ## for SAM::access test results
 for site in siteList:
     numOfSample = 0.0
     numOfOK     = 0.0
-    for host in siteList[site]:
+    for host in siteList[site]['hosts']:
         # get test results for the host
         data = json.loads(url.read(samAccessURL.format(host)))
         data = data['data']
@@ -86,6 +105,8 @@ for site in siteList:
     if samAccess[site] < 50.0:
         badSiteFlag = True
     elif hammerCloud[site] < 80.0:
+        badSiteFlag = True
+    elif site in ggus:
         badSiteFlag = True
 
     if badSiteFlag:
