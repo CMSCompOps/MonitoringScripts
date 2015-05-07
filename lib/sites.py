@@ -50,10 +50,12 @@ def getSites():
         if not siteName: 
             continue
         services = site.findall('service')
-        ret[siteName] = []
+        ret[siteName] = {}
+        ret[siteName]['hosts'] = []
+        ret[siteName]['name']  = site.attrib['name']
         for service in services:
             serviceName = service.attrib['hostname']
-            ret[siteName].append(serviceName)
+            ret[siteName]['hosts'].append(serviceName)
     return ret
 
 if __name__ == '__main__':
