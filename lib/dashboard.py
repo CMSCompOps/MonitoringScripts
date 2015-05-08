@@ -2,7 +2,7 @@
 
 try: import json
 except ImportError: import simplejson as json
-import time, re
+import time, re, os
 
 green  = 'green'
 yellow = 'yellow'
@@ -50,11 +50,23 @@ class entry:
 
 # dashboard input metric class
 class metric:
-    def __init__(self):
+    def __init__(self, header = {}):
         self.__entries = []
+        if header == None:
+            self.header = {}
+        else:
+            self.header    = {'user'  : os.getenv('USER'),
+                              'host'  : str(os.uname()),
+                              'email' : 'cms-comp-ops-site-support-team[at]cern.ch',
+                              'repo'  : 'https://github.com/CMSCompOps/MonitoringScripts',
+                              'responsible' : 'Site Support Team'}
+            for key, val in header.items():
+                self.header[key] = val
 
     def __str__(self):
-        return "\n".join(str(row) for row in self.__entries)
+        header  = "\n".join(['## %s: %s' % (key, value) for (key, value) in self.header.items()]) 
+        content = "\n".join(str(row) for row in self.__entries)
+        return "%s\n%s" % (header, content)
 
     def __list__(self):
         ret = []
