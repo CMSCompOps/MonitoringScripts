@@ -39,7 +39,7 @@ twikiTable = twikiTable + "| *<i>generated on %s</i>, Total number of tickets: %
 fileOps.write(sys.argv[2], twikiTable)
 
 # generate text file for the dashboard metric
-metric    = []
+metric    = dashboard.metric()
 allSites  = sites.getSites().keys()
 url       = "https://ggus.eu/?mode=ticket_search&cms_site=%s&timeframe=any&status=open&search_submit=GO%%21"
 for site in parsed:
@@ -48,5 +48,4 @@ for site in parsed:
 for site in allSites:
     if site in parsed.keys(): continue
     metric.append(dashboard.entry(None, site, 0, dashboard.green, url % site))
-metric    =  "\n".join(str(row) for row in metric)
-fileOps.write(sys.argv[3], metric)
+fileOps.write(sys.argv[3], str(metric))

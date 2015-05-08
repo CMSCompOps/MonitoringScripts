@@ -27,7 +27,8 @@ txtOutput     = sys.argv[5]
 jsonOutput    = sys.argv[6]
 
 # create new metric object
-metric = dashboard.metric()
+metricHeader = {'twiki' : 'https://twiki.cern.ch/twiki/bin/view/CMSPublic/UsableSitesForAnalysis'}
+metric = dashboard.metric(header = metricHeader)
 
 def hasBadHistory(siteName):
     # if the site is not in the hc metric, return False
