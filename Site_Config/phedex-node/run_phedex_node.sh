@@ -4,6 +4,7 @@
 # set up a proxy to read site config files
 #source /afs/cern.ch/project/gd/LCG-share/new_3.2/etc/profile.d/grid_env.sh
 #voms-proxy-init -voms cms
+#X509_USER_PROXY=/tmp/x509up_u47967;export X509_USER_PROXY
 
 #Run the script
 path="/afs/cern.ch/user/j/jartieda/MonitoringScripts/Site_Config/phedex-node"

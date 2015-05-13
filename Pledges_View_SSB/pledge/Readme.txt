@@ -12,3 +12,4 @@ set up a proxy before running run_pledges.sh script
 	lxplus
 	source /afs/cern.ch/cms/LCG/LCG-2/UI/cms_ui_env.sh
 	voms-proxy-init -voms cms
+	X509_USER_PROXY=/tmp/x509up_u47967;export X509_USER_PROXY
