@@ -108,6 +108,8 @@ for site in siteList:
         badSiteFlag = True
     elif site in ggus:
         badSiteFlag = True
+    elif 'n/a' in [hammerCloud[site], samAccess[site]]:
+        basSiteFlag = True
 
     if badSiteFlag:
         metric.append(dashboard.entry(None, site, 'bad', dashboard.red, '#'))
