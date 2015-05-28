@@ -165,6 +165,7 @@ def getAllInformation():
     oldDownList   = getList(urlDrain, "down")       # gets old down list from metric 158
     manualDown    = getList(urlManual, "down")      # gets manual down list from metric 139
     tier0List     = getList(urlDrain, "tier0")      # gets tier0 list from metric 158
+    manualTier0   = getList(urlManual, "tier0")     # gets manual tier0 list from metric 139
     srStatusList  = getTxtList(urlSDTxt, "scheduled_downtime")      # gets downtime status from metric 134 txt file
     
     print 'starting to fetch all sites from DashBoard'
@@ -177,11 +178,11 @@ def getAllInformation():
     
     average_per_site = CalSiteReadRate(fullSiteList, daysGreen, daysBrown, daysWhite, daysYellow) 
 
-    return (fullSiteList, wrList, morgueList, oldDrainList, manualDrain, tmpDrainList, oldDownList, manualDown, tmpDownList, tier0List, srStatusList, average_per_site)
+    return (fullSiteList, wrList, morgueList, oldDrainList, manualDrain, tmpDrainList, oldDownList, manualDown, tmpDownList, tier0List, manualTier0, srStatusList, average_per_site)
 
 
 if __name__ == '__main__':
-    fullSiteList, wrList, morgueList, oldDrainList, manualDrain, tmpDrainList, oldDownList, manualDown, tmpDownList, tier0List, srStatusList, average_per_site = getAllInformation()
+    fullSiteList, wrList, morgueList, oldDrainList, manualDrain, tmpDrainList, oldDownList, manualDown, tmpDownList, tier0List, manualTier0, srStatusList, average_per_site = getAllInformation()
     
     print "\n*** Previous Drain & SR last 7 days (if SR < 0.8 = drain) ***"
     for site in oldDrainList:                   # firstly add old drain list
@@ -221,9 +222,10 @@ if __name__ == '__main__':
             print (site)
             if not site in tmpDownList: tmpDownList.append(site)
 
-    print "\n*** tier0 ***"
-    for site in tier0List:                   
+    print "\n*** tier0 (manual) ***"
+    for site in manualTier0:                    # add site into tier0List if in Prod status Manual metric
         print (site)
+        if not site in tier0List: tier0List.append(site)
 
     #________________________________ create new list ______________________________________
     for site in fullSiteList:
