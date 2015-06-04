@@ -1,0 +1,59 @@
+<html>
+
+<head>
+  <title>SAM Observation</title>
+  <style>
+  .chart{margin: 20px; padding:10px; border:solid 1px #ddd;}
+  </style>
+  <script type="text/javascript" src="https://www.google.com/jsapi?autoload={'modules':[{'name':'visualization','version':'1.1','packages':['corechart', 'timeline']}]}"></script>
+  <script>
+    var data = @DATA@;
+
+    function createChart(site, results) {
+        var content = document.getElementById('charts');
+        var chartTag= document.createElement('div');
+        chartTag.setAttribute('id', site);
+        chartTag.setAttribute('class', 'chart');
+        content.appendChild(chartTag);
+
+        var data = new google.visualization.DataTable();
+        data.addColumn('datetime', 'Time of Day');
+        data.addColumn('number', site);
+        data.addRows(results);
+
+        var options = { width: 900, height: 500,
+                        hAxis: {gridlines: {count: -1,units: {days: {format: ["MMM dd"]},hours: {format: ["d/MMM/yy HH:mm", "ha"]}}}},
+                        vAxis: {gridlines: {color: 'none'}, minValue: 0,  viewWindow: {min:0, max:100},gridlines: {count: 10}}
+                      };
+
+        var chart = new google.visualization.LineChart(chartTag);
+        chart.draw(data, options);
+    }
+
+    function main() {
+        // for each site
+        for(var site in data) {
+            var finalData = [];
+            var keys = Object.keys(data[site]);
+            keys.sort();
+            for(var i = 0; i < keys.length; i++) {
+                var date_ = keys[i];
+                formattedDate = date_.replace('unixtime_', '');
+                formattedDate = new Date(parseInt(formattedDate)*1000);
+                finalData.push([formattedDate, data[site][date_]]);
+            }
+            createChart(site, finalData);
+        }
+    }
+    google.load("visualization", "1", {packages:["corechart"]});
+    google.setOnLoadCallback(main);
+  </script>
+</head>
+
+<body>
+    <h1>@INFO@</h1>
+    <div id="charts">
+    </div>
+</body>
+
+</html>
