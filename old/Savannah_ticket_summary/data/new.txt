@@ -1,0 +1,8 @@
+ CAF Operations: 2 open tickets
+ CMS HammerCloud: 3 open tickets
+ Central Workflows: 5 open tickets
+ Data Operations: 4 open tickets
+ Data Transfers: 14 open tickets
+ Facilities: 34 open tickets
+ Register new site: 3 open tickets
+ SAM tests: 14 open tickets

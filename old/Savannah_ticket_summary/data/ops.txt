@@ -1,0 +1,8 @@
+         2    1    +0       0       CAF Operations                
+         3    1    +0       0       CMS HammerCloud               
+         5    0    +0       1       Central Workflows             
+         4    0    +0       3       Data Operations               
+        14    5    +0       1       Data Transfers                
+        34    6    +0      22       Facilities                    
+         3    1    +0       1       Register new site             
+        14    2    +0       7       SAM tests                     
