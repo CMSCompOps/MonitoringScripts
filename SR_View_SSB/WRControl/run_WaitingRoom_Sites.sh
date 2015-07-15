@@ -1,7 +1,8 @@
 #!/bin/bash
-
 location="/afs/cern.ch/user/c/cmst1/scratch0/MonitoringScripts/SR_View_SSB/WRControl"
 outputdir="/afs/cern.ch/user/c/cmst1/www/WFMon/"
+outputdir2="/afs/cern.ch/user/c/cmst1/www/SST/"
+
 cd $location
 
 echo "exporting KEY and CERT"
@@ -41,12 +42,13 @@ fi
 #Run the script
 txt="WaitingRoom_Sites.txt"
 echo "python WaitingRoom_Sites.py $txt1"
-python WaitingRoom_Sites.py $txt &> sites_WaitingRoom.log
-cat sites_WaitingRoom.log
+python WaitingRoom_Sites.py $txt &> wr_log.txt
+cat wr_log.txt
 
 problem="$?"
-echo "problem: $problem"
+echo "problems: $problem"
 
 cp $txt $outputdir
+cp wr_log.txt $outputdir2
 echo "WaitingRoom_Sites.txt copied to: " $outputdir
 rm scriptRunning.run
