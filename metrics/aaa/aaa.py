@@ -21,7 +21,10 @@ samAccessURL = sys.argv[2]
 samAccess    = {}
 hcURL        = sys.argv[3]
 hammerCloud  = {}
-output       = sys.argv[4]
+prodHostPath = sys.argv[4]
+prodSites    = []
+map          = json.loads(fileOps.read(sys.argv[5]))
+output       = sys.argv[6]
 
 for site in siteList:
     samAccess[site] = 'n/a'
@@ -96,24 +99,56 @@ for i in entries:
         continue
     if name in hammerCloud: hammerCloud[name] = result
 
-metric = dashboard.metric()
+# prepare prod site list
+prodHosts    = fileOps.read(prodHostPath)
+for pHost in prodHosts.split('\n'):
+    # eliminate port numbers
+    if ':' in pHost: pHost = pHost[:pHost.find(':')]
+    # try to find the prod host in the map. please notice that you may need
+    # to match the host name in one level back (ds23.kipt.kharkov.ua == 
+    # kipt.kharkov.ua)
+    for host in map.keys():
+        if host in pHost:
+            name = map[host]['SiteName']
+            break
+    # site name to CMS site name
+    cmsSiteName = None
+    for site in siteList:
+        if name == siteList[site]['name']: cmsSiteName = site
+    # if we could find the cms site name and it is not placed in the prodSites
+    if cmsSiteName != None and not cmsSiteName in prodSites:
+        prodSites.append(cmsSiteName)
+
+print prodSites
+
+production   = dashboard.metric()
+transitional = dashboard.metric()
 
 for site in siteList:
     badSiteFlag = False
+    errMsg      = 'bad'
 
     # conditions to mark a site as bad
     if samAccess[site] < 50.0:
-        badSiteFlag = True
-    elif hammerCloud[site] < 80.0:
-        badSiteFlag = True
-    elif site in ggus:
-        badSiteFlag = True
-    elif 'n/a' in [hammerCloud[site], samAccess[site]]:
-        basSiteFlag = True
+        badSiteFlag = badSiteFlag | True
+        errMsg = errMsg + '_SAM(%s)' % round(samAccess[site], 2)
+    if hammerCloud[site] < 80.0:
+        badSiteFlag = badSiteFlag | True
+        errMsg = errMsg + '_HC(%s)' % round(hammerCloud[site], 2)
+    if site in ggus:
+        badSiteFlag = badSiteFlag | True
+    if 'n/a' in [hammerCloud[site], samAccess[site]]:
+        basSiteFlag = badSiteFlag | True
+        if hammerCloud[site] == 'n/a': errMsg = errMsg + '_HC(n/a)'
+        else: errMsg = errMsg + '_SAM(n/a)'
 
     if badSiteFlag:
-        metric.append(dashboard.entry(None, site, 'bad', dashboard.red, '#'))
+        entry = dashboard.entry(None, site, errMsg, dashboard.red, '#')
     else:
-        metric.append(dashboard.entry(None, site, 'on', dashboard.green, '#'))
+        entry = dashboard.entry(None, site, 'on', dashboard.green, '#')
 
-fileOps.write(output, str(metric))
+    if site in prodSites: production.append(entry)
+    else: transitional.append(entry)
+
+fileOps.write('%s/aaaProd.txt' % output, str(production))
+fileOps.write('%s/aaaTrans.txt' % output, str(transitional))
