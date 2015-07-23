@@ -11,7 +11,7 @@ urlManual = "http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=
 urlWr     = "http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=153&time=24&dateFrom=&dateTo=&site=T2_AT_Vienna&sites=all&clouds=undefined&batch=1"
 urlWrTxt  = "https://cmst1.web.cern.ch/CMST1/WFMon/WaitingRoom_Sites.txt"
 urlSR     = "http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=45&time=168&dateFrom=&dateTo=&site=T1_DE_KIT&sites=all&clouds=undefined&batch=1"
-urlSD     = "http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=121&time=48&dateFrom=&dateTo=&site=T0_CH_CERN&sites=all&clouds=undefined&batch=1"
+urlSD     = "http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=121&time=24&dateFrom=&dateTo=&site=T0_CH_CERN&sites=all&clouds=undefined&batch=1"
 urlSDTxt  = "https://cms-site-readiness.web.cern.ch/cms-site-readiness/SiteReadinessAnalysis/toSSB/UsableSites_SSBfeed.txt"
 urlMorgue = "http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=199&time=24&dateFrom=&dateTo=&site=T2_AT_Vienna&sites=all&clouds=undefined&batch=1"
 
@@ -37,12 +37,23 @@ def extractJson(url):
 
 def getList(url, status): # status could have in, down, drain, SD, *
     rows = extractJson(url)
+    todaydate = date.today()
+    
+    value = datetime.fromtimestamp(time.time() + 1 * 24 * 60 * 60)
+    timeStamp = value.strftime('%Y-%m-%d').split("-")
+    startdate = date(int(timeStamp[0]), int(timeStamp[1]), int(timeStamp[2]))   # +1 day from today
+
     site_list = []
     for row in rows['csvdata']:
         if status == "SD":
-            if row['COLORNAME'] == "saddlebrown":
-                #if row['VOName'][0:2] != 'T3':
-                if not row['VOName'] in site_list: site_list.append(row["VOName"])
+            if row['VOName'][0:2] != 'T3':
+                starttime = datetime(*(time.strptime( row['Time'] ,'%Y-%m-%dT%H:%M:%S')[0:6]))  # starttime from JSON
+                endtime = datetime(*(time.strptime(row['EndTime'] ,'%Y-%m-%dT%H:%M:%S')[0:6]))  # endtime from JSON
+                if (starttime.date() <= startdate) and (endtime.date() >= todaydate) and (endtime.date() > starttime.date()):
+                    if (row['COLORNAME'] == "saddlebrown") or (row['COLORNAME'] == "grey"):
+                        if not row['VOName'] in site_list: site_list.append(row["VOName"])
+                    else:
+                        if row['VOName'] in site_list: site_list.remove(row["VOName"])
         elif status == "*":
             if not row['VOName'] in site_list: site_list.append(row["VOName"])
         else:
@@ -157,7 +168,7 @@ def writeFile(siteList):
 def getAllInformation():
     #________________________________getting oldDrainList, manualDrain, oldDownList, wr list, morgue list, sr=SD List, full site list__________________________
 
-    fullSiteList  = getList(urlDrain, "*")          # gets full site list from metric 158
+    fullSiteList  = getList(urlManual, "*")         # gets full site list from metric 139
     wrList        = getTxtList(urlWrTxt, "in")      # gets current waiting room list from metric 153 txt file
     morgueList    = getList(urlMorgue, "in")        # gets current morgue list from metric 199
     oldDrainList  = getList(urlDrain, "drain")      # gets old drain list from metric 158
@@ -166,7 +177,7 @@ def getAllInformation():
     manualDown    = getList(urlManual, "down")      # gets manual down list from metric 139
     tier0List     = getList(urlDrain, "tier0")      # gets tier0 list from metric 158
     manualTier0   = getList(urlManual, "tier0")     # gets manual tier0 list from metric 139
-    srStatusList  = getTxtList(urlSDTxt, "scheduled_downtime")      # gets downtime status from metric 134 txt file
+    srStatusList  = getList(urlSD, "SD")            # gets downtime status from metric 121
     
     print 'starting to fetch all sites from DashBoard'
     daysBrown  = getDayCounts(urlSR, "brown")
@@ -184,10 +195,10 @@ def getAllInformation():
 if __name__ == '__main__':
     fullSiteList, wrList, morgueList, oldDrainList, manualDrain, tmpDrainList, oldDownList, manualDown, tmpDownList, tier0List, manualTier0, srStatusList, average_per_site = getAllInformation()
     
-    print "\n*** Previous Drain & SR last 7 days (if SR < 0.8 = drain) ***"
+    print "\n*** Previous (drain) & SR last 7 days (if SR < 0.8 = drain) ***"
     for site in oldDrainList:                   # firstly add old drain list
         #if site[0:2] != 'T1':
-            print "%s\t\t%s" % (site, average_per_site[site])
+            print "%s\t\t\t%s" % (site, average_per_site[site])
             if average_per_site[site] < 0.8 :   # if last week siteRanking < 80% keep in drainList
                 if not site in tmpDrainList: tmpDrainList.append(site)
         #else:
@@ -200,16 +211,14 @@ if __name__ == '__main__':
         if not site in tmpDrainList: tmpDrainList.append(site)
     
     print "\n*** WR (drain) ***"
-    for site in fullSiteList:
-        if site in wrList:                      # add site into drainNewList if wr = in for site
-            print site
-            if not site in tmpDrainList: tmpDrainList.append(site)
+    for site in wrList:                         # add site into drainNewList if wr = in for site
+        print site
+        if not site in tmpDrainList: tmpDrainList.append(site)
     
-    print "\n*** SD (drain) ***"
-    for site in fullSiteList:
-        if site in srStatusList:                # add site into drainNewList if srstatus = sd for site
-            print site
-            if not site in tmpDrainList: tmpDrainList.append(site)
+    print "\n*** SD & UD Downtime (drain) ***"
+    for site in srStatusList:                   # add site into drainNewList if srstatus = sd for site
+        print site
+        if not site in tmpDrainList: tmpDrainList.append(site)
 
     print "\n*** Manual (down) ***"
     for site in manualDown:                     # add site into downNewList if in Prod status Manual metric
@@ -217,28 +226,27 @@ if __name__ == '__main__':
         if not site in tmpDownList: tmpDownList.append(site)
         
     print "\n*** MORGUE (down) ***"
-    for site in fullSiteList:
-        if site in morgueList:                  # add site into downNewList if morgue = in for site
-            print (site)
-            if not site in tmpDownList: tmpDownList.append(site)
+    for site in morgueList:                     # add site into downNewList if morgue = in for site
+        print site
+        if not site in tmpDownList: tmpDownList.append(site)
 
     print "\n*** tier0 (manual) ***"
     for site in manualTier0:                    # add site into tier0List if in Prod status Manual metric
-        print (site)
+        print site
         if not site in tier0List: tier0List.append(site)
 
     #________________________________ create new list ______________________________________
     for site in fullSiteList:
         if not site in newDrainList:
+            newDrainList[site] = "on"
+            
             if site in tmpDrainList:
                 newDrainList[site] = "drain"
-            else:
-                newDrainList[site] = "on"
             
             if site in tier0List:
                 newDrainList[site] = "tier0"
                 
             if site in tmpDownList:
                 newDrainList[site] = "down"
-                
+
     writeFile(newDrainList) # write process
