@@ -197,13 +197,12 @@ if __name__ == '__main__':
     
     print "\n*** Previous (drain) & SR last 7 days (if SR < 0.8 = drain) ***"
     for site in oldDrainList:                   # firstly add old drain list
-        #if site[0:2] != 'T1':
+        if site[0:2] != 'T3':                   # do not consider T3s because they don't have SR ranking
             print "%s\t\t\t%s" % (site, average_per_site[site])
             if average_per_site[site] < 0.8 :   # if last week siteRanking < 80% keep in drainList
                 if not site in tmpDrainList: tmpDrainList.append(site)
-        #else:
-        #    print "%s\t\t%s\tmanual" % (site, average_per_site[site])
-        #    if not site in tmpDrainList: tmpDrainList.append(site)
+        else:
+            print site
 
     print "\n*** Manual (drain) ***"
     for site in manualDrain:                    # add site into drainNewList if in Prod status Manual metric
