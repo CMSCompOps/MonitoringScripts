@@ -4,12 +4,13 @@
 #                     monitoring web service and extract the last update
 #                     time stamp for each site.
 # #############################################################################
+EXC_LOCK=""
 TMP_FILE="/tmp/cmssst_spacemon_$$.txt"
 ERR_FILE="/tmp/cmssst_spacemon_$$.err"
 SDB_FILE="/tmp/cmssst_spacemon_$$.sdb"
 PDX_FILE="/tmp/cmssst_spacemon_$$.pdx"
 trap 'exit 1' 1 2 3 15
-trap '(/bin/rm -f ${TMP_FILE} ${ERR_FILE} ${SDB_FILE} ${PDX_FILE}) 1> /dev/null 2>&1' 0
+trap '(/bin/rm -f ${EXC_LOCK} ${TMP_FILE} ${ERR_FILE} ${SDB_FILE} ${PDX_FILE}) 1> /dev/null 2>&1' 0
 
 
 
@@ -19,6 +20,50 @@ SPACE_URL="https://cmsweb.cern.ch/dmwmmon/datasvc/perl/storageusage"
 DASHB_FILE="/afs/cern.ch/user/c/cmst1/www/SST/space_check.txt"
 FILE_URL="http://cmst1.web.cern.ch/CMST1/SST/space_check.txt"
 EMAIL_ADDR="lammel@fnal.gov"
+# #############################################################################
+
+
+
+# get cmssst/space_mon lock:
+# --------------------------
+echo "Acquiring lock for cmssst/space_mon"
+if [ ! -d /var/tmp/cmssst ]; then
+   /bin/rm -f /var/tmp/cmssst 1>/dev/null 2>&1
+   /bin/mkdir /var/tmp/cmssst 1>/dev/null 2>&1
+fi
+/bin/ln -s $$ /var/tmp/cmssst/space_mon.lock
+if [ $? -ne 0 ]; then
+   # locking failed, get lock information
+   LKINFO=`/bin/ls -il /var/tmp/cmssst/space_mon.lock 2>/dev/null`
+   LKFID=`echo ${LKINFO} | /usr/bin/awk '{print $1; exit}' 2>/dev/null`
+   LKPID=`echo ${LKINFO} | /usr/bin/awk '{print $NF;exit}' 2>/dev/null`
+   # check process holding lock is still active
+   /bin/ps -fp ${LKPID} 1>/dev/null 2>&1
+   if [ $? -eq 0 ]; then
+      echo "   active process ${LKPID} holds lock, exiting"
+      exit 1
+   fi
+   echo "   removing leftover lock: ${LKINFO}"
+   /usr/bin/find /var/tmp/cmssst -inum ${LKFID} -exec /bin/rm -f {} \;
+   LKPID=""
+   LKFID=""
+   LKINFO=""
+   #
+   /bin/ln -s $$ /var/tmp/cmssst/space_mon.lock
+   if [ $? -ne 0 ]; then
+      echo "   failed to acquire lock, exiting"
+      exit 1
+   fi
+fi
+#
+# double check we have the lock
+LKPID=`(/bin/ls -l /var/tmp/cmssst/space_mon.lock | /usr/bin/awk '{if($(NF-1)=="->")print $NF;else print "";exit}') 2>/dev/null`
+if [ "${LKPID}" != "$$" ]; then
+   echo "   lost lock to process ${LKPID}, exiting"
+   exit 1
+fi
+LKPID=""
+EXC_LOCK="/var/tmp/cmssst/space_mon.lock"
 # #############################################################################
 
 
@@ -78,6 +123,8 @@ fi
 /bin/rm ${ERR_FILE} 1>/dev/null 2>&1
 CRT_FILE=`/usr/bin/grid-proxy-info -path 2> /dev/null`
 WGET_OPT="--certificate=${CRT_FILE} --private-key=${CRT_FILE} --ca-certificate=${CRT_FILE}"
+# #############################################################################
+
 
 
 # write metric text file header:
@@ -137,7 +184,6 @@ fi
 # extract PhEDEx node name and type and save compact information:
 /bin/rm ${PDX_FILE} 1>/dev/null 2>&1
 /usr/bin/awk -F\' 'BEGIN{b=0}{for(i=1;i<=NF;i++){if(index($i,"[")>0){b+=1};if(b>0){if(index($i,"{")>0){n="";k=""};if($i=="NAME"){n=$(i+2)};if($i=="KIND"){k=$(i+2)};if(index($i,"}")>0){if(index(n,"T3_")!=1)printf "%s:%s\n",n,k};if(index($i,"]")>0){b-=1}}}}' ${TMP_FILE} > ${PDX_FILE}
-#####################################################################to do !!!!
 /bin/rm ${TMP_FILE}
 
 
@@ -216,6 +262,16 @@ fi
 /bin/chmod a+r ${DASHB_FILE}_new
 /bin/mv ${DASHB_FILE}_new ${DASHB_FILE}
 RC=$?
+# #############################################################################
+
+
+
+# release space_mon lock:
+# -----------------------
+echo "Releasing lock for cmssst/space_mon"
+/bin/rm ${EXC_LOCK}
+EXC_LOCK=""
+# #############################################################################
 
 
 exit ${RC}
