@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# go to the path that contain this script
+# go to the path that contains this script
 cd $(dirname $(readlink -f "${BASH_SOURCE[0]}"))
 
 source ../../init.sh
@@ -17,6 +17,11 @@ if [ ! -d "$TMP" ]; then
     mkdir -p $TMP
 fi
 
+# production federation source
+prodFed="/afs/cern.ch/user/e/eeren/public/parser/total.txt"
+# hostname <-> site name map
+map=$DATA/cms_topology.json
+
 # you just need to put host name into this SAM url
 samURL="http://wlcg-sam-cms.cern.ch/dashboard/request.py/getTestResults?profile_name=CMS_CRITICAL&metrics=org.cms.WN-xrootd-access%20(/cms/Role_lcgadmin)&hostname={0}&flavours=CREAM-CE,OSG-CE,ARC-CE,SRMv2&time_range=last2Weeks"
 
@@ -31,6 +36,6 @@ ggusURL="https://ggus.eu/?mode=ticket_search&show_columns_check%5B%5D=TICKET_TYP
 # download the xml file
 curl -kvv --cert $CERTS/cert.pem --key $CERTS/key.pem $ggusURL -o $TMP/ggus.xml
 
-python aaa.py $TMP/ggus.xml $samURL $hcURL $OUT/aaa.txt
+python aaa.py $TMP/ggus.xml $samURL $hcURL $prodFed $map $OUT
 
 cp $OUT/* /afs/cern.ch/user/c/cmst1/www/SST/

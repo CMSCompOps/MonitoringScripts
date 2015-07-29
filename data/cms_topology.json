@@ -1,0 +1,1063 @@
+{                                                                             
+  "ac.cn": {                                                                  
+    "host_dict": {},                                                          
+    "SiteName": "BEIJING-LCG2",                                               
+    "VOname": "T2_CN_Beijing",
+    "Country": "China"
+  },                                                                          
+  "accre.vanderbilt.edu": {                                                   
+    "host_dict": {},                                                          
+    "SiteName": "Vanderbilt",                                                 
+    "VOname": "T2_US_Vanderbilt",
+    "Country": "Netherlands"
+  },                                                                          
+  "acrc.bris.ac.uk": {                                                        
+    "host_dict": {},                                                          
+    "SiteName": "UKI-SOUTHGRID-BRIS-HEP",                                     
+    "VOname": "T2_UK_SGrid_Bristol",
+    "Country": "UK"
+  },                                                                          
+  "aglt2.org": {                                                              
+    "host_dict": {},                                                          
+    "SiteName": "AGLT2",                                                      
+    "VOname": "AGLT2",
+    "Country": "USA"
+  },                                                                          
+  "atlas-swt2.org": {                                                         
+    "host_dict": {},                                                          
+    "SiteName": "SWT2_CPB",                                                   
+    "VOname": "SWT2_CPB",
+    "Country": "USA"
+  },                                                                          
+  "atlas.csufresno.edu": {                                                    
+    "host_dict": {},                                                          
+    "SiteName": "FRESNO-ATLAS-T3",                                            
+    "VOname": "FRESNO-ATLAS-T3",
+    "Country": "USA"
+  },                                                                          
+  "ba.infn.it": {                                                             
+    "host_dict": {},                                                          
+    "SiteName": "INFN-Bari",                                                  
+    "VOname": "T2_IT_Bari",
+    "Country": "Italy"
+  },                                                                          
+  "baylor.edu": {                                                             
+    "host_dict": {},                                                          
+    "SiteName": "Baylor-Tier3",                                               
+    "VOname": "T3_US_Baylor",
+    "Country": "USA"
+  },                                                                          
+  "bham.ac.uk": {                                                             
+    "host_dict": {},                                                          
+    "SiteName": "UKI-SOUTHGRID-BHAM-HEP",                                     
+    "VOname": "UKI-SOUTHGRID-BHAM-HEP",
+    "Country": "UK"
+  },                                                                          
+  "bnl.gov": {                                                                
+    "host_dict": {},                                                          
+    "SiteName": "BNL",                                                        
+    "VOname": "BNL-ATLAS",
+    "Country": "USA"
+  },                                                                          
+  "bris.ac.uk": {                                                             
+    "host_dict": {},                                                          
+    "SiteName": "UKI-SOUTHGRID-BRIS-HEP",                                     
+    "VOname": "T2_UK_SGrid_Bristol",
+    "Country": "UK"
+  },                                                                          
+  "brunel.ac.uk": {                                                           
+    "host_dict": {},                                                          
+    "SiteName": "UKI-LT2-Brunel",                                             
+    "VOname": "T2_UK_London_Brunel",
+    "Country": "UK"
+  },                                                                          
+  "bu.edu": {                                                                 
+    "host_dict": {},                                                          
+    "SiteName": "BU",                                                         
+    "VOname": "BU_ATLAS_Tier2",
+    "Country": "USA"
+  },                                                                          
+  "cac.cornell.edu": {                                                        
+    "host_dict": {},                                                          
+    "SiteName": "NYSGRID_CORNELL_NYS1",                                       
+    "VOname": "T3_US_Cornell",
+    "Country": "USA"
+  },                                                                          
+  "cam.ac.uk": {                                                              
+    "host_dict": {},                                                          
+    "SiteName": "UKI-SOUTHGRID-CAM-HEP",                                      
+    "VOname": "UKI-SOUTHGRID-CAM-HEP",
+    "Country": "UK"
+  },                                                                          
+  "campuscluster.illinois.edu": {                                             
+    "host_dict": {},                                                          
+    "SiteName": "MWT2",                                                       
+    "VOname": "MWT2",
+    "Country": "USA"
+  },                                                                          
+  "cc.nd.edu": {                                                              
+    "host_dict": {},                                                          
+    "SiteName": "NWICG_NDCMS",                                                
+    "VOname": "T3_US_NotreDame",
+    "Country": "USA"
+  },                                                                          
+  "ccs.ornl.gov": {                                                           
+    "host_dict": {},                                                          
+    "SiteName": "ORNL_NSTG",                                                  
+    "VOname": "ORNL_NSTG",
+    "Country": "USA"
+  },                                                                          
+  "cea.fr": {                                                                 
+    "host_dict": {},                                                          
+    "SiteName": "GRIF-IRFU",                                                  
+    "VOname": "T2_FR_GRIF_IRFU",
+    "Country": "France"
+  },                                                                          
+  "cern.ch": {                                                                
+    "host_dict": {},                                                          
+    "SiteName": "CERN",                                                       
+    "VOname": "CERN-n/a",
+    "Country": "Switzerland"
+  },                                                                          
+  "chtc.wisc.edu": {                                                          
+    "host_dict": {},                                                          
+    "SiteName": "GLOW",                                                       
+    "VOname": "T2_US_Wisconsin",
+    "Country": "USA"
+  },                                                                          
+  "ci-connect.net": {                                                         
+    "host_dict": {},                                                          
+    "SiteName": "Roaming",                                                    
+    "VOname": "Roaming",
+    "Country": "Roaming"
+  },                                                                          
+  "ciemat.es": {                                                              
+    "host_dict": {},                                                          
+    "SiteName": "CIEMAT-LCG2",                                                
+    "VOname": "T2_ES_CIEMAT",
+    "Country": "Spain"
+  },                                                                          
+  "cism.ucl.ac.be": {                                                         
+    "host_dict": {},                                                          
+    "SiteName": "BelGrid-UCL",                                                
+    "VOname": "T2_BE_UCL",
+    "Country": "Belgium"
+  },                                                                          
+  "cmsaf.mit.edu": {                                                          
+    "host_dict": {},                                                          
+    "SiteName": "MIT_CMS",                                                    
+    "VOname": "T2_US_MIT",
+    "Country": "USA"
+  },                                                                          
+  "cnaf.infn.it": {                                                           
+    "host_dict": {},                                                          
+    "SiteName": "INFN-T1",                                                    
+    "VOname": "T1_IT_CNAF",
+    "Country": "Italy"
+  },                                                                          
+  "colorado.edu": {                                                           
+    "host_dict": {},                                                          
+    "SiteName": "UColorado_HEP",                                              
+    "VOname": "T3_US_Colorado",
+    "Country": "USA"
+  },                                                                          
+  "comcast.net": {                                                            
+    "host_dict": {},                                                          
+    "SiteName": "Roaming",                                                    
+    "VOname": "Roaming",
+    "Country": "Roaming"
+  },                                                                          
+  "cr.cnaf.infn.it": {                                                        
+    "host_dict": {},                                                          
+    "SiteName": "INFN-T1",                                                    
+    "VOname": "T1_IT_CNAF",
+    "Country": "Italy"
+  },                                                                          
+  "crc.nd.edu": {                                                             
+    "host_dict": {},                                                          
+    "SiteName": "NWICG_NDCMS",                                                
+    "VOname": "T3_US_NotreDame",
+    "Country": "USA"
+  },                                                                          
+  "cs.wisc.edu": {                                                            
+    "host_dict": {},                                                          
+    "SiteName": "GLOW",                                                       
+    "VOname": "T2_US_Wisconsin",
+    "Country": "USA"
+  },                                                                          
+  "csc.fi": {                                                                 
+    "host_dict": {},                                                          
+    "SiteName": "CSCS-LCG2",                                                  
+    "VOname": "T2_FI_HIP",
+    "Country": "Finland"
+  },                                                                          
+  "csufresno.edu": {                                                          
+    "host_dict": {},                                                          
+    "SiteName": "FRESNO-ATLAS-T3",                                            
+    "VOname": "FRESNO-ATLAS-T3",
+    "Country": "USA"
+  },                                                                          
+  "cyf-kr.edu.pl": {                                                          
+    "host_dict": {},                                                          
+    "SiteName": "CYFRONET-LCG2",                                              
+    "VOname": "CYFRONET-LCG2",
+    "Country": "Poland"
+  },                                                                          
+  "cyfronet.pl": {                                                            
+    "host_dict": {},                                                          
+    "SiteName": "CYFRONET-LCG2",                                              
+    "VOname": "CYFRONET-LCG2",
+    "Country": "Poland"
+  },                                                                          
+  "datagrid.cea.fr": {                                                        
+    "host_dict": {},                                                          
+    "SiteName": "GRIF",                                                       
+    "VOname": "T2_FR_GRIF_IRFU",
+    "Country": "France"
+  },                                                                          
+  "desy.de": {                                                                
+    "host_dict": {},                                                          
+    "SiteName": "DESY-HH",                                                    
+    "VOname": "T2_DE_DESY",
+    "Country": "Germany"
+  },                                                                          
+  "ecdf.ed.ac.uk": {                                                          
+    "host_dict": {},                                                          
+    "SiteName": "UKI-SCOTGRID-ECDF",                                          
+    "VOname": "T3_UK_ScotGrid_ECDF",
+    "Country": "UK"
+  },                                                                          
+  "ed.ac.uk": {                                                               
+    "host_dict": {},                                                          
+    "SiteName": "UKI-SCOTGRID-ECDF",                                          
+    "VOname": "T3_UK_ScotGrid_ECDF",
+    "Country": "UK"
+  },                                                                          
+  "edu.pk": {                                                                 
+    "host_dict": {},                                                          
+    "SiteName": "NCP-LCG2",                                                   
+    "VOname": "T2_PK_NCP",
+    "Country": "Pakistan"
+  },                                                                          
+  "esc.qmul": {                                                               
+    "host_dict": {},                                                          
+    "SiteName": "UKI-LT2-QMUL",                                               
+    "VOname": "T3_UK_London_QMUL",
+    "Country": "UK"
+  },                                                                          
+  "fis.cinvestav.mx": {                                                       
+    "host_dict": {},                                                          
+    "SiteName": "cinvestav",                                                  
+    "VOname": "T3_MX_Cinvestav",
+    "Country": "Mexico"
+  },                                                                          
+  "fnal.gov": {                                                               
+    "host_dict": {},                                                          
+    "SiteName": "USCMS-FNAL-WC1",                                             
+    "VOname": "T1_US_FNAL",
+    "Country": "USA"
+  },                                                                          
+  "ft.uam.es": {                                                              
+    "host_dict": {},                                                          
+    "SiteName": "UAM-LCG2",                                                   
+    "VOname": "UAM-LCG2",
+    "Country": "Spain"
+  },                                                                          
+  "genetics.wisc.edu": {                                                      
+    "host_dict": {},                                                          
+    "SiteName": "GLOW",                                                       
+    "VOname": "T2_US_Wisconsin",
+    "Country": "USA"
+  },                                                                          
+  "gdc.pi.infn.it": {                                                         
+    "host_dict": {},                                                          
+    "SiteName": "INFN-PISA",                                                  
+    "VOname": "T2_IT_Pisa",
+    "Country": "Italy"
+  },                                                                          
+  "gina.sara.nl": {                                                           
+    "host_dict": {},                                                          
+    "SiteName": "SARA-MATRIX",                                                
+    "VOname": "SARA-MATRIX",
+    "Country": "Netherlands"
+  },                                                                          
+  "gla.scotgrid.ac.uk": {                                                     
+    "host_dict": {},                                                          
+    "SiteName": "UKI-SCOTGRID-GLASGOW",                                       
+    "VOname": "T3_UK_ScotGrid_GLA",
+    "Country": "UK"
+  },                                                                          
+  "goegrid.gwdg.de": {                                                        
+    "host_dict": {},                                                          
+    "SiteName": "GoeGrid",                                                    
+    "VOname": "GoeGrid",
+    "Country": "Germany"
+  },                                                                          
+  "grid-lab105.desy.de": {                                                    
+    "host_dict": {},                                                          
+    "SiteName": "GRID-LAB",                                                   
+    "VOname": "T2_DE_DESY",
+    "Country": "Germany"
+  },                                                                          
+  "grid.helsinki.fi": {                                                       
+    "host_dict": {},                                                          
+    "SiteName": "FI_HIP_T2",                                                  
+    "VOname": "T2_FI_HIP",
+    "Country": "Finland"
+  },                                                                          
+  "grid.hep.ph.ic.ac.uk": {                                                   
+    "host_dict": {},                                                          
+    "SiteName": "UKI-LT2-IC-HEP",                                             
+    "VOname": "T2_UK_London_IC",
+    "Country": "UK"
+  },                                                                          
+  "grid.kiae.ru": {                                                           
+    "host_dict": {},                                                          
+    "SiteName": "RRC-KI",                                                     
+    "VOname": "T2_RU_RRC_KI",
+    "Country": "Russia"
+  },                                                                          
+  "grid.local": {                                                             
+    "host_dict": {},                                                          
+    "SiteName": "Roaming",                                                    
+    "VOname": "Roaming",
+    "Country": "Roaming"
+  },                                                                          
+  "grid.metu.edu.tr": {                                                       
+    "host_dict": {},                                                          
+    "SiteName": "TR-03-METU",                                                 
+    "VOname": "T2_TR_METU",
+    "Country": "Turkey"
+  },                                                                          
+  "grid.sinica.edu.tw": {                                                     
+    "host_dict": {},                                                          
+    "SiteName": "Taiwan-LCG2",                                                
+    "VOname": "T1_TW_ASGC",
+    "Country": "Taiwan"
+  },                                                                          
+  "gridka.de": {                                                              
+    "host_dict": {},                                                          
+    "SiteName": "FZK-LCG2",                                                   
+    "VOname": "T1_DE_KIT",
+    "Country": "Germany"
+  },                                                                          
+  "gridpp.rl.ac.uk": {                                                        
+    "host_dict": {},                                                          
+    "SiteName": "RAL-LCG2",                                                   
+    "VOname": "T1_UK_RAL",
+    "Country": "UK"
+  },                                                                          
+  "hep": {                                                                    
+    "host_dict": {},                                                          
+    "SiteName": "Roaming",                                                    
+    "VOname": "Roaming",
+    "Country": "Roaming"
+  },                                                                          
+  "hep.anl.gov": {                                                            
+    "host_dict": {},                                                          
+    "SiteName": "ANLASC",                                                     
+    "VOname": "ANLASC",
+    "Country": "USA"                                                       
+  },                                                                          
+  "hep.brown.edu": {                                                          
+    "host_dict": {},                                                          
+    "SiteName": "brown-cms-new",                                              
+    "VOname": "T3_US_Brown",
+    "Country": "USA"
+  },                                                                          
+  "hep.fiu.edu": {                                                            
+    "host_dict": {},                                                          
+    "SiteName": "FIUPG",                                                      
+    "VOname": "T3_US_FIU",
+    "Country": "USA"
+  },                                                                          
+  "hep.kbfi.ee": {                                                            
+    "host_dict": {},                                                          
+    "SiteName": "T2_Estonia",                                                 
+    "VOname": "T2_EE_Estonia",
+    "Country": "Estonia"
+  },                                                                          
+  "hep.olemiss.edu": {                                                        
+    "host_dict": {},                                                          
+    "SiteName": "UMissHEP",                                                   
+    "VOname": "T3_US_UMiss",
+    "Country": "USA"
+  },                                                                          
+  "hep.ph.ic.ac.uk": {                                                        
+    "host_dict": {},                                                          
+    "SiteName": "UKI-LT2-IC-HEP",                                             
+    "VOname": "T2_UK_London_IC",
+    "Country": "UK"
+  },                                                                          
+  "hep.uprm.edu": {                                                           
+    "host_dict": {},                                                          
+    "SiteName": "uprm-cms",                                                   
+    "VOname": "T3_US_PuertoRico",
+    "Country": "USA"
+  },                                                                          
+  "hep.wisc.edu": {                                                           
+    "host_dict": {},                                                          
+    "SiteName": "GLOW",                                                       
+    "VOname": "T2_US_Wisconsin",
+    "Country": "USA"
+  },                                                                          
+  "hephy.oeaw.ac.at": {                                                       
+    "host_dict": {},                                                          
+    "SiteName": "Hephy-Vienna",                                               
+    "VOname": "T2_AT_Vienna",
+    "Country": "Austria"
+  },                                                                          
+  "hip.fi": {                                                                 
+    "host_dict": {},                                                          
+    "SiteName": "FI_HIP_T2",                                                  
+    "VOname": "T2_FI_HIP",
+    "Country": "Finland"
+  },                                                                          
+  "hpc.ufl.edu": {                                                            
+    "host_dict": {},                                                          
+    "SiteName": "UFlorida-HPC",                                               
+    "VOname": "T2_US_Florida",
+    "Country": "USA"
+  },                                                                          
+  "ifca.es": {                                                                
+    "host_dict": {},                                                          
+    "SiteName": "IFCA-LCG2",                                                  
+    "VOname": "T2_ES_IFCA",
+    "Country": "Spain"
+  },                                                                          
+  "ifh.de": {                                                                 
+    "host_dict": {},                                                          
+    "SiteName": "DESY_ZN",                                                    
+    "VOname": "DESY-ZN",
+    "Country": "Germany"
+  },                                                                          
+  "ific.uv.es": {                                                             
+    "host_dict": {},                                                          
+    "SiteName": "IFIC-LCG2",                                                  
+    "VOname": "IFIC-LCG2",
+    "Country": "Spain"
+  },                                                                          
+  "ihep.ac.cn": {                                                             
+    "host_dict": {},                                                          
+    "SiteName": "BEIJING-LCG2",                                               
+    "VOname": "T2_CN_Beijing",
+    "Country": "China"
+  },                                                                          
+  "ihep.su": {                                                                
+    "host_dict": {},                                                          
+    "SiteName": "IHEP",                                                       
+    "VOname": "T2_RU_IHEP",
+    "Country": "Russia"
+  },                                                                          
+  "ihepa.ufl.edu": {                                                          
+    "host_dict": {},                                                          
+    "SiteName": "UFlorida-HPC",                                               
+    "VOname": "T2_US_Florida",
+    "Country": "USA"
+  },                                                                          
+  "iihe.ac.be": {                                                             
+    "host_dict": {},                                                          
+    "SiteName": "BEgrid-ULB-VUB",                                             
+    "VOname": "T2_BE_IIHE",
+    "Country": "Belgium"
+  },                                                                          
+  "in2p3.fr": {                                                               
+    "host_dict": {                                                            
+      "lapp": {                                                               
+        "VOname": "T2_FR_GRIF_LLR",                                           
+        "SiteName": "IN2P3-LAPP",
+        "Country": "France"
+      },                                                                      
+      "lpn": {                                                                
+        "VOname": "T2_FR_GRIF_IRFU",                                          
+        "SiteName": "GRIF-LPNHE",
+        "Country": "France"
+      },                                                                      
+      "lal": {                                                                
+        "VOname": "T2_FR_GRIF_LLR",                                           
+        "SiteName": "GRIF-LAL",
+        "Country": "France"
+      },                                                                      
+      "lpsc": {                                                               
+        "VOname": "IN2P3-LPSC",                                               
+        "SiteName": "IN2P3-LPSC",
+        "Country": "France"
+      },                                                                      
+      "mar": {                                                                
+        "VOname": "IN2P3-CPPM",                                               
+        "SiteName": "CPPM",
+        "Country": "France"                                                   
+      },                                                                      
+      "polgrid": {                                                            
+        "VOname": "T2_FR_GRIF_LLR",                                           
+        "SiteName": "GRIF",
+        "Country": "France"                                                   
+      },                                                                      
+      "sbgwn": {                                                              
+        "VOname": "T2_FR_IPHC",                                               
+        "SiteName": "IN2P3-IRES",
+        "Country": "France"
+      },                                                                      
+      "llrgrwn": {                                                            
+        "VOname": "T2_FR_GRIF_LLR",                                           
+        "SiteName": "GRIFS",
+        "Country": "France"
+      }                                                                       
+    },                                                                        
+    "SiteName": "IN2P3",                                                      
+    "VOname": "IN2P3failover",
+    "Country": "France"
+  },                                                                          
+  "indiacms.res.in": {                                                        
+    "host_dict": {},                                                          
+    "SiteName": "INDIACMS-TIFR",                                              
+    "VOname": "T2_IN_TIFR",
+    "Country": "India"
+  },                                                                          
+  "itep.ru": {                                                                
+    "host_dict": {},                                                          
+    "SiteName": "ITEP",                                                       
+    "VOname": "T2_RU_ITEP",
+    "Country": "Russia"
+  },                                                                          
+  "irb.hr": {                                                                 
+    "host_dict": {},                                                          
+    "SiteName": "HR-01-RBI",                                                  
+    "VOname": "HR-01-RBI",
+    "Country": "Croatia"
+  },                                                                          
+  "iu.edu": {                                                                 
+    "host_dict": {},                                                          
+    "SiteName": "MWT2_IU",                                                    
+    "VOname": "MWT2",
+    "Country": "USA"                                                       
+  },                                                                          
+  "jinr-t1.ru": {                                                             
+    "host_dict": {},                                                          
+    "SiteName": "JINR-T1",                                                    
+    "VOname": "T1_RU_JINR",
+    "Country": "Russia"
+  },                                                                          
+  "jinr.ru": {                                                                
+    "host_dict": {},                                                          
+    "SiteName": "JINR",                                                       
+    "VOname": "T2_RU_JINR",
+    "Country": "Russia"
+  },                                                                          
+  "kfki.hu": {                                                                
+    "host_dict": {},                                                          
+    "SiteName": "BUDAPEST",                                                   
+    "VOname": "T2_HU_Budapest",
+    "Country": "Hungary"
+  },                                                                          
+  "kipt.kharkov.ua": {                                                        
+    "host_dict": {},                                                          
+    "SiteName": "Kharkov-KIPT-LCG2",                                          
+    "VOname": "T2_UA_KIPT",
+    "Country": "Ukraine"
+  },                                                                          
+  "knu.ac.kr": {                                                              
+    "host_dict": {},                                                          
+    "SiteName": "LCG_KNU",                                                    
+    "VOname": "T2_KR_KNU",
+    "Country": "South Korea"
+  },                                                                          
+  "lal.in2p3.fr": {                                                           
+    "host_dict": {},                                                          
+    "SiteName": "GRIF-LAL",                                                   
+    "VOname": "T2_FR_GRIF_LLR",
+    "Country": "France"
+  },                                                                          
+  "lancs.ac.uk": {                                                            
+    "host_dict": {},                                                          
+    "SiteName": "UKI-NORTHGRID-LANCS-HEP",                                    
+    "VOname": "UKI-NORTHGRID-LANCS-HEP",
+    "Country": "UK"
+  },                                                                          
+  "lcg.cscs.ch": {                                                            
+    "host_dict": {},                                                          
+    "SiteName": "CSCS-LCG2",                                                  
+    "VOname": "T2_CH_CSCS",
+    "Country": "Switzerland"
+  },                                                                          
+  "lhep.unibe.ch": {                                                          
+    "host_dict": {},                                                          
+    "SiteName": "n/a",                                                        
+    "VOname": "n/a",
+    "Country": "n/a"                                                   
+  },                                                                          
+  "liv.ac.uk": {                                                              
+    "host_dict": {},                                                          
+    "SiteName": "UKI-NORTHGRID-LIV-HEP",                                      
+    "VOname": "UKI-NORTHGRID-LIV-HEP",
+    "Country": "UK"
+  },                                                                          
+  "lnf.infn.it": {                                                            
+    "host_dict": {},                                                          
+    "VOname": "INFN-FRASCATI",                                                
+    "SiteName": "INFN_Frascati",
+    "Country": "Italy"
+  },                                                                          
+  "lnl.infn.it": {                                                            
+    "host_dict": {},                                                          
+    "SiteName": "INFN-LNL-2",                                                 
+    "VOname": "T2_IT_Legnaro",
+    "Country": "Italy"
+  },                                                                          
+  "local": {                                                                  
+    "host_dict": {},                                                          
+    "SiteName": "Roaming",                                                    
+    "VOname": "Roaming",
+    "Country": "Roaming"
+  },                                                                          
+  "lrz.de": {                                                                 
+    "host_dict": {},                                                          
+    "SiteName": "LRZ",                                                        
+    "VOname": "LRZ-LMU",
+    "Country": "Germany"                                                       
+  },                                                                          
+  "lsr.nectec.or.th": {                                                       
+    "host_dict": {},                                                          
+    "SiteName": "T2-TH-CUNSTDA",                                              
+    "VOname": "T2_TH_CUNSTDA",
+    "Country": "Thailand"
+  },                                                                          
+  "m45.ihep.su": {                                                            
+    "host_dict": {},                                                          
+    "SiteName": "RU-Protvino-IHEP",                                           
+    "VOname": "T2_RU_IHEP",
+    "Country": "Russia"
+  },                                                                          
+  "manchester.ac.uk": {                                                       
+    "host_dict": {},                                                          
+    "SiteName": "UKI-NORTHGRID-MAN-HEP",                                      
+    "VOname": "UKI-NORTHGRID-MAN-HEP",
+    "Country": "UK"
+  },                                                                          
+  "mi.infn.it": {                                                             
+    "host_dict": {},                                                          
+    "SiteName": "INFN_MILANO_ATLASC",                                         
+    "VOname": "INFN-MILANO-ATLASC",
+    "Country": "Italy"
+  },                                                                          
+  "mit.edu": {                                                                
+    "host_dict": {},                                                          
+    "SiteName": "MIT_CMS",                                                    
+    "VOname": "T2_US_MIT",
+    "Country": "USA"
+  },                                                                          
+  "mwt2.org": {                                                               
+    "host_dict": {},                                                          
+    "SiteName": "MWT2",                                                       
+    "VOname": "MWT2",
+    "Country": "USA"                                                          
+  },                                                                          
+  "na.infn.it": {                                                             
+    "host_dict": {},                                                          
+    "SiteName": "INFN_Napoli",                                                
+    "VOname": "T3_IT_Napoli",
+    "Country": "Italy"
+  },                                                                          
+  "nat.nd.edu": {                                                             
+    "host_dict": {},                                                          
+    "SiteName": "NWICG_NDCMS",                                                
+    "VOname": "T3_US_NotreDame",
+    "Country": "USA"
+  },                                                                          
+  "natpool.mwn.de": {                                                         
+    "host_dict": {},                                                          
+    "SiteName": "Roaming",                                                    
+    "VOname": "Roaming",
+    "Country": "Roaming"
+  },                                                                          
+  "ncg.ingrid.pt": {                                                          
+    "host_dict": {},                                                          
+    "SiteName": "NCG-INGRID-PT",                                              
+    "VOname": "T2_PT_NCG_Lisbon",
+    "Country": "Portugal"
+  },                                                                          
+  "ncp.edu.pk": {                                                             
+    "host_dict": {},                                                          
+    "SiteName": "NCP-LCG2",                                                   
+    "VOname": "T2_PK_NCP",
+    "Country": "Pakistan"
+  },                                                                          
+  "neu.edu": {                                                                
+    "host_dict": {},                                                          
+    "SiteName": "n/a",                                                        
+    "VOname": "n/a",
+    "Country": "n/a"                                                      
+  },                                                                          
+  "nhn.ou.edu": {                                                             
+    "host_dict": {},                                                          
+    "SiteName": "SWT2_OU_T3",                                                 
+    "VOname": "SWT2_OU_T3",
+    "Country": "USA"
+  },                                                                          
+  "nlab.tb.hiit.fi": {                                                        
+    "host_dict": {},                                                          
+    "SiteName": "NDGF-T1",                                                    
+    "VOname": "T2_FI_HIP",
+    "Country": "Finland"
+  },                                                                          
+  "ochep.ou.edu": {                                                           
+    "host_dict": {},                                                          
+    "SiteName": "n/a",                                                        
+    "VOname": "n/a",
+    "Country": "n/a"                                                       
+  },                                                                          
+  "oeaw.ac.at": {                                                             
+    "host_dict": {},                                                          
+    "SiteName": "Hephy-Vienna",                                               
+    "VOname": "T2_AT_Vienna",
+    "Country": "Austria"
+  },                                                                          
+  "osgconnect.net": {                                                         
+    "host_dict": {},                                                          
+    "SiteName": "Roaming",                                                    
+    "VOname": "Roaming",
+    "Country": "Roaming"                                                       
+  },                                                                          
+  "ou.edu": {                                                                 
+    "host_dict": {},                                                          
+    "SiteName": "SWT2_OU",                                                    
+    "VOname": "SWT2_OU",
+    "Country": "USA"                                                       
+  },                                                                          
+  "ox.ac.uk": {                                                               
+    "host_dict": {},                                                          
+    "SiteName": "UKI-SOUTHGRID-OX-HEP",                                       
+    "VOname": "T3_UK_SGrid_Oxford",
+    "Country": "UK"
+  },                                                                          
+  "particle.cz": {                                                            
+    "host_dict": {},                                                          
+    "SiteName": "PRAGUE",                                                     
+    "VOname": "PRAGUE",
+    "Country": "Czech Republic"
+  },                                                                          
+  "pd.infn.it": {                                                             
+    "host_dict": {},                                                          
+    "SiteName": "INFN-Padova",                                                
+    "VOname": "n/a",
+    "Country": "Italy"                                                
+  },                                                                          
+  "pg.infn.it": {                                                             
+    "host_dict": {},                                                          
+    "SiteName": "INFN-PERUGIA",                                               
+    "VOname": "T3_IT_Perugia",
+    "Country": "Italy"
+  },                                                                          
+  "phy.bris.ac.uk": {                                                         
+    "host_dict": {},                                                          
+    "SiteName": "UKI-SOUTHGRID-BRIS-HEP",                                     
+    "VOname": "T2_UK_SGrid_Bristol",
+    "Country": "UK"
+  },                                                                          
+  "phy.ncu.edu.tw": {                                                         
+    "host_dict": {},                                                          
+    "SiteName": "TW-NCUHEP",                                                  
+    "VOname": "T3_TW_NCU",
+    "Country": "Taiwan"
+  },                                                                          
+  "phys.ntu.edu.tw": {                                                        
+    "host_dict": {},                                                          
+    "SiteName": "TW-NTU-HEP",                                                 
+    "VOname": "T3_TW_NTU_HEP",
+    "Country": "Taiwan"
+  },                                                                          
+  "phys.uconn.edu": {                                                         
+    "host_dict": {},                                                          
+    "SiteName": "n/a",                                                        
+    "VOname": "n/a",
+    "Country": "n/a"                                                        
+  },                                                                          
+  "physics.indiana.edu": {                                                    
+    "host_dict": {},                                                          
+    "SiteName": "Indiana_University",                                         
+    "VOname": "Indiana_University",
+    "Country": "USA"
+  },                                                                          
+  "physics.ox.ac.uk": {                                                       
+    "host_dict": {},                                                          
+    "SiteName": "UKI-SOUTHGRID-OX-HEP",                                       
+    "VOname": "T3_UK_SGrid_Oxford",
+    "Country": "UK"
+  },                                                                          
+  "physik.rwth-aachen.de": {                                                  
+    "host_dict": {},                                                          
+    "SiteName": "RWTH-Aachen",                                                
+    "VOname": "T2_DE_RWTH",
+    "Country": "Germany"
+  },                                                                          
+  "physik.uni-karlsruhe.de": {                                                
+    "host_dict": {},                                                          
+    "SiteName": "UNI-KARLSRUHE",                                              
+    "VOname": "T3_DE_Karlsruhe",
+    "Country": "Germany"
+  },                                                                          
+  "pi.infn.it": {                                                             
+    "host_dict": {},                                                          
+    "SiteName": "INFN-PISA",                                                  
+    "VOname": "T2_IT_Pisa",
+    "Country": "Italy"
+  },                                                                          
+  "pic.es": {                                                                 
+    "host_dict": {},                                                          
+    "SiteName": "pic",                                                        
+    "VOname": "T1_ES_PIC",
+    "Country": "Spain"
+  },                                                                          
+  "polgrid.pl": {                                                             
+    "host_dict": {},                                                          
+    "SiteName": "ICM",                                                        
+    "VOname": "T2_PL_Warsaw",
+    "Country": "Poland"
+  },                                                                          
+  "poznan.pl": {                                                              
+    "host_dict": {},                                                          
+    "SiteName": "PSNC",                                                       
+    "VOname": "PSNC",
+    "Country": "Poland"                                                        
+  },                                                                          
+  "pp.rl.ac.uk": {                                                            
+    "host_dict": {},                                                          
+    "SiteName": "UKI-SOUTHGRID-RALPP",                                        
+    "VOname": "T2_UK_SGrid_RALPP",
+    "Country": "UK"
+  },                                                                          
+  "princeton.edu": {                                                          
+    "host_dict": {},                                                          
+    "SiteName": "T3_US_Princeton_ICSE",                                       
+    "VOname": "T3_US_Princeton_ICSE",
+    "Country": "USA"
+  },                                                                          
+  "psi.ch": {                                                                 
+    "host_dict": {},                                                          
+    "SiteName": "T3_CH_PSI",                                                  
+    "VOname": "T3_CH_PSI",
+    "Country": "Switzerland"
+  },                                                                          
+  "qmul.ac.uk": {                                                             
+    "host_dict": {},                                                          
+    "SiteName": "UKI-LT2-QMUL",                                               
+    "VOname": "T3_UK_London_QMUL",
+    "Country": "UK"
+  },                                                                          
+  "rc.ufl.edu": {                                                             
+    "host_dict": {},                                                          
+    "SiteName": "UFlorida-HPC",                                               
+    "VOname": "T2_US_Florida",
+    "Country": "USA"
+  },                                                                          
+  "rcac.purdue.edu": {                                                        
+    "host_dict": {},                                                          
+    "SiteName": "Purdue-RCAC",                                                
+    "VOname": "T2_US_Purdue",
+    "Country": "USA"
+  },                                                                          
+  "rhul.ac.uk": {                                                             
+    "host_dict": {},                                                          
+    "SiteName": "UKI-LT2-RHUL",                                               
+    "VOname": "T3_UK_London_RHUL",
+    "Country": "UK"
+  },                                                                          
+  "rl.ac.uk": {                                                               
+    "host_dict": {},                                                          
+    "SiteName": "RAL-LCG2",                                                   
+    "VOname": "T1_UK_RAL",
+    "Country": "UK"
+  },                                                                          
+  "roma1.infn.it": {                                                          
+    "host_dict": {},                                                          
+    "VOname": "T2_IT_Rome",                                                   
+    "SiteName": "INFN_Roma1",
+    "Country": "Italy"
+  },                                                                          
+  "shef.ac.uk": {                                                             
+    "host_dict": {},                                                          
+    "SiteName": "UKI-NORTHGRID-SHEF-HEP",                                     
+    "VOname": "UKI-NORTHGRID-SHEF-HEP",
+    "Country": "UK"
+  },                                                                          
+  "sinp.msu.ru": {                                                            
+    "host_dict": {},                                                          
+    "SiteName": "ru-Moscow-SINP-LCG2",                                        
+    "VOname": "T2_RU_SINP",
+    "Country": "Russia"
+  },                                                                          
+  "slac.stanford.edu": {                                                      
+    "host_dict": {},                                                          
+    "SiteName": "n/a",                                                        
+    "VOname": "n/a",
+    "Country": "n/a"                                                        
+  },                                                                          
+  "sprace.org.br": {                                                          
+    "host_dict": {},                                                          
+    "SiteName": "SPRACE",                                                     
+    "VOname": "T2_BR_SPRACE",
+    "Country": "Brazil"
+  },                                                                          
+  "stanford.edu": {                                                           
+    "host_dict": {},                                                          
+    "SiteName": "SLAC",                                                       
+    "VOname": "MWT2",
+    "Country": "USA"                                                        
+  },                                                                          
+  "swt2.uta.edu": {                                                           
+    "host_dict": {},                                                          
+    "SiteName": "UTA_SWT2",                                                   
+    "VOname": "UTA_SWT2",
+    "Country": "USA"
+  },                                                                          
+  "t-ipconnect.de": {                                                         
+    "host_dict": {},                                                          
+    "SiteName": "Roaming",                                                    
+    "VOname": "Roaming",
+    "Country": "Roaming"
+  },                                                                          
+  "t2.rzg.mpg.de": {                                                          
+    "host_dict": {},                                                          
+    "SiteName": "MPPMU",                                                      
+    "VOname": "MPPMU",
+    "Country": "Germany"                                                       
+  },                                                                          
+  "t2.ucsd.edu": {                                                            
+    "host_dict": {},                                                          
+    "SiteName": "UCSDT2",                                                     
+    "VOname": "T2_US_UCSD",
+    "Country": "USA"
+  },                                                                          
+  "tb.hiit.fi": {                                                             
+    "host_dict": {},                                                          
+    "SiteName": "FI_HIP_T2",                                                  
+    "VOname": "T2_FI_HIP",
+    "Country": "Finland"
+  },                                                                          
+  "triumf.ca": {                                                              
+    "host_dict": {},                                                          
+    "SiteName": "TRIUMF-LCG2",                                                
+    "VOname": "TRIUMF-LCG2",
+    "Country": "Canada"
+  },                                                                          
+  "troitsk.ru": {                                                             
+    "host_dict": {},                                                          
+    "SiteName": "RU-TROITSK-INR-LCG2",                                        
+    "VOname": "T2_RU_INR",
+    "Country": "Russia"
+  },                                                                          
+  "ts.infn.it": {                                                             
+    "host_dict": {},                                                          
+    "SiteName": "INFN-TRIESTE",                                               
+    "VOname": "T3_IT_Trieste",
+    "Country": "Italy"
+  },                                                                          
+  "twgrid.org": {                                                             
+    "host_dict": {},                                                          
+    "SiteName": "n/a",                                                        
+    "VOname": "n/a",
+    "Country": "n/a"                                                         
+  },                                                                          
+  "uchicago.edu": {                                                           
+    "host_dict": {},                                                          
+    "SiteName": "MWT2_UC",                                                    
+    "VOname": "MWT2",
+    "Country": "USA"                                                          
+  },                                                                          
+  "ucl.ac.uk": {                                                              
+    "host_dict": {},                                                          
+    "SiteName": "UKI-LT2-UCL-HEP",                                            
+    "VOname": "T3_UK_London_UCL",
+    "Country": "UK"
+  },                                                                          
+  "ucr.edu": {                                                                
+    "host_dict": {},                                                          
+    "SiteName": "UCR-HEP",                                                    
+    "VOname": "T3_US_UCR",
+    "Country": "USA"
+  },                                                                          
+  "ufhpc": {                                                                  
+    "host_dict": {},                                                          
+    "SiteName": "n/a",                                                        
+    "VOname": "n/a",
+    "Country": "n/a"                                                          
+  },                                                                          
+  "uiuc.edu": {                                                               
+    "host_dict": {},                                                          
+    "SiteName": "MWT2_UIUC",                                                  
+    "VOname": "n/a",
+    "Country": "USA"                                                           
+  },                                                                          
+  "ultralight.org": {                                                         
+    "host_dict": {},                                                          
+    "SiteName": "CIT_CMS_T2",                                                 
+    "VOname": "T2_US_Caltech",
+    "Country": "USA"
+  },                                                                          
+  "umd.edu": {                                                                
+    "host_dict": {},                                                          
+    "SiteName": "UMD-CMS",                                                    
+    "VOname": "T3_US_UMD",
+    "Country": "USA"
+  },                                                                          
+  "uni-freiburg.de": {
+    "host_dict": {},
+    "SiteName": "UNI-FREIBURG",
+    "VOname": "UNI-FREIBURG",
+    "Country": "Germany"
+  },
+  "uni-karlsruhe.de": {
+    "host_dict": {},
+    "SiteName": "karlsruhe",
+    "VOname": "karlsruhe",
+    "Country": "Germany"
+  },
+  "uni-mainz.de": {
+    "host_dict": {},
+    "SiteName": "MaiGRID",
+    "VOname": "MaiGRID",
+    "Country": "Germany"
+  },
+  "uni-muenchen.de": {
+    "host_dict": {},
+    "SiteName": "LRZ-LMU",
+    "VOname": "LRZ-LMU",
+    "Country": "Germany"
+  },
+  "uni-wuppertal.de": {
+    "host_dict": {},
+    "SiteName": "WUPPERTAL",
+    "VOname": "wuppertalprod",
+    "Country": "Germany"
+  },
+  "unige.ch": {
+    "host_dict": {},
+    "SiteName": "UNIGE-DPNC",
+    "VOname": "UNIGE-DPNC",
+    "Country": "Switzerland"
+  },
+  "unknown": {
+    "host_dict": {},
+    "SiteName": "n/a",
+    "VOname": "n/a",
+    "Country": "n/a"
+  },
+  "unl.edu": {
+    "host_dict": {},
+    "SiteName": "Nebraska",
+    "VOname": "T2_US_Nebraska",
+    "Country": "USA"
+  },
+  "utexas.edu": {
+    "host_dict": {},
+    "SiteName": "n/a",
+    "VOname": "n/a",
+    "Country": "n/a"
+  },
+  "xlate.ufl.edu": {
+    "host_dict": {},
+    "SiteName": "UFlorida-HPC",
+    "VOname": "T2_US_Florida",
+    "Country": "USA"
+  }
+}

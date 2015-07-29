@@ -14,7 +14,7 @@ inOutPath    = sys.argv[3]
 data         = {}
 for i in os.listdir(inOutPath):
     if not '.json' in i: continue
-    date     = 'unixtime_' + i.replace('.json', '')
+    date     =  time.strftime("%B %d, %Y %H:%M:%S", time.localtime(int(i.replace('.json', ''))))
     data[date]  = json.loads(fileOps.read("{0}/{1}".format(inOutPath, i)))
 
 jsData       = {}
