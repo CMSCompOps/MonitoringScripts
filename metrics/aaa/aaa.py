@@ -10,7 +10,7 @@ except ImportError: import simplejson as json
 try: import xml.etree.ElementTree as ET
 except ImportError: from elementtree import ElementTree as ET
 
-if len(sys.argv) < 5:
+if len(sys.argv) < 4:
     sys.stderr.write('not enough parameter!\n')
     sys.exit(1)
 
@@ -21,10 +21,8 @@ samAccessURL = sys.argv[2]
 samAccess    = {}
 hcURL        = sys.argv[3]
 hammerCloud  = {}
-prodHostPath = sys.argv[4]
-prodSites    = []
-map          = json.loads(fileOps.read(sys.argv[5]))
-output       = sys.argv[6]
+federations  = json.loads(url.read(sys.argv[4]))
+output       = sys.argv[5]
 
 for site in siteList:
     samAccess[site] = 'n/a'
@@ -99,28 +97,6 @@ for i in entries:
         continue
     if name in hammerCloud: hammerCloud[name] = result
 
-# prepare prod site list
-prodHosts    = fileOps.read(prodHostPath)
-for pHost in prodHosts.split('\n'):
-    # eliminate port numbers
-    if ':' in pHost: pHost = pHost[:pHost.find(':')]
-    # try to find the prod host in the map. please notice that you may need
-    # to match the host name in one level back (ds23.kipt.kharkov.ua == 
-    # kipt.kharkov.ua)
-    for host in map.keys():
-        if host in pHost:
-            name = map[host]['SiteName']
-            break
-    # site name to CMS site name
-    cmsSiteName = None
-    for site in siteList:
-        if name == siteList[site]['name']: cmsSiteName = site
-    # if we could find the cms site name and it is not placed in the prodSites
-    if cmsSiteName != None and not cmsSiteName in prodSites:
-        prodSites.append(cmsSiteName)
-
-print prodSites
-
 production   = dashboard.metric()
 transitional = dashboard.metric()
 
@@ -147,8 +123,8 @@ for site in siteList:
     else:
         entry = dashboard.entry(None, site, 'on', dashboard.green, '#')
 
-    if site in prodSites: production.append(entry)
-    else: transitional.append(entry)
+    if site in federations["prod"]: production.append(entry)
+    elif site in federations["trans"]: transitional.append(entry)
 
 fileOps.write('%s/aaaProd.txt' % output, str(production))
 fileOps.write('%s/aaaTrans.txt' % output, str(transitional))
