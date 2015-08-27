@@ -1,0 +1,73 @@
+<html lang="en">
+<head>
+  <title>Site Map</title>
+  <meta charset="utf-8">
+  <!--
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+  <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+  -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+  <style>
+    table.map {table: none;}
+    table.map td {display:block; height: 16px; width: 16px;}
+    div.info{position: absolute; 
+      border: solid 1px #efe;
+      background: #fff;
+      opacity: 0.9;
+      padding: 8px;
+    }
+  </style>
+  <script>
+    var data = @DATA@;
+    $(document).ready(function(){
+      for(var site in data) {
+        if(site == 'fields') continue;
+        var row = '<tr site=\"' + site + '\">';
+        for(var i = 0; i < data[site].length; i++) {
+          row = row + '<td style=\"background:' + data[site][i] + '\"></td>';
+        }
+        row = row + '</tr>';
+        $("table.map").append(row);
+      }
+      $("#size").change(function(){setCellSize($(this).val());});
+      $('table.map tr').mousemove(function(e){showInfo(e, $(this));});
+      $('table.map').mouseout(function(e){closeInfo(e, $(this));});
+  });
+  function setCellSize(size) {
+    $('table.map td').css('width',  size + 'px');
+    $('table.map td').css('height', size + 'px');
+  }
+
+  function showInfo(e, element) {
+    $('div.info').css('visibility', 'visible');
+    $('div.info').css('left', e.pageX + 10 + 'px');
+    $('div.info').css('top',  e.pageY + 10 + 'px');
+    $('div.info').text(element.attr('site'));
+  }
+  function closeInfo(e, element){
+    $('div.info').css('visibility', 'hidden');
+  }
+  </script>
+</head>
+
+<body>
+<center>
+<h2>@DATE@</h2>
+<div class="info"></div>
+<select id="size">
+  <option value="64">64px</option>
+  <option value="32">32px</option>
+  <option value="16" selected>16px</option>
+  <option value="8">8px</option>
+  <option value="4">4px</option>
+</select>
+
+<br><br>
+
+<table class="map" cellspacing="0" cellpadding="0">
+</table>
+</center>
+</body>
+
+</html>

@@ -1,0 +1,11 @@
+{
+    "SAM"                   : "http://cms-project-lcg-data.web.cern.ch/cms-project-lcg-data/SiteComm/site_avail_sum.txt",
+    "HC"                    : "http://cms-project-lcg-data.web.cern.ch/cms-project-lcg-data/SiteComm/successrate_hctest.txt",
+    "Good T1 links from T0" : "http://cms-project-lcg-data.web.cern.ch/cms-project-lcg-data/SiteComm/links_quality_t1ft0.txt",
+    "Good T1 links from T1" : "http://cms-project-lcg-data.web.cern.ch/cms-project-lcg-data/SiteComm/links_quality_t1ft1.txt",
+    "Good T1 links to T1"   : "http://cms-project-lcg-data.web.cern.ch/cms-project-lcg-data/SiteComm/links_quality_t1tt1.txt",
+    "Good T1 links from T2" : "http://cms-project-lcg-data.web.cern.ch/cms-project-lcg-data/SiteComm/links_quality_t1ft2.txt",
+    "Good T1 links to T2"   : "http://cms-project-lcg-data.web.cern.ch/cms-project-lcg-data/SiteComm/links_quality_t1tt2.txt",
+    "Good T2 links from T1" : "http://cms-project-lcg-data.web.cern.ch/cms-project-lcg-data/SiteComm/links_quality_t2ft1.txt",
+    "Good T2 links to T1"   : "http://cms-project-lcg-data.web.cern.ch/cms-project-lcg-data/SiteComm/links_quality_t2tt1.txt"
+}
