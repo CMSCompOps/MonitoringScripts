@@ -100,7 +100,7 @@ def parseMetric(data):
     # remove python style comments
     data    = re.sub(re.compile(r'^#.*$', re.MULTILINE), "", data)
     # kudos to jbalcas for the dashboard entry pattern!
-    rows = re.findall(r'([0-9-: ]*)\t(T[0-3][_A-Za-z0-9]*)\t([A-Za-z\.0-9]*)\t([A-Za-z]*)\t(.*)', data, re.M)
+    rows = re.findall(r'([0-9-: ]*)\t(T[0-3][_A-Za-z0-9]*)\t([^\t]*)\t([A-Za-z]*)\t(.*)', data, re.M)
     # create metric object to return the result in this structure
     obj  = metric()
     # append parsed entries to the metric object
