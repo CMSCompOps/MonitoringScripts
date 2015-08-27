@@ -20,14 +20,17 @@
   </style>
   <script>
     var data = @DATA@;
+    var sites = [];
+    for(site in data) { sites.push(site); }
+    sites.sort()
     $(document).ready(function(){
-      for(var site in data) {
-        if(site == 'fields') continue;
+      for(var i = 0; i < sites.length; i++) {
+        if(sites[i] == 'fields') continue;
         var row = '<tr>';
-        for(var i = 0; i < data[site].length; i++) {
-          cell = '<td style=\"background:' + data[site][i] + '\" '
-          cell = cell + 'site=\"'+ site + '\" '
-          cell = cell + 'metric=\"' + data['fields'][i] + '\"></td>'
+        for(var j = 0; j < data[sites[i]].length; j++) {
+          cell = '<td style=\"background:' + data[sites[i]][j] + '\" '
+          cell = cell + 'site=\"'+ sites[i] + '\" '
+          cell = cell + 'metric=\"' + data['fields'][j] + '\"></td>'
           row = row + cell;
         }
         row = row + '</tr>';
@@ -68,7 +71,7 @@
 
 <br><br>
 
-<table class="map" cellspacing="0" cellpadding="0">
+<table class="map" cellspacing="1" cellpadding="0">
 </table>
 </center>
 </body>
