@@ -23,15 +23,18 @@
     $(document).ready(function(){
       for(var site in data) {
         if(site == 'fields') continue;
-        var row = '<tr site=\"' + site + '\">';
+        var row = '<tr>';
         for(var i = 0; i < data[site].length; i++) {
-          row = row + '<td style=\"background:' + data[site][i] + '\"></td>';
+          cell = '<td style=\"background:' + data[site][i] + '\" '
+          cell = cell + 'site=\"'+ site + '\" '
+          cell = cell + 'metric=\"' + data['fields'][i] + '\"></td>'
+          row = row + cell;
         }
         row = row + '</tr>';
         $("table.map").append(row);
       }
       $("#size").change(function(){setCellSize($(this).val());});
-      $('table.map tr').mousemove(function(e){showInfo(e, $(this));});
+      $('table.map td').mousemove(function(e){showInfo(e, $(this));});
       $('table.map').mouseout(function(e){closeInfo(e, $(this));});
   });
   function setCellSize(size) {
@@ -43,7 +46,7 @@
     $('div.info').css('visibility', 'visible');
     $('div.info').css('left', e.pageX + 10 + 'px');
     $('div.info').css('top',  e.pageY + 10 + 'px');
-    $('div.info').text(element.attr('site'));
+    $('div.info').text(element.attr('site') + ', ' + element.attr('metric'));
   }
   function closeInfo(e, element){
     $('div.info').css('visibility', 'hidden');
