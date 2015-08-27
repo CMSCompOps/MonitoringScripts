@@ -5,6 +5,7 @@ export CERTS=$SSTBASE/certs
 export PYTHONPATH="$PYTHONPATH:$SSTBASE"
 export SSTOUT="$SSTBASE/output"
 export SSTLOG="$SSTBASE/log"
+export SSTDATA="$SSTBASE/data"
 export SSTMAIL="cms-comp-ops-site-support-team@cern.ch"
 SSTINITERR="$SSTLOG/sstInit.log"
 
