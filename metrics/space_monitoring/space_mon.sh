@@ -17,8 +17,8 @@ trap '(/bin/rm -f ${EXC_LOCK} ${TMP_FILE} ${ERR_FILE} ${SDB_FILE} ${PDX_FILE}) 1
 SITES_URL="https://cmsweb.cern.ch/sitedb/data/prod/site-names"
 NODES_URL="https://cmsweb.cern.ch/phedex/datasvc/perl/prod/nodes"
 SPACE_URL="https://cmsweb.cern.ch/dmwmmon/datasvc/perl/storageusage"
-DASHB_FILE="/afs/cern.ch/user/c/cmst1/www/SST/space_check.txt"
-FILE_URL="http://cmst1.web.cern.ch/CMST1/SST/space_check.txt"
+DASHB_FILE="/afs/cern.ch/user/c/cmssst/www/space_mon/space_check.txt"
+FILE_URL="http://cmssst.web.cern.ch/cmssst/space_mon/space_check.txt"
 EMAIL_ADDR="lammel@fnal.gov"
 # #############################################################################
 
