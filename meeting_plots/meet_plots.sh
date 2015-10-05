@@ -111,24 +111,34 @@ fi
 #
 if [ "${THIS_WEEK}" != "${PLOT_WEEK}" ]; then
    #
-   # save plots (probably of last week):
-   # -----------------------------------
-   echo "Saving plots of ${PLOT_WEEK}"
-   if [ -e ${PLOT_DIR}/${PLOT_WEEK} ]; then
-      /bin/mv -f ${PLOT_DIR}/${PLOT_WEEK} ${PLOT_DIR}/${PLOT_WEEK}.old
-   fi
-   /bin/mkdir ${PLOT_DIR}/${PLOT_WEEK}
-   /bin/mv ${PLOT_DIR}/*.png ${PLOT_DIR}/.time* ${PLOT_DIR}/${PLOT_WEEK}
+   # delete plots (probably of last week):
+   # -------------------------------------
+   echo "Deleting plots of ${PLOT_WEEK}"
+   /bin/rm -f ${PLOT_DIR}/*.png ${PLOT_DIR}/.time*
+   #
 elif [ -f ${PLOT_DIR}/.timestamp ]; then
    #
-   # plots for this week exist, nothing to do
-   echo "Plots for this week, ${THIS_WEEK}, exist elready"
-   #
-   # release space_mon lock:
-   # -----------------------
-   echo "Releasing lock for cmssst/meet_plots"
-   /bin/rm ${EXC_LOCK}
-   exit 0
+   if [ `/bin/date '+%u'` -ge 5 ]; then
+      #
+      # replace plots of previous week with ones for this week:
+      # -------------------------------------------------------
+      echo "Replacing plots of previous week with this week ${THIS_WEEK}"
+      /bin/rm -f ${PLOT_DIR}/*.png ${PLOT_DIR}/.time*
+      #
+      #
+      /bin/touch ${PLOT_DIR}/.timestamp
+      /bin/date '+%Y.%U written %Y-%b-%d %H:%M:%S' >> ${PLOT_DIR}/.timestamp
+   else
+      #
+      # plots for this week exist, nothing to do
+      echo "Plots for this week, ${THIS_WEEK}, exist elready"
+      #
+      # release space_mon lock:
+      # -----------------------
+      echo "Releasing lock for cmssst/meet_plots"
+      /bin/rm ${EXC_LOCK}
+      exit 0
+   fi
 fi
 # #############################################################################
 
@@ -381,11 +391,21 @@ if [ ${RC} -ne 0 ]; then
    if [ ! -t 0 ]; then
       /usr/bin/Mail -s "$0 failed" ${EMAIL_ADDR} < ${ERR_FILE}
    else
+      echo "error log:"
+      echo "=========="
       /bin/cat ${ERR_FILE}
    fi
 else
    echo "plots for meeting successfully created"
    /bin/mv ${PLOT_DIR}/.timetrial ${PLOT_DIR}/.timestamp
+   #
+   # save plots:
+   # -----------
+   if [ ! -e ${PLOT_DIR}/${THIS_WEEK} ]; then
+      echo "Saving plots for this week, ${THIS_WEEK}"
+      /bin/mkdir ${PLOT_DIR}/${THIS_WEEK}
+      /bin/cp -p ${PLOT_DIR}/*.png ${PLOT_DIR}/.time* ${PLOT_DIR}/${THIS_WEEK}
+   fi
 fi
 /bin/rm ${ERR_FILE} 1>/dev/null 2>&1
 # #############################################################################
@@ -394,7 +414,7 @@ fi
 
 # delete old plots of previous weeks:
 # -----------------------------------
-PAST_WEEKS=`/usr/bin/awk 'BEGIN{tis=systime();for(pwk=5;pwk<=10;pwk+=1){wis=tis-pwk*7*24*60*60;print strftime("%Y.%U",wis)}}'`
+PAST_WEEKS=`/usr/bin/awk 'BEGIN{tis=systime();for(pwk=6;pwk<=10;pwk+=1){wis=tis-pwk*7*24*60*60;print strftime("%Y.%U",wis)}}'`
 (cd ${PLOT_DIR}; /bin/rm -r ${PAST_WEEKS} 1>/dev/null 2>&1)
 PAST_WEEKS=""
 # #############################################################################

@@ -15,12 +15,16 @@
 #
 # meet_plots.sh  Bourne shell script to generate/collect the plots and
 #                tables for the Monday group chat meeting.
-#                The script is setup to run Monday mornings on vocms077 
-#                at 7:07 am (and at 9:17 am). The script moves images
-#                of the previous week into a year.week subdirectory of
-#                which the latest four are kept. In case a plot/table
-#                is inaccessible, the area is left incomplete and the
-#                9 o'clock execution hopefully fills in any missing
-#                plots/tables. The script needs to be run after the
+#                The script runs on vocms077 Friday and Saturday mornings
+#                at 7:07 am for a preliminary version of the plots, i.e.
+#                so people can see the site status for the past week when
+#                they update their twiki sections on the weekend.
+#                The real run of the script is Monday mornings at 7:07 am
+#                (and at 9:17 am). In case of an execution error an email
+#                is send and the area left incomplete. Hopefully the run
+#                at 9 o'clock will fill in any previously inaccessible
+#                plot/table. When the area is complete the sript makes
+#                a copy into a year.week subdirectory of which the latest
+#                four are kept. The script needs to be run after the
 #                site readiness is updated for Sunday. (So we have the
 #                Monday-to-Sunday week plots for the meeting.)
