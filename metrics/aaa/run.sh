@@ -8,6 +8,7 @@ source ../../init.sh
 # output & temp directory for this script
 OUT=$SSTBASE/output/metrics/aaa
 TMP=$SSTBASE/tmp/metrics/aaa
+TEMPLATE=$SSTBASE/data/metrics/aaa/template.html
 
 if [ ! -d "$OUT" ]; then
     mkdir -p $OUT
@@ -16,6 +17,9 @@ fi
 if [ ! -d "$TMP" ]; then
     mkdir -p $TMP
 fi
+
+# report url
+reportURL="https://cmst1.web.cern.ch/CMST1/SST/report.html"
 
 # federation source
 federations="http://vocms037.cern.ch/fedinfo/federations.json"
@@ -36,6 +40,6 @@ certFile=`/usr/bin/grid-proxy-info -path 2> /dev/null`
 wgetOpt="--certificate=${certFile} --private-key=${certFile} --ca-certificate=${certFile}"
 /usr/bin/wget ${wgetOpt} -O $TMP/ggus.xml $ggusURL
 
-python aaa.py $TMP/ggus.xml $samURL $hcURL $federations $OUT
+python aaa.py $TMP/ggus.xml $samURL $hcURL $federations $TEMPLATE $reportURL $OUT
 
 cp $OUT/* /afs/cern.ch/user/c/cmst1/www/SST/

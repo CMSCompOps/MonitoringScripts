@@ -10,19 +10,22 @@ except ImportError: import simplejson as json
 try: import xml.etree.ElementTree as ET
 except ImportError: from elementtree import ElementTree as ET
 
-if len(sys.argv) < 4:
+if len(sys.argv) < 6:
     sys.stderr.write('not enough parameter!\n')
     sys.exit(1)
 
 siteList     = sites.getSites()
 ggusXMLFile  = fileOps.read(sys.argv[1])
-ggus         = []
+ggus         = {}
 samAccessURL = sys.argv[2]
 samAccess    = {}
 hcURL        = sys.argv[3]
 hammerCloud  = {}
 federations  = json.loads(url.read(sys.argv[4]))
-output       = sys.argv[5]
+template     = fileOps.read(sys.argv[5])
+reportURL    = sys.argv[6]
+output       = sys.argv[7]
+report       = {}
 
 for site in siteList:
     samAccess[site] = 'n/a'
@@ -31,6 +34,7 @@ for site in siteList:
 ## parse ggus xml file
 for ticket in ET.fromstring(ggusXMLFile).findall('ticket'):
     cmsSiteName  = ticket.find('cms_site').text
+    ticketId     = ticket.find('request_id').text
     realSiteName = ticket.find('affected_site').text
 
     # if you don't have CMS site name AND have real site name,
@@ -42,7 +46,9 @@ for ticket in ET.fromstring(ggusXMLFile).findall('ticket'):
 
     if not cmsSiteName: continue
 
-    ggus.append(cmsSiteName)
+    if not ggus.has_key(cmsSiteName):
+        ggus[cmsSiteName] = []
+    if not ticketId in ggus[cmsSiteName]: ggus[cmsSiteName].append(ticketId)
 
 ## for SAM::access test results
 for site in siteList:
@@ -111,7 +117,7 @@ for site in siteList:
     if hammerCloud[site] < 80.0:
         badSiteFlag = badSiteFlag | True
         errMsg = errMsg + '_HC(%s)' % round(hammerCloud[site], 2)
-    if site in ggus:
+    if site in ggus.keys():
         badSiteFlag = badSiteFlag | True
     if 'n/a' in [hammerCloud[site], samAccess[site]]:
         basSiteFlag = badSiteFlag | True
@@ -119,12 +125,20 @@ for site in siteList:
         else: errMsg = errMsg + '_SAM(n/a)'
 
     if badSiteFlag:
-        entry = dashboard.entry(None, site, errMsg, dashboard.red, '#')
+        entry = dashboard.entry(None, site, errMsg, dashboard.red, reportURL)
     else:
-        entry = dashboard.entry(None, site, 'on', dashboard.green, '#')
+        entry = dashboard.entry(None, site, 'on', dashboard.green, reportURL)
 
     if site in federations["prod"]: production.append(entry)
     elif site in federations["trans"]: transitional.append(entry)
 
+report['hammerCloud'] = hammerCloud
+report['samAccess']   = samAccess
+report['ggus']        = ggus
+report['siteList']    = siteList
+template = template.replace('@DATA@', json.dumps(report))
+template = template.replace('@DATE@', time.strftime("%Y-%m-%d at %H:%M:%S", time.localtime(time.time())))
+
+fileOps.write('%s/report.html' % output, template)
 fileOps.write('%s/aaaProd.txt' % output, str(production))
 fileOps.write('%s/aaaTrans.txt' % output, str(transitional))
