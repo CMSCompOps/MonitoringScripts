@@ -23,7 +23,7 @@ function prepareRow(site, test) {
          // first entry, origin must be past variable
         if(i == 0) var diff = timeStamps[i] - past;
         else var diff = timeStamps[i] - timeStamps[i-1];
-        var width = (diff/range) * 100.0;
+        var width = (diff/range) * 99.8;
         var value = report.data[site][test][timeStamps[i]];
         // create cell
         var cell  = $('<div></div>');
