@@ -22,7 +22,7 @@ samAccess    = {}
 hcURL        = sys.argv[3]
 hammerCloud  = {}
 federations  = json.loads(url.read(sys.argv[4]))
-template     = fileOps.read(sys.argv[5])
+reportFile   = sys.argv[5]
 reportURL    = sys.argv[6]
 output       = sys.argv[7]
 report       = {}
@@ -30,6 +30,7 @@ report       = {}
 for site in siteList:
     samAccess[site] = 'n/a'
     hammerCloud[site] = 'n/a'
+    ggus[site] = []
 
 ## parse ggus xml file
 for ticket in ET.fromstring(ggusXMLFile).findall('ticket'):
@@ -125,20 +126,24 @@ for site in siteList:
         else: errMsg = errMsg + '_SAM(n/a)'
 
     if badSiteFlag:
-        entry = dashboard.entry(None, site, errMsg, dashboard.red, reportURL)
+        entry = dashboard.entry(None, site, errMsg, dashboard.red, '%s#%s' % (reportURL, site))
     else:
-        entry = dashboard.entry(None, site, 'on', dashboard.green, reportURL)
+        entry = dashboard.entry(None, site, 'on', dashboard.green, '%s#%s' % (reportURL, site))
 
     if site in federations["prod"]: production.append(entry)
     elif site in federations["trans"]: transitional.append(entry)
 
-report['hammerCloud'] = hammerCloud
-report['samAccess']   = samAccess
-report['ggus']        = ggus
-report['siteList']    = siteList
-template = template.replace('@DATA@', json.dumps(report))
-template = template.replace('@DATE@', time.strftime("%Y-%m-%d at %H:%M:%S", time.localtime(time.time())))
+report['lastUpdate'] = time.time()
+report['data']       = {}
+for site in siteList:
+    report['data'][site] = {}
+    if samAccess.has_key(site):
+        report['data'][site]['sam']  = samAccess[site]
+    if hammerCloud.has_key(site):
+        report['data'][site]['hc']   = hammerCloud[site]
+    if ggus.has_key(site):
+        report['data'][site]['ggus'] = ggus[site]
 
-fileOps.write('%s/report.html' % output, template)
+fileOps.write(reportFile, json.dumps(report))
 fileOps.write('%s/aaaProd.txt' % output, str(production))
 fileOps.write('%s/aaaTrans.txt' % output, str(transitional))

@@ -8,7 +8,7 @@ source ../../init.sh
 # output & temp directory for this script
 OUT=$SSTBASE/output/metrics/aaa
 TMP=$SSTBASE/tmp/metrics/aaa
-TEMPLATE=$SSTBASE/data/metrics/aaa/template.html
+DATA=$SSTBASE/data/metrics/aaa/
 
 if [ ! -d "$OUT" ]; then
     mkdir -p $OUT
@@ -40,6 +40,7 @@ certFile=`/usr/bin/grid-proxy-info -path 2> /dev/null`
 wgetOpt="--certificate=${certFile} --private-key=${certFile} --ca-certificate=${certFile}"
 /usr/bin/wget ${wgetOpt} -O $TMP/ggus.xml $ggusURL
 
-python aaa.py $TMP/ggus.xml $samURL $hcURL $federations $TEMPLATE $reportURL $OUT
+python aaa.py $TMP/ggus.xml $samURL $hcURL $federations $TMP/report.json $reportURL $OUT
+python report.py $TMP/report.json $DATA/template.html $OUT/report_2weeks.json $OUT
 
 cp $OUT/* /afs/cern.ch/user/c/cmst1/www/SST/

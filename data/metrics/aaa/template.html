@@ -1,37 +1,115 @@
 <html>
-<head>
-<title>AAA Metric - Report & Details</title>
+  <head>
+  <title>AAA Metric Report & Details</title>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
 <script>
-var DATA = @DATA@;
-function init() {
-    console.log(DATA);
-    var report = $('#report');
-    for(var site in DATA.siteList) {
-        var tr = $('<tr>');
-        var hc = DATA.hammerCloud[site];
-        var sam = DATA.samAccess[site];
-        var ticket = DATA.ggus[site];
-        tr.append('<td>' + site + '</td>');
-        tr.append('<td>' + DATA.samAccess[site] + '</td>');
-        tr.append('<td>' + hc + '</td>');
-        tr.append('<td>' + ticket + '</td>');
-        report.append(tr)
+var report = @report@;
+function getColor(value){
+    value = value / 100.0;
+    var hue=(value*120).toString(10);
+    return ["hsl(",hue,",100%,50%)"].join("");
+}
+function prepareRow(site, test) {
+    var now   = report.lastUpdate;
+    // 2 weeks in unix time
+    var range = 60*60*24*14;
+    // start time
+    var past  = now - range;
+    // find test results for site
+    var results = report.data[site][test];
+    var timeStamps = Object.keys(results);
+    timeStamps.reverse();
+    for(var i = 0; i < timeStamps.length; i++) {
+         // first entry, origin must be past variable
+        if(i == 0) var diff = timeStamps[i] - past;
+        else var diff = timeStamps[i] - timeStamps[i-1];
+        var width = (diff/range) * 100.0;
+        var value = report.data[site][test][timeStamps[i]];
+        // create cell
+        var cell  = $('<div></div>');
+        cell.css('width', width + '%');
+        cell.attr('data-info', value);
+
+        if(test == 'ggus') {
+            if(value.length != 0) cell.css('background', getColor(0));
+            else if(value.length == 0) cell.css('background', getColor(100));
+        }
+        else {
+            if(value != 'n/a') cell.css('background', getColor(value));
+            else cell.css('background', '#ddd');
+        }
+
+        $('#'+site).find('#'+test).append(cell);
     }
 }
-$(document).ready(init);
+function displayInfo(event) {
+    var infoBox = $('div.aaa-monitoring-info');
+    infoBox.show();
+    var info = $(event.target).attr('data-info');
+    infoBox.text(info);
+    infoBox.css("left", (event.clientX + 16) + "px");
+    infoBox.css("top",  (event.clientY + 16) + "px");
+}
+function hideInfo(event) {
+    var infoBox = $('div.aaa-monitoring-info');
+    infoBox.hide(50);
+}
+function main() {
+    var sites = Object.keys(report.data);
+    sites.sort();
+    for(var i = 0; i < sites.length; i++) {
+        var site = sites[i];
+        var table = $('#reportTable').clone();
+        table.attr('id', site);
+        table.find('#siteName').text(site);
+        table.show();
+        $('#content').append(table);
+        prepareRow(site, 'sam');
+        prepareRow(site, 'hc');
+        prepareRow(site, 'ggus');
+    }
+    $("td > div").mousemove(displayInfo);
+    $("td > div").mouseleave(hideInfo)
+}
+
+$(document).ready(main);
 </script>
-</head>
-<body>
-  <center>
-    <h3>AAA Report, generated on @DATE@</h3>
-    <table id="report" border="1">
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+<!-- Optional theme -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css">
+<!-- Latest compiled and minified JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+<style>
+table.aaa-monitoring-table  {margin-top: 64px;}
+table.aaa-monitoring-table th {text-align: center;}
+table.aaa-monitoring-table th {padding:0 !important; border-color: #C5C5C5 !important;}
+table.aaa-monitoring-table td {padding:0 !important; border-color: #C5C5C5 !important;}
+table.aaa-monitoring-table td div {height: 24px;float: left;}
+#reportTable{display: none}
+div.aaa-monitoring-info {
+    position: fixed;
+    top: 0px;
+    left: 0px;
+    display: none;
+}
+</style>
+  </head>
+  <body>
+  <div class="aaa-monitoring-info alert alert-info"></div>
+  <div class="container" id="content">
+  <h2>AAA Report, updated on @date@</h2><hr>
+    <table class=" table table-bordered aaa-monitoring-table" id="reportTable">
       <thead>
-        <tr> <th>CMS Site</th> <th>SAM::Access</th> <th>HC</th> <th>Ticket ID(s)</th> </tr>
+        <tr class="info"> <th colspan="2" id="siteName"></th></tr>
+        <tr> <th width="10%">TESTS</h> <th>RESULTS</th> </tr>
       </thead>
       <tbody>
+        <tr><th>SAM</th>  <td id="sam" ></td></tr>
+        <tr><th>HC</th>   <td id="hc"  ></td></tr>
+        <tr><th>GGUS</th> <td id="ggus"></td></tr>
       </tbody>
     </table>
-  </center>
-</body>
+  </div>
+  </body>
 </html>
