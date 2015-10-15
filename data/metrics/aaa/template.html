@@ -4,12 +4,19 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
 <script>
 var report = @report@;
-function getColor(value){
-    value = value / 100.0;
-    var hue=(value*120).toString(10);
+function getColor(value, th){
+    if(value < th) {
+        value = 0.0;
+    } else {
+        a = 120.0 / (100 - th);
+        b = (120 - a*(100 + th)) /2.0;
+        value = a*value + b;
+    }
+    console.log(value);
+    var hue = value.toString(10);
     return ["hsl(",hue,",100%,50%)"].join("");
 }
-function prepareRow(site, test) {
+function insertRow(site, test, th) {
     var now   = report.lastUpdate;
     // 2 weeks in unix time
     var range = 60*60*24*14;
@@ -18,12 +25,12 @@ function prepareRow(site, test) {
     // find test results for site
     var results = report.data[site][test];
     var timeStamps = Object.keys(results);
-    timeStamps.reverse();
+    timeStamps.sort();
     for(var i = 0; i < timeStamps.length; i++) {
          // first entry, origin must be past variable
         if(i == 0) var diff = timeStamps[i] - past;
         else var diff = timeStamps[i] - timeStamps[i-1];
-        var width = (diff/range) * 99.8;
+        var width = (diff/range) * 99.999;
         var value = report.data[site][test][timeStamps[i]];
         // create cell
         var cell  = $('<div></div>');
@@ -31,11 +38,14 @@ function prepareRow(site, test) {
         cell.attr('data-info', value);
 
         if(test == 'ggus') {
-            if(value.length != 0) cell.css('background', getColor(0));
-            else if(value.length == 0) cell.css('background', getColor(100));
+            if(value.length != 0) cell.css('background', getColor(0, th));
+            else if(value.length == 0) {
+                cell.css('background', getColor(100, th));
+                cell.attr('data-info', 'no ticket');
+            }
         }
         else {
-            if(value != 'n/a') cell.css('background', getColor(value));
+            if(value != 'n/a') cell.css('background', getColor(value, th));
             else cell.css('background', '#ddd');
         }
 
@@ -52,7 +62,7 @@ function displayInfo(event) {
 }
 function hideInfo(event) {
     var infoBox = $('div.aaa-monitoring-info');
-    infoBox.hide(50);
+    infoBox.hide();
 }
 function main() {
     var sites = Object.keys(report.data);
@@ -64,9 +74,9 @@ function main() {
         table.find('#siteName').text(site);
         table.show();
         $('#content').append(table);
-        prepareRow(site, 'sam');
-        prepareRow(site, 'hc');
-        prepareRow(site, 'ggus');
+        insertRow(site, 'sam', 50);
+        insertRow(site, 'hc', 80);
+        insertRow(site, 'ggus', 0);
     }
     $("td > div").mousemove(displayInfo);
     $("td > div").mouseleave(hideInfo)
@@ -81,7 +91,7 @@ $(document).ready(main);
 <!-- Latest compiled and minified JavaScript -->
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
 <style>
-table.aaa-monitoring-table  {margin-top: 64px;}
+table.aaa-monitoring-table  {margin-bottom: 64px;}
 table.aaa-monitoring-table th {text-align: center;}
 table.aaa-monitoring-table th {padding:0 !important; border-color: #C5C5C5 !important;}
 table.aaa-monitoring-table td {padding:0 !important; border-color: #C5C5C5 !important;}
@@ -99,12 +109,21 @@ div.aaa-monitoring-info {
   <div class="aaa-monitoring-info alert alert-info"></div>
   <div class="container" id="content">
   <h2>AAA Report, updated on @date@</h2><hr>
+  <h3>Conditions</h3>
+  <hr>
+  <pre><b>IF</b> <kbd>(HC rate &lt; 80% <b>AND</b> site is not tier 3)</kbd> <b>OR</b> <kbd>SAM::Access rate &lt; 50</kbd> <b>OR</b> <kbd>site has at least one ticket related to AAA</kbd>:
+    <b>site is bad/red</b>
+  </pre>
+
+  <h3>Results</h3>
+  <hr> 
     <table class=" table table-bordered aaa-monitoring-table" id="reportTable">
       <thead>
         <tr class="info"> <th colspan="2" id="siteName"></th></tr>
-        <tr> <th width="10%">TESTS</h> <th>RESULTS</th> </tr>
       </thead>
       <tbody>
+        <col width="10%">
+        <col width="90%">
         <tr><th>SAM</th>  <td id="sam" ></td></tr>
         <tr><th>HC</th>   <td id="hc"  ></td></tr>
         <tr><th>GGUS</th> <td id="ggus"></td></tr>
