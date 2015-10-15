@@ -19,7 +19,7 @@ if [ ! -d "$TMP" ]; then
 fi
 
 # report url
-reportURL="https://cmst1.web.cern.ch/CMST1/SST/report.html"
+reportURL="https://cmst1.web.cern.ch/CMST1/SST/aaa/%s_report.html"
 
 # federation source
 federations="http://vocms037.cern.ch/fedinfo/federations.json"
@@ -43,4 +43,4 @@ wgetOpt="--certificate=${certFile} --private-key=${certFile} --ca-certificate=${
 python aaa.py $TMP/ggus.xml $samURL $hcURL $federations $TMP/report.json $reportURL $OUT
 python report.py $TMP/report.json $DATA/template.html $OUT/report_2weeks.json $OUT
 
-cp $OUT/* /afs/cern.ch/user/c/cmst1/www/SST/
+cp $OUT/* /afs/cern.ch/user/c/cmst1/www/SST/aaa

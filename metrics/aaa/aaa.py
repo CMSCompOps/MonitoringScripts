@@ -112,23 +112,24 @@ for site in siteList:
     errMsg      = 'bad'
 
     # conditions to mark a site as bad
-    if samAccess[site] < 50.0:
+    if samAccess[site] < 50.0 or samAccess[site] == 'n/a':
         badSiteFlag = badSiteFlag | True
-        errMsg = errMsg + '_SAM(%s)' % round(samAccess[site], 2)
-    if hammerCloud[site] < 80.0:
+        if samAccess[site] == 'n/a': val = samAccess[site]
+        else: val = round(samAccess[site], 2)
+        errMsg = errMsg + '_SAM(%s)' % val
+    if (hammerCloud[site] < 80.0 or hammerCloud[site] == 'n/a') and sites.getTier(site) != 3:
         badSiteFlag = badSiteFlag | True
-        errMsg = errMsg + '_HC(%s)' % round(hammerCloud[site], 2)
-    if site in ggus.keys():
+        if hammerCloud[site] == 'n/a': val = hammerCloud[site]
+        else: val = round(hammerCloud[site], 2)
+        errMsg = errMsg + '_HC(%s)' % val
+    if site in ggus.keys() and len(ggus[site]):
         badSiteFlag = badSiteFlag | True
-    if 'n/a' in [hammerCloud[site], samAccess[site]]:
-        basSiteFlag = badSiteFlag | True
-        if hammerCloud[site] == 'n/a': errMsg = errMsg + '_HC(n/a)'
-        else: errMsg = errMsg + '_SAM(n/a)'
+        errMsg = errMsg + '_GGUS(%s)' % str(ggus[site])
 
     if badSiteFlag:
-        entry = dashboard.entry(None, site, errMsg, dashboard.red, '%s#%s' % (reportURL, site))
+        entry = dashboard.entry(None, site, errMsg, dashboard.red, reportURL % site)
     else:
-        entry = dashboard.entry(None, site, 'on', dashboard.green, '%s#%s' % (reportURL, site))
+        entry = dashboard.entry(None, site, 'on', dashboard.green, reportURL % site)
 
     if site in federations["prod"]: production.append(entry)
     elif site in federations["trans"]: transitional.append(entry)
