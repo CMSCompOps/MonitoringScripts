@@ -248,14 +248,14 @@ fi
 # now cut out Tier-1 and Tier-2 CERN images:
 if [ -f ${TMP_FILE} ]; then
    if [ ! -f ${PLOT_DIR}/cern.png ]; then
-      /usr/bin/convert -crop 1548x902+6+90 ${TMP_FILE} ${PLOT_DIR}/kit.png
-      /usr/bin/convert -crop 1548x902+6+1407 ${TMP_FILE} ${PLOT_DIR}/pic.png
-      /usr/bin/convert -crop 1548x902+6+2724 ${TMP_FILE} ${PLOT_DIR}/ccin2p3.png
-      /usr/bin/convert -crop 1548x902+6+4041 ${TMP_FILE} ${PLOT_DIR}/cnaf.png
-      /usr/bin/convert -crop 1548x902+6+5358 ${TMP_FILE} ${PLOT_DIR}/jinr.png
-      /usr/bin/convert -crop 1548x902+6+6675 ${TMP_FILE} ${PLOT_DIR}/ral.png
-      /usr/bin/convert -crop 1548x902+6+7992 ${TMP_FILE} ${PLOT_DIR}/fnal.png
-      /usr/bin/convert -crop 1332x514+108+14084 ${TMP_FILE} ${PLOT_DIR}/cern.png
+      /usr/bin/convert -crop 1548x936+6+90 ${TMP_FILE} ${PLOT_DIR}/kit.png
+      /usr/bin/convert -crop 1548x936+6+1441 ${TMP_FILE} ${PLOT_DIR}/pic.png
+      /usr/bin/convert -crop 1548x936+6+2792 ${TMP_FILE} ${PLOT_DIR}/ccin2p3.png
+      /usr/bin/convert -crop 1548x936+6+4143 ${TMP_FILE} ${PLOT_DIR}/cnaf.png
+      /usr/bin/convert -crop 1548x936+6+5494 ${TMP_FILE} ${PLOT_DIR}/jinr.png
+      /usr/bin/convert -crop 1548x936+6+6845 ${TMP_FILE} ${PLOT_DIR}/ral.png
+      /usr/bin/convert -crop 1548x936+6+8196 ${TMP_FILE} ${PLOT_DIR}/fnal.png
+      /usr/bin/convert -crop 1332x514+108+14322 ${TMP_FILE} ${PLOT_DIR}/cern.png
    else
       echo "kit/pic/ccin2p3/cnaf/jinr/ral/fnal/cern.png exist, skipping"
    fi
