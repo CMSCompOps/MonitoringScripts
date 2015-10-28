@@ -38,13 +38,15 @@ def hasBadHistory(siteName):
     if not siteName in hammerCloud.getSites():
         return False
 
-    # if site has at least one green slot in the given time range
+    # If site has "n/a" or "red" entry in last 3 days, it must be
+    # marked as "red" in the Usable_Analysis metric
     # (please check the hammerCloud link given as a parameter to see
     # the time range), return False
     slots = hammerCloud.getSiteEntries(siteName).values()
     for slot in slots:
-        if slot.color == dashboard.green: return False
-    return True
+        if slot.color == dashboard.red: return True
+        if slot.color == dashboard.white: return True
+    return False
 
 for i in sites.getSites():
     badSiteFlag = False
