@@ -3,16 +3,16 @@
   <title>AAA Metric Report & Details</title>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
 <script>
+//! report js:
 var report = @report@;
 function getColor(value, th){
-    if(value < th) {
+    if(value <= th) {
         value = 0.0;
     } else {
-        a = 120.0 / (100 - th);
-        b = (120 - a*(100 + th)) /2.0;
-        value = a*value + b;
+        a = 90.0 / (100 - th);
+        b = (90 - a*(100 + th)) /2.0;
+        value = a*value + b + 30;
     }
-    console.log(value);
     var hue = value.toString(10);
     return ["hsl(",hue,",100%,50%)"].join("");
 }
@@ -36,6 +36,9 @@ function insertRow(site, test, th) {
         var cell  = $('<div></div>');
         cell.css('width', width + '%');
         cell.attr('data-info', value);
+        var sampleDate = new Date(1000*(parseInt(timeStamps[i]) + report.timeOffset))
+        var sampleDate = sampleDate.toISOString() + ' (UTC)'
+        cell.attr('data-date', sampleDate)
 
         if(test == 'ggus') {
             if(value.length != 0) cell.css('background', getColor(0, th));
@@ -55,8 +58,9 @@ function insertRow(site, test, th) {
 function displayInfo(event) {
     var infoBox = $('div.aaa-monitoring-info');
     infoBox.show();
-    var info = $(event.target).attr('data-info');
-    infoBox.text(info);
+    var value = $(event.target).attr('data-info');
+    var sampleDate = $(event.target).attr('data-date')
+    infoBox.text(value + ', ' + sampleDate);
     infoBox.css("left", (event.clientX + 16) + "px");
     infoBox.css("top",  (event.clientY + 16) + "px");
 }
@@ -111,9 +115,11 @@ div.aaa-monitoring-info {
   <h2>AAA Report, updated on @date@</h2><hr>
   <h3>Conditions</h3>
   <hr>
-  <pre><b>IF</b> <kbd>(HC rate &lt; 80% <b>AND</b> site is not tier 3)</kbd> <b>OR</b> <kbd>SAM::Access rate &lt; 50</kbd> <b>OR</b> <kbd>site has at least one ticket related to AAA</kbd>:
-    <b>site is bad/red</b>
-  </pre>
+<pre>
+<b>IF</b> <kbd>(HC rate &gt; 80% <b>OR</b> site is tier 3)</kbd> <b>AND</b> <kbd>SAM::Access rate &gt; 50</kbd> <b>AND</b> <kbd>site has no AAA related ticket</kbd>:
+    <b>site is good/green</b>
+<b>ELSE:</b>
+    <b>site is bad/red</b></pre>
 
   <h3>Results</h3>
   <hr> 
