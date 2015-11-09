@@ -28,4 +28,4 @@ wgetOpt="--certificate=${certFile} --private-key=${certFile} --ca-certificate=${
 # parse the xml file and generate output files
 python ggus.py $TMP/xml_input.xml $OUT/ggusticketmeeting.txt $OUT/ggusticketmetrics.txt
 
-cp $OUT/* /afs/cern.ch/user/c/cmst1/www/SST/ggus
+cp $OUT/* /afs/cern.ch/user/c/cmssst/www/ggus

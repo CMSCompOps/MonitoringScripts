@@ -40,7 +40,8 @@ certFile=`/usr/bin/grid-proxy-info -path 2> /dev/null`
 wgetOpt="--certificate=${certFile} --private-key=${certFile} --ca-certificate=${certFile}"
 /usr/bin/wget ${wgetOpt} -O $TMP/ggus.xml $ggusURL
 
+python federations.py $federations $OUT/federations.txt
 python aaa.py $TMP/ggus.xml $samURL $hcURL $federations $TMP/report.json $reportURL $OUT
 python report.py $TMP/report.json $DATA/template.html $OUT/report_2weeks.json $OUT
 
-cp $OUT/* /afs/cern.ch/user/c/cmst1/www/SST/aaa
+cp $OUT/* /afs/cern.ch/user/c/cmssst/www/aaa
