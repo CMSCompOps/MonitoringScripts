@@ -35,8 +35,8 @@ function insertRow(site, test, th) {
         // create cell
         var cell  = $('<div></div>');
         cell.css('width', width + '%');
-        cell.attr('data-info', value);
-        var sampleDate = new Date(1000*(parseInt(timeStamps[i]) + report.timeOffset))
+        cell.attr('data-info', value + '%');
+        var sampleDate = new Date(1000*parseInt(timeStamps[i]))
         var sampleDate = sampleDate.toISOString() + ' (UTC)'
         cell.attr('data-date', sampleDate)
 
@@ -119,7 +119,15 @@ div.aaa-monitoring-info {
 <b>IF</b> <kbd>(HC rate &gt; 80% <b>OR</b> site is tier 3)</kbd> <b>AND</b> <kbd>SAM::Access rate &gt; 50</kbd> <b>AND</b> <kbd>site has no AAA related ticket</kbd>:
     <b>site is good/green</b>
 <b>ELSE:</b>
-    <b>site is bad/red</b></pre>
+    <b>site is bad/red</b>
+</pre>
+
+  <h3>Instructions</h3>
+  <ul>
+  <li><i>SAM and HC rows represent success rates in color scale between red(low) and green(high).</i></li>
+  <li><i>GGUS row shows number of AAA related tickets. If there is no ticket, it is represented as green for the given date.</i></li>
+  <li><i>Time window of the table is <b>2 weeks</b> (please go over one of the rows and see the date and value)</i></li>
+  </ul>
 
   <h3>Results</h3>
   <hr> 
@@ -136,5 +144,5 @@ div.aaa-monitoring-info {
       </tbody>
     </table>
   </div>
-  </body>
+</body>
 </html>
