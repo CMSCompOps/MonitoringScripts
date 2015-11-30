@@ -9,7 +9,7 @@ yellow = 'yellow'
 red    = 'red'
 saddlebrown = 'saddlebrown'
 cyan   = 'cyan'
-grey   = 'grey'
+gray   = 'gray'
 white  = 'white'
 
 def dashboardTime2UnixTime(dashboardTime):
@@ -75,7 +75,12 @@ class metric:
         return ret
 
     def append(self, entry):
+        if entry.name in self.getSites():
+            self.removeBySiteName(entry.name)
         self.__entries.append(entry)
+
+    def removeBySiteName(self, name):
+        self.__entries.remove(self.getSiteEntry(name))
 
     def hasSite(self, siteName):
         for i in self.__entries:
@@ -100,7 +105,7 @@ def parseMetric(data):
     # remove python style comments
     data    = re.sub(re.compile(r'^#.*$', re.MULTILINE), "", data)
     # kudos to jbalcas for the dashboard entry pattern!
-    rows = re.findall(r'([0-9-: ]*)\t(T[0-3][_A-Za-z0-9]*)\t([^\t]*)\t([A-Za-z]*)\t(.*)', data, re.M)
+    rows = re.findall(r'([0-9-: ]*)\t(T[0-3][_A-Za-z0-9]*)\t([A-Za-z\.0-9]*)\t([A-Za-z]*)\t(.*)', data, re.M)
     # create metric object to return the result in this structure
     obj  = metric()
     # append parsed entries to the metric object
