@@ -76,10 +76,10 @@ class metric:
 
     def append(self, entry):
         if entry.name in self.getSites():
-            self.removeBySiteName(entry.name)
+            self.removeSiteEntry(entry.name)
         self.__entries.append(entry)
 
-    def removeBySiteName(self, name):
+    def removeSiteEntry(self, name):
         self.__entries.remove(self.getSiteEntry(name))
 
     def hasSite(self, siteName):
