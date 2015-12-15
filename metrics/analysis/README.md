@@ -1,7 +1,7 @@
 Analysis View Metrics
 ---------------------
 - Responsible: cms-service-crab3htcondor[at]cern.ch, cms-comp-ops-site-support-team[at]cern.ch 
-- Twiki Page: https://twiki.cern.ch/twiki/bin/view/CMSPublic/UsableSitesForAnalysis
+- Twiki Page: https://twiki.cern.ch/twiki/bin/view/CMSPublic/SiteSupportTeamMetricScripts#Usable_Analysis_Metric_For_CRAB3
 - Output (1): https://cmst1.web.cern.ch/CMST1/SST/analysis/usableSites.txt
 - Output (2): https://cmst1.web.cern.ch/CMST1/SST/analysis/usableSites.json
     - CRAB3 will parse this json file to get blocked/on site list
