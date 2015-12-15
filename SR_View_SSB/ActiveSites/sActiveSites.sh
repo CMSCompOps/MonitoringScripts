@@ -55,8 +55,8 @@ ActiveSitesList="
 T2_CH_CERN
 T2_CH_CERN_AI
 T2_CH_CERN_HLT
-T2_CH_CERN_T0
 "
+
 # creating output in the SSB feed format
 echo "* Appended sites that are not included in the python script feeder:"
 timestamp=`date +"%Y-%m-%d %H:%M:%S"`
