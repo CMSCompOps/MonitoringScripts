@@ -25,7 +25,7 @@ $ENV{HTTPS_CA_FILE} = $GSIPROXY;
 $ENV{HTTPS_CERT_FILE} = $GSIPROXY;
 $ENV{HTTPS_KEY_FILE}  = $GSIPROXY;
 
-$ssbdir = "/afs/cern.ch/cms/LCG/SiteComm/";
+$ssbdir = "/afs/cern.ch/user/c/cmssst/www/ssb/storage/";
 $file_pledged_disk = "$ssbdir/pledged_disk.txt";
 $file_pledged_tape = "$ssbdir/pledged_tape.txt";
 
