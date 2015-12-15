@@ -1,6 +1,9 @@
 #!/bin/bash
-location="/afs/cern.ch/user/c/cmst1/scratch0/MonitoringScripts/SR_View_SSB/WRDays/"
-outputdir="/afs/cern.ch/user/c/cmst1/www/SST/"
+location=$(dirname $(readlink -f "${BASH_SOURCE[0]}"))
+outputdir="/afs/cern.ch/user/c/cmssst/www/others/"
+
+source $location/../../init.sh
+
 cd $location
 
 if [ -f scriptRunning.run ];
@@ -9,8 +12,6 @@ then
    # script to send simple email
    # email subject
    SUBJECT="[MonitoringScripts] WRDays running slowly"
-   # Email To ?
-   EMAIL="artiedaj@fnal.gov"
    # Email text/message
    if [ -f emailmessage.txt ];
    then
@@ -21,7 +22,7 @@ then
    echo "run_WaitingRoom_SumMetrics.sh  is running slowly."> $EMAILMESSAGE
    echo $location >>$EMAILMESSAGE
    # send an email using /bin/mail
-   /bin/mail -s "$SUBJECT" "$EMAIL" < $EMAILMESSAGE
+   /bin/mail -s "$SUBJECT" "$SSTMAIL" < $EMAILMESSAGE
 
 else
      echo "bash run_WaitingRoom_SumMetrics.sh started succesfully"

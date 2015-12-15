@@ -1,4 +1,13 @@
 #!/bin/bash
-# Script finds which site should be in morgue and creates 1 file which is morgue.txt
-python /afs/cern.ch/user/c/cmst1/scratch0/MonitoringScripts/SR_View_SSB/morgue/morgue.py &> /afs/cern.ch/user/c/cmst1/scratch0/MonitoringScripts/SR_View_SSB/morgue/morgue.log
-cp /afs/cern.ch/user/c/cmst1/scratch0/MonitoringScripts/SR_View_SSB/morgue/morgue.txt /afs/cern.ch/user/c/cmst1/www/SST/
+
+BASE=$(dirname $(readlink -f "${BASH_SOURCE[0]}"))
+source $BASE/../../init.sh
+OUT="$SSTOUT/metrics/morgue/"
+
+if [ ! -d "$OUT" ]; then
+    mkdir $OUT
+fi
+
+python morgue.py $OUT/morgue.txt &> $OUT/morgue.log
+
+cp $OUT/morgue.txt /afs/cern.ch/user/c/cmssst/www/others/

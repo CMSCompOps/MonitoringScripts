@@ -1,16 +1,11 @@
 #!/bin/bash
-location="/afs/cern.ch/user/c/cmst1/scratch0/MonitoringScripts/SR_View_SSB/WRControl"
-outputdir="/afs/cern.ch/user/c/cmst1/www/WFMon/"
-outputdir2="/afs/cern.ch/user/c/cmst1/www/SST/"
+location=$(dirname $(readlink -f "${BASH_SOURCE[0]}"))
+outputdir="/afs/cern.ch/user/c/cmssst/www/others/"
+outputdir2="/afs/cern.ch/user/c/cmssst/www/others/"
+
+source $location/../../init.sh
 
 cd $location
-
-echo "exporting KEY and CERT"
-
-#fixing access
-export X509_USER_CERT=/data/certs/servicecert.pem
-export X509_USER_KEY=/data/certs/servicekey.pem
-
 
 # Email if things are running slowly
 if [ -f scriptRunning.run ];
@@ -20,7 +15,6 @@ then
    # email subject
    SUBJECT="[MonitoringScripts] WRControl running slowly."
    # Email To ?
-   EMAIL="artiedaj@fnal.gov"
    # Email text/message
    if [ -f emailmessage.txt ];
    then
@@ -31,13 +25,12 @@ then
    echo "run_WaitingRoom_Sites.sh  is running slowly." > $EMAILMESSAGE
    echo $location >> $EMAILMESSAGE
    # send an email using /bin/mail
-   /bin/mail -s "$SUBJECT" "$EMAIL" < $EMAILMESSAGE
+   /bin/mail -s "$SUBJECT" "$SSTMAIL" < $EMAILMESSAGE
 
 else
      echo "bash run_WaitingRoom_Sites.sh started succesfully"
      touch scriptRunning.run
 fi
-
 
 #Run the script
 txt="WaitingRoom_Sites.txt"
