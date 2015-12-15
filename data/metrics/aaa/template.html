@@ -35,7 +35,10 @@ function insertRow(site, test, th) {
         // create cell
         var cell  = $('<div></div>');
         cell.css('width', width + '%');
-        cell.attr('data-info', value + '%');
+        if((test == 'hc' || test == 'sam') && value != 'n/a')
+            cell.attr('data-info', value + '%');
+        else
+            cell.attr('data-info', value);
         var sampleDate = new Date(1000*parseInt(timeStamps[i]))
         var sampleDate = sampleDate.toISOString() + ' (UTC)'
         cell.attr('data-date', sampleDate)
@@ -123,6 +126,7 @@ div.aaa-monitoring-info {
 </pre>
 
   <h3>Instructions</h3>
+  <hr>
   <ul>
   <li><i>SAM and HC rows represent success rates in color scale between red(low) and green(high).</i></li>
   <li><i>GGUS row shows number of AAA related tickets. If there is no ticket, it is represented as green for the given date.</i></li>
