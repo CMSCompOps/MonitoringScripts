@@ -1,9 +1,55 @@
 import urllib2
 import re
 import os
-import os.path
-from lxml import etree
+import HTMLParser
 from datetime import datetime
+
+
+class TableParser(HTMLParser.HTMLParser):
+	def __init__(self, decode_html_entities=False, data_separator=''):
+		HTMLParser.HTMLParser.__init__(self)
+
+		self._parse_html_entities = decode_html_entities
+		self._data_separator = data_separator
+
+		self._in_td = False
+		self._in_th = False
+		self._current_table = []
+		self._current_row = []
+		self._current_cell = []
+		self.tables = []
+
+	def handle_starttag(self, tag, attrs):
+		if tag == 'td':
+			self._in_td = True
+		if tag == 'th':
+			self._in_th = True
+
+	def handle_data(self, data):
+		if self._in_td or self._in_th:
+			self._current_cell.append(data.strip())
+
+	def handle_charref(self, name):
+		""" Handle HTML encoded characters """
+		if self._parse_html_entities:
+			self.handle_data(self.unescape('&#{};'.format(name)))
+
+	def handle_endtag(self, tag):
+		if tag == 'td':
+			self._in_td = False
+		elif tag == 'th':
+			self._in_th = False
+
+		if tag in ['td', 'th']:
+			final_cell = self._data_separator.join(self._current_cell).strip()
+			self._current_row.append(final_cell)
+			self._current_cell = []
+		elif tag == 'tr':
+			self._current_table.append(self._current_row)
+			self._current_row = []
+		elif tag == 'tbody':
+			self.tables.append(self._current_table)
+			self._current_table = []
 
 #get full source code
 url = "https://cmsweb.cern.ch/phedex/prod/Components::Agents?pcolumn=NODE_NAME&pcolumn=FILENAME%3ARELEASE%3AREVISION%3ATAG"
@@ -13,40 +59,38 @@ html = response.read()
 #get table from source code
 table = re.search(r'<tbody>.*</tbody>', html, re.DOTALL)
 table = table.group(0)
-
 site_n_phedex_version = []
 
-#fetch table
-table = etree.XML(table)
-rows = iter(table)
-for row in rows:
-	values = [col.text for col in row]
-	if values[2] is not None:
-		phedex_version_number = map(int, re.findall(r'\d+', values[2]))
+parsed_table = TableParser()
+parsed_table.feed(table)
+parsed_data = parsed_table.tables[0]
+
+for row in parsed_data:
+	if row[2]:
+		phedex_version_number = map(int, re.findall(r'\d+', row[2]))
 		if phedex_version_number >= [4,1,7]:
 			status = "green"
 		elif phedex_version_number < [4,1,5]:
 			status = "red"
 		else:
 			status = "yellow"
+
 		item = {
-				"TimeStamp": datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-				"site": values[0],
-				"Phedex_version": values[2],
-				"color": status,
-				"url": url
-			}
+			"TimeStamp": datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+			"site": row[0],
+			"Phedex_version": row[2],
+			"color": status,
+			"url": url
+		}
 		if item not in site_n_phedex_version:
 			site_n_phedex_version.append(item)
 
 output = "output.txt"
-path = os.path.expanduser("~/www/phedex_version/")
-absolute_path = os.path.join(path, output)
-if os.path.isfile(absolute_path):
-	os.remove(absolute_path)
+if os.path.isfile(output):
+	os.remove(output)
 
 os.path.expanduser("~")
-output = open(absolute_path, "w")
+output = open(output, "w")
 for item in site_n_phedex_version:
 	output.write("%s %s %s %s %s\n" %(
 		item['TimeStamp'], 
