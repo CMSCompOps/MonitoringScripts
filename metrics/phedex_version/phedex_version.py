@@ -89,8 +89,19 @@ output = "output.txt"
 if os.path.isfile(output):
 	os.remove(output)
 
+header = """#txt
+#
+# Site Support Team, Phedex version Metric
+#    written at %s by /data/cmssst/MonitoringScripts/metrics/Phedex_version/run.sh
+#    in account cmssst on node vocms077.cern.ch
+#    maintained by cms-comp-ops-site-support-team@cern.ch
+# =======================================================
+#
+"""%datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
 os.path.expanduser("~")
 output = open(output, "w")
+output.write(header)
 for item in site_n_phedex_version:
 	output.write("%s %s %s %s %s\n" %(
 		item['TimeStamp'], 
