@@ -46,17 +46,28 @@ def hasBadHistory(siteName):
         if slot.color == dashboard.green: return False
     return True
 
-for i in sites.getSites():
+# merge sites that are not in the vo-feed (sites.getSites)
+# --look at the loop, we are getting some sites from the manual changes 
+# metric. reason: some sites are not listed in the sites.getSites
+siteList = sites.getSites()
+for site in usableSitesMC.getSites():
+    if not site in siteList:
+        siteList[site] = {}
+
+for i in siteList:
     badSiteFlag = False
     ## detect bad sites!
     # site has bad hammercloud history
     if sites.getTier(i) == 2 and hasBadHistory(i):
+        print i + " hasBadHistory"
         badSiteFlag = True
     # site is in the morgue
-    elif morgue.hasSite(i) and morgue.getSiteEntry(i).color == dashboard.red:
+    elif morgue.hasSite(i) and morgue.getSiteEntry(i).value == 'Morgue':
+        print i + " is in the Morgue"
         badSiteFlag = True
     # site has been blocked
     elif usableSitesMC.hasSite(i) and usableSitesMC.getSiteEntry(i).color == dashboard.red:
+        print i + " usableSitesMC.getSiteEntry color is red"
         badSiteFlag = True
 
     if badSiteFlag:

@@ -20,7 +20,13 @@ metricURL     = sys.argv[1]
 metric        = dashboard.parseJSONMetric(url.read(metricURL))
 updatedMetric = dashboard.metric()
 
-for i in sites.getSites():
+# merege sites from the vo-feed and manual control meteric.
+siteList     = sites.getSites()
+for site in metric.getSites():
+    if not site in siteList:
+        siteList[site] = {}
+
+for i in siteList:
     # if the site is not in the list add it (this is the
     # case that will be happaned when they create new site
     # in the site db)
@@ -29,5 +35,12 @@ for i in sites.getSites():
     else:
         latestEntry = metric.getLatestEntry(i)
         updatedMetric.append(dashboard.entry(None, i, latestEntry.value, latestEntry.color, metricURL))
+        print latestEntry.value + " " + i
+
+#######################
+blist = ['T2_RU_RRC_KI','T3_BY_NCPHEP','T3_CH_PSI','T3_CN_PKU','T3_ES_Oviedo','T3_IN_PUHEP','T3_IR_IPM','T3_KR_UOS','T3_UK_London_RHUL','T3_UK_London_UCL','T3_UK_ScotGrid_ECDF','T3_US_FNALLPC','T3_US_FNALXEN','T3_US_FSU','T3_US_JHU','T3_US_Kansas','T3_US_MIT','T3_US_NU','T3_US_Princeton','T3_US_Princeton_ICSE','T3_US_Rice', 'T3_BG_UNI_SOFIA']
+for bsite in blist:
+    updatedMetric.append(dashboard.entry(None, bsite, 'blocked', dashboard.red, metricURL))
+#######################
 
 fileOps.write(output, str(updatedMetric))

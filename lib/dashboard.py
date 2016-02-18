@@ -29,7 +29,7 @@ def unixTime2DashboardTime(unixTime):
 
 # dashboard input entry structure
 class entry:
-    def __init__(self, date = None, name = None, value = None, color = None, url = None):
+    def __init__(self, date = None, name = None, value = None, color = None, url = None, nvalue=None):
         self.date = 0
         if date == None:
             self.date = int(time.time())
@@ -40,13 +40,20 @@ class entry:
         self.name  = name.strip()
         self.value = value
         self.color = color.strip()
+        if nvalue is not None:
+		self.nvalue = float(nvalue)
+        else:
+                self.nvalue = None
         if url == None:
             self.url = '#'
         else:
             self.url = url
 
     def __str__(self):
-        return "%s\t%s\t%s\t%s\t%s" % (unixTime2DashboardTime(self.date), self.name, self.value, self.color, self.url)
+        if self.nvalue is None:
+            return "%s\t%s\t%s\t%s\t%s" % (unixTime2DashboardTime(self.date), self.name, self.value, self.color, self.url)
+        else:
+            return "%s\t%s\t%s\t%s\t%s\tnvalue=%s" % (unixTime2DashboardTime(self.date), self.name, self.value, self.color, self.url, self.nvalue)
 
 # dashboard input metric class
 class metric:
