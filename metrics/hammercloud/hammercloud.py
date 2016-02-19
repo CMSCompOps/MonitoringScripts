@@ -84,10 +84,10 @@ def  main():
                 if (siteTerminated - siteCancelled - siteUnk) > 0:
                     siteScore = (float(siteSuccesful - siteUnsuccesful) / float(siteTerminated - siteCancelled - siteUnk)) * 100.0
                     siteColor = "cNotOk"
-                    if sites.getTier(site) == 2 and siteScore > 79.9:
+                    if (sites.getTier(site) == 2 or sites.getTier(site) == 3) and siteScore > 79.9:
                         siteColor = "cOk"
                     if sites.getTier(site) == 1 and siteScore > 89.9:
-                        siteColor = "cOk'"
+                        siteColor = "cOk"
                     print site + " (" + str(siteSuccesful) + " - " + str(siteUnsuccesful) + ")/(" +str(siteTerminated)+" - "+str(siteCancelled)+" - "+str(siteUnk)+") =" + str(siteScore)
                 elif siteTerminated > 0 or siteCancelled > 0 or siteUnk > 0 or siteUnsuccesful > 0 or siteSuccesful >0:
                     siteScore = "Error"
