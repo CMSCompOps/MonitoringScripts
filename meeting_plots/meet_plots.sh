@@ -230,7 +230,7 @@ if [ $? -ne 0 ]; then
    /bin/sleep 3
    /bin/rm -f ${TMP_FILE} 1>/dev/null 2>&1
    echo "failed to get site readiness report web page as png" >> ${ERR_FILE}
-   /usr/bin/xvfb-run --server-args="-screen 0, 1600x1200x24" /usr/bin/CutyCapt --url=http://cms-site-readiness.web.cern.ch/cms-site-readiness/SiteReadiness/HTML/SiteReadinessReport.html --out=${TMP_FILE} 1> ${ERR_FILE} 2>&1
+   /usr/bin/xvfb-run --server-args="-screen 0, 1600x1200x24" /usr/bin/CutyCapt --url=http://cmssst.web.cern.ch/cmssst/sreadiness/SiteReadiness/HTML/SiteReadinessReport.html --out=${TMP_FILE} 1> ${ERR_FILE} 2>&1
    RCX=$?
    if [ ${RCX} -ne 0 ]; then
       echo "CutyCapt retry failed too, rc=${RCX}" >> ${ERR_FILE}
@@ -335,24 +335,30 @@ fi
 # get T1 Site Readiness ranking:
 # ------------------------------
 if [ ! -f ${PLOT_DIR}/t1readyrank.png ]; then
-   /usr/bin/wget -O ${PLOT_DIR}/t1readyrank.png 'https://cms-site-readiness.web.cern.ch/cms-site-readiness/SiteReadiness/PLOTS/T1_R+Wcorr_perc_last15days.png'
+   ${HOME}/bin/phantomjs/phantomjs ${HOME}/bin/phantomjs/screenshot.js 'http://dashb-ssb.cern.ch/dashboard/request.py/sitereadinessrank?columnid=234#time=336&start_date=&end_date=&sites=T0/1&timebins=false&nodata=false&binsselect=default&clouds=all' ${TMP_FILE}
    if [ $? -ne 0 ]; then
       /bin/sleep 3
-      /bin/rm -f ${PLOT_DIR}/t1readyrank.png 1>/dev/null 2>&1
-      echo "failed to get tier-1 readiness ranking plot" >> ${ERR_FILE}
-      /usr/bin/wget -O ${PLOT_DIR}/t1readyrank.png 'https://cms-site-readiness.web.cern.ch/cms-site-readiness/SiteReadiness/PLOTS/T1_R+Wcorr_perc_last15days.png' 1> ${ERR_FILE} 2>&1
+      /bin/rm -f ${TMP_FILE} 1>/dev/null 2>&1
+      echo "failed to get Tier-1 ranking web page as png" >> ${ERR_FILE}
+      ${HOME}/bin/phantomjs/phantomjs ${HOME}/bin/phantomjs/screenshot.js 'http://dashb-ssb.cern.ch/dashboard/request.py/sitereadinessrank?columnid=234#time=336&start_date=&end_date=&sites=T0/1&timebins=false&nodata=false&binsselect=default&clouds=all' ${TMP_FILE} 1> ${ERR_FILE} 2>&1
       RCX=$?
       if [ ${RCX} -ne 0 ]; then
-         echo "wget retry failed too, rc=${RCX}" >> ${ERR_FILE}
+         echo "phantomjs retry failed too, rc=${RCX}" >> ${ERR_FILE}
          echo "" >> ${ERR_FILE}
          if [ ${RC} -eq 0 ]; then
             RC=${RCX}
          fi
-         /bin/rm -f ${PLOT_DIR}/t1readyrank.png 1>/dev/null 2>&1
+         /bin/rm -f ${TMP_FILE} 1>/dev/null 2>&1
       else
          echo "succeeded on second attempt" >> ${ERR_FILE}
          echo "" >> ${ERR_FILE}
       fi
+   fi
+   #
+   # and cut out graphic:
+   if [ -f ${TMP_FILE} ]; then
+      /usr/bin/convert -crop 780x534+12+414 ${TMP_FILE} ${PLOT_DIR}/t1readyrank.png
+      /bin/rm ${TMP_FILE}
    fi
 else
    echo "t1readyrank.png exists, skipping"
@@ -361,24 +367,30 @@ fi
 # get T2 Site Readiness ranking:
 # ------------------------------
 if [ ! -f ${PLOT_DIR}/t2readyrank.png ]; then
-   /usr/bin/wget -O ${PLOT_DIR}/t2readyrank.png 'https://cms-site-readiness.web.cern.ch/cms-site-readiness/SiteReadiness/PLOTS/T2_R+Wcorr_perc_last15days.png'
+   ${HOME}/bin/phantomjs/phantomjs ${HOME}/bin/phantomjs/screenshot.js 'http://dashb-ssb.cern.ch/dashboard/request.py/sitereadinessrank?columnid=234#time=336&start_date=&end_date=&sites=T2&timebins=false&nodata=false&binsselect=default&clouds=all' ${TMP_FILE}
    if [ $? -ne 0 ]; then
       /bin/sleep 3
-      /bin/rm -f ${PLOT_DIR}/t2readyrank.png 1>/dev/null 2>&1
-      echo "failed to get tier-2 readiness ranking plot" >> ${ERR_FILE}
-      /usr/bin/wget -O ${PLOT_DIR}/t2readyrank.png 'https://cms-site-readiness.web.cern.ch/cms-site-readiness/SiteReadiness/PLOTS/T2_R+Wcorr_perc_last15days.png' 1> ${ERR_FILE} 2>&1
+      /bin/rm -f ${TMP_FILE} 1>/dev/null 2>&1
+      echo "failed to get Tier-2 ranking web page as png" >> ${ERR_FILE}
+      ${HOME}/bin/phantomjs/phantomjs ${HOME}/bin/phantomjs/screenshot.js 'http://dashb-ssb.cern.ch/dashboard/request.py/sitereadinessrank?columnid=234#time=336&start_date=&end_date=&sites=T2&timebins=false&nodata=false&binsselect=default&clouds=all' ${TMP_FILE}
       RCX=$?
       if [ ${RCX} -ne 0 ]; then
-         echo "wget retry failed too, rc=${RCX}" >> ${ERR_FILE}
+         echo "phantomjs retry failed too, rc=${RCX}" >> ${ERR_FILE}
          echo "" >> ${ERR_FILE}
          if [ ${RC} -eq 0 ]; then
             RC=${RCX}
          fi
-         /bin/rm -f ${PLOT_DIR}/t2readyrank.png 1>/dev/null 2>&1
+         /bin/rm -f ${TMP_FILE} 1>/dev/null 2>&1
       else
          echo "succeeded on second attempt" >> ${ERR_FILE}
          echo "" >> ${ERR_FILE}
       fi
+   fi
+   #
+   # and cut out graphic:
+   if [ -f ${TMP_FILE} ]; then
+      /usr/bin/convert -crop 816x1182+12+414 ${TMP_FILE} ${PLOT_DIR}/t2readyrank.png
+      /bin/rm ${TMP_FILE}
    fi
 else
    echo "t2readyrank.png exists, skipping"
