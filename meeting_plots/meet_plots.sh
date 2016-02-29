@@ -335,12 +335,12 @@ fi
 # get T1 Site Readiness ranking:
 # ------------------------------
 if [ ! -f ${PLOT_DIR}/t1readyrank.png ]; then
-   ${HOME}/bin/phantomjs/phantomjs ${HOME}/bin/phantomjs/screenshot.js 'http://dashb-ssb.cern.ch/dashboard/request.py/sitereadinessrank?columnid=234#time=336&start_date=&end_date=&sites=T0/1&timebins=false&nodata=false&binsselect=default&clouds=all' ${TMP_FILE}
+   ${HOME}/bin/phantomjs/phantomjs ${HOME}/bin/phantomjs/screenshot.js 'http://dashb-ssb.cern.ch/dashboard/request.py/sitereadinessrank?columnid=234#time=168&start_date=&end_date=&sites=T0/1&timebins=false&nodata=false&binsselect=default&clouds=all' ${TMP_FILE}
    if [ $? -ne 0 ]; then
       /bin/sleep 3
       /bin/rm -f ${TMP_FILE} 1>/dev/null 2>&1
       echo "failed to get Tier-1 ranking web page as png" >> ${ERR_FILE}
-      ${HOME}/bin/phantomjs/phantomjs ${HOME}/bin/phantomjs/screenshot.js 'http://dashb-ssb.cern.ch/dashboard/request.py/sitereadinessrank?columnid=234#time=336&start_date=&end_date=&sites=T0/1&timebins=false&nodata=false&binsselect=default&clouds=all' ${TMP_FILE} 1> ${ERR_FILE} 2>&1
+      ${HOME}/bin/phantomjs/phantomjs ${HOME}/bin/phantomjs/screenshot.js 'http://dashb-ssb.cern.ch/dashboard/request.py/sitereadinessrank?columnid=234#time=168&start_date=&end_date=&sites=T0/1&timebins=false&nodata=false&binsselect=default&clouds=all' ${TMP_FILE} 1> ${ERR_FILE} 2>&1
       RCX=$?
       if [ ${RCX} -ne 0 ]; then
          echo "phantomjs retry failed too, rc=${RCX}" >> ${ERR_FILE}
@@ -367,12 +367,12 @@ fi
 # get T2 Site Readiness ranking:
 # ------------------------------
 if [ ! -f ${PLOT_DIR}/t2readyrank.png ]; then
-   ${HOME}/bin/phantomjs/phantomjs ${HOME}/bin/phantomjs/screenshot.js 'http://dashb-ssb.cern.ch/dashboard/request.py/sitereadinessrank?columnid=234#time=336&start_date=&end_date=&sites=T2&timebins=false&nodata=false&binsselect=default&clouds=all' ${TMP_FILE}
+   ${HOME}/bin/phantomjs/phantomjs ${HOME}/bin/phantomjs/screenshot.js 'http://dashb-ssb.cern.ch/dashboard/request.py/sitereadinessrank?columnid=234#time=168&start_date=&end_date=&sites=T2&timebins=false&nodata=false&binsselect=default&clouds=all' ${TMP_FILE}
    if [ $? -ne 0 ]; then
       /bin/sleep 3
       /bin/rm -f ${TMP_FILE} 1>/dev/null 2>&1
       echo "failed to get Tier-2 ranking web page as png" >> ${ERR_FILE}
-      ${HOME}/bin/phantomjs/phantomjs ${HOME}/bin/phantomjs/screenshot.js 'http://dashb-ssb.cern.ch/dashboard/request.py/sitereadinessrank?columnid=234#time=336&start_date=&end_date=&sites=T2&timebins=false&nodata=false&binsselect=default&clouds=all' ${TMP_FILE}
+      ${HOME}/bin/phantomjs/phantomjs ${HOME}/bin/phantomjs/screenshot.js 'http://dashb-ssb.cern.ch/dashboard/request.py/sitereadinessrank?columnid=234#time=168&start_date=&end_date=&sites=T2&timebins=false&nodata=false&binsselect=default&clouds=all' ${TMP_FILE}
       RCX=$?
       if [ ${RCX} -ne 0 ]; then
          echo "phantomjs retry failed too, rc=${RCX}" >> ${ERR_FILE}
