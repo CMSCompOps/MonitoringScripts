@@ -100,7 +100,7 @@ foreach my $cms ( sort @sites ) {
 	$colour = 'green';
 	if ( $t == 0 or $t == 1 ) {
 	    $colour = 'red' if ( $sr < 90 );
-	} elsif ( $t == 2 ) {
+	} elsif ( $t == 2 or $t == 3 ) {
 	    $colour = 'red' if ( $sr < 80 );
 	}
 	printf $fh "%s\t%s\t%.1f\t%s\t%s\n", $timestamp, $cms, $sr,
