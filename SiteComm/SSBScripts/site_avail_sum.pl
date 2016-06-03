@@ -7,6 +7,7 @@
 #
 
 eval "use JSON; 1" or eval "use JSON::XS; 1" or die;
+use Net::SSL;
 use LWP::UserAgent;
 use File::Temp("tempfile");
 
@@ -21,6 +22,8 @@ $ENV{HTTPS_KEY_FILE}  = $GSIPROXY;
 
 #Get JSON file from SiteDB
 my $url = "https://cmsweb.cern.ch/sitedb/data/prod/site-names";
+#problem with sertificate, so I added new url
+#my $url = "https://cmssst.web.cern.ch/cmssst/siteDbInfo/site_names.json";
 # Set header to select output format
 $header = HTTP::Headers->new(
 			     Accept => 'application/json');
@@ -31,6 +34,7 @@ $ua->default_headers($header);
 my $response = $ua->get($url) or die "Cannot retrieve JSON\n";
 
 # Parse JSON
+print $response->decoded_content;
 my $ref = decode_json($response->decoded_content);
 my @sites;
 foreach my $item (@{$ref->{'result'}}) {

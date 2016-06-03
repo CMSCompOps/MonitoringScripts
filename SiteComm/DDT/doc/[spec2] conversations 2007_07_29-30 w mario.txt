@@ -1,0 +1,39 @@
+hetkel Briani script vist võtab viimase 7 päeva seisu ja selle järgi
+ütleb linkide staatused. kui sa aga meetrikat loed, siis need lingid 
+mis commissioned staatusse jõuavad langevad sellest välja vaid siis
+kui on 7 päeva järjest alla 300GB saatnud
+
+ehk siis hetke olukorra järgi nad ei pruugi olla commissioned tingimustele
+vastavad, samas vanast staatusest tulenevalt nad endiselt on 
+
+ehk siis kuidagi peab pidama ajalugu, et mis oli lingi eelmine staatus...
+seega veits komplitseerib olukorda 
+
+
+hetke commissioned jne lingid saad siit: 
+https://twiki.cern.ch/twiki/bin/view/CMS/DDTCommissionedList 
+
+
+
+* * *
+
+
+
+tabeli lahtris olevate päevaste transferred data numbrite eristus värvidega:
+seal võiks olla <300, 300-500 ja 500+ 
+vajadusel CSS kaudu eristatavad 
+
+
+
+* * *
+
+
+
+kiire feature request veel. Saad sa lisada lahtritesse lingid, et kui
+klikkida näiteks From: ##, ##, ## ... real, siis viskab analoogsele lehele:
+
+https://cmsdoc.cern.ch:8443/cms/test/aprom/phedex/prod/Activity::RatePlots?graph=quantity&entity=link&src_filter=T1_PIC_Disk&dest_filter=T2_Estonia_Buffer&no_mss=true&period=l7d&upto=&.submit=Update
+
+lingis peaks olema suht lihtsalt muudetav src_filter ja dest_filter
+see näitab ilusti viimase 7 päeva trafficut graafikuna PhEDEx-s. Hea
+oleks kui avaks eraldi aknas

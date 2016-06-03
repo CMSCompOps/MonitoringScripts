@@ -1,0 +1,25 @@
+
+dependencies:
+=============
+
+python (version used for development: 2.5.1)
+
+python libs:
+	CherryPy (version used for development: 3.0.0)
+	Cheetah (version used for development: 2.0rc8)
+	SQLObject (version used for development: 0.10dev_r2829-py2.5)
+	MySQLdb (version used for development: 1.2.2 for python 2.5)
+
+other:
+	MySQL (version used for development: 5.0.41 win32)
+
+installation
+============
+
+1) install the dependencies
+2) check out the file [app_root]/configuration.ini
+	*) set the database parameters
+3) run [app_root]/init_schema_and_states.sql against the same mysql database you specified in configuration.ini
+4) in production environment you will want to check [app_root]/logging.conf and turn logging level to at most "info" to
+	not spoil the server log and slow the app down. (from level "info", the logging is really minimalistic)
+5) run start.py

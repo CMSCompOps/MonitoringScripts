@@ -7,6 +7,7 @@
 #
 
 eval "use JSON; 1" or eval "use JSON::XS; 1" or die;
+use Net::SSL;
 use LWP::UserAgent;
 use XML::Parser;
 use File::Temp("tempfile");
@@ -32,6 +33,7 @@ $ENV{HTTPS_KEY_FILE}  = $GSIPROXY;
 
 # Get JSON file from SiteDB
 my $url = "https://cmsweb.cern.ch/sitedb/data/prod/site-names";
+#my $url = "http://cmssst.web.cern.ch/cmssst/siteDbInfo/site_names.json";
 
 # Set header to select output format
 $header = HTTP::Headers->new(
