@@ -10,7 +10,7 @@ import ssl
 site_db_url = 'cmsweb.cern.ch'
 sites_admins_api = '/sitedb/data/prod/site-responsibilities'
 site_names_api = '/sitedb/data/prod/site-names'
-gitlab_token = "*************"
+gitlab_token = "****************"
 admin_roles = ['Site Executive', 'Site Admin', 'Admin']
 group_url = 'https://gitlab.cern.ch/api/v3/groups/4099/projects?per_page=100&page=%s&private_token=%s'
 user_url = 'https://gitlab.cern.ch/api/v3/users?username=%s&private_token=%s'
@@ -52,20 +52,20 @@ site_admins = [admin for admin in site_admins['result'] if admin[2] in admin_rol
 site_names = parse_data(site_db_url, site_names_api)
 site_names = site_names['result']
 
+admins = []
 for admin in site_admins:
 	gitlab_acc = parse_data(user_url %(admin[0], gitlab_token))
 	if gitlab_acc:
+		admin.append(str(gitlab_acc[0]["id"]))
 		for site in site_names:
 			if admin[1] == site[1]: admin[1] = site[2]
-	else:
-		site_admins.remove(admin)
+		admins.append(admin)
 
 group_projects = parse_data(group_url %('1', gitlab_token)) + parse_data(group_url %('2',gitlab_token))
 for project in group_projects:
 	project_members = parse_data(project_members_url %(project['id'], gitlab_token))
 	project_members = [member['username'] for member in project_members]
-	for admin in site_admins:
-		if project['name'] == admin[1] and admin[2] in admin_roles and admin[0] not in project_members:
-			print user
+	for admin in admins:
+		if project['name'] == admin[1] and admin[0] not in project_members:
 			subprocess.call('curl --header "PRIVATE-TOKEN: %s" -X POST "https://gitlab.cern.ch/api/v3/projects/%s/members?user_id=%s&access_level=30"' 
-				%(gitlab_token, project['id'], str(user[0]["id"])), shell=True)
+				%(gitlab_token, project['id'], admin[3]), shell=True)
