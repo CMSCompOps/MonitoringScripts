@@ -1,7 +1,7 @@
 # conditions to mark a site as 'bad'
 #- AAA-related ticket open for longer than two weeks
 #- SAM access test < 50% for two weeks
-#- HammerCloud[1] test success rete < 80% for two weeks
+#- HammerCloud[1] test success rete < 70% for two weeks
 
 import sys, time, urllib
 from lib import fileOps, url, dashboard, sites
@@ -117,7 +117,7 @@ for site in siteList:
         if samAccess[site] == 'n/a': val = samAccess[site]
         else: val = round(samAccess[site], 2)
         errMsg = errMsg + '_SAM(%s)' % val
-    if (hammerCloud[site] < 80.0 or hammerCloud[site] == 'n/a') and sites.getTier(site) != 3:
+    if (hammerCloud[site] < 70.0 or hammerCloud[site] == 'n/a') and sites.getTier(site) != 3:
         badSiteFlag = badSiteFlag | True
         if hammerCloud[site] == 'n/a': val = hammerCloud[site]
         else: val = round(hammerCloud[site], 2)

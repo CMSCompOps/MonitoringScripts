@@ -82,7 +82,7 @@ function main() {
         table.show();
         $('#content').append(table);
         insertRow(site, 'sam', 50);
-        insertRow(site, 'hc', 80);
+        insertRow(site, 'hc', 70);
         insertRow(site, 'ggus', 0);
     }
     $("td > div").mousemove(displayInfo);
@@ -119,7 +119,7 @@ div.aaa-monitoring-info {
   <h3>Conditions</h3>
   <hr>
 <pre>
-<b>IF</b> <kbd>(HC rate &gt; 80% <b>OR</b> site is tier 3)</kbd> <b>AND</b> <kbd>SAM::Access rate &gt; 50</kbd> <b>AND</b> <kbd>site has no AAA related ticket</kbd>:
+<b>IF</b> <kbd>(HC rate &gt; 70% <b>OR</b> site is tier 3)</kbd> <b>AND</b> <kbd>SAM::Access rate &gt; 50</kbd> <b>AND</b> <kbd>site has no AAA related ticket</kbd>:
     <b>site is good/green</b>
 <b>ELSE:</b>
     <b>site is bad/red</b>
