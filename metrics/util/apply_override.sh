@@ -126,13 +126,13 @@ if [ ! -f ${DASHB_FILE} -o ${PRIMAL_FILE} -nt ${DASHB_FILE} \
    echo "#txt" 1>> ${DASHB_FILE}_new
    echo "#" 1>> ${DASHB_FILE}_new
    echo "# Site Support Team, Life Status Metric" 1>> ${DASHB_FILE}_new
-   echo "#    written at `/bin/date '+%Y-%b-%d %H:%M:%S'` by $0" 1>> ${DASHB_FILE}_new
+   echo "#    written at `/bin/date -u '+%Y-%b-%d %H:%M:%S UTC'` by $0" 1>> ${DASHB_FILE}_new
    echo "#    in account `/usr/bin/whoami` on node `/bin/hostname`" 1>> ${DASHB_FILE}_new
    echo "#    maintained by cms-comp-ops-site-support-team@cern.ch" 1>> ${DASHB_FILE}_new
    echo "#    https://twiki.cern.ch/twiki/bin/view/CMS/SiteSupportSiteStatusSiteReadiness" 1>> ${DASHB_FILE}_new
    echo "# =======================================================" 1>> ${DASHB_FILE}_new
    echo "#" 1>> ${DASHB_FILE}_new
-   TODAY=`/bin/date '+%Y-%m-%d %H:%M:%S'`
+   TODAY=`/bin/date -u '+%Y-%m-%d %H:%M:%S'`
    URL_M='https://twiki.cern.ch/twiki/bin/view/CMSPublic/ManualOverride'
    URL_P='https://twiki.cern.ch/twiki/bin/view/CMS/SiteSupportSiteStatusSiteReadiness'
 
@@ -209,7 +209,7 @@ if [ ! -f ${DASHB_FILE} -o ${PRIMAL_FILE} -nt ${DASHB_FILE} \
    echo "#txt" 1>> ${DASHB_FILE}_new
    echo "#" 1>> ${DASHB_FILE}_new
    echo "# Site Support Team, Active Tier-2s Metric" 1>> ${DASHB_FILE}_new
-   echo "#    written at `/bin/date '+%Y-%b-%d %H:%M:%S'` by $0" 1>> ${DASHB_FILE}_new
+   echo "#    written at `/bin/date -u '+%Y-%b-%d %H:%M:%S UTC'` by $0" 1>> ${DASHB_FILE}_new
    echo "#    in account `/usr/bin/whoami` on node `/bin/hostname`" 1>> ${DASHB_FILE}_new
    echo "#    maintained by cms-comp-ops-site-support-team@cern.ch" 1>> ${DASHB_FILE}_new
    echo "#    https://twiki.cern.ch/twiki/bin/view/CMS/SiteSupportSiteStatusSiteReadiness" 1>> ${DASHB_FILE}_new
@@ -242,7 +242,7 @@ if [ ! -f ${DASHB_FILE} -o ${PRIMAL_FILE} -nt ${DASHB_FILE} \
    echo "#txt" 1>> ${DASHB_FILE}_new
    echo "#" 1>> ${DASHB_FILE}_new
    echo "# Site Support Team, Waiting Room Metric" 1>> ${DASHB_FILE}_new
-   echo "#    written at `/bin/date '+%Y-%b-%d %H:%M:%S'` by $0" 1>> ${DASHB_FILE}_new
+   echo "#    written at `/bin/date -u '+%Y-%b-%d %H:%M:%S UTC'` by $0" 1>> ${DASHB_FILE}_new
    echo "#    in account `/usr/bin/whoami` on node `/bin/hostname`" 1>> ${DASHB_FILE}_new
    echo "#    maintained by cms-comp-ops-site-support-team@cern.ch" 1>> ${DASHB_FILE}_new
    echo "#    https://twiki.cern.ch/twiki/bin/view/CMS/SiteSupportSiteStatusSiteReadiness" 1>> ${DASHB_FILE}_new
@@ -280,7 +280,7 @@ if [ ! -f ${DASHB_FILE} -o ${PRIMAL_FILE} -nt ${DASHB_FILE} \
    echo "#txt" 1>> ${DASHB_FILE}_new
    echo "#" 1>> ${DASHB_FILE}_new
    echo "# Site Support Team, Morgue Metric" 1>> ${DASHB_FILE}_new
-   echo "#    written at `/bin/date '+%Y-%b-%d %H:%M:%S'` by $0" 1>> ${DASHB_FILE}_new
+   echo "#    written at `/bin/date -u '+%Y-%b-%d %H:%M:%S UTC'` by $0" 1>> ${DASHB_FILE}_new
    echo "#    in account `/usr/bin/whoami` on node `/bin/hostname`" 1>> ${DASHB_FILE}_new
    echo "#    maintained by cms-comp-ops-site-support-team@cern.ch" 1>> ${DASHB_FILE}_new
    echo "#    https://twiki.cern.ch/twiki/bin/view/CMS/SiteSupportSiteStatusSiteReadiness" 1>> ${DASHB_FILE}_new
@@ -334,13 +334,13 @@ if [ ! -f ${DASHB_FILE} -o ${PRIMAL_FILE} -nt ${DASHB_FILE} \
    echo "#txt" 1>> ${DASHB_FILE}_new
    echo "#" 1>> ${DASHB_FILE}_new
    echo "# Site Support Team, Prod Status Metric" 1>> ${DASHB_FILE}_new
-   echo "#    written at `/bin/date '+%Y-%b-%d %H:%M:%S'` by $0" 1>> ${DASHB_FILE}_new
+   echo "#    written at `/bin/date -u '+%Y-%b-%d %H:%M:%S UTC'` by $0" 1>> ${DASHB_FILE}_new
    echo "#    in account `/usr/bin/whoami` on node `/bin/hostname`" 1>> ${DASHB_FILE}_new
    echo "#    maintained by cms-comp-ops-site-support-team@cern.ch" 1>> ${DASHB_FILE}_new
    echo "#    https://twiki.cern.ch/twiki/bin/view/CMS/SiteSupportSiteStatusSiteReadiness" 1>> ${DASHB_FILE}_new
    echo "# =======================================================" 1>> ${DASHB_FILE}_new
    echo "#" 1>> ${DASHB_FILE}_new
-   TODAY=`/bin/date '+%Y-%m-%d %H:%M:%S'`
+   TODAY=`/bin/date -u '+%Y-%m-%d %H:%M:%S'`
    URL_M='https://twiki.cern.ch/twiki/bin/view/CMSPublic/ManualOverride'
    URL_P='https://twiki.cern.ch/twiki/bin/view/CMS/SiteSupportSiteStatusSiteReadiness'
 
@@ -436,13 +436,13 @@ if [ ! -f ${DASHB_FILE} -o ${PRIMAL_FILE} -nt ${DASHB_FILE} \
    echo "#txt" 1>> ${DASHB_FILE}_new
    echo "#" 1>> ${DASHB_FILE}_new
    echo "# Site Support Team, Crab Status Metric" 1>> ${DASHB_FILE}_new
-   echo "#    written at `/bin/date '+%Y-%b-%d %H:%M:%S'` by $0" 1>> ${DASHB_FILE}_new
+   echo "#    written at `/bin/date -u '+%Y-%b-%d %H:%M:%S UTC'` by $0" 1>> ${DASHB_FILE}_new
    echo "#    in account `/usr/bin/whoami` on node `/bin/hostname`" 1>> ${DASHB_FILE}_new
    echo "#    maintained by cms-comp-ops-site-support-team@cern.ch" 1>> ${DASHB_FILE}_new
    echo "#    https://twiki.cern.ch/twiki/bin/view/CMS/SiteSupportSiteStatusSiteReadiness" 1>> ${DASHB_FILE}_new
    echo "# =======================================================" 1>> ${DASHB_FILE}_new
    echo "#" 1>> ${DASHB_FILE}_new
-   TODAY=`/bin/date '+%Y-%m-%d %H:%M:%S'`
+   TODAY=`/bin/date -u '+%Y-%m-%d %H:%M:%S'`
    URL_M='https://twiki.cern.ch/twiki/bin/view/CMSPublic/ManualOverride'
    URL_P='https://twiki.cern.ch/twiki/bin/view/CMS/SiteSupportSiteStatusSiteReadiness'
 

@@ -133,13 +133,13 @@ WGET_OPT="--certificate=${CRT_FILE} --private-key=${CRT_FILE} --ca-certificate=$
 echo "#txt" 1>> ${DASHB_FILE}_new
 echo "#" 1>> ${DASHB_FILE}_new
 echo "# Site Support Team, Space Monitoring Metric" 1>> ${DASHB_FILE}_new
-echo "#    written at `/bin/date '+%Y-%b-%d %H:%M:%S'` by $0" 1>> ${DASHB_FILE}_new
+echo "#    written at `/bin/date -u '+%Y-%b-%d %H:%M:%S UTC'` by $0" 1>> ${DASHB_FILE}_new
 echo "#    in account `/usr/bin/whoami` on node `/bin/hostname`" 1>> ${DASHB_FILE}_new
 echo "#    maintained by cms-comp-ops-site-support-team@cern.ch" 1>> ${DASHB_FILE}_new
 echo "#    https://twiki.cern.ch/twiki/bin/view/CMSPublic/CompProjSpaceMon" 1>> ${DASHB_FILE}_new
 echo "# =======================================================" 1>> ${DASHB_FILE}_new
 echo "#" 1>> ${DASHB_FILE}_new
-TODAY=`/bin/date '+%Y-%m-%d %H:%M:%S'`
+TODAY=`/bin/date -u '+%Y-%m-%d %H:%M:%S'`
 NOW75=`/bin/date '+%s + 4500' | /usr/bin/bc`
 #echo "Using timestamp ${NOW75} for past-future boundary"
 #
