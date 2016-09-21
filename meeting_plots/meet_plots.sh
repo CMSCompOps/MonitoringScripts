@@ -255,7 +255,7 @@ if [ -f ${TMP_FILE} ]; then
       /usr/bin/convert -crop 1954x812+8+5244 ${TMP_FILE} ${PLOT_DIR}/jinr.png
       /usr/bin/convert -crop 1954x812+8+6532 ${TMP_FILE} ${PLOT_DIR}/ral.png
       /usr/bin/convert -crop 1954x812+8+7820 ${TMP_FILE} ${PLOT_DIR}/fnal.png
-      /usr/bin/convert -crop 1362x432+104+13662 ${TMP_FILE} ${PLOT_DIR}/cern.png
+      /usr/bin/convert -crop 1362x432+279+13662 ${TMP_FILE} ${PLOT_DIR}/cern.png
    else
       echo "kit/pic/ccin2p3/cnaf/jinr/ral/fnal/cern.png exist, skipping"
    fi
