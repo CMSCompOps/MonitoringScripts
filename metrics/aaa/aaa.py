@@ -21,16 +21,30 @@ samAccessURL = sys.argv[2]
 samAccess    = {}
 hcURL        = sys.argv[3]
 hammerCloud  = {}
-federations  = json.loads(url.read(sys.argv[4]))
-reportFile   = sys.argv[5]
-reportURL    = sys.argv[6]
-output       = sys.argv[7]
+downTimesURL = sys.argv[4]
+downTimes    = dashboard.parseJSONMetric(url.read(downTimesURL))
+siteDownTimes = {}
+federations  = json.loads(url.read(sys.argv[5]))
+reportFile   = sys.argv[6]
+reportURL    = sys.argv[7]
+output       = sys.argv[8]
 report       = {}
+
+def check_federation_history(site_name):
+    federationHistoryURL="http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=233&time=336&dateFrom=&dateTo=&site=T0_CH_CERN&sites=all&clouds=all&batch=1"
+    federationHistory=dashboard.parseJSONMetric(url.read(federationHistoryURL))
+    for entry in federationHistory.getSiteEntries(site_name).values():
+        if entry.value == "prod" or entry.value == "trans":
+            return entry.value
+              
+        
 
 for site in siteList:
     samAccess[site] = 'n/a'
     hammerCloud[site] = 'n/a'
     ggus[site] = []
+    siteDownTimes[site] = str(downTimes.getLatestEntry(site).color)
+    print site + " " + siteDownTimes[site]
 
 ## parse ggus xml file
 for ticket in ET.fromstring(ggusXMLFile).findall('ticket'):
@@ -110,6 +124,8 @@ transitional = dashboard.metric()
 for site in siteList:
     badSiteFlag = False
     errMsg      = 'bad'
+    siteDownTimeFlag = False
+    downTimeColors = ['grey', 'yellow', 'saddlebrown']
 
     # conditions to mark a site as bad
     if samAccess[site] < 50.0 or samAccess[site] == 'n/a':
@@ -125,14 +141,28 @@ for site in siteList:
     if site in ggus.keys() and len(ggus[site]):
         badSiteFlag = badSiteFlag | True
         errMsg = errMsg + '_GGUS(%s)' % str(ggus[site])
-
+    if siteDownTimes[site] in downTimeColors:
+        siteDownTimeFlag = True
     if badSiteFlag:
         entry = dashboard.entry(None, site, errMsg, dashboard.red, reportURL % site)
+        if siteDownTimeFlag:
+            entry = dashboard.entry(None, site, 'site is on downtime', siteDownTimes[site], reportURL % site)
     else:
         entry = dashboard.entry(None, site, 'on', dashboard.green, reportURL % site)
 
     if site in federations["prod"]: production.append(entry)
     elif site in federations["trans"]: transitional.append(entry)
+    else:
+        historic_federation = check_federation_history(site)
+        if historic_federation == "trans" and siteDownTimeFlag == False:
+            transitional.append(dashboard.entry(None, site, 'site lost subscription to transitional federation', 'blue', reportURL % site))
+        elif historic_federation == "trans" and siteDownTimeFlag == True:
+            transitional.append(dashboard.entry(None, site, 'site is on downtime', siteDownTimes[site], reportURL % site))
+        elif historic_federation == "prod" and siteDownTimeFlag == False:
+            production.append(dashboard.entry(None, site, 'site lost subscription to prod federation', 'blue', reportURL % site))
+        elif historic_federation == "prod" and siteDownTimeFlag == True:
+            production.append(dashboard.entry(None, site, 'site is on downtime', siteDownTimes[site], reportURL % site))
+        
 
 report['lastUpdate'] = time.time()
 report['data']       = {}

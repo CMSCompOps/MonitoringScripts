@@ -10,6 +10,8 @@ OUT=$SSTBASE/output/metrics/aaa
 TMP=$SSTBASE/tmp/metrics/aaa
 DATA=$SSTBASE/data/metrics/aaa/
 
+echo $DATA
+
 if [ ! -d "$OUT" ]; then
     mkdir -p $OUT
 fi
@@ -19,7 +21,7 @@ if [ ! -d "$TMP" ]; then
 fi
 
 # report url
-reportURL="https://cmst1.web.cern.ch/CMST1/SST/aaa/%s_report.html"
+reportURL="https://cmssst.web.cern.ch/cmssst/aaa/%s_report.html"
 
 # federation source
 federations="http://vocms037.cern.ch/fedinfo/federations.json"
@@ -29,6 +31,8 @@ samURL="http://wlcg-sam-cms.cern.ch/dashboard/request.py/getTestResults?profile_
 
 # notice parameters in the following url
 hcURL="http://dashb-cms-job.cern.ch/dashboard/request.py/jobsummary-plot-or-table?activity=hcxrootd&date1={0}&date2={1}&sortby=inputse&scale=linear&check=terminated"
+
+downTimesURL="http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=121&time=24&dateFrom=&dateTo=&site=T0_CH_CERN&sites=all&clouds=undefined&batch=1"
 
 # notice the ebedded time frame parameters
 ggusEnd=`date +%d+%b+%Y`
@@ -41,7 +45,7 @@ wgetOpt="--certificate=${certFile} --private-key=${certFile} --ca-certificate=${
 /usr/bin/wget ${wgetOpt} -O $TMP/ggus.xml $ggusURL
 
 python federations.py $federations $OUT/federations.txt
-python aaa.py $TMP/ggus.xml $samURL $hcURL $federations $TMP/report.json $reportURL $OUT
+python aaa.py $TMP/ggus.xml $samURL $hcURL $downTimesURL $federations $TMP/report.json $reportURL $OUT
 python report.py $TMP/report.json $DATA/template.html $OUT/report_2weeks.json $OUT
 
 cp $OUT/* /afs/cern.ch/user/c/cmssst/www/aaa
