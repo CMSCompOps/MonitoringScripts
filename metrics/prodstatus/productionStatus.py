@@ -25,6 +25,7 @@ import sys
 def getJSONMetric(metricNumber, hoursToRead, sitesStr, sitesVar, dateStart="2000-01-01", dateEnd=datetime.now().strftime('%Y-%m-%d')):
     urlstr = "http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=" + str(metricNumber) + "&time=" + str(hoursToRead) + "&dateFrom=" + dateStart + "&dateTo=" + dateEnd + "&site=" + sitesStr + "&sites=" + sitesVar + "&clouds=all&batch=1"
     try:
+        print urlstr
         metricData = url.read(urlstr)
         return dashboard.parseJSONMetric(metricData)
     except:
@@ -53,8 +54,6 @@ def filterMetric(metric, dateStart, dateEnd):
 
 def formatDate(datetoFormat):
     return datetoFormat.strftime("%Y-%m-%d")
-print '1'
-
 
 def timedelta_total_seconds(timedelta):
     try:
@@ -75,16 +74,16 @@ COLORS = {}
 DRAIN_STATUS = 'drain'
 COLORS[DRAIN_STATUS] = 'yellow'
 
-DOWN_STATUS = 'down'
+DOWN_STATUS = 'disabled'
 COLORS[DOWN_STATUS] = 'red'
 
-ON_STATUS = 'on'
+ON_STATUS = 'enabled'
 COLORS[ON_STATUS] = 'green'
 
-TIER0_STATUS = 'tier0'
+TIER0_STATUS = 'test'
 COLORS[TIER0_STATUS] = 'green'
 
-BAD_LIFESTATUS = ['Waiting_Room', 'Morgue']
+BAD_LIFESTATUS = ['Waiting_Room', 'Morgue', 'waiting_room', 'morgue', 'waitingroom']
 DOWNTIMECOLOR = 'saddlebrown'
 SITEREADINESS_OK = 'Ok'
 SITEREADINESS_BAD = 'Error'
@@ -94,21 +93,21 @@ SITEREADINESS_BAD = 'Error'
 downtimeStart = datetime.utcnow() - timedelta(weeks = 1)
 downtimeEnd = datetime.utcnow() + timedelta(weeks = 1)
 downtimes = getJSONMetricforAllSitesForDate(121, formatDate(downtimeStart),formatDate(downtimeEnd))
-print'2'
-#Site Readiness from last 3 days
-srStart = datetime.utcnow() - timedelta(days = 3)
+print'Got Downtimes'
+#Site Readiness from last 7 days
+srStart = datetime.utcnow() - timedelta(days = 7)
 srEnd = datetime.utcnow() 
 srStatus = getJSONMetricforAllSitesForDate(234, formatDate(srStart),formatDate(srEnd))
-print '3'
+print 'Got Readiness'
 #LifeStatus
 lfStart = datetime.utcnow() - timedelta(days = 2)
 lfEnd = datetime.utcnow() 
 lfStatus = getJSONMetricforAllSitesForDate(235, formatDate(lfStart),formatDate(lfEnd))
-
+print 'Got LifeStatus'
 #Current value prod_status
 pdStart = datetime.utcnow() - timedelta(days = 1)
 pdEnd = datetime.utcnow() 
-pdStatus = getJSONMetricforAllSitesForDate(158, formatDate(pdStart),formatDate(pdEnd))
+pdStatus = getJSONMetricforAllSitesForDate(237, formatDate(pdStart),formatDate(pdEnd))
 
 allsites = set(srStatus.getSites()).union(set(lfStatus.getSites())).union(set(downtimes.getSites()))
 
@@ -117,7 +116,7 @@ for site in allsites:
     tier = sites.getTier(site)
     siteCurrentLifeStatus = lfStatus.getLatestEntry(site)
     flagLifeStatus = False
-    if siteCurrentLifeStatus is not None and (siteCurrentLifeStatus.value == 'Waiting_Room' or siteCurrentLifeStatus.value == 'Morgue'):
+    if siteCurrentLifeStatus is not None and (siteCurrentLifeStatus.value in BAD_LIFESTATUS):
         flagLifeStatus = True
     siteSiteReadiness = srStatus.getSiteEntries(site)
     siteCurrentProd_Status = pdStatus.getLatestEntry(site) 
@@ -140,43 +139,85 @@ for site in allsites:
                     flagDowntime = True
         #Check SR last 3 days
         siteSiteReadinessTotal = {}
+        siteSiteReadiness2day = {}
         for key, value in siteSiteReadiness.iteritems():
-            dateEnd = datetime.utcfromtimestamp(key)
-            dateStart = datetime.utcfromtimestamp(value.date)
+            dateEnd = datetime.fromtimestamp(key)
+            dateStart = datetime.fromtimestamp(value.date)
+            #print str(dateStart) + " to " + str(dateEnd)
             status = value.value
-            # last day 
-            now = datetime.utcnow()
-            yesterday = now - timedelta(days = 1)
-            twodays = now - timedelta(days = 2)
-            threedays = now - timedelta(days = 3)
-            siteSiteReadinessTotal[status] = siteSiteReadinessTotal.get(status, 0 ) +secondsofIntersection(dateStart, dateEnd, yesterday, now)
-            siteSiteReadinessTotal[status] = siteSiteReadinessTotal.get(status, 0 ) +secondsofIntersection(dateStart, dateEnd, twodays,yesterday)
-            siteSiteReadinessTotal[status] = siteSiteReadinessTotal.get(status, 0 ) +secondsofIntersection(dateStart, dateEnd, threedays,twodays)
+            # last day
+            dayloop = 0
+            days = []
+            currentDayEnd = datetime.utcnow().replace(hour=00, minute=00, second=00, microsecond=00)
+            for x in range(1, 7):
+                day_end = currentDayEnd - timedelta(days = x) 
+                day_start = currentDayEnd - timedelta(days = x + 1) 
+                day = [day_start , day_end]
+                days.append(day)
+#            for day in days:
+#                print str(day[0]) + " " + str(day[1])
+            counter = 0 
+            for day in days:
+                if counter > 1:
+                    break
+                if day[0].weekday() < 8:
+                    siteSiteReadiness2day[status] = siteSiteReadiness2day.get(status, 0 ) +secondsofIntersection(dateStart, dateEnd, day[0], day[1])
+                    counter +=  1
+                else:
+                    continue
+            counter = 0 
+            for day in days:
+                if counter > 2:
+                    break
+                if day[0].weekday() < 6:
+                    siteSiteReadinessTotal[status] = siteSiteReadinessTotal.get(status, 0 ) +secondsofIntersection(dateStart, dateEnd, day[0], day[1])
+                    counter +=  1
+                else:
+                    continue
         totalseconds = 0
         for key, value in siteSiteReadinessTotal.iteritems():
-            if key == 'Ok' or key == 'Error':
+            if key == 'Ok' or key == 'Error' or key == 'OK':
                 totalseconds += value
         if totalseconds > 0 :
-            readinessScore  = siteSiteReadinessTotal.get('Ok', 0.0) / totalseconds
+            print (siteSiteReadinessTotal.get('Ok', 0.0) +  siteSiteReadinessTotal.get('OK', 0.0))
+            readinessScore  = (siteSiteReadinessTotal.get('Ok', 0.0) +  siteSiteReadinessTotal.get('OK', 0.0)) / totalseconds
         else:
             readinessScore = -1.0 
+        totalseconds2 = 0
+        for key, value in siteSiteReadiness2day.iteritems():
+            if key == 'Ok' or key == 'Error' or key == 'OK':
+                totalseconds2 += value
+        if totalseconds > 0 :
+            print (siteSiteReadiness2day.get('Ok', 0.0) +  siteSiteReadiness2day.get('OK', 0.0))
+            readinessScore2day  = (siteSiteReadiness2day.get('Ok', 0.0) +  siteSiteReadiness2day.get('OK', 0.0)) / totalseconds2
+        else:
+            readinessScore2day = -1.0 
         #Logic to calculate new prod status
+        print "site + " + site + " 2 day = " + str(readinessScore2day) +" ," + str(totalseconds2) + " 3 day = " + str(readinessScore) + " , " + str(totalseconds2)
         newProdStatus = 'unknown'
-        if siteCurrentProd_Status != None and siteCurrentProd_Status.value == 'tier0':
-            newProdStatus = 'tier0'
-        if siteCurrentProd_Status != None and siteCurrentProd_Status.value == 'down':
-            newProdStatus = 'down'
-        if siteCurrentProd_Status != None and siteCurrentProd_Status.value == 'on':
-            if flagDowntime or flagLifeStatus:
-                newProdStatus = 'drain'
+        if siteCurrentProd_Status != None and siteCurrentProd_Status.value == TIER0_STATUS:
+            newProdStatus = TIER0_STATUS
+        if siteCurrentProd_Status != None and siteCurrentProd_Status.value == DOWN_STATUS:
+            newProdStatus = DOWN_STATUS
+        if siteCurrentProd_Status != None and siteCurrentProd_Status.value == ON_STATUS:
+            if (flagDowntime or flagLifeStatus) or (readinessScore < 0.6):
+                newProdStatus = DRAIN_STATUS
             else:
-                newProdStatus = 'on'
-        if siteCurrentProd_Status != None and siteCurrentProd_Status.value == 'drain':
-            if not flagDowntime and not flagLifeStatus and readinessScore > 0.6:
-                newProdStatus = 'on'
+                newProdStatus = ON_STATUS
+        if siteCurrentProd_Status != None and siteCurrentProd_Status.value == DRAIN_STATUS:
+            if not flagDowntime and not flagLifeStatus and readinessScore2day > 0.9:
+                newProdStatus = ON_STATUS
             else:
-                newProdStatus = 'drain'
-        allsitesMetric.append(dashboard.entry(date = now.strftime("%Y-%m-%d %H:%M:%S"), name = site, value = newProdStatus, color = COLORS.get(newProdStatus, 'white'), url = 'https://cmst1.web.cern.ch/CMST1/SST/drain_log.txt'))
+                newProdStatus = DRAIN_STATUS
+	if siteCurrentProd_Status == None and newProdStatus == 'unknown':
+		if (flagDowntime or flagLifeStatus) or readinessScore < 0.6:
+			newProdStatus = DRAIN_STATUS
+		elif readinessScore2day > 0.9:
+			newProdStatus = ON_STATUS
+                else:
+                        newProdStatus = DRAIN_STATUS
+        if newProdStatus != 'unknown':
+        	allsitesMetric.append(dashboard.entry(date = datetime.now().strftime("%Y-%m-%d %H:%M:%S"), name = site, value = newProdStatus, color = COLORS.get(newProdStatus, 'white'), url = 'https://twiki.cern.ch/twiki/bin/view/CMS/SiteSupportSiteStatusSiteReadiness'))
 
 if len(allsitesMetric) > 1:
     outputFileP = open(OUTPUT_P_FILE_NAME, 'w')
