@@ -89,6 +89,7 @@ OUTPUT_COLORS[DOWNTIME] = COLOR_DOWNTIME
 def getJSONMetric(metricNumber, hoursToRead, sitesStr, sitesVar, dateStart="2000-01-01", dateEnd=datetime.now().strftime('%Y-%m-%d')):
     urlstr = "http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=" + str(metricNumber) + "&time=" + str(hoursToRead) + "&dateFrom=" + dateStart + "&dateTo=" + dateEnd + "&site=" + sitesStr + "&sites=" + sitesVar + "&clouds=all&batch=1"
     try:
+        print "Getting metric " + str(metricNumber) + ", url :" + urlstr
         metricData = url.read(urlstr)
         return dashboard.parseJSONMetric(metricData)
     except:
@@ -203,7 +204,7 @@ if len(allSites) > 0 :
                     hammerCloudNaFlag = False
                     try:
                         value = float(entry.value)
-                        if value < 90.0:
+                        if value < 90.0 or entry.color == "red":
                             dailyMetric = NOT_READY
                     except:
                         pass
@@ -216,7 +217,7 @@ if len(allSites) > 0 :
                     samNaFlag = False
                     try:
                         value = float(entry.value)
-                        if value < 90.0:
+                        if value < 90.0 or entry.color == "red":
                             dailyMetric = NOT_READY
                     except:
                         pass
@@ -226,7 +227,7 @@ if len(allSites) > 0 :
             #    Active T1 links from T0 >1
             for key, entry in filteredSiteActiveT1LinksFromT0.iteritems():
                 try:
-                    if int(entry.value) < 1:
+                    if int(entry.value) < 1 or entry.color =="red":
                         dailyMetric = NOT_READY
                 except:
                     pass
@@ -236,7 +237,8 @@ if len(allSites) > 0 :
                     down, up = re.match("(\d\d)\(d\)-(\d\d)\(u\)", entry.value).groups()
                     up = int(up)
                     down = int(down)
-                    if up < 5 or down < 5:
+                    color = entry.color
+                    if up < 5 or down < 5 or color == "red":
                         dailyMetric = NOT_READY
                 except:
                     pass
@@ -244,7 +246,8 @@ if len(allSites) > 0 :
             for key, entry in filteredSiteActiveT1LinksToT2.iteritems():
                 try:
                     value = int(entry.value)
-                    if value < 20 :
+                    color = entry.color
+                    if value < 20 or color == "red" :
                         dailyMetric = NOT_READY
                 except:
                     pass
@@ -255,7 +258,7 @@ if len(allSites) > 0 :
                         good, total = re.match("(\d+)/(\d+)", entry.value).groups()
                         good = float(good)
                         total = float(total)
-                        if good/total < 0.5:
+                        if good/total < 0.5 or good<1 or entry.color == "red":
                             dailyMetric = NOT_READY
                     except:
                         pass
@@ -267,7 +270,8 @@ if len(allSites) > 0 :
                     hammerCloudNaFlag = False
                     try:
                         value = float(entry.value)
-                        if value < 80.0:
+                        color = entry.color
+                        if value < 80.0 or color == "red":
                             dailyMetric = NOT_READY
                     except:
                         pass
@@ -280,7 +284,8 @@ if len(allSites) > 0 :
                     samNaFlag = False
                     try:
                         value = float(entry.value)
-                        if value < 80.0:
+                        color = entry.color
+                        if value < 80.0 or color == "red":
                             dailyMetric = NOT_READY
                     except:
                         pass
@@ -308,7 +313,7 @@ if len(allSites) > 0 :
                         good, total = re.match("(\d+)/(\d+)", entry.value).groups()
                         good = float(good)
                         total = float(total)
-                        if good/total < 0.5:
+                        if good/total < 0.5 or good < 1 or entry.color == "red":
                             dailyMetric = NOT_READY
                     except:
                         pass
@@ -319,7 +324,7 @@ if len(allSites) > 0 :
         if dailyMetric == NOT_READY:
             for key, entry in filteredSiteMaintenance.iteritems():
                 try:
-                    if "OUTAGE SCHEDULED" in entry.value:
+                    if entry.color == 'saddlebrown':
                         dailyMetric = DOWNTIME
                 except:
                     pass 
