@@ -2,7 +2,7 @@ import urllib2
 import json, time, string
 #______________________get all datas from SSB___________________________
 def getDatafromURL():
-	url='http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=136&time=24&dateFrom=&dateTo=&site=T0_CH_CERN&sites=all&clouds=undefined&batch=1';
+	url='http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=136&time=720&dateFrom=&dateTo=&site=T0_CH_CERN&sites=all&clouds=undefined&batch=1';
 	print "Getting the url %s" % url
 	obj = urllib2.urlopen(url)
 	data = obj.read()
@@ -18,20 +18,30 @@ def calculateProdCore(json):
 	jsonCodeEnd = ']}'
 	f = open(filename + ".txt", "w")
 	j = open(filename + ".json", "w")
-	for row in json['csvdata']:
+        sites = []
+        for row in json['csvdata']:
+                siteName = row['VOName']
+                sites.append(siteName)
+        sites = list(set(sites))
+        print sites
+        for row in json['csvdata']:
 		tierName = row['VOName'][0:2]
 		siteName = row['VOName']
+                if siteName in sites:
+                    sites.remove(siteName)
+                else:
+                    continue
 		value = row['Value']
 		status = row['Status']
 		color = row['COLORNAME']
 		#_______________Calculate Prod[Cores]____________________________
 		prodCore = 0 if value is None else value
 		if (tierName == 'T1'):
-			prodCore = int(int(prodCore) * 0.9)
+			prodCore = int(int(prodCore + 2) * 0.9)
 		elif (tierName == 'T3' or siteName == 'T2_CH_CERN_AI' or siteName == 'T2_CH_CERN_HLT' or siteName == 'T2_CH_CERN_T0'):
-			prodCore = int(int(prodCore) * 1)
+			prodCore = int(int(prodCore +1 ) * 1)
 		elif (tierName == 'T2'):
-			prodCore = int(int(prodCore) * 0.5)
+			prodCore = int(int(prodCore + 2) * 0.5)
 		if color == 'white':
 			prodCore = 'n/a'
 		jsonCode = jsonCode + "{" + '"siteName":"' + siteName + '", "prodCore":' + str(prodCore) + ',' + '"color":"' + color + '",' + '"url":"' + urll + '"},'
