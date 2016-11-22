@@ -68,7 +68,7 @@ parsed_data = parsed_table.tables[0]
 for row in parsed_data:
 	if row[2]:
 		phedex_version_number = map(int, re.findall(r'\d+', row[2]))
-		if phedex_version_number >= [4,1,7]:
+		if phedex_version_number >= [4,2,0]:
 			status = "green"
 		elif phedex_version_number < [4,1,5]:
 			status = "red"
