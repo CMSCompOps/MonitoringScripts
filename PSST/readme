@@ -1,4 +1,6 @@
-In the directory there is a Makefile for the tarball, which contains all fails of PSST. 
+In the directory there is a Makefile for the tarball, which contains all files of PSST. 
+
+To generate new tarball execute - $ make -f Makefile
 
 This is the xml for the frontend configuration:
 
