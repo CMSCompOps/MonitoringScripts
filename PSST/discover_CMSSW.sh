@@ -31,8 +31,8 @@ else
    echo "and $VO_CMS_SW_DIR/cmsset_default.sh" 
    echo "and $OSG_APP/cmssoft/cms/cmsset_default.sh" 
    echo "and \$PARROT_RUN_WORKS is set to $PARROT_RUN_WORKS" 
-   echo 81 1>&2
-   exit 81 
+   echo $ERROR_NO_CMSSW 1>&2
+   exit 1 
 fi
 
 if [ -z "$glidein_config" ]; then
@@ -60,7 +60,7 @@ rm $tmpname
 
 if [ -z "$sw_list" ]; then
   echo "No CMS SW found!" 
-  echo 81 1>&2
+  echo $ERROR_NO_CMSSW 1>&2
   exit 81
 fi
 echo "CMS SW list found and not empty" 

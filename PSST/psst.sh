@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
 #function for ending validation script if one of the test fails (returns not 0)
 test_result() {	
@@ -20,9 +20,7 @@ send_dashboard_report() {
 	network_interface=`/sbin/route | grep '^default' | grep -o '[^ ]*$'`
 	ip=`/sbin/ip addr show ${network_interface} | grep -m 1 "inet" | awk '{print $2}' | sed 's/[^0-9]*//g'`
 	mac=`/sbin/ifconfig -a ${network_interface} | grep -m 1 -o -E '([[:xdigit:]]{1,2}:){5}[[:xdigit:]]{1,2}' | sed 's/://g'`
-	echo $mac
-	echo $ip
-	#MAC=`/sbin/ifconfig -a | grep -m 1 -o -E '([[:xdigit:]]{1,2}:){5}[[:xdigit:]]{1,2}' | sed 's/://g'`
+
 	if [ -z "$mac" ]; then
 		MAC10=`echo "ibase=16; ${mac}" | /usr/bin/bc`
 		MACMOD=`echo "${MAC10} + ${TIMEMOD}" | /usr/bin/bc`
@@ -40,8 +38,7 @@ send_dashboard_report() {
 
 	echo "Sending post job info to the dashboard"
 	echo $site_name $exit_code $grid_status $TASK $JOB
-	# out=$(/usr/bin/python ${my_tar_dir}/DashboardAPI.py $site_name $exit_code $grid_status $TASK $JOB) 
- #    mail -s "site_name: ${site_name}, dir: ${my_tar_dir}, out: ${out}, ${exit_code}, ${grid_status}, ${TASK}, ${JOB}" rokas.ma@gmail.com < /dev/null
+	# /usr/bin/python ${my_tar_dir}/DashboardAPI.py $site_name $exit_code $grid_status $TASK $JOB
 }
 
 glidein_config="$1"
@@ -59,22 +56,32 @@ echo "Grep site_name from glidein_config"
 site_name=`grep -m1 -i '^GLIDEIN_CMSSite' $glidein_config| awk '{print $2}'`
 echo $site_name
 
+echo "Export error codes"
+source ${my_tar_dir}/exit_codes.txt
+export $(cut -f1 ${my_tar_dir}/exit_codes.txt)
+
+echo "Check proxy"
+exit_code=$(${my_tar_dir}/check_proxy.sh 2>&1 >/dev/null)
+echo "Exit code:" $exit_code
+test_result
+
+echo "Check software area"
+exit_code=$(${my_tar_dir}/check_software_area.sh 2>&1 >/dev/null)
+echo "Exit code:" $exit_code
+test_result
+
 echo "Discover CMSSSW"
 exit_code=$(${my_tar_dir}/discover_CMSSW.sh $glidein_config 2>&1 >/dev/null)
 echo "Exit code:" $exit_code
-# mail -s "site_name: ${site_name}, CMSSW, exit_code: ${exit_code}" rokas.ma@gmail.com < /dev/null
 test_result
 
 echo "siteconf validation"
 exit_code=$(/usr/bin/python ${my_tar_dir}/export_siteconf_info.py 2>&1 >/dev/null)
-# exit_code=$(/usr/bin/python ${my_tar_dir}/export_siteconf_info.py)
 echo "Exit code:" $exit_code
-# mail -s "site_name: ${site_name}, siteconf, exit_code: ${exit_code}" rokas.ma@gmail.com < /dev/null
-test_result
 
-echo "test squid"
-exit_code=$(/usr/bin/python ${my_tar_dir}/test_squid.py 2>&1 >/dev/null)
-echo "Exit code:" $exit_code
+# echo "test squid"
+# exit_code=$(/usr/bin/python ${my_tar_dir}/test_squid.py 2>&1 >/dev/null)
+# echo "Exit code:" $exit_code
 
 send_dashboard_report
-exit 0
+exit $exit_code

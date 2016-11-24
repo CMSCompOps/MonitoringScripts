@@ -129,8 +129,8 @@ def main():
 	os.environ.setdefault('glidein_config', 'glidein_config')
 	if not os.path.exists(os.environ['glidein_config']):
 		print "Unable to locate the glidein configuration file %s; failing script." % os.environ['glidein_config']
-		print >> sys.stderr, 1
-                sys.exit(1)
+		print >> sys.stderr, os.environ["ERROR_NO_GLIDEIN_CONFIG"]
+		sys.exit(1)
 
 	glidein_config = {}
 	for line in open(os.environ['glidein_config'], 'r').xreadlines():
@@ -167,7 +167,7 @@ def main():
 		add_condor_config_var(glidein_config, name="CMSProcessingSiteName", kind="S", value=site_name)
 	else:
 		print "No sitename detected!  Invalid SITECONF file?"
-		print >> sys.stderr, 1
+		print >> sys.stderr, os.environ["ERROR_NO_SITENAME_IN_SITECONF"]
 		sys.exit(1)
 
 	local_stage_out = job_config_root[0].find("local-stage-out")
