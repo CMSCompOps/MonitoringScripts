@@ -154,7 +154,7 @@ def reportToDashboard(site_name=None, exitCode=None, grid_status=None, task=None
 		"JSToolVersion": "0.0.1",
 		"GridName": "/DC=ch/DC=cern/OU=Organic Units/OU=Users/CN=rmaciula/CN=780070/CN=Rokas Maciulaitis",
 		"scheduler": "GLIDEIN",
-		"taskType": "integration",
+		"taskType": "PSST",
 		"TaskName": taskName,
 		"JobName": "taskMeta",
 		"datasetFull": "",
@@ -167,8 +167,8 @@ def reportToDashboard(site_name=None, exitCode=None, grid_status=None, task=None
 		"taskId": taskName,
 		"jobId": jobId,
 		"schedule": "BossAir",
-		"TaskType": "integration",
-		"JobType": "integration",
+		"TaskType": "PSST",
+		"JobType": "PSST",
 		"NEventsToProcess": "",
 	}
 
