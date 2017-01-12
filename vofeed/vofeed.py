@@ -20,11 +20,13 @@ import htcondor
 
 VOFD_OUTPUT_FILE = "vofeed.xml"
 VOFD_CACHE_DIR = "."
+#VOFD_OUTPUT_FILE = "/afs/cern.ch/user/c/cmssst/www/vofeed/vofeed.xml"
+#VOFD_CACHE_DIR = "/data/cmssst/MonitoringScripts/vofeed"
 
 VOFD_CERTIFICATE_CRT = "/lml/user/lammel/.globus/usercert.pem"
 VOFD_CERTIFICATE_KEY = "/lml/user/lammel/.globus/userkey.pem"
-#VOFD_CERTIFICATE_CRT = "/tmp/x509up_u1714"
-#VOFD_CERTIFICATE_KEY = "/tmp/x509up_u1714"
+#VOFD_CERTIFICATE_CRT = "/tmp/x509up_u79522"
+#VOFD_CERTIFICATE_KEY = "/tmp/x509up_u79522"
 # ########################################################################### #
 
 
@@ -312,7 +314,7 @@ def vofd_phedex():
         phedex_site = phedex_site.replace('_Buffer','')
         phedex_site = phedex_site.replace('_Export','')
         phedex_site = phedex_site.replace('_MSS','')
-        print("SE: %s\t%s" % (phedex_site, phedex_host))
+        #print("SE: %s\t%s" % (phedex_site, phedex_host))
         if (( phedex_site == "T1_US_FNAL" ) and
             ( phedex_host == "cmseos.fnal.gov" )):
             glbTopology.addResource(phedex_site, "", phedex_host, "SRM", False)
@@ -337,7 +339,7 @@ def vofd_glideinWMSfactory():
     # ============================================================
     for factory in DICT_GLIDEIN_FACTORIES:
         #
-        print("\n\n\n\n\n\n")
+        #print("\n\n\n\n\n\n")
         print("Querying %s factory for CE information" % factory['lbl'])
         collector = None
         try:
@@ -444,8 +446,8 @@ def vofd_glideinWMSfactory():
                     indx2 = classAd['GLIDEIN_GlobusRSL'].find(")", indx1)
                     queue = classAd['GLIDEIN_GlobusRSL'][indx1:indx2]
 
-            print("CE: %s\t%s\t%s\t%s\t%s" %
-                (gridsite, classAd['GLIDEIN_CMSSite'], host, ceType, queue))
+            #print("CE: %s\t%s\t%s\t%s\t%s" %
+            #    (gridsite, classAd['GLIDEIN_CMSSite'], host, ceType, queue))
             glbTopology.addResource(classAd['GLIDEIN_CMSSite'], gridsite,
                 host, ceType, factory['prd'], queue, batch)
             if ( classAd['GLIDEIN_CMSSite'] == "T2_CH_CERN" ):
@@ -608,5 +610,5 @@ if __name__ == '__main__':
     vofd_sitedb()
     vofd_phedex()
     vofd_glideinWMSfactory()
-    glbTopology.write()
+    #glbTopology.write()
     vofd_write_xml()
