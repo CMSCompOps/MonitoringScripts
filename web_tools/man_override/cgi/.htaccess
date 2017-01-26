@@ -1,0 +1,8 @@
+SSLRequireSSL
+AuthType shibboleth
+ShibRequireSession On
+ShibRequireAll On
+ShibExportAssertion Off
+
+Require valid-user
+Require ADFS_GROUP cms-comp-ops-site-support-team cms-web-access cms-authorized-user cms-members

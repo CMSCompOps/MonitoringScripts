@@ -1,0 +1,150 @@
+			{% extends "base.html" %}
+			{% block content %}	
+			<div class="row">
+                       		<div class="col-sm-2"><h2>Sitename</h2></div>
+                                <div class="col-sm-6"> <h2>Override state</h2></div>
+                                <div class="col-sm-4"><h2>Reason</h2></div>
+                        </div>
+			<table class="table table-hover">
+				{% for site in sites %}
+				{% if site[1] in user_info.sites and site[2] == "enabled" %}
+				<tr class="success">
+					<td class="col-sm-2">{{ site[1] }}</td>
+					<td>
+						<form autocomplete="off" action="crabstatus/{{ site[1] }}" method="POST"> 
+							<div class="col-sm-2">
+								<input type="radio" name="new-status" value="enabled" checked>enabled 
+							</div>
+							<div class="col-sm-2">
+								<input type="radio" name="new-status" value="disabled">disabled
+							</div>
+							<div class="col-sm-2">
+                                                                <input type="radio" name="new-status" value="no_override">no override
+                                                        </div>
+							<div class="col-sm-4">
+								<input type="text" name="reason" class="form-control" value="{{ site[5] }}" maxlength="250" required>
+							</div>
+							<div class="col-xs-1">
+								<input type="hidden" name="old-status" value="{{ site[2] }}">
+								<input type="hidden" name="url" value="{{ site[4] }}">
+								<input type="submit" class="btn btn-default" value="Apply">
+							</div>
+
+						</form> 
+					</td>
+				{% elif site[1] in user_info.sites and  site[2] == "disabled" %}
+                                <tr class="danger">
+                                        <td class="col-sm-2">{{ site[1] }}</td>
+                                        <td>
+                                                <form autocomplete="off"  action="crabstatus/{{ site[1] }}" method="POST">
+                                                        <div class="col-sm-2">
+                                                                <input type="radio" name="new-status" value="enabled">enabled
+                                                        </div>
+                                                        <div class="col-sm-2">
+                                                                <input type="radio" name="new-status" value="disabled" checked>disabled
+                                                      	</div>
+                                                        <div class="col-sm-2">
+                                                                <input type="radio" name="new-status" value="no_override">no override
+                                                        </div>
+                                                        <div class="col-sm-4">
+                                                                <input type="text" name="reason" class="form-control" value="{{ site[5] }}" maxlength="250" required>
+                                                        </div>
+                                                        <div class="col-xs-1">
+                                                                <input type="hidden" name="old-status" value="{{ site[2] }}">
+                                                                <input type="hidden" name="url" value="{{ site[4] }}">
+                                                                <input type="submit" class="btn btn-default" value="Apply">
+                                                        </div>
+                                                </form>
+                                        </td>
+				{% elif site[1] in user_info.sites and site[2] == "no_override" %}
+				<tr>
+                                        <td class="col-sm-2">{{ site[1] }}</td>
+                                        <td>
+                                                <form autocomplete="off" action="crabstatus/{{ site[1] }}" method="POST">
+                                                        <div class="col-sm-2">
+                                                                <input type="radio" name="new-status" value="enabled">enabled
+                                                        </div>
+                                                        <div class="col-sm-2">
+                                                                <input type="radio" name="new-status" value="disabled">disabled
+                                                        </div>
+							<div class="col-sm-2">
+                                                                <input type="radio" name="new-status" value="no_override" checked>no override
+                                                        </div>
+                                                        <div class="col-sm-4">
+                                                                <input type="text" name="reason" class="form-control" value="{{ site[5] }}" maxlength="250" required>
+                                                        </div>
+                                                        <div class="col-xs-1">
+                                                                <input type="hidden" name="old-status" value="{{ site[2] }}">
+                                                                <input type="hidden" name="url" value="{{ site[4] }}">
+                                                                <input type="submit" class="btn btn-default" value="Apply">
+                                                        </div>
+                                                </form>
+                                        </td>
+				</tr>
+				{% else %}
+				{% if site[2] == "enabled" %}
+				<tr class="success">
+					<td class="col-sm-2">{{ site[1] }}</td>
+					<td>
+						<form>
+							<div class="col-sm-2">
+								<input type="radio" name="new-status" value="enabled" checked disabled>enabled 
+							</div>
+							<div class="col-sm-2">
+								<input type="radio" name="new-status" value="disabled" disabled>disabled
+							</div>
+							<div class="col-sm-2">
+                                                                <input type="radio" name="new-status" value="no_override">no override
+                                                        </div>
+							<div class="col-sm-4">
+								<input type="text" name="reason" class="form-control" value="{{ site[5] }}" maxlength="250" disabled>
+							</div>
+						</form>
+					</td>
+				{% elif  site[2] == "disabled" %}
+				<tr class="danger">
+					<td class="col-sm-2">{{ site[1] }}</td>
+					<td>
+						<form>
+							<div class="col-sm-2">
+								<input type="radio" name="new-status" value="enabled" disabled>enabled
+							</div>
+							<div class="col-sm-2">
+								<input type="radio" name="new-status" value="disabled" checked disabled>disabled
+							</div>
+							<div class="col-sm-2">
+                                                                <input type="radio" name="new-status" value="no_override" disabled>no override
+                                                        </div>
+							<div class="col-sm-4">
+								<input type="text" name="reason" class="form-control" value="{{ site[5] }}" required disabled>
+							</div>
+						</form>
+				
+					</td>
+				{% elif site[2] == "no_override" %}
+				<tr>
+                                        <td class="col-sm-2">{{ site[1] }}</td>
+                                        <td>
+                                                <form>
+                                                        <div class="col-sm-2">
+                                                        	<input type="radio" name="new-status" value="enabled" disabled>enabled
+                                                        </div>
+                                                        <div class="col-sm-2">
+                                                                <input type="radio" name="new-status" value="disabled" disabled>disabled
+                                                        </div>
+							<div class="col-sm-2">
+                                                                <input type="radio" name="new-status" value="no_override" checked disabled>no override
+                                                        </div>
+                                                        <div class="col-sm-5">
+                                                                <input type="text" name="reason" class="form-control" value="{{ site[5] }}" required disabled>
+                                                        </div>
+                                                </form>
+                                        </td>
+
+				{% endif %}
+				{% endif %}
+				{% endfor %}
+			</table>
+		</div>
+		<div>
+		{% endblock %}
