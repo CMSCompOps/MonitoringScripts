@@ -12,6 +12,7 @@ trap '(/bin/rm -f ${EXC_LOCK} ${ERR_FILE}) 1> /dev/null 2>&1' 0
 
 
 EMAIL_ADDR="lammel@fnal.gov"
+CACHE_DIR="/data/cmssst/MonitoringScripts/vofeed/cache"
 #
 #
 /bin/rm -f ${ERR_FILE} 1>/dev/null 2>&1
@@ -100,6 +101,29 @@ fi
 # generate VO-feed from SiteDB, PhEDEx and Glide-in WMS factory information:
 # ==========================================================================
 `dirname $0`/vofeed.py
+# #############################################################################
+
+
+
+# check for expired caches and email alerts:
+# ==========================================
+NOW=`/bin/date '+%s'`
+for FILE in ${CACHE_DIR}/cache_*.*; do
+   ALRT=`/usr/bin/stat -c %Y ${FILE} | awk -v n=${NOW} '{a=int((n-$1)/3600);if((a>24)&&(a%24==1)){print 1}else{print 0}}'`
+   if [ ${ALRT} -ne 0 ]; then
+       /bin/touch ${ERR_FILE}
+       echo "" 1>> ${ERR_FILE}
+       echo "cache expired:" 1>> ${ERR_FILE}
+       /bin/ls -l ${FILE} 1>> ${ERR_FILE}
+   fi
+done
+if [ -f ${ERR_FILE} ]; then
+   /bin/cat ${ERR_FILE}
+   if [ ! -t 0 ]; then
+      /usr/bin/Mail -s "$0 expired cache" ${EMAIL_ADDR} < ${ERR_FILE}
+   fi
+fi
+/bin/rm ${ERR_FILE} 1>/dev/null 2>&1
 # #############################################################################
 
 
