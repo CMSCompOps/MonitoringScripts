@@ -10,6 +10,8 @@ import traceback
 import socket
 from types import DictType, StringType, ListType
 
+from WMExceptions import PSST_JOB_EXIT_CODES
+
 #
 # Methods for manipulating the apmon instance
 #
@@ -138,7 +140,7 @@ def getContext(overload={}) :
 		context[paramName] = paramValue
 	return context
 
-def reportToDashboard(site_name=None, exitCode=None, grid_status=None, task=None, job=None):
+def reportToDashboard(site_name=None, target_ce=None, exitCode=None, grid_status=None, task=None, job=None):
 	taskName = task
 	# taskName = "PSST_" + site_name + "_"+ str(int(time.time())) 
 	# job = 1
@@ -224,7 +226,8 @@ def reportToDashboard(site_name=None, exitCode=None, grid_status=None, task=None
 		"StatusEnterTime": time.time(),
 		"StatusDestination": site_name,
 		"WNHostName": socket.gethostname(),
-		"TargetCE": os.environ.get('GLIDEIN_Gatekeeper',''),
+		"TargetCE": target_ce,
+		"JobExitReason": PSST_JOB_EXIT_CODES[exitCode],
 	}
 	#meta info
 	# params = {
@@ -337,4 +340,4 @@ def reportToDashboard(site_name=None, exitCode=None, grid_status=None, task=None
 	return exitCode
 
 if __name__ == "__main__":
-	sys.exit(reportToDashboard(sys.argv[1], int(sys.argv[2]), sys.argv[3], sys.argv[4], sys.argv[5]))
+	sys.exit(reportToDashboard(sys.argv[1], sys.argv[2], int(sys.argv[3]), sys.argv[4], sys.argv[5], sys.argv[6]))

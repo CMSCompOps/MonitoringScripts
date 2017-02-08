@@ -12,7 +12,6 @@ except Exception, e:
 	print "Skipping this script; SITECONF data will be missing."
 	print "This can be ignored if this is a RHEL5 host."
 	print "Exception message: %s" % str(e)
-	print >> sys.stderr, 0
 	sys.exit(0)
 
 
@@ -129,8 +128,7 @@ def main():
 	os.environ.setdefault('glidein_config', 'glidein_config')
 	if not os.path.exists(os.environ['glidein_config']):
 		print "Unable to locate the glidein configuration file %s; failing script." % os.environ['glidein_config']
-		print >> sys.stderr, os.environ["ERROR_NO_GLIDEIN_CONFIG"]
-		sys.exit(1)
+		sys.exit(int(os.environ["ERROR_NO_GLIDEIN_CONFIG"]))
 
 	glidein_config = {}
 	for line in open(os.environ['glidein_config'], 'r').xreadlines():
@@ -146,7 +144,6 @@ def main():
 	if not os.path.exists(local_siteconf):
 		if glidein_config.get("PARROT_RUN_WORKS", "FALSE") == "TRUE":
 			print "Using parrot -- skipping SITECONF processing."
-			print >> sys.stderr, 0
 			sys.exit(0)
 		print "CVMFS siteconf path (%s) does not exist; is CVMFS running and configured properly?" % local_siteconf
 	else:
@@ -167,8 +164,7 @@ def main():
 		add_condor_config_var(glidein_config, name="CMSProcessingSiteName", kind="S", value=site_name)
 	else:
 		print "No sitename detected!  Invalid SITECONF file?"
-		print >> sys.stderr, os.environ["ERROR_NO_SITENAME_IN_SITECONF"]
-		sys.exit(1)
+		sys.exit(os.environ["ERROR_NO_SITENAME_IN_SITECONF"])
 
 	local_stage_out = job_config_root[0].find("local-stage-out")
 	pnn_found = False
@@ -206,7 +202,6 @@ def main():
 	if ('CMSIsLocal' in glidein_config) and (glidein_config['CMSIsLocal'].lower() == 'true'):
 		create_local_glidein(glidein_config)
 
-	print >> sys.stderr, 0
 	sys.exit(0)	
 
 if __name__ == "__main__":

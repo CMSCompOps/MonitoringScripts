@@ -1,3 +1,2 @@
-psst.tgz: psst.sh DashboardAPI.py apmon.py discover_CMSSW.sh export_siteconf_info.py ProcInfo.py Logger.py test_squid.py
-	tar cvfz psst.tgz psst.sh DashboardAPI.py apmon.py discover_CMSSW.sh export_siteconf_info.py ProcInfo.py Logger.py test_squid.py
-
+psst.tgz: psst.sh DashboardAPI.py WMExceptions.py apmon.py export_siteconf_info.py ProcInfo.py Logger.py test_squid.py check_proxy.sh check_software_area.sh exit_codes.txt check_os.sh check_connection.sh check_RPMs.sh check_scratch_space.sh get_required_packages.py check_cpu_load.sh
+	tar cvfz psst.tgz psst.sh DashboardAPI.py WMExceptions.py apmon.py export_siteconf_info.py ProcInfo.py Logger.py test_squid.py check_proxy.sh check_software_area.sh exit_codes.txt check_os.sh check_connection.sh check_RPMs.sh check_scratch_space.sh get_required_packages.py check_cpu_load.sh
