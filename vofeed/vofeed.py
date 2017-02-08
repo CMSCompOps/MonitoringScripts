@@ -3,12 +3,13 @@
 # python script to write the CMS VO-feed XML and JSON files. The script is    #
 #    based on earlier versions that run inside the SAM3 dashboard.            #
 #                                                                             #
-# 2016-Dec-28   v0.001   Stephan Lammel                                       #
+# 2016-Dec-28   Stephan Lammel                                                #
 # ########################################################################### #
 
 
-import os, sys
+import os, sys, getpass
 import time, calendar
+import socket
 import httplib, urllib2
 from OpenSSL import crypto
 import json
@@ -18,15 +19,18 @@ import htcondor
 
 
 
-VOFD_OUTPUT_FILE = "vofeed.xml"
-VOFD_CACHE_DIR = "."
-#VOFD_OUTPUT_FILE = "/afs/cern.ch/user/c/cmssst/www/vofeed/vofeed.xml"
-#VOFD_CACHE_DIR = "/data/cmssst/MonitoringScripts/vofeed"
+VOFD_VERSION = "v0.01.03"
+#VOFD_OUTPUT_FILE = "vofeed.xml"
+#VOFD_IN_USE_FILE = "in_use.txt"
+#VOFD_CACHE_DIR = "."
+VOFD_OUTPUT_FILE = "/afs/cern.ch/user/c/cmssst/www/vofeed/vofeed.xml"
+VOFD_IN_USE_FILE = "/afs/cern.ch/user/c/cmssst/www/vofeed/in_use.txt"
+VOFD_CACHE_DIR = "/data/cmssst/MonitoringScripts/vofeed"
 
-VOFD_CERTIFICATE_CRT = "/lml/user/lammel/.globus/usercert.pem"
-VOFD_CERTIFICATE_KEY = "/lml/user/lammel/.globus/userkey.pem"
-#VOFD_CERTIFICATE_CRT = "/tmp/x509up_u79522"
-#VOFD_CERTIFICATE_KEY = "/tmp/x509up_u79522"
+#VOFD_CERTIFICATE_CRT = "/lml/user/lammel/.globus/usercert.pem"
+#VOFD_CERTIFICATE_KEY = "/lml/user/lammel/.globus/userkey.pem"
+VOFD_CERTIFICATE_CRT = "/tmp/x509up_u79522"
+VOFD_CERTIFICATE_KEY = "/tmp/x509up_u79522"
 # ########################################################################### #
 
 
@@ -130,9 +134,12 @@ def vofd_init():
     cert = crypto.load_certificate(crypto.FILETYPE_PEM,
                                    file(VOFD_CERTIFICATE_CRT, 'r').read() )
     subject = str( cert.get_subject() )
-    glbInfo['certowner'] = subject.split("'")[1::2][0].replace("'", "")
+    subject = subject.split("'")[1::2][0].replace("'", "")
+    glbInfo['certowner'] = subject.replace("<", "[").replace(">", "]")
     del subject
     del cert
+    #
+    glbInfo['url'] = "http://cmssst.web.cern.ch/cmssst/vofeed/vofeed.xml"
 
     glbTopology = vofdTopology()
 # ########################################################################### #
@@ -331,7 +338,7 @@ def vofd_glideinWMSfactory():
     DICT_GLIDEIN_FACTORIES = [
        {'lbl': "UCSD",   'uri': "gfactory-1.t2.ucsd.edu",   'prd': True},
        {'lbl': "OSG",    'uri': "glidein.grid.iu.edu",      'prd': True},
-       {'lbl': "CERN",   'uri': "vocms0305.cern.ch", '       prd': True},
+       {'lbl': "CERN",   'uri': "vocms0805.cern.ch",        'prd': True},
        {'lbl': "FNAL",   'uri': "cmsgwms-factory.fnal.gov", 'prd': True},
        {'lbl': "OSGint", 'uri': "glidein-itb.grid.iu.edu",  'prd': False} ]
 
@@ -411,9 +418,6 @@ def vofd_glideinWMSfactory():
         #
         for classAd in myData:
             gridsite = classAd['GLIDEIN_ResourceName']
-            # patch for subsite name used as grid site name in factories
-            if ( gridsite[0:5] == "GRIF-" ):
-                gridsite = "GRIF"
             host = classAd['GLIDEIN_Gatekeeper']
             host = host.split()[-1].split(":")[0]
             ceType = "CE"
@@ -597,6 +601,54 @@ def vofd_write_xml():
 
 
 
+def vofd_write_metric():
+    # #################################################################### #
+    # write metric file with grid resources in prod use for SAM3 dashboard #
+    # #################################################################### #
+
+    resourceCnt = -1
+    myFile = open(VOFD_IN_USE_FILE + "_new", 'w')
+    try:
+        myFile.write(("#txt\n#\n# Site Support Team, Resources in Production" +
+            " Use Metric\n#    written at %s by %s\n#    in account %s on no" +
+            "de %s\n#    maintained by cms-comp-ops-site-support-team@cern.c" +
+            "h\n#    https://twiki.cern.ch/twiki/bin/viewauth/CMS/SiteSuppor" +
+            "tSiteStatusSiteReadiness\n# ===================================" +
+            "=====================================\n#\n") %
+            (time.strftime("%Y-%b-%d %H:%M:%S UTC",
+                           time.gmtime(glbInfo['timestamp'])),
+             sys.argv[0], getpass.getuser(), socket.getfqdn()))
+        #
+        # write CEs and SEs in production use:
+        sList = []
+        for cmssite in sorted(glbTopology.topo.keys()):
+            toposite = glbTopology.topo[cmssite]
+            for indx in range( len(toposite) ):
+                for rsrc in toposite[indx]['rsrcs']:
+                    if ( rsrc['prod'] ):
+                        sDict = {'host': rsrc['host'], 'flavour': rsrc['type']}
+                        if sDict in sList:
+                            continue
+                        myFile.write("%s\t%s %s\tproduction\tgreen\t%s\n" %
+                            (time.strftime("%Y-%m-%d %H:%M:%S",
+                                           time.gmtime(glbInfo['timestamp'])),
+                             rsrc['type'], rsrc['host'], glbInfo['url']))
+                        sList.append( sDict )
+        resourceCnt = len( sList )
+        del sList
+    finally:
+        myFile.close()
+    # sanity check:
+    if ( resourceCnt >= 100 ):
+        os.rename(VOFD_IN_USE_FILE + "_new", VOFD_IN_USE_FILE)
+    elif (resourceCnt >= 0 ):
+        print("Resource count sanity check failed, %d" % resourceCnt)
+    else:
+        print("Failed to write metric file with grid resources in prod use")
+# ########################################################################### #
+
+
+
 if __name__ == '__main__':
 
     # install URL opener that connects with a certificate and key:
@@ -612,3 +664,4 @@ if __name__ == '__main__':
     vofd_glideinWMSfactory()
     #glbTopology.write()
     vofd_write_xml()
+    vofd_write_metric()
