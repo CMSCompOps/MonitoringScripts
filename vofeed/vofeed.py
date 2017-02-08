@@ -457,6 +457,8 @@ def vofd_glideinWMSfactory():
             if ( classAd['GLIDEIN_CMSSite'] == "T2_CH_CERN" ):
                 glbTopology.addResource("T0_CH_CERN", gridsite,
                     host, ceType, factory['prd'], queue, batch)
+                glbTopology.addResource("T3_CH_CERN_CAF", gridsite,
+                    host, ceType, factory['prd'], queue, batch)
 # ########################################################################### #
 
 
