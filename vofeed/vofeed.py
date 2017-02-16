@@ -323,7 +323,7 @@ def vofd_phedex():
         phedex_site = phedex_site.replace('_MSS','')
         #print("SE: %s\t%s" % (phedex_site, phedex_host))
         if (( phedex_site == "T1_US_FNAL" ) and
-            ( phedex_host == "cmseos.fnal.gov" )):
+            ( phedex_host == "cmslmon.fnal.gov" )):
             glbTopology.addResource(phedex_site, "", phedex_host, "SRM", False)
         else:
             glbTopology.addResource(phedex_site, "", phedex_host, "SRM")
