@@ -11,23 +11,6 @@ fi
 voms_server=`voms-proxy-info --uri`
 echo "VOMS server: ${voms_server}"
 
-#check if voms server is available
-# if ping -q -c 1 -W 1 lcgvoms25.cern.ch >/dev/null; then
-# 	echo "The network is up and CMS voms server is available"
-# elif ping -q -c 1 -W 1 voms24.cern.ch >/dev/null; then
-# 	echo "The network is up and CMS voms server is available"
-# else
-# 	echo $ERROR_VOMS_SERVER_NOT_AVAILABLE_MSG
-# 	exit $ERROR_VOMS_SERVER_NOT_AVAILABLE
-# fi
-
-# echo -e "GET http://lcgvoms25.cern.ch HTTP/1.0\n\n" | nc lcgvoms25.cern.ch 22 > /dev/null 2>&1
-# if [ $? -eq 0 ]; then
-# 	echo "VOMS server is reachable"
-# else 
-# 	echo $ERROR_VOMS_SERVER_NOT_AVAILABLE_MSG
-# 	exit $ERROR_VOMS_SERVER_NOT_AVAILABLE
-# fi
 
 # Checking some X509 details
 if [ -e "$X509_CERT_DIR" ]; then

@@ -208,13 +208,16 @@ PSST_JOB_EXIT_CODES = {0: "Job finished successfully",
 					   10010: "ERROR: ls -l  and wc -c  byte_count was not equal",
 					   10011: "ERROR: Required software was not found",
 					   10012: "ERROR: scratch dir was not found",
-					   10013: "ERROR: less than 20 GB of free space in scratch dir",
+					   10013: "ERROR: less than 10 GB of free space in scratch dirr",
 					   10014: "ERROR: Openssl was not found",
 					   10015: "ERROR: the network is down or CMS voms server is unavailable",
 					   10016: "ERROR: could not find X509 certificate directory",
 					   10017: "ERROR: could not find X509 proxy certificate",
 					   10018: "ERROR: Unable to locate the glidein configuration file",
 					   10019: "ERROR: No sitename detected!  Invalid SITECONF file",
+					   10020: "ERROR: cpu load is to high",
+					   10021: "ERROR: low CVMFS cache space",
+					   10030: "WARNING: less than 20 GB of free space in scratch dir"
 					  }
 
 # ======================================================================

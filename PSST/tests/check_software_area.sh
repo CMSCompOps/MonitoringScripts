@@ -1,5 +1,11 @@
 #!/usr/bin/env bash
 
+cpus="$1"
+
+if [ "x$cpus" = "x" ]; then
+	cpus=1
+fi
+
 # Software area definition and existence
 isEGEE=false
 isOSG=false
@@ -67,6 +73,20 @@ if [ $result != 0 ] ; then
 fi
 rm -f $tmpfile
 
+cvmfs_max_cache=`cvmfs_config stat -v cms.cern.ch | grep '^Cache Usage'| awk '{print $5}' | sed 's/k/ /g'`
+cvmfs_current_cache=`cvmfs_config stat -v cms.cern.ch | grep '^Cache Usage'| awk '{print $3}' | sed 's/k/ /g'`
+
+cvmfs_free_cache=` echo "$((cvmfs_max_cache-cvmfs_current_cache))  / 1024^2" | bc`
+echo "Free space in CVMFS cache: ${cvmfs_free_cache} GB"
+
+#Required cvmfs free cache size 2GB/core
+required_cvmfs_free_cache=$((2 * $cpus))
+
+if [ $cvmfs_free_cache -le $required_cvmfs_free_cache ]; then
+	echo $ERROR_LOW_CVMFS_CACHE_MSG: $cvmfs_free_cache GB 
+	exit $ERROR_LOW_CVMFS_CACHE
+fi
+
 echo "Default SCRAM_ARCH: $SCRAM_ARCH"
 
 if [ -z $CMS_PATH ]; then
@@ -89,12 +109,6 @@ then
 fi
 
 echo "Retrieving list of CMSSW versions installed..."
-# cmsos_defined='slc5_amd64 slc6_amd64'
-# cmssw_installed_version_list=''
-# for cmsos in $cmsos_defined
-# do
-# 	cmssw_installed_version_list=$cmssw_installed_version_list`scram -a ${cmsos} l -a -c CMSSW | tr -s " " | cut -d " " -f2 | sort -u`
-# done
 
 #get all available cmssw realeases of any architecture
 cmssw_installed_version_list=`scram -a slc* l -a -c CMSSW | tr -s " " | cut -d " " -f2 | sort -u`
@@ -123,66 +137,7 @@ do
 				echo "${file}: ls_byte_count=${ls_byte_count}; wc_byte_count=${wc_byte_count}"
 			fi
 		done
-		# echo "Checking version $cmssw_ver installation..."
-		# scramv1 project CMSSW $cmssw_ver
-		# TestResult=$?
-		# if [ $TestResult != 0 ]; then
-		# 	error=1
-		# 	echo "ERROR: Some of the required CMSSW versions not working"
-		# 	errorSummary="summary: REQ_CMSSW_NOT_WORKING"
-		# fi
 	fi
 done
-# 	result=$?
-
-
-# archs_defined='slc5_amd64_gcc434 slc5_amd64_gcc462 slc5_amd64_gcc472 slc6_amd64_gcc530 slc6_amd64_gcc472 slc6_amd64_gcc481 slc6_amd64_gcc493 slc6_amd64_gcc491'
-# for arch in $archs_defined
-# do
-# 	export SCRAM_ARCH=$arch
-# 	export BUILD_ARCH=$arch
-# 	echo "SCRAM_ARCH: $arch"
-# 	#scramv1 list -c CMSSW > scramv1_list_output.txt
-# 	listerror=$?
-# 	if [ $listerror != 0 ]; then
-# 		echo "WARNING: could not list CMSSW versions with scramv1"
-# 	fi
-# 	touch scramv1_list_output.txt
-# 	cat scramv1_list_output.txt | tr -s " " | cut -d " " -f2 | sort -u > cmssw_installed_${arch}.txt
-# 	rm -f scramv1_list_output.txt
-# 	cat cmssw_installed_${arch}.txt >> cmssw_installed_version_list.txt
-# 	# if [ -d $CMS_PATH/${arch}/cms/cms-common/1.0 ]; then
-# 	# 	echo "Recent cms-common RPM already installed:"
-# 	# 	ls -d $CMS_PATH/${arch}/cms/cms-common/1.0/* | grep -v etc
-# 	# else
-# 	# 	echo "Old style cms-common RPM installed."
-# 	# fi
-# done
-# scram l -a -c CMSSW
-
-# missing=0
-# failproject=0
-# for cmsver in `cat cmssw_required_version_list.txt`
-# do
-# 	grep -x $cmsver cmssw_installed_version_list.txt >& /dev/null
-# 	result=$?
-# 	if [ $result != 0 ]; then
-# 		echo "ERROR: Required CMSSW version $cmsver not installed"
-# 		error=1
-# 		errorSummary="REQ_CMSSW_NOT_FOUND"
-# 	else
-# 		echo "Checking version $cmsver installation..."
-# 	   	# execute in a subprocess commands that require scram 
-# 	   	echo $SAME_SENSOR_HOME
-# 		$SAME_SENSOR_HOME/tests/TestCmsswVersion.sh $cmsver
-# 		TestResult=$?
-# 		if [ $TestResult != 0 ]; then
-# 			error=1
-# 			echo "ERROR: Some of the required CMSSW versions not working"
-# 			errorSummary="summary: REQ_CMSSW_NOT_WORKING"
-# 		fi
-# 	fi
-# done
-
 
 exit 0

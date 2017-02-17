@@ -1,10 +1,16 @@
 #!/usr/bin/env bash
 
-#function for ending validation script if one of the test fails (returns not 0)
+#function for ending PSST validation script if one of the test fails (returns not 0).
+#Exit codes in range [30;40] are treated as warning. It means that exit code is reported
+#to the job Dashboard and PSST continues to run.
 test_result() {	
 	if [ "$exit_code" -ne "0" ]; then
-		send_dashboard_report
-		exit $exit_code
+		if [ "$exit_code" -ge 30 ] && [ "$exit_code" -le 40 ]; then
+			send_dashboard_report
+		else
+			send_dashboard_report
+			exit $exit_code
+		fi
 	fi
 }
 
@@ -31,7 +37,7 @@ send_dashboard_report() {
 	else
 		JOB=`echo "${ip} % ${MAXJOB}" | /usr/bin/bc`
 	fi
-  
+
 	#Check job status that will be reported to the dashboard
 	if [ "$exit_code" = "0" ]; then
 		grid_status="succeeded"
@@ -42,7 +48,7 @@ send_dashboard_report() {
 
 	echo "Sending post job info to the dashboard"
 	echo $site_name $target_ce $exit_code $grid_status $TASK $JOB
-	# /usr/bin/python ${my_tar_dir}/DashboardAPI.py $site_name $target_ce $exit_code $job_exit_reason $grid_status $TASK $JOB
+	#/usr/bin/python ${my_tar_dir}/reporting/DashboardAPI.py $site_name $target_ce $exit_code $job_exit_reason $grid_status $TASK $JOB
 }
 
 glidein_config="$1"
@@ -77,54 +83,53 @@ source ${my_tar_dir}/exit_codes.txt
 export $(cut -d= -f1 ${my_tar_dir}/exit_codes.txt)
 
 echo "Check OS"
-${my_tar_dir}/check_os.sh
+${my_tar_dir}/tests/check_os.sh
 exit_code=$?
 echo "Exit code:" $exit_code
 test_result
 
 echo "Check connection"
-${my_tar_dir}/check_connection.sh
+${my_tar_dir}/tests/check_connection.sh
 exit_code=$?
 echo "Exit code:" $exit_code
 test_result
 
 echo "Check software area"
-${my_tar_dir}/check_software_area.sh 
+${my_tar_dir}/tests/check_software_area.sh $cpus
 exit_code=$?
 echo "Exit code:" $exit_code
 test_result
 
 echo "Check RPMs"
-${my_tar_dir}/check_RPMs.sh $my_tar_dir
+${my_tar_dir}/tests/check_RPMs.sh $my_tar_dir
 exit_code=$?
 echo "Exit code:" $exit_code
 test_result
 
-# echo "Check scratch space"
-# ${my_tar_dir}/check_scratch_space.sh $work_dir $cpus
-# exit_code=$?
-# echo "Exit code:" $exit_code
-# test_result
+echo "Check scratch space"
+${my_tar_dir}/tests/check_scratch_space.sh $work_dir $cpus
+exit_code=$?
+echo "Exit code:" $exit_code
+test_result
 
 echo "Check proxy"
-${my_tar_dir}/check_proxy.sh
+${my_tar_dir}/tests/check_proxy.sh
 exit_code=$?
 echo "Exit code:" $exit_code
 test_result
-
 
 # echo "test squid"
 # exit_code=$(/usr/bin/python ${my_tar_dir}/test_squid.py 2>&1 >/dev/null)
 # echo "Exit code:" $exit_code
 
-# echo "Siteconf validation"
-# /usr/bin/python ${my_tar_dir}/export_siteconf_info.py
-# exit_code=$?
-# echo "Exit code:" $exit_code
-# test_result
+echo "Siteconf validation"
+/usr/bin/python ${my_tar_dir}/tests/export_siteconf_info.py
+exit_code=$?
+echo "Exit code:" $exit_code
+test_result
 
 echo "Check cpu load"
-${my_tar_dir}/check_cpu_load.sh $cpus
+${my_tar_dir}/tests/check_cpu_load.sh $cpus
 exit_code=$?
 echo "Exit code:" $exit_code
 
