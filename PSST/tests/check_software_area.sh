@@ -76,7 +76,7 @@ rm -f $tmpfile
 cvmfs_max_cache=`cvmfs_config stat -v cms.cern.ch | grep '^Cache Usage'| awk '{print $5}' | sed 's/k/ /g'`
 cvmfs_current_cache=`cvmfs_config stat -v cms.cern.ch | grep '^Cache Usage'| awk '{print $3}' | sed 's/k/ /g'`
 
-cvmfs_free_cache=` echo "$((cvmfs_max_cache-cvmfs_current_cache))  / 1024^2" | bc`
+cvmfs_free_cache=`echo "$((cvmfs_max_cache-cvmfs_current_cache))  / 1024^2" | bc`
 echo "Free space in CVMFS cache: ${cvmfs_free_cache} GB"
 
 #Required cvmfs free cache size 2GB/core

@@ -5,7 +5,7 @@ psst.tgz: psst.sh \
 		  reporting/apmon.py \
 		  reporting/ProcInfo.py \
 		  reporting/Logger.py \
-		  tests/export_siteconf_info.py \
+		  tests/check_siteconf.py \
 		  tests/test_squid.py \
 		  tests/check_proxy.sh \
 		  tests/check_software_area.sh \
@@ -22,7 +22,7 @@ psst.tgz: psst.sh \
 					  reporting/apmon.py \
 					  reporting/ProcInfo.py \
 					  reporting/Logger.py \
-					  tests/export_siteconf_info.py \
+					  tests/check_siteconf.py \
 					  tests/test_squid.py \
 					  tests/check_proxy.sh \
 					  tests/check_software_area.sh \

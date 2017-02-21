@@ -48,7 +48,7 @@ send_dashboard_report() {
 
 	echo "Sending post job info to the dashboard"
 	echo $site_name $target_ce $exit_code $grid_status $TASK $JOB
-	#/usr/bin/python ${my_tar_dir}/reporting/DashboardAPI.py $site_name $target_ce $exit_code $job_exit_reason $grid_status $TASK $JOB
+	/usr/bin/python ${my_tar_dir}/reporting/DashboardAPI.py $site_name $target_ce $exit_code $job_exit_reason $grid_status $TASK $JOB
 }
 
 glidein_config="$1"
@@ -119,11 +119,11 @@ echo "Exit code:" $exit_code
 test_result
 
 # echo "test squid"
-# exit_code=$(/usr/bin/python ${my_tar_dir}/test_squid.py 2>&1 >/dev/null)
+# exit_code=$(/usr/bin/python ${my_tar_dir}/tests/test_squid.py 2>&1 >/dev/null)
 # echo "Exit code:" $exit_code
 
 echo "Siteconf validation"
-/usr/bin/python ${my_tar_dir}/tests/export_siteconf_info.py
+/usr/bin/python ${my_tar_dir}/tests/check_siteconf.py
 exit_code=$?
 echo "Exit code:" $exit_code
 test_result
