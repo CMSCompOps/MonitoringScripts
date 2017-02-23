@@ -8,7 +8,7 @@ except Exception, e:
 	print "Exception message: %s" % str(e)
 	sys.exit(0)
 
-job_config = os.path.join(os.environ['CMS_PATH'], "SITECONF","local", "JobConfig", "site-local-config.xml")
+job_config = os.path.join(os.environ['CMS_PATH'], "SITECONF","T1_DE_KIT", "JobConfig", "site-local-config.xml")
 try:
 	tree = xml.etree.ElementTree.parse(job_config)
 except IOError:
@@ -28,7 +28,7 @@ if local_stage_out:
 	phedex_node = local_stage_out.find("phedex-node")
 	if (phedex_node != None) and phedex_node.get("value"):
 		pnn_found = True
-		print "Locall stage-out node value %s" %phedex_node.get("value")
+		print "Locall stage-out node value: %s" %phedex_node.get("value")
 	if not pnn_found:
 		print os.environ["ERROR_PNN_NOT_FOUND_MSG"]
 		sys.exit(int(os.environ["ERROR_PNN_NOT_FOUND"]))
@@ -36,13 +36,25 @@ else:
 	print os.environ["ERROR_LOCAL_STAGEOUT_NOT_FOUND_MSG"]
 	sys.exit(int(os.environ["ERROR_LOCAL_STAGEOUT_NOT_FOUND"]))
 
+calib_data = job_config_root[0].find("calib-data")
+if calib_data:
+	frontier_connect=calib_data.find("frontier-connect")
+	if frontier_connect:
+		print "frontier-connect section was found"
+	else:
+		print os.environ["ERROR_FRONTIER_CONNECT_NOT_FOUND_MSG"]
+		sys.exit(int(os.environ["ERROR_FRONTIER_CONNECT_NOT_FOUND"]))
+else:
+	print os.environ["ERROR_CALIB_DATA_NOT_FOUND_MSG"]
+	sys.exit(int(os.environ["ERROR_CALIB_DATA_NOT_FOUND"]))
+
 
 fallback_stage_out = job_config_root[0].find("fallback-stage-out")
 if fallback_stage_out:
 	phedex_node = fallback_stage_out.find("phedex-node")
 	if (phedex_node != None) and phedex_node.get("value"):
 		pnn_found = True
-		print "Fallback stage-out node value %s" %phedex_node.get("value")
+		print "Fallback stage-out node value: %s" %phedex_node.get("value")
 	if not pnn_found:
 		print os.environ["WARNING_PNN_NOT_FOUND_MSG"]
 		sys.exit(int(os.environ["WARNING_PNN_NOT_FOUND"]))

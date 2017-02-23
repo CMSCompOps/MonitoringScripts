@@ -48,7 +48,7 @@ send_dashboard_report() {
 
 	echo "Sending post job info to the dashboard"
 	echo $site_name $target_ce $exit_code $grid_status $TASK $JOB
-	/usr/bin/python ${my_tar_dir}/reporting/DashboardAPI.py $site_name $target_ce $exit_code $job_exit_reason $grid_status $TASK $JOB
+	#/usr/bin/python ${my_tar_dir}/reporting/DashboardAPI.py $site_name $target_ce $exit_code $job_exit_reason $grid_status $TASK $JOB
 }
 
 glidein_config="$1"
