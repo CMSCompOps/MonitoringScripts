@@ -217,7 +217,13 @@ PSST_JOB_EXIT_CODES = {0: "Job finished successfully",
 					   10019: "ERROR: No sitename detected!  Invalid SITECONF file",
 					   10020: "ERROR: cpu load is to high",
 					   10021: "ERROR: low CVMFS cache space",
-					   10030: "WARNING: less than 20 GB of free space in scratch dir"
+					   10022: "ERROR: No PhEDEx node name found for local stageout.",					   
+					   10023: "ERROR: No LOCAL_STAGEOUT section in site-local-config.xml",					   
+					   10024: "ERROR: No frontier-connect section in site-local-config.xml",	
+					   10025: "ERROR: No callib-data section in site-local-config.xml",				   
+					   10030: "WARNING: less than 20 GB of free space in scratch dir",
+					   10031: "WARNING: No PhEDEx node name found for fallback stageout",
+					   10032: "WARNING: No FALLBACK_STAGEOUT section in site-local-config.xml"
 					  }
 
 # ======================================================================
