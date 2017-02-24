@@ -1,4 +1,4 @@
-To run PSST locally - $ ./psst.sh run_local.ch
+To run PSST locally - $ ./psst.sh run_local.txt
 
 In the directory there is a Makefile for the tarball, which contains all files of PSST. 
 
