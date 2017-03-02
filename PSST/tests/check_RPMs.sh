@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
 my_tar_dir="$1"
 
@@ -10,7 +10,7 @@ unset BUILD_ARCH
 /usr/bin/python ${my_tar_dir}/tests/get_required_packages.py $cms_os $package_url
 exit_code=$?
  
-if [ $exit_code -ne "0" ]; then
+if [ $exit_code -ne 0 ]; then
 	echo $ERROR_PACKAGE_NOT_FOUND_MSG
 	exit $ERROR_PACKAGE_NOT_FOUND
 fi

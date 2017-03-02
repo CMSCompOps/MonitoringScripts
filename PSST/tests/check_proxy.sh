@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
 #check if openssl is installed
 if [ -x "/usr/bin/openssl" ]; then

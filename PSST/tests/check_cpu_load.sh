@@ -12,10 +12,10 @@ grep -c ^processor /proc/cpuinfo
 cpus=`grep -c ^processor /proc/cpuinfo` 
 
 
-if [[ $(echo "$cpu_load >= $cpus" | bc) -eq "1" ]]; then
+if [[ $(echo "$cpu_load >= $cpus" | bc) -eq 1 ]]; then
 	echo "${ERROR_CPU_LOAD_MSG}, cpus: ${cpus}, cpu_load: ${cpu_load}"
 	exit $ERROR_CPU_LOAD
-elif [[ $(echo "$(echo $cpu_load + $pilot_cores | bc) >= $cpus" | bc) -eq "1" ]]; then
+elif [[ $(echo "$(echo $cpu_load + $pilot_cores | bc) >= $cpus" | bc) -eq 1 ]]; then
 	echo "warning"
 else
 	exit 0

@@ -340,4 +340,4 @@ def reportToDashboard(site_name=None, target_ce=None, exitCode=None, grid_status
 	return exitCode
 
 if __name__ == "__main__":
-	sys.exit(reportToDashboard(sys.argv[1], sys.argv[2], int(sys.argv[3]), sys.argv[4], sys.argv[5], sys.argv[6]))
+	reportToDashboard(sys.argv[1], sys.argv[2], int(sys.argv[3]), sys.argv[4], sys.argv[5], sys.argv[6])

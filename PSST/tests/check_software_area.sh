@@ -1,7 +1,8 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
 cpus="$1"
 
+#if CPUs variable is not set, let's assume that it is single core pilot
 if [ "x$cpus" = "x" ]; then
 	cpus=1
 fi
@@ -113,7 +114,9 @@ echo "Retrieving list of CMSSW versions installed..."
 #get all available cmssw realeases of any architecture
 cmssw_installed_version_list=`scram -a slc* l -a -c CMSSW | tr -s " " | cut -d " " -f2 | sort -u`
 
-cmssw_required_version_list='CMSSW_5_3_11 CMSSW_8_0_21'
+#Most popular releases according kibana
+#https://twiki.cern.ch/twiki/bin/view/CMSPublic/PilotStartupSiteTest
+cmssw_required_version_list='CMSSW_8_0_25 CMSSW_8_0_26_patch1'
 for cmssw_ver in $cmssw_required_version_list
 do
 	echo $cmssw_installed_version_list | grep -i $cmssw_ver >& /dev/null

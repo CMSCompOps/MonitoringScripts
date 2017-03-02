@@ -8,7 +8,7 @@ except Exception, e:
 	print "Exception message: %s" % str(e)
 	sys.exit(0)
 
-job_config = os.path.join(os.environ['CMS_PATH'], "SITECONF","T1_DE_KIT", "JobConfig", "site-local-config.xml")
+job_config = os.path.join(os.environ['CMS_PATH'], "SITECONF","local", "JobConfig", "site-local-config.xml")
 try:
 	tree = xml.etree.ElementTree.parse(job_config)
 except IOError:
