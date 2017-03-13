@@ -80,10 +80,11 @@ cvmfs_current_cache=`cvmfs_config stat -v cms.cern.ch | grep '^Cache Usage'| awk
 cvmfs_free_cache=`echo "$((cvmfs_max_cache-cvmfs_current_cache))  / 1024^2" | bc`
 echo "Free space in CVMFS cache: ${cvmfs_free_cache} GB"
 
-#Required cvmfs free cache size 2GB/core
-required_cvmfs_free_cache=$((2 * $cpus))
+#Required cvmfs free cache size 0.5GB/core
+required_cvmfs_free_cache=`echo 0.5*${cpus}| bc`
 
-if [ $cvmfs_free_cache -le $required_cvmfs_free_cache ]; then
+# if [ $cvmfs_free_cache -le $required_cvmfs_free_cache ]; then
+if [ $(echo "$cvmfs_free_cache >= $required_cvmfs_free_cache" | bc) -eq 0 ]; then
 	echo $ERROR_LOW_CVMFS_CACHE_MSG: $cvmfs_free_cache GB 
 	exit $ERROR_LOW_CVMFS_CACHE
 fi

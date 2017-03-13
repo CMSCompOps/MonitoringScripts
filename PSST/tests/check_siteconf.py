@@ -8,7 +8,24 @@ except Exception, e:
 	print "Exception message: %s" % str(e)
 	sys.exit(0)
 
-job_config = os.path.join(os.environ['CMS_PATH'], "SITECONF","local", "JobConfig", "site-local-config.xml")
+def get_siteconf_path():
+	if 'VO_CMS_SW_DIR' in os.environ:
+		siteconf_path = os.path.join(os.environ['VO_CMS_SW_DIR'], "SITECONF")
+	else:
+		cvmfs_path = os.environ.get("CVMFS", "/cvmfs")
+		siteconf_path = os.path.join(cvmfs_path, "cms.cern.ch", "SITECONF")
+	return siteconf_path
+
+local_siteconf = os.path.join(get_siteconf_path(), "local")
+if not os.path.exists(local_siteconf):
+	if glidein_config.get("PARROT_RUN_WORKS", "FALSE") == "TRUE":
+		print "Using parrot -- skipping SITECONF processing."
+		sys.exit(0)
+	print "CVMFS siteconf path (%s) does not exist; is CVMFS running and configured properly?" % local_siteconf
+else:
+	print "Using SITECONF found at %s." % local_siteconf
+
+job_config = os.path.join(local_siteconf, "JobConfig", "site-local-config.xml")
 try:
 	tree = xml.etree.ElementTree.parse(job_config)
 except IOError:

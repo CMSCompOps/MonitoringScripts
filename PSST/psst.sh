@@ -34,10 +34,10 @@ send_dashboard_report() {
 
 	network_interface=`/sbin/route | grep '^default' | grep -o '[^ ]*$'`
 	ip=`/sbin/ip addr show ${network_interface} | grep -m 1 "inet" | awk '{print $2}' | sed 's/[^0-9]*//g'`
-	mac=`/sbin/ifconfig -a ${network_interface} | grep -m 1 -o -E '([[:xdigit:]]{1,2}:){5}[[:xdigit:]]{1,2}' | sed 's/://g'`
+	mac=`/sbin/ifconfig -a ${network_interface} | grep -o  -E '([0-9A-Fa-f]{2}[:-]){5,}([0-9A-Fa-f]{2})' | sed 's/[:-]//g'`
 
 	if [ ! -z "$mac" ]; then
-		mac10=`echo "ibase=16; ${mac}" | /usr/bin/bc`
+		mac10=`echo $((16#${mac}))`
 		macmod=`echo "${mac10} + ${timemod}" | /usr/bin/bc`
 		job=`echo "${macmod} % ${maxjob}" | /usr/bin/bc`
 	else
@@ -51,10 +51,9 @@ send_dashboard_report() {
 		grid_status="failed"
 		exit_code=$((exit_code + exit_code_range))
 	fi
-
 	echo "Sending post job info to the dashboard"
 	echo $site_name $target_ce $exit_code $grid_status $task $job
-	/usr/bin/python ${my_tar_dir}/reporting/DashboardAPI.py $site_name $target_ce $exit_code $job_exit_reason $grid_status $task $job
+	/usr/bin/python ${my_tar_dir}/reporting/DashboardAPI.py $site_name $target_ce $exit_code $grid_status $task $job
 	checkError "Reporting to dashboard failed. Example of report: ${site_name} ${target_ce} ${exit_code} ${grid_status} ${task} ${job}"
 }
 
