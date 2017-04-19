@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<BASE HREF="http://cmssst.web.cern.ch/cmssst/siteStatus/">
+<HTML lang=en>
+<HEAD>
+   <META charset="UTF-8">
+   <TITLE>CMS Site Status Today</TITLE>
+
+   <SCRIPT async type="text/javascript" language="javascript"
+           src="http://cmssst.web.cern.ch/cmssst/siteStatus/section_lib.js">
+   </SCRIPT>
+
+   <STYLE TYPE="text/css">
+      TD A, TD A:LINK, TD A:VISITED {
+         color:black; text-decoration:none
+      }
+   </STYLE>
+</HEAD>
+
+<BODY ONLOAD="fillPage()">
+<H1>
+   <CENTER><SPAN ID="titleSPAN" STYLE="white-space:nowrap;"></SPAN>
+   </CENTER>
+</H1>
+
+<SPAN ID="topSPAN" STYLE="color:red; font-weight:bold; font-size:20px;"></SPAN>
+<DIV ID="mainDIV"></DIV>
+<HR>
+
+<SMALL>
+   <TABLE BORDER="0" CELLPADDING="0" CELLSPACING="1">
+   <TR>
+      <TD>Entries in the "Today" columns are for 15-minute periods (if the
+         granularity is available).
+      <TD WIDTH="32" NOWRAP>&nbsp;
+      <TD STYLE="text-align:right; white-space:nowrap;"><BUTTON
+         ONCLICK="location.reload(true)">Update</BUTTON>
+   <TR>
+   <TD COLSPAN="3">
+      <TABLE WIDTH="100%" BORDER="0" CELLPADDING="0" CELLSPACING="1">
+      <TR>
+         <TD><CANVAS ID='cnvs_lgn_Ok' WIDTH="6" HEIGHT="18"></CANVAS>
+         <TD STYLE="white-space:nowrap;">Site state or evaluation good (ok)
+         <TD STYLE="width:24px; white-space: nowrap;">&nbsp; &nbsp;
+         <TD><CANVAS ID="cnvs_lgn_PartDowntime" WIDTH="6" HEIGHT="18"></CANVAS>
+         <TD STYLE="white-space:nowrap;">Site in partial downtime
+         <TD STYLE="width:24px; white-space: nowrap;">&nbsp; &nbsp;
+         <TD><CANVAS ID='cnvs_lgn_WaitingRoom' WIDTH="6" HEIGHT="18"></CANVAS>
+         <TD STYLE="white-space:nowrap;">Site not in service (Waiting Room)
+         <TD STYLE="width:32px; white-space: nowrap;">&nbsp; &nbsp; &nbsp;
+         <TD STYLE="text-align:right; color:blue; font-weight:bold;
+            white-space:nowrap;">information as of
+      <TR>
+         <TD><CANVAS ID='cnvs_lgn_Warning' WIDTH="6" HEIGHT="18"></CANVAS>
+         <TD STYLE="white-space:nowrap;">Site or evaluation has issues (warning)
+         <TD STYLE="width:24px; white-space: nowrap;">&nbsp; &nbsp;
+         <TD><CANVAS ID="cnvs_lgn_FullDowntime" WIDTH="6" HEIGHT="18"></CANVAS>
+         <TD STYLE="white-space:nowrap;">Site or servoce in full downtime
+         <TD STYLE="width:24px; white-space: nowrap;">&nbsp; &nbsp;
+         <TD><CANVAS ID='cnvs_lgn_Morgue' WIDTH="6" HEIGHT="18"></CANVAS>
+         <TD STYLE="white-space:nowrap;">Site not in service (Morgue)
+         <TD STYLE="width:32px; white-space: nowrap;">&nbsp; &nbsp; &nbsp;
+         <TD STYLE="text-align:right; color:blue; font-weight:bold;
+            white-space:nowrap;"><SPAN ID="legendSPAN"></SPAN>
+      <TR>
+         <TD><CANVAS ID='cnvs_lgn_Error' WIDTH="6" HEIGHT="18"></CANVAS>
+         <TD STYLE="white-space:nowrap;">Site or evaluation failed (error)
+         <TD STYLE="width:24px; white-space: nowrap;">&nbsp; &nbsp;
+         <TD><CANVAS ID="cnvs_lgn_AdhocDowntime" WIDTH="6" HEIGHT="18"></CANVAS>
+         <TD STYLE="white-space:nowrap;">Site or service in unscheduled downtime
+         <TD STYLE="width:24px; white-space: nowrap;">&nbsp; &nbsp;
+         <TD><CANVAS ID='cnvs_lgn_Unknown' WIDTH="6" HEIGHT="18"></CANVAS>
+         <TD STYLE="white-space:nowrap;">Site or evaluation status unknown
+         <TD STYLE="width:32px; white-space: nowrap;">&nbsp; &nbsp; &nbsp;
+         <TD STYLE="text-align:right; white-space:nowrap;">
+            <A HREF="http://cern.ch/copyright">&copy; Copyright author, CMS,
+            Fermilab, and others 2016</A>
+      </TABLE>
+   </TABLE>
+</SMALL>
+
+<SCRIPT type="text/javascript" language="javascript">
+   "use strict";
+
+   var myTimer = null;
+   var myData = {};
+
+   function fillPage() {
+      var jsonURL = "http://cmssst.web.cern.ch/cmssst/siteStatus/data/";
+
+      // get site name from query options of URL:
+      var jsonSite = "";
+      var qIndex = window.location.href.indexOf('?');
+      var qOpts;
+      var qCnt;
+      var qPair;
+      if ( qIndex >= 0 ) {
+         qOpts = (window.location.href.substring(qIndex+1)).split('&');
+         for ( qCnt=0; qCnt < qOpts.length; qCnt+=1 ) {
+            qPair = (qOpts[qCnt]).split('=');
+            if ( qPair[0] == 'site' ) {
+               jsonSite = qPair[1];
+               break;
+            }
+         }
+      }
+      // check for valid CMS site name:
+      if ( jsonSite.search(/T[0-9]_[A-Z]{2}_\w+/) != 0 ) {
+         document.getElementById("topSPAN").innerHTML = "No site specified !";
+         fillLegend();
+         updateTimestamps();
+      } else {
+         /* fetch JSON file with site data */
+         var xhttprObj = new XMLHttpRequest();
+
+         xhttprObj.open('GET', jsonURL + jsonSite + ".json", true);
+         xhttprObj.onreadystatechange = function () {
+            if ((this.readyState == 4) && (this.status == 200)) {
+               myData = JSON.parse(this.responseText);
+               // combine metric vectors into strings:
+               for ( var mName in myData.metrics ) {
+                  myData.metrics[mName].pmonth = '';
+                  myData.metrics[mName].pweek = '';
+                  myData.metrics[mName].yesterday = '';
+                  myData.metrics[mName].today = myData.metrics[mName].today.join('');
+                  myData.metrics[mName].fweek = '';
+               }
+               for ( var cnt=0; cnt < myData.elements.length; cnt+=1 ) {
+                  for ( var mName in myData.elements[cnt].metrics ) {
+                     myData.elements[cnt].metrics[mName].pmonth = '';
+                     myData.elements[cnt].metrics[mName].pweek = '';
+                     myData.elements[cnt].metrics[mName].yesterday = '';
+                     myData.elements[cnt].metrics[mName].today =
+                        myData.elements[cnt].metrics[mName].today.join('');
+                     myData.elements[cnt].metrics[mName].fweek = '';
+                  }
+               }
+               if (( 'alert' in myData ) && ( myData.alert != '' )) {
+                  document.getElementById("topSPAN").innerHTML = myData.alert;
+               } else {
+                  document.getElementById("topSPAN").innerHTML = '';
+               }
+               // write/update page in browser:
+               setTimeout(writeTodayTable(), 0);
+               setTimeout(fillTodayCanvases(), 0);
+               setTimeout(fillLegend(), 0);
+               setTimeout(updateTimestamps(), 0);
+            }
+         };
+         xhttprObj.timeout = 90000; // One and a half minutes (in milliseconds)
+         xhttprObj.ontimeout = function() {
+            myData.alert = 'Failed to fetch site status detail information !';
+            document.getElementById("topSPAN").innerHTML = myData.alert;
+         }
+         xhttprObj.send();
+      }
+   }
+</SCRIPT>
+
+</BODY>
+</HTML>

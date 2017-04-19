@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<BASE HREF="http://cmssst.web.cern.ch/cmssst/siteStatus/">
+<HTML lang=en>
+<HEAD>
+   <META charset="UTF-8">
+   <TITLE>CMS Site Status Detail</TITLE>
+
+   <SCRIPT async type="text/javascript" language="javascript"
+           src="http://cmssst.web.cern.ch/cmssst/siteStatus/detail_lib.js">
+   </SCRIPT>
+
+   <STYLE TYPE="text/css">
+      TD A, TD A:LINK, TD A:VISITED {
+         color:black; text-decoration:none
+      }
+      .toolTip1 {
+         text-decoration:none; position:relative;
+      }
+      .toolTip1 span {
+         display:none;
+         border-radius:6px; -moz-border-radius:6px; -webkit-border-radius:6px;
+         color:black; background:white; 
+      }
+      .toolTip1:hover span {
+         display:block;
+         position:absolute;
+         top:0; left:0;
+         z-index:1000;
+         width:auto; max-width:552px; min-height:76px;
+         border:1px solid black; padding:6px;
+         margin-top:40px; margin-left:-4px;
+         overflow:hidden;
+      }
+      .toolTip2 {
+         text-decoration:none; position:relative;
+      }
+      .toolTip2 span {
+         display:none;
+         border-radius:6px; -moz-border-radius:6px; -webkit-border-radius:6px;
+         color:black; background:white; 
+      }
+      .toolTip2:hover span {
+         display:block;
+         position:absolute;
+         top:0; left:0;
+         z-index:1000;
+         width:auto; max-width:740px; min-height:76px;
+         border:1px solid black; padding:6px;
+         margin-top:40px; margin-left:-268px;
+         overflow:hidden;
+      }
+      .toolTip3 {
+         text-decoration:none; position:relative;
+      }
+      .toolTip3 span {
+         display:none;
+         border-radius:6px; -moz-border-radius:6px; -webkit-border-radius:6px;
+         color:black; background:white;
+      }
+      .toolTip3:hover span {
+         display:block;
+         position:absolute;
+         top:0; left:0;
+         z-index:1000;
+         width:auto; max-width:444px; min-height:76px;
+         border:1px solid black; padding:6px;
+         margin-top:40px; margin-left:-132px;
+         overflow:hidden;
+      }
+      .toolTip4 {
+         text-decoration:none; position:relative;
+      }
+      .toolTip4 span {
+         display:none;
+         border-radius:6px; -moz-border-radius:6px; -webkit-border-radius:6px;
+         color:black; background:white;
+      }
+      .toolTip4:hover span {
+         display:block;
+         position:absolute;
+         top:0; left:0;
+         z-index:1000;
+         width:auto; max-width:540px; min-height:76px;
+         border:1px solid black; padding:6px;
+         margin-top:40px; margin-left:-140px;
+         overflow:hidden;
+      }
+      .toolTip5 {
+         text-decoration:none; position:relative;
+      }
+      .toolTip5 span {
+         display:none;
+         border-radius:6px; -moz-border-radius:6px; -webkit-border-radius:6px;
+         color:black; background:white;
+      }
+      .toolTip5:hover span {
+         display:block;
+         position:absolute;
+         top:0; left:0;
+         z-index:1000;
+         width:auto; max-width:740px; min-height:76px;
+         border:1px solid black; padding:6px;
+         margin-top:40px; margin-left:-548px;
+         overflow:hidden;
+      }
+   </STYLE>
+</HEAD>
+
+<BODY ONLOAD="fillPage()">
+<H1>
+   <CENTER><SPAN ID="titleSPAN" STYLE="white-space:nowrap;"></SPAN>
+   </CENTER>
+</H1>
+
+<SPAN ID="topSPAN" STYLE="color:red; font-weight:bold; font-size:20px;"></SPAN>
+<DIV ID="mainDIV"></DIV>
+<HR>
+
+<SMALL>
+   <TABLE BORDER="0" CELLPADDING="0" CELLSPACING="1">
+   <TR>
+      <TD>Entries in the "Previous Month" column are per six hours, in the
+         "Previous Week" and "Following Week" columns per hour, and in the
+         "Yesterday" and "Today" columns for 15-minute periods (if the
+         granularity is available).
+      <TD WIDTH="32" NOWRAP>&nbsp;
+      <TD STYLE="text-align:right; white-space:nowrap;"><BUTTON
+         ONCLICK="location.reload(true)">Update</BUTTON>
+         &nbsp;
+         <BUTTON ID="updateButton" ONCLICK="toggleUpdate()">Auto-Update</BUTTON>
+   <TR>
+   <TD COLSPAN="3">
+      <TABLE WIDTH="100%" BORDER="0" CELLPADDING="0" CELLSPACING="1">
+      <TR>
+         <TD><CANVAS ID='cnvs_lgn_Ok' WIDTH="6" HEIGHT="18"></CANVAS>
+         <TD STYLE="white-space:nowrap;">Site state or evaluation good (ok)
+         <TD STYLE="width:24px; white-space: nowrap;">&nbsp; &nbsp;
+         <TD><CANVAS ID="cnvs_lgn_PartDowntime" WIDTH="6" HEIGHT="18"></CANVAS>
+         <TD STYLE="white-space:nowrap;">Site in partial downtime
+         <TD STYLE="width:24px; white-space: nowrap;">&nbsp; &nbsp;
+         <TD><CANVAS ID='cnvs_lgn_WaitingRoom' WIDTH="6" HEIGHT="18"></CANVAS>
+         <TD STYLE="white-space:nowrap;">Site not in service (Waiting Room)
+         <TD STYLE="width:32px; white-space: nowrap;">&nbsp; &nbsp; &nbsp;
+         <TD STYLE="text-align:right; color:blue; font-weight:bold;
+            white-space:nowrap;">information as of
+      <TR>
+         <TD><CANVAS ID='cnvs_lgn_Warning' WIDTH="6" HEIGHT="18"></CANVAS>
+         <TD STYLE="white-space:nowrap;">Site or evaluation has issues (warning)
+         <TD STYLE="width:24px; white-space: nowrap;">&nbsp; &nbsp;
+         <TD><CANVAS ID="cnvs_lgn_FullDowntime" WIDTH="6" HEIGHT="18"></CANVAS>
+         <TD STYLE="white-space:nowrap;">Site or servoce in full downtime
+         <TD STYLE="width:24px; white-space: nowrap;">&nbsp; &nbsp;
+         <TD><CANVAS ID='cnvs_lgn_Morgue' WIDTH="6" HEIGHT="18"></CANVAS>
+         <TD STYLE="white-space:nowrap;">Site not in service (Morgue)
+         <TD STYLE="width:32px; white-space: nowrap;">&nbsp; &nbsp; &nbsp;
+         <TD STYLE="text-align:right; color:blue; font-weight:bold;
+            white-space:nowrap;"><SPAN ID="legendSPAN"></SPAN>
+      <TR>
+         <TD><CANVAS ID='cnvs_lgn_Error' WIDTH="6" HEIGHT="18"></CANVAS>
+         <TD STYLE="white-space:nowrap;">Site or evaluation failed (error)
+         <TD STYLE="width:24px; white-space: nowrap;">&nbsp; &nbsp;
+         <TD><CANVAS ID="cnvs_lgn_AdhocDowntime" WIDTH="6" HEIGHT="18"></CANVAS>
+         <TD STYLE="white-space:nowrap;">Site or service in unscheduled downtime
+         <TD STYLE="width:24px; white-space: nowrap;">&nbsp; &nbsp;
+         <TD><CANVAS ID='cnvs_lgn_Unknown' WIDTH="6" HEIGHT="18"></CANVAS>
+         <TD STYLE="white-space:nowrap;">Site or evaluation status unknown
+         <TD STYLE="width:32px; white-space: nowrap;">&nbsp; &nbsp; &nbsp;
+         <TD STYLE="text-align:right; white-space:nowrap;">
+            <A HREF="http://cern.ch/copyright">&copy; Copyright author, CMS,
+            Fermilab, and others 2016</A>
+      </TABLE>
+   </TABLE>
+</SMALL>
+
+<SCRIPT type="text/javascript" language="javascript">
+   "use strict";
+
+   var myTimer = null;
+   var myData = {};
+
+   function fillPage() {
+      var jsonURL = "http://cmssst.web.cern.ch/cmssst/siteStatus/data/";
+
+      // get site name from query options of URL:
+      var jsonSite = "";
+      var qIndex = window.location.href.indexOf('?');
+      var qOpts;
+      var qCnt;
+      var qPair;
+      if ( qIndex >= 0 ) {
+         qOpts = (window.location.href.substring(qIndex+1)).split('&');
+         for ( qCnt=0; qCnt < qOpts.length; qCnt+=1 ) {
+            qPair = (qOpts[qCnt]).split('=');
+            if ( qPair[0] == 'site' ) {
+               jsonSite = qPair[1];
+               break;
+            }
+         }
+      }
+      // check for valid CMS site name:
+      if ( jsonSite.search(/T[0-9]_[A-Z]{2}_\w+/) != 0 ) {
+         document.getElementById("topSPAN").innerHTML = "No site specified !";
+         fillLegend();
+         updateTimestamps();
+      } else {
+         /* fetch JSON file with site data */
+         var xhttprObj = new XMLHttpRequest();
+
+         xhttprObj.open('GET', jsonURL + jsonSite + ".json", true);
+         xhttprObj.onreadystatechange = function () {
+            if ((this.readyState == 4) && (this.status == 200)) {
+               myData = JSON.parse(this.responseText);
+               if ( !( 'reload' in myData )) {
+                   myData.reload = 900;
+               }
+               // handle auto update:
+               qIndex = window.location.href.indexOf('?');
+               qOpts = (window.location.href.substring(qIndex+1)).split('&');
+               for ( qCnt=0; qCnt < qOpts.length; qCnt+=1 ) {
+                  qPair = (qOpts[qCnt]).split('=');
+                  if ( qPair[0] == 'update' ) {
+                     // clear any potentially still active timer:
+                     if ( myTimer != null ) {
+                        clearInterval(myTimer);
+                     }
+                     if ( qPair[1] == 'auto' ) {
+                        myTimer = setInterval(function () {location.reload(true);}, myData.reload * 1000);
+                     } else {
+                        myTimer = setInterval(function () {location.reload(true);}, parseInt(qPair[1]) * 1000);
+                     }
+                     document.getElementById("updateButton").innerHTML = 'Stop Update';
+                     break;
+                  }
+               }
+               // combine metric vectors into strings:
+               for ( var mName in myData.metrics ) {
+                  myData.metrics[mName].pmonth = myData.metrics[mName].pmonth.join('');
+                  myData.metrics[mName].pweek = myData.metrics[mName].pweek.join('');
+                  myData.metrics[mName].yesterday = myData.metrics[mName].yesterday.join('');
+                  myData.metrics[mName].today = myData.metrics[mName].today.join('');
+                  myData.metrics[mName].fweek = myData.metrics[mName].fweek.join('');
+               }
+               for ( var cnt=0; cnt < myData.elements.length; cnt+=1 ) {
+                  for ( var mName in myData.elements[cnt].metrics ) {
+                     myData.elements[cnt].metrics[mName].pmonth =
+                        myData.elements[cnt].metrics[mName].pmonth.join('');
+                     myData.elements[cnt].metrics[mName].pweek =
+                        myData.elements[cnt].metrics[mName].pweek.join('');
+                     myData.elements[cnt].metrics[mName].yesterday =
+                        myData.elements[cnt].metrics[mName].yesterday.join('');
+                     myData.elements[cnt].metrics[mName].today =
+                        myData.elements[cnt].metrics[mName].today.join('');
+                     myData.elements[cnt].metrics[mName].fweek =
+                        myData.elements[cnt].metrics[mName].fweek.join('');
+                  }
+               }
+               if (( 'alert' in myData ) && ( myData.alert != '' )) {
+                  document.getElementById("topSPAN").innerHTML = myData.alert;
+               } else {
+                  document.getElementById("topSPAN").innerHTML = '';
+               }
+               // write/update page in browser:
+               setTimeout(writeTable(), 0);
+               setTimeout(fillCanvases(), 0);
+               setTimeout(fillMagCanvases(), 0);
+               setTimeout(fillLegend(), 0);
+               setTimeout(updateTimestamps(), 0);
+            }
+         };
+         xhttprObj.timeout = 90000; // One and a half minutes (in milliseconds)
+         xhttprObj.ontimeout = function() {
+            myData.alert = 'Failed to fetch site status detail information !';
+            document.getElementById("topSPAN").innerHTML = myData.alert;
+         }
+         xhttprObj.send();
+      }
+   }
+
+   function toggleUpdate() {
+      var myURL = "";
+      if( myTimer == null ) {
+         var qIndex = window.location.href.indexOf('?');
+         if ( qIndex >= 0 ) {
+            var qOpts = (window.location.href.substring(qIndex+1)).split('&');
+            for ( var qCnt=0; qCnt < qOpts.length; qCnt+=1 ) {
+               var qPair = (qOpts[qCnt]).split('=');
+               if ( qPair[0] != 'update' ) {
+                  if ( myURL == "" ) {
+                     myURL = window.location.href.substring(0,qIndex) + "?" +
+                             qOpts[qCnt]
+                  } else {
+                     myURL += "&" + qOpts[qCnt]
+                  }
+               }
+            }
+            if ( myURL == "" ) {
+               myURL = window.location.href.substring(0,qIndex) + "?update=auto"
+            } else {
+               myURL += "&update=auto"
+            }
+            window.location.href = myURL;
+         }
+      } else {
+         clearInterval(myTimer);
+         myTimer = null;
+         var qIndex = window.location.href.indexOf('?');
+         if ( qIndex >= 0 ) {
+            var qOpts = (window.location.href.substring(qIndex+1)).split('&');
+            for ( var qCnt=0; qCnt < qOpts.length; qCnt+=1 ) {
+               var qPair = (qOpts[qCnt]).split('=');
+               if ( qPair[0] != 'update' ) {
+                  if ( myURL == "" ) {
+                     myURL = window.location.href.substring(0,qIndex) + "?" +
+                             qOpts[qCnt]
+                  } else {
+                     myURL += "&" + qOpts[qCnt]
+                  }
+               }
+            }
+            window.location.href = myURL;
+         }
+      }
+   }
+</SCRIPT>
+
+</BODY>
+</HTML>
