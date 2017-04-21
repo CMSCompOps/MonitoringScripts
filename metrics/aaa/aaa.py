@@ -37,21 +37,25 @@ def check_federation_history(site_name):
         if entry.value == "prod" or entry.value == "trans":
             return entry.value
               
-        
-
 for site in siteList:
     samAccess[site] = 'n/a'
     hammerCloud[site] = 'n/a'
     ggus[site] = []
-    siteDownTimes[site] = str(downTimes.getLatestEntry(site).color)
-    print site + " " + siteDownTimes[site]
+    #T3_US_NU is not in TopologyMaintenances metric 121
+    if downTimes.getLatestEntry(site):
+        siteDownTimes[site] = str(downTimes.getLatestEntry(site).color)
+        print site + " " + siteDownTimes[site]
+    else:
+        not_existing_site = site
+
+del siteList[not_existing_site]
 
 ## parse ggus xml file
 for ticket in ET.fromstring(ggusXMLFile).findall('ticket'):
     cmsSiteName  = ticket.find('cms_site').text
     ticketId     = ticket.find('request_id').text
     realSiteName = ticket.find('affected_site').text
-
+    print ticket.find('cms_site').text
     # if you don't have CMS site name AND have real site name,
     # try to find its CMS name and add it to the ggus array
     if not cmsSiteName and realSiteName:
@@ -73,6 +77,11 @@ for site in siteList:
         # get test results for the host
         data = json.loads(url.read(samAccessURL.format(host)))
         data = data['data']
+        if len(data) == 0:
+            print "empty"
+            continue
+        else:
+            print data[0][1]
         # if there is no test result, pass it
         if len(data) == 0: continue
         # get the test results (please see the json data structure)
@@ -141,7 +150,7 @@ for site in siteList:
     if site in ggus.keys() and len(ggus[site]):
         badSiteFlag = badSiteFlag | True
         errMsg = errMsg + '_GGUS(%s)' % str(ggus[site])
-    if siteDownTimes[site] in downTimeColors:
+    if site in siteDownTimes and siteDownTimes[site] in downTimeColors:
         siteDownTimeFlag = True
     if badSiteFlag:
         entry = dashboard.entry(None, site, errMsg, dashboard.red, reportURL % site)

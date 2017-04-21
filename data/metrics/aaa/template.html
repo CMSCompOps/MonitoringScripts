@@ -71,6 +71,21 @@ function hideInfo(event) {
     var infoBox = $('div.aaa-monitoring-info');
     infoBox.hide();
 }
+function set_datetime(datetime) {
+	var dd = datetime.getDate();
+	var mm = datetime.getMonth()+1; //January is 0!
+	var yyyy = datetime.getFullYear();
+	if(dd<10){
+		dd='0'+dd;
+	} 
+	if(mm<10){
+	    mm='0'+mm;
+	} 
+	var hh = datetime.getHours();
+	var minmin= datetime.getMinutes();
+	var formatted_datetime = yyyy + "-" + mm + "-" + dd + "+" + hh + "%3A" + minmin;
+	return formatted_datetime
+}
 function main() {
     var sites = Object.keys(report.data);
     sites.sort();
@@ -84,9 +99,19 @@ function main() {
         insertRow(site, 'sam', 50);
         insertRow(site, 'hc', 70);
         insertRow(site, 'ggus', 0);
+	var today = new Date();
+	var start = new Date(+today);
+ 	start.setDate(start.getDate() - 14);
+	var current_datetime = set_datetime(today);
+	var start_datetime = set_datetime(start);
+        var url = "http://dashb-cms-job.cern.ch/dashboard/templates/web-job2/#user=&refresh=0&table=Jobs&p=1&records=25&activemenu=1&usr=&site=&submissiontool=&application=&activity=hcxrootd&status=&check=terminated&tier=&date1="+ start_datetime +"&date2="+ current_datetime +"&sortby=activity&scale=linear&bars=20&ce=&rb=&grid=&jobtype=&submissionui=&dataset=&submissiontype=&task=&subtoolver=&genactivity=&outputse=&appexitcode=&accesstype=&inputse="+ site +"&cores="
+ 	$("a#hc").attr("href", url);
     }
     $("td > div").mousemove(displayInfo);
-    $("td > div").mouseleave(hideInfo)
+    $("td > div").mouseleave(hideInfo);
+    $("td > a > div").mousemove(displayInfo);
+    $("td > a > div ").mouseleave(hideInfo);
+
 }
 
 $(document).ready(main);
@@ -116,24 +141,25 @@ div.aaa-monitoring-info {
   <div class="aaa-monitoring-info alert alert-info"></div>
   <div class="container" id="content">
   <h2>AAA Report, updated on @date@</h2><hr>
-  <h3>Conditions</h3>
+  <h3>Condition</h3>
   <hr>
 <pre>
-<b>IF</b> <kbd>(HC rate &gt; 70% <b>OR</b> site is tier 3)</kbd> <b>AND</b> <kbd>SAM::Access rate &gt; 50</kbd> <b>AND</b> <kbd>site has no AAA related ticket</kbd>:
+<b>IF</b> <kbd>(HC::xrootd rate &gt; 70% <b>OR</b> site is tier 3)</kbd> <b>AND</b> <kbd>SAM::xrootd-access &gt; 50</kbd> <b>AND</b> <kbd>site has no AAA related ticket</kbd>:
     <b>site is good/green</b>
 <b>ELSE:</b>
     <b>site is bad/red</b>
 </pre>
 
-  <h3>Instructions</h3>
+  <h3>Explanation</h3>
   <hr>
   <ul>
-  <li><i>SAM and HC rows represent success rates in color scale between red(low) and green(high).</i></li>
-  <li><i>GGUS row shows number of AAA related tickets. If there is no ticket, it is represented as green for the given date.</i></li>
+  <li><i>SAM (xrootd-access) and HC (xrootd) rows represent <b>average success rate of last 2 weeks</b> starting from the given date</i></li>
+  <ul><li>Values are scaled between red(low) and green(high) color</li></ul>
+  <li><i>GGUS row shows number of AAA related tickets. If there is no ticket, it is represented as green for the given date</i></li>
   <li><i>Time window of the table is <b>2 weeks</b> (please go over one of the rows and see the date and value)</i></li>
   </ul>
 
-  <h3>Results</h3>
+  <h3>Result</h3>
   <hr> 
     <table class=" table table-bordered aaa-monitoring-table" id="reportTable">
       <thead>
@@ -143,7 +169,7 @@ div.aaa-monitoring-info {
         <col width="10%">
         <col width="90%">
         <tr><th>SAM</th>  <td id="sam" ></td></tr>
-        <tr><th>HC</th>   <td id="hc"  ></td></tr>
+        <tr><th>HC</th>   <td><a href="" target="_blank" id="hc" style="display:block;"> </a></td></tr>
         <tr><th>GGUS</th> <td id="ggus"></td></tr>
       </tbody>
     </table>
