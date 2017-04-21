@@ -167,27 +167,25 @@ function writePmonthTable() {
          }
          myTableStr += '<TR>\n   <TD NOWRAP ALIGN="left">' + nName + '\n   <' +
             'TD NOWRAP>&nbsp;\n';
-         // previous week's, column:
          var urlStr = "";
          if ( siteMetricOrder[mCnt] == "wlcgSAMsite" ) {
-            urlStr = 'http://wlcg-sam-cms.cern.ch/templates/ember/#/historic' +
-               'alsmry/heatMap?profile=CMS_CRITICAL_FULL&site=' + myData.site +
-               '&start_time=' + dateString3(myData.time - 3283200) + ' 00:00' +
-               '&end_time=' + dateString3(myData.time - 691200) + ' 00:00&ti' +
-               'me=manual&granularity=Daily&view=Service Availability';
-            myTableStr += '   <TD COLSPAN="3"><A HREF="' + urlStr + '"><CANV' +
-               'AS ID="cnvs_' + siteMetricOrder[mCnt] + '_s1" WIDTH="782" HE' +
-               'IGHT="18"></CANVAS></A>\n';
+            myTableStr += '   <TD COLSPAN="3"><A HREF="http://wlcg-sam-cms.c' +
+               'ern.ch/templates/ember/#/historicalsmry/heatMap?profile=CMS_' +
+               'CRITICAL_FULL&site=' + myData.site + '&start_time=' +
+               dateString3(myData.time - 38 * 86400) + ' 00:00&end_time=' +
+               dateString3(myData.time - 8 * 86400) + ' 00:00&time=manual&gr' +
+               'anularity=Daily&view=Service Availability"><CANVAS ID="cnvs_' +
+               siteMetricOrder[mCnt] + '_s1" WIDTH="782" HEIGHT="18"></CANVA' +
+               'S></A>\n';
          } else if ( siteMetricOrder[mCnt] == "HC15min" ) {
-            urlStr = 'http://dashb-ssb.cern.ch/dashboard/request.py/siteview' +
-               'history?columnid=217&debug=false#time=custom&start_date=' +
-               dateString4(myData.time - 3283200) + '&end_date=' +
-               dateString4(myData.time - 691200) + '&values=false&spline=fal' +
-               'se&debug=false&resample=false&sites=one&clouds=all&site=' +
-               myData.site;
-            myTableStr += '   <TD COLSPAN="3"><A HREF="' + urlStr + '"><CANV' +
-               'AS ID="cnvs_' + siteMetricOrder[mCnt] + '_s1" WIDTH="782" HE' +
-               'IGHT="18"></CANVAS></A>\n';
+            myTableStr += '   <TD COLSPAN="3"><A HREF="http://dashb-ssb.cern' +
+               '.ch/dashboard/request.py/siteviewhistory?columnid=217&debug=' +
+               'false#time=custom&start_date=' +
+               dateString4(myData.time - 38 * 86400) + '&end_date=' +
+               dateString4(myData.time - 8 * 86400) + '&values=false&spline=' +
+               'false&debug=false&resample=false&sites=one&clouds=all&site=' +
+               myData.site + '"><CANVAS ID="cnvs_' + siteMetricOrder[mCnt] +
+               '_s1" WIDTH="782" HEIGHT="18"></CANVAS></A>\n';
          } else {
             myTableStr += '   <TD COLSPAN="3"><CANVAS ID="cnvs_' +
                siteMetricOrder[mCnt] + '_s1" WIDTH="782" HEIGHT="18"></CANVA' +
@@ -210,7 +208,7 @@ function writePmonthTable() {
          for ( var cnt=0; cnt < myData.elements.length; cnt+=1 ) {
             // concatenate host and type excluding domain
             var indx = myData.elements[cnt].host.indexOf('.');
-            if ( indx > 0 ) {
+            if ( indx <= 0 ) {
                indx = myData.elements[cnt].host.length;
             }
             var eName = myData.elements[cnt].host.substring(0,indx) + ' / ' +
@@ -233,9 +231,22 @@ function writePmonthTable() {
                   myTableStr += '<TR>\n   <TD NOWRAP ALIGN="left"> &nbsp &nb' +
                      'sp ' + mName + '\n   <TD NOWRAP>&nbsp;\n';
                }
-               // previous month's, column:
-               myTableStr += '   <TD COLSPAN="3"><CANVAS ID="cnvs_' + eName +
-                  '_' + mName + '_s1" WIDTH="782" HEIGHT="18"></CANVAS>\n';
+               if ( mName =="wlcgSAMservice" ) {
+                  myTableStr += '   <TD COLSPAN="3"><A HREF="http://wlcg-sam' +
+                     '-cms.cern.ch/templates/ember/#/historicalsmry/heatMap?' +
+                     'profile=CMS_CRITICAL_FULL&site=' + myData.site +
+                     '&flavours=' + myData.elements[cnt].type +
+                     '&start_time=' + dateString3(myData.time - 38 * 86400) +
+                     ' 00:00&end_time=' +
+                     dateString3(myData.time - 8 * 86400) + ' 00:00&time=man' +
+                     'ual&view=Service Availability"><CANVAS ID="cnvs_' +
+                     eName + '_' + mName + '_s1" WIDTH="782" HEIGHT="18"></C' +
+                     'ANVAS></A>\n';
+               } else {
+                  myTableStr += '   <TD COLSPAN="3"><CANVAS ID="cnvs_' +
+                     eName + '_' + mName + '_s1" WIDTH="782" HEIGHT="18">' +
+                     '</CANVAS>\n';
+               }
             }
          }
       }
@@ -296,27 +307,24 @@ function writePweekTable() {
          }
          myTableStr += '<TR>\n   <TD NOWRAP ALIGN="left">' + nName + '\n   <' +
             'TD NOWRAP>&nbsp;\n';
-         // previous week's, column:
          var urlStr = "";
          if ( siteMetricOrder[mCnt] == "wlcgSAMsite" ) {
-            urlStr = 'http://wlcg-sam-cms.cern.ch/templates/ember/#/historic' +
-               'alsmry/heatMap?profile=CMS_CRITICAL_FULL&site=' + myData.site +
-               '&start_time=' + dateString3(myData.time - 691200) + ' 00:00&' +
-               'end_time=' + dateString3(myData.time - 86400) + ' 00:00&time' +
-               '=manual&view=Test History';
-            myTableStr += '   <TD COLSPAN="3"><A HREF="' + urlStr + '"><CANV' +
-               'AS ID="cnvs_' + siteMetricOrder[mCnt] + '_s2" WIDTH="730" HE' +
-               'IGHT="18"></CANVAS></A>\n';
+            myTableStr += '   <TD COLSPAN="3"><A HREF="http://wlcg-sam-cms.c' +
+               'ern.ch/templates/ember/#/historicalsmry/heatMap?profile=CMS_' +
+               'CRITICAL_FULL&site=' + myData.site + '&start_time=' +
+               dateString3(myData.time - 8 * 86400) + ' 00:00&end_time=' +
+               dateString3(myData.time - 86400) + ' 00:00&time=manual&view=T' +
+               'est History"><CANVAS ID="cnvs_' + siteMetricOrder[mCnt] +
+               '_s2" WIDTH="730" HEIGHT="18"></CANVAS></A>\n';
          } else if ( siteMetricOrder[mCnt] == "HC15min" ) {
-            urlStr = 'http://dashb-ssb.cern.ch/dashboard/request.py/siteview' +
-               'history?columnid=217&debug=false#time=custom&start_date=' +
-               dateString4(myData.time - 691200) + '&end_date=' +
+            myTableStr += '   <TD COLSPAN="3"><A HREF="http://dashb-ssb.cern' +
+               '.ch/dashboard/request.py/siteviewhistory?columnid=217&debug=' +
+               'false#time=custom&start_date=' +
+               dateString4(myData.time - 8 * 86400) + '&end_date=' +
                dateString4(myData.time - 86400) + '&values=false&spline=fals' +
                'e&debug=false&resample=false&sites=one&clouds=all&site=' +
-               myData.site;
-            myTableStr += '   <TD COLSPAN="3"><A HREF="' + urlStr + '"><CANV' +
-               'AS ID="cnvs_' + siteMetricOrder[mCnt] + '_s2" WIDTH="730" HE' +
-               'IGHT="18"></CANVAS></A>\n';
+               myData.site + '"><CANVAS ID="cnvs_' + siteMetricOrder[mCnt] +
+               '_s2" WIDTH="730" HEIGHT="18"></CANVAS></A>\n';
          } else {
             myTableStr += '   <TD COLSPAN="3"><CANVAS ID="cnvs_' +
                siteMetricOrder[mCnt] + '_s2" WIDTH="730" HEIGHT="18"></CANVA' +
@@ -339,7 +347,7 @@ function writePweekTable() {
          for ( var cnt=0; cnt < myData.elements.length; cnt+=1 ) {
             // concatenate host and type excluding domain
             var indx = myData.elements[cnt].host.indexOf('.');
-            if ( indx > 0 ) {
+            if ( indx <= 0 ) {
                indx = myData.elements[cnt].host.length;
             }
             var eName = myData.elements[cnt].host.substring(0,indx) + ' / ' +
@@ -362,9 +370,21 @@ function writePweekTable() {
                   myTableStr += '<TR>\n   <TD NOWRAP ALIGN="left"> &nbsp &nb' +
                      'sp ' + mName + '\n   <TD NOWRAP>&nbsp;\n';
                }
-               // previous week's, column:
-               myTableStr += '   <TD COLSPAN="3"><CANVAS ID="cnvs_' + eName +
-                  '_' + mName + '_s2" WIDTH="730" HEIGHT="18"></CANVAS>\n';
+               if ( mName =="wlcgSAMservice" ) {
+                  myTableStr += '   <TD COLSPAN="3"><A HREF="http://wlcg-sam' +
+                     '-cms.cern.ch/templates/ember/#/historicalsmry/heatMap?' +
+                     'profile=CMS_CRITICAL_FULL&site=' + myData.site + '&hos' +
+                     'tname=' + myData.elements[cnt].host + '&start_time=' +
+                     dateString3(myData.time - 8 * 86400) +
+                     ' 00:00&end_time=' + dateString3(myData.time - 86400) +
+                     ' 00:00&time=manual&view=Test History"><CANVAS ID="cnvs' +
+                     '_' + eName + '_' + mName + '_s2" WIDTH="730" HEIGHT="1' +
+                     '8"></CANVAS></A>\n';
+               } else {
+                  myTableStr += '   <TD COLSPAN="3"><CANVAS ID="cnvs_' +
+                     eName + '_' + mName + '_s2" WIDTH="730" HEIGHT="18">' +
+                     '</CANVAS>\n';
+               }
             }
          }
       }
@@ -425,26 +445,24 @@ function writeYesterdayTable() {
          }
          myTableStr += '<TR>\n   <TD NOWRAP ALIGN="left">' + nName + '\n   <' +
             'TD NOWRAP>&nbsp;\n';
-         // yesterday's, column:
          var urlStr = "";
          if ( siteMetricOrder[mCnt] == "wlcgSAMsite" ) {
-            urlStr = 'http://wlcg-sam-cms.cern.ch/templates/ember/#/historic' +
-               'alsmry/heatMap?profile=CMS_CRITICAL_FULL&site=' + myData.site +
-               '&start_time=' + dateString3(myData.time - 86400) + ' 00:00&e' +
-               'nd_time=' + dateString3( myData.time) + ' 00:00&time=manual&' +
-               'view=Test History';
-            myTableStr += '   <TD COLSPAN="3"><A HREF="' + urlStr + '"><CANV' +
-               'AS ID="cnvs_' + siteMetricOrder[mCnt] + '_s3" WIDTH="626" HE' +
-               'IGHT="18"></CANVAS></A>\n';
+            myTableStr += '   <TD COLSPAN="3"><A HREF="http://wlcg-sam-cms.c' +
+               'ern.ch/templates/ember/#/historicalsmry/heatMap?profile=CMS_' +
+               'CRITICAL_FULL&site=' + myData.site + '&start_time=' +
+               dateString3(myData.time - 86400) + ' 00:00&end_time=' +
+               dateString3( myData.time) + ' 00:00&time=manual&view=Test His' +
+               'tory"><CANVAS ID="cnvs_' + siteMetricOrder[mCnt] + '_s3" WID' +
+               'TH="626" HEIGHT="18"></CANVAS></A>\n';
          } else if ( siteMetricOrder[mCnt] == "HC15min" ) {
-            urlStr = 'http://dashb-ssb.cern.ch/dashboard/request.py/siteview' +
-               'history?columnid=217&debug=false#time=custom&start_date=' +
+            myTableStr += '   <TD COLSPAN="3"><A HREF="http://dashb-ssb.cern' +
+               '.ch/dashboard/request.py/siteviewhistory?columnid=217&debug=' +
+               'false#time=custom&start_date=' +
                dateString4(myData.time - 86400) + '&end_date=' +
-               dateString4( myData.time) + '&values=false&spline=false&debug' +
-               '=false&resample=false&sites=one&clouds=all&site=' + myData.site;
-            myTableStr += '   <TD COLSPAN="3"><A HREF="' + urlStr + '"><CANV' +
-               'AS ID="cnvs_' + siteMetricOrder[mCnt] + '_s3" WIDTH="626" HE' +
-               'IGHT="18"></CANVAS></A>\n';
+               dateString4(myData.time) + '&values=false&spline=false&debug=' +
+               'false&resample=false&sites=one&clouds=all&site=' +
+               myData.site + '"><CANVAS ID="cnvs_' + siteMetricOrder[mCnt] +
+               '_s3" WIDTH="626" HEIGHT="18"></CANVAS></A>\n';
          } else {
             myTableStr += '   <TD COLSPAN="3"><CANVAS ID="cnvs_' +
                siteMetricOrder[mCnt] + '_s3" WIDTH="626" HEIGHT="18"></CANVA' +
@@ -467,7 +485,7 @@ function writeYesterdayTable() {
          for ( var cnt=0; cnt < myData.elements.length; cnt+=1 ) {
             // concatenate host and type excluding domain
             var indx = myData.elements[cnt].host.indexOf('.');
-            if ( indx > 0 ) {
+            if ( indx <= 0 ) {
                indx = myData.elements[cnt].host.length;
             }
             var eName = myData.elements[cnt].host.substring(0,indx) + ' / ' +
@@ -490,9 +508,20 @@ function writeYesterdayTable() {
                   myTableStr += '<TR>\n   <TD NOWRAP ALIGN="left"> &nbsp &nb' +
                      'sp ' + mName + '\n   <TD NOWRAP>&nbsp;\n';
                }
-               // yesterday's, column:
-               myTableStr += '   <TD COLSPAN="3"><CANVAS ID="cnvs_' + eName +
-                  '_' + mName + '_s3" WIDTH="626" HEIGHT="18"></CANVAS>\n';
+               if ( mName =="wlcgSAMservice" ) {
+                  myTableStr += '   <TD COLSPAN="3"><A HREF="http://wlcg-sam' +
+                     '-cms.cern.ch/templates/ember/#/historicalsmry/heatMap?' +
+                     'profile=CMS_CRITICAL_FULL&site=' + myData.site + '&hos' +
+                     'tname=' + myData.elements[cnt].host + '&start_time=' +
+                     dateString3(myData.time - 86400) + ' 00:00&end_time=' +
+                     dateString3(myData.time) + ' 00:00&time=manual&view=Tes' +
+                     't History"><CANVAS ID="cnvs' + '_' + eName + '_' +
+                     mName + '_s3" WIDTH="626" HEIGHT="18"></CANVAS></A>\n';
+               } else {
+                  myTableStr += '   <TD COLSPAN="3"><CANVAS ID="cnvs_' +
+                     eName + '_' + mName + '_s3" WIDTH="626" HEIGHT="18">' +
+                     '</CANVAS>\n';
+               }
             }
          }
       }
@@ -551,31 +580,28 @@ function writeTodayTable() {
          }
          myTableStr += '<TR>\n   <TD NOWRAP ALIGN="left">' + nName + '\n   <' +
             'TD NOWRAP>&nbsp;\n';
-         // today's, column:
          var urlStr = "";
          if ( siteMetricOrder[mCnt] == "wlcgSAMsite" ) {
-            urlStr = 'http://wlcg-sam-cms.cern.ch/templates/ember/#/historic' +
-               'alsmry/heatMap?profile=CMS_CRITICAL_FULL&site=' + myData.site +
-               '&start_time=' + dateString3(myData.time) + ' 00:00&end_time=' +
-               dateString3( myData.time + 86400 ) + ' 00:00&time=manual&view' +
-               '=Test History';
-            myTableStr += '   <TD COLSPAN="3"><A HREF="' + urlStr + '"><CANV' +
-               'AS ID="cnvs_' + siteMetricOrder[mCnt] + '_s4" WIDTH="626" HE' +
-               'IGHT="18"></CANVAS></A>\n';
+            myTableStr += '   <TD COLSPAN="3"><A HREF="http://wlcg-sam-cms.c' +
+               'ern.ch/templates/ember/#/historicalsmry/heatMap?profile=CMS_' +
+               'CRITICAL_FULL&site=' + myData.site + '&start_time=' +
+               dateString3(myData.time) + ' 00:00&end_time=' +
+               dateString3(myData.time + 86400) + ' 00:00&time=manual&view=T' +
+               'est History"><CANVAS ID="cnvs_' + siteMetricOrder[mCnt] +
+               '_s4" WIDTH="626" HEIGHT="18"></CANVAS></A>\n';
          } else if ( siteMetricOrder[mCnt] == "HC15min" ) {
-            urlStr = 'http://dashb-ssb.cern.ch/dashboard/request.py/siteview' +
-               'history?columnid=217&debug=false#time=custom&start_date=' +
-               dateString4(myData.time) + '&end_date=' +
-               dateString4( myData.time + 86400 ) + '&values=false&spline=fa' +
-               'lse&debug=false&resample=false&sites=one&clouds=all&site=' +
-               myData.site;
-            myTableStr += '   <TD COLSPAN="3"><A HREF="' + urlStr + '"><CANV' +
-               'AS ID="cnvs_' + siteMetricOrder[mCnt] + '_s4" WIDTH="626" HE' +
-               'IGHT="18"></CANVAS></A>\n';
+            myTableStr += '   <TD COLSPAN="3"><A HREF="http://dashb-ssb.cern' +
+               '.ch/dashboard/request.py/siteviewhistory?columnid=217&debug=' +
+               'false#time=custom&start_date=' + dateString4(myData.time) +
+               '&end_date=' + dateString4(myData.time + 86400) + '&values=fa' +
+               'lse&spline=false&debug=false&resample=false&sites=one&clouds' +
+               '=all&site=' + myData.site + '"><CANVAS ID="cnvs_' +
+               siteMetricOrder[mCnt] + '_s4" WIDTH="626" HEIGHT="18">' +
+               '</CANVAS></A>\n';
          } else {
             myTableStr += '   <TD COLSPAN="3"><CANVAS ID="cnvs_' +
-               siteMetricOrder[mCnt] + '_s4" WIDTH="626" HEIGHT="18"></CANVA' +
-               'S>\n';
+               siteMetricOrder[mCnt] + '_s4" WIDTH="626" HEIGHT="18">' +
+               '</CANVAS>\n';
          }
       } else if ( siteMetricOrder[mCnt] == "***Othr***" ) {
          // loop over site metrics and write any not in siteMetricOrder:
@@ -594,7 +620,7 @@ function writeTodayTable() {
          for ( var cnt=0; cnt < myData.elements.length; cnt+=1 ) {
             // concatenate host and type excluding domain
             var indx = myData.elements[cnt].host.indexOf('.');
-            if ( indx > 0 ) {
+            if ( indx <= 0 ) {
                indx = myData.elements[cnt].host.length;
             }
             var eName = myData.elements[cnt].host.substring(0,indx) + ' / ' +
@@ -617,9 +643,21 @@ function writeTodayTable() {
                   myTableStr += '<TR>\n   <TD NOWRAP ALIGN="left"> &nbsp &nb' +
                      'sp ' + mName + '\n   <TD NOWRAP>&nbsp;\n';
                }
-               // fifth, today's, column:
-               myTableStr += '   <TD COLSPAN="3"><CANVAS ID="cnvs_' + eName +
-                  '_' + mName + '_s4" WIDTH="626" HEIGHT="18"></CANVAS>\n';
+               if ( mName =="wlcgSAMservice" ) {
+                  myTableStr += '   <TD COLSPAN="3"><A HREF="http://wlcg-sam' +
+                     '-cms.cern.ch/templates/ember/#/historicalsmry/heatMap?' +
+                     'profile=CMS_CRITICAL_FULL&site=' + myData.site + '&hos' +
+                     'tname=' + myData.elements[cnt].host + '&start_time=' +
+                     dateString3(myData.time) + ' 00:00&end_time=' +
+                     dateString3(myData.time + 86400) + ' 00:00&time=manual&' +
+                     'view=Test History"><CANVAS ID="cnvs' + '_' + eName +
+                     '_' + mName + '_s4" WIDTH="626" HEIGHT="18">' +
+                     '</CANVAS></A>\n';
+               } else {
+                  myTableStr += '   <TD COLSPAN="3"><CANVAS ID="cnvs_' +
+                     eName + '_' + mName + '_s4" WIDTH="626" HEIGHT="18">' +
+                     '</CANVAS>\n';
+               }
             }
          }
       }
@@ -679,27 +717,24 @@ function writeFweekTable() {
          }
          myTableStr += '<TR>\n   <TD NOWRAP ALIGN="left">' + nName + '\n   <' +
             'TD NOWRAP>&nbsp;\n';
-         // following week's, column:
          var urlStr = "";
          if ( siteMetricOrder[mCnt] == "wlcgSAMsite" ) {
-            urlStr = 'http://wlcg-sam-cms.cern.ch/templates/ember/#/historic' +
-               'alsmry/heatMap?profile=CMS_CRITICAL_FULL&site=' + myData.site +
-               '&start_time=' + dateString3(myData.time + 86400) + ' 00:00&' +
-               'end_time=' + dateString3(myData.time + 8 * 86400) + ' 00:00&' +
-               'time=manual&view=Test History';
-            myTableStr += '   <TD COLSPAN="3"><A HREF="' + urlStr + '"><CANV' +
-               'AS ID="cnvs_' + siteMetricOrder[mCnt] + '_s5" WIDTH="730" HE' +
-               'IGHT="18"></CANVAS></A>\n';
+            myTableStr += '   <TD COLSPAN="3"><A HREF="http://wlcg-sam-cms.c' +
+               'ern.ch/templates/ember/#/historicalsmry/heatMap?profile=CMS_' +
+               'CRITICAL_FULL&site=' + myData.site + '&start_time=' +
+               dateString3(myData.time + 86400) + ' 00:00&end_time=' +
+               dateString3(myData.time + 8 * 86400) + ' 00:00&time=manual&vi' +
+               'ew=Test History"><CANVAS ID="cnvs_' + siteMetricOrder[mCnt] +
+               '_s5" WIDTH="730" HEIGHT="18"></CANVAS></A>\n';
          } else if ( siteMetricOrder[mCnt] == "HC15min" ) {
-            urlStr = 'http://dashb-ssb.cern.ch/dashboard/request.py/siteview' +
-               'history?columnid=217&debug=false#time=custom&start_date=' +
+            myTableStr += '   <TD COLSPAN="3"><A HREF="http://dashb-ssb.cern' +
+               '.ch/dashboard/request.py/siteviewhistory?columnid=217&debug=' +
+               'false#time=custom&start_date=' +
                dateString4(myData.time + 86400) + '&end_date=' +
                dateString4(myData.time + 8 * 86400) + '&values=false&spline=' +
                'false&debug=false&resample=false&sites=one&clouds=all&site=' +
-               myData.site;
-            myTableStr += '   <TD COLSPAN="3"><A HREF="' + urlStr + '"><CANV' +
-               'AS ID="cnvs_' + siteMetricOrder[mCnt] + '_s5" WIDTH="730" HE' +
-               'IGHT="18"></CANVAS></A>\n';
+               myData.site + '"><CANVAS ID="cnvs_' + siteMetricOrder[mCnt] +
+               '_s5" WIDTH="730" HEIGHT="18"></CANVAS></A>\n';
          } else {
             myTableStr += '   <TD COLSPAN="3"><CANVAS ID="cnvs_' +
                siteMetricOrder[mCnt] + '_s5" WIDTH="730" HEIGHT="18"></CANVA' +
@@ -722,7 +757,7 @@ function writeFweekTable() {
          for ( var cnt=0; cnt < myData.elements.length; cnt+=1 ) {
             // concatenate host and type excluding domain
             var indx = myData.elements[cnt].host.indexOf('.');
-            if ( indx > 0 ) {
+            if ( indx <= 0 ) {
                indx = myData.elements[cnt].host.length;
             }
             var eName = myData.elements[cnt].host.substring(0,indx) + ' / ' +
@@ -745,9 +780,20 @@ function writeFweekTable() {
                   myTableStr += '<TR>\n   <TD NOWRAP ALIGN="left"> &nbsp &nb' +
                      'sp ' + mName + '\n   <TD NOWRAP>&nbsp;\n';
                }
-               // previous week's, column:
-               myTableStr += '   <TD COLSPAN="3"><CANVAS ID="cnvs_' + eName +
-                  '_' + mName + '_s5" WIDTH="730" HEIGHT="18"></CANVAS>\n';
+               if ( mName =="wlcgSAMservice" ) {
+                  myTableStr += '   <TD COLSPAN="3"><A HREF="http://wlcg-sam' +
+                     '-cms.cern.ch/templates/ember/#/historicalsmry/heatMap?' +
+                     'profile=CMS_CRITICAL_FULL&site=' + myData.site + '&hos' +
+                     'tname=' + myData.elements[cnt].host + '&start_time=' +
+                     dateString3(myData.time + 86400) + ' 00:00&end_time=' +
+                     dateString3(myData.time + 8 * 86400) + ' 00:00&time=man' +
+                     'ual&view=Test History"><CANVAS ID="cnvs_' + eName + '_' +
+                     mName + '_s5" WIDTH="730" HEIGHT="18"></CANVAS></A>\n';
+               } else {
+                  myTableStr += '   <TD COLSPAN="3"><CANVAS ID="cnvs_' +
+                     eName + '_' + mName + '_s5" WIDTH="730" HEIGHT="18">' +
+                     '</CANVAS>\n';
+               }
             }
          }
       }
