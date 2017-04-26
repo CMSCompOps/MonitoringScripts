@@ -3360,6 +3360,61 @@ def sswp_write_summary_js():
 
 
 
+def sswp_write_downtime_js():
+    # ####################################################################### #
+
+    myfile = open("%s/downtime.js_new" % SSWP_DATA_DIR, 'w')
+    try:
+        myfile.write("/* JavaScript */\n\"use strict\";\n\n\n")
+        myfile.write("var siteStatusInfo = {\n   time: %d,   // %s\n" %
+            (glbInfo['timestamp'], time.strftime("%Y-%m-%d %H:%M:%S",
+                                 time.gmtime(glbInfo['timestamp']))))
+        if 'stale' in glbInfo:
+            myfile.write("   alert: \"%s)\",\n" % glbInfo['stale'])
+        else:
+            myfile.write("   alert: \"\",\n")
+        if 'msg' in glbInfo:
+            myfile.write("   msg: \"%s\",\n" % glbInfo['msg'])
+        else:
+            myfile.write("   msg: \"\",\n")
+        myfile.write("   url: \"%s\",\n" % glbInfo['url'])
+        myfile.write("   reload: 3600\n};\n\n")
+
+        myfile.write("var siteStatusData = [")
+        mypreceding = False
+        for cmssite in sorted(glbTopology.sites()):
+            vector = glbSites.getVector('downtime', cmssite)
+            ticket = glbTickets.getSummary(cmssite, glbInfo['timestamp'])
+            if (( vector is None ) and ( ticket[0] == 0 )):
+                continue
+
+            if mypreceding:
+                myfile.write(",\n   { site: \"%s\",\n" % cmssite)
+            else:
+                myfile.write("\n   { site: \"%s\",\n" % cmssite)
+            # GGUS ticket summary:
+            myfile.write("     ggus: [%d, %d, %d],\n" % (
+                ticket[0], ticket[1], ticket[2]))
+            # downtime vector:
+            if ( vector is None ):
+                sswpVector.writeEmpty_js(myfile, 5)
+            else:
+                vector.write_js(myfile, 5)
+            myfile.write("\n   }")
+            mypreceding = True
+        myfile.write("\n]")
+        renameFlag = True
+    except:
+        renameFlag = False
+    finally:
+        myfile.close()
+
+    if renameFlag:
+        os.rename("%s/downtime.js_new" % SSWP_DATA_DIR,
+                  "%s/downtime.js" % SSWP_DATA_DIR)
+
+
+
 def sswp_write_detail_json():
     # ####################################################################### #
 
@@ -3647,6 +3702,7 @@ if __name__ == '__main__':
 
     sswp_site_readiness()                              # updates summary metric
     sswp_write_summary_js()
+    sswp_write_downtime_js()
     sswp_write_detail_json()
     #
     #glbTopology.write()
