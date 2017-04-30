@@ -2970,7 +2970,7 @@ def sswp_wlcg_sam_site():
     ts1 = time.gmtime( glbInfo['timestamp'] - 39*24*60*60)
     ts2 = time.gmtime( glbInfo['timestamp'] + 24*60*60)
     #
-    URL_WLCG_SAM_SITE = "http://wlcg-mon.cern.ch/dashboard/request.py/getplotdata?columnid=749&time=custom&sites=all&clouds=all&batch=1&dateFrom=%s&dateTo=%s" % (time.strftime("%Y-%m-%d", ts1), time.strftime("%Y-%m-%d", ts2))
+    URL_WLCG_SAM_SITE = "http://wlcg-mon.cern.ch/dashboard/request.py/getplotdata?columnid=745&time=custom&sites=all&clouds=all&batch=1&dateFrom=%s&dateTo=%s" % (time.strftime("%Y-%m-%d", ts1), time.strftime("%Y-%m-%d", ts2))
 
     # get site SAM status information from the WLCG monitorng dashboard:
     # ==================================================================
