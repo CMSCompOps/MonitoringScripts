@@ -1012,19 +1012,21 @@ class sswpVector:
         for bin in range(0, 30*4):
             if (( len( self.cnt_month[bin] ) == 1 ) and
                 ( self.cnt_month[bin].values()[0] > 2160 )):
+               # only one entry covering more than 10% of the time interval
                self.month[bin] = self.cnt_month[bin].keys()[0]
                continue
             # count seconds for which we have information:
             tSec = 0
             for code in self.cnt_month[bin].keys():
                tSec += self.cnt_month[bin][code]
-            if ( tSec <= 0 ):
+            if ( tSec <= 2160 ):
                continue
             #logging.debug(("resolving month[%d] counter, total=%d, ok=%d, e" +
             #               "rr=%d"), bin, tSec,
             #              self.cnt_month[bin].get('o', 0),
             #              self.cnt_month[bin].get('e', 0))
             if ( self.cnt_month[bin].get('d', 0) > tSec / 2 ):
+               # downtime for more than half of the time interval
                self.month[bin] = 'd'
                continue
             tSec = float( tSec - self.cnt_month[bin].get('d', 0) )
@@ -1041,7 +1043,7 @@ class sswpVector:
             tSec = 0
             for code in self.cnt_pweek[bin].keys():
                tSec += self.cnt_pweek[bin][code]
-            if ( tSec <= 0 ):
+            if ( tSec <= 360 ):
                continue
             #logging.debug(("resolving pweek[%d] counter, total=%d, down=%d," +
             #               " ok=%d, warn=%d, err=%d"), bin, tSec,
@@ -1066,7 +1068,7 @@ class sswpVector:
             tSec = 0
             for code in self.cnt_fweek[bin].keys():
                tSec += self.cnt_fweek[bin][code]
-            if ( tSec <= 0 ):
+            if ( tSec <= 360 ):
                continue
             #logging.debug(("resolving fweek[%d] counter, total=%d, ok=%d, e" +
             #               "rr=%d"), bin, tSec,
@@ -3277,6 +3279,206 @@ def sswp_ssb_HammerCloud15min():
 
 
 
+def sswp_ssb_PhEDExLinks():
+    # ################################################################### #
+    # get PhEDEx Link data from the SSB-Dashboard and fill metric vectors #
+    # ################################################################### #
+    ts1 = time.gmtime( glbInfo['timestamp'] - 39*24*60*60)
+    ts2 = time.gmtime( glbInfo['timestamp'] + 24*60*60)
+    #
+    URL_SSB_PHEDEXLINKS = "http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=63&time=custom&sites=all&clouds=all&batch=1&dateFrom=%s&dateTo=%s" % (time.strftime("%Y-%m-%d", ts1), time.strftime("%Y-%m-%d", ts2))
+
+    # get PhEDEx Links data from the SSB dashboard:
+    # =============================================
+    logging.info("Querying SSB for PhEDEx Links information")
+    urlHandle = None
+    try:
+        request = urllib2.Request(URL_SSB_PHEDEXLINKS,
+                                  headers={'Accept':'application/json'})
+        urlHandle = urllib2.urlopen( request )
+        myData = urlHandle.read()
+        #
+        # update cache:
+        try:
+            myFile = open("%s/cache_ssbPhEDExLinks.json_new" % SSWP_CACHE_DIR,
+                          'w')
+            try:
+                myFile.write(myData)
+                renameFlag = True
+            except:
+                renameFlag = False
+            finally:
+                myFile.close()
+                del myFile
+            if renameFlag:
+                os.rename("%s/cache_ssbPhEDExLinks.json_new" % SSWP_CACHE_DIR,
+                          "%s/cache_ssbPhEDExLinks.json" % SSWP_CACHE_DIR)
+                logging.info("   cache of SSB PhEDEx Links updated")
+            del renameFlag
+        except:
+            pass
+    except:
+        if 'stale' not in glbInfo:
+            glbInfo['stale'] = "No/stale information (SSB PhEDEx Links"
+        else:
+            glbInfo['stale'] += ", SSB PhEDEx Links"
+        logging.warning("   failed to fetch SSB PhEDEx Links data")
+        try:
+            myFile = open("%s/cache_ssbPhEDExLinks.json" % SSWP_CACHE_DIR, 'r')
+            try:
+                myData = myFile.read()
+                logging.info("   using cached SSB PhEDEx Links data")
+            except:
+                logging.warning(("   failed to access cached SSB PhEDEx Link" +
+                                 "s data"))
+                return
+            finally:
+                myFile.close()
+                del myFile
+        except:
+            logging.warning("   no SSB PhEDEx Links cache available")
+            return
+    finally:
+        if urlHandle is not None:
+            urlHandle.close()
+    del urlHandle
+
+    glbLock.acquire()
+
+    # unpack JSON data of SSB PhEDEx Links 2 hours information:
+    phedexlinks = json.loads( myData )
+
+    for entry in phedexlinks['csvdata']:
+        cmssite = entry['VOName']
+        status = entry['COLORNAME']                                # red, green
+        status = status.lower()
+        if ( status == "green" ):
+            code = 'o'
+        elif ( status == "red" ):
+            code = 'e'
+        else:
+            continue
+        tstrng = entry['Time']
+        ts = time.strptime(tstrng + ' UTC', "%Y-%m-%dT%H:%M:%S %Z")
+        # PhEDEx Links metric is shifter byu 24 hours, correct time:
+        start = calendar.timegm(ts) - 86400
+        tstrng = entry['EndTime']
+        ts = time.strptime(tstrng + ' UTC', "%Y-%m-%dT%H:%M:%S %Z")
+        # PhEDEx Links metric is shifter byu 24 hours, correct time:
+        end = calendar.timegm(ts) - 86400
+        #logging.debug("LS(%s) %s to %s = %s",
+        #              cmssite, entry['Time'], tstrng, code)
+
+        glbSites.fillCenter('PhEDExLinks', cmssite, start,
+            min(glbInfo['timestamp'], end), code)
+
+    glbLock.release()
+
+
+
+def sswp_ssb_Links2hours():
+    # ################################################################### #
+    # get PhEDEx Link data from the SSB-Dashboard and fill metric vectors #
+    # ################################################################### #
+    ts1 = time.gmtime( glbInfo['timestamp'] - 39*24*60*60)
+    ts2 = time.gmtime( glbInfo['timestamp'] + 24*60*60)
+    #
+    URL_SSB_LINKS2HOURS = "http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=160101&time=custom&sites=all&clouds=all&batch=1&dateFrom=%s&dateTo=%s" % (time.strftime("%Y-%m-%d", ts1), time.strftime("%Y-%m-%d", ts2))
+
+    # get PhEDEx Links 2 hours data from the SSB dashboard:
+    # =====================================================
+    logging.info("Querying SSB for PhEDEx Links 2 hours information")
+    urlHandle = None
+    try:
+        request = urllib2.Request(URL_SSB_LINKS2HOURS,
+                                  headers={'Accept':'application/json'})
+        urlHandle = urllib2.urlopen( request )
+        myData = urlHandle.read()
+        #
+        # update cache:
+        try:
+            myFile = open("%s/cache_ssbLinks2hours.json_new" % SSWP_CACHE_DIR,
+                          'w')
+            try:
+                myFile.write(myData)
+                renameFlag = True
+            except:
+                renameFlag = False
+            finally:
+                myFile.close()
+                del myFile
+            if renameFlag:
+                os.rename("%s/cache_ssbLinks2hours.json_new" % SSWP_CACHE_DIR,
+                          "%s/cache_ssbLinks2hours.json" % SSWP_CACHE_DIR)
+                logging.info("   cache of SSB PhEDEx Links 2 hours updated")
+            del renameFlag
+        except:
+            pass
+    except:
+        if 'stale' not in glbInfo:
+            glbInfo['stale'] = "No/stale information (SSB PhEDEx Links 2 hours"
+        else:
+            glbInfo['stale'] += ", SSB PhEDEx Links 2 hours"
+        logging.warning("   failed to fetch SSB PhEDEx Links 2 hours data")
+        try:
+            myFile = open("%s/cache_ssbLinks2hours.json" % SSWP_CACHE_DIR, 'r')
+            try:
+                myData = myFile.read()
+                logging.info("   using cached SSB PhEDEx Links 2 hours data")
+            except:
+                logging.warning(("   failed to access cached SSB PhEDEx Link" +
+                                 "s 2 hours data"))
+                return
+            finally:
+                myFile.close()
+                del myFile
+        except:
+            logging.warning("   no SSB PhEDEx Links 2 hours cache available")
+            return
+    finally:
+        if urlHandle is not None:
+            urlHandle.close()
+    del urlHandle
+
+    glbLock.acquire()
+
+    # unpack JSON data of SSB PhEDEx Links 2 hours information:
+    links2hours = json.loads( myData )
+
+    for entry in links2hours['csvdata']:
+        cmssite = entry['VOName']
+        # filter out fake "*_Disk", "*_Buffer", and "*_MSS" sites
+        if ( cmssite.find('_Disk', 5) > 0 ): continue
+        if ( cmssite.find('_Buffer', 5) > 0 ): continue
+        if ( cmssite.find('_MSS', 5) > 0 ): continue
+        status = entry['COLORNAME']                       # red, green, yellow
+        status = status.lower()
+        if ( status == "green" ):
+            code = 'o'
+        elif ( status == "yellow" ):
+            code = 'w'
+        elif ( status == "red" ):
+            code = 'e'
+        else:
+            continue
+        tstrng = entry['Time']
+        ts = time.strptime(tstrng + ' UTC', "%Y-%m-%dT%H:%M:%S %Z")
+        start = calendar.timegm(ts)
+        tstrng = entry['EndTime']
+        ts = time.strptime(tstrng + ' UTC', "%Y-%m-%dT%H:%M:%S %Z")
+        end = calendar.timegm(ts)
+        #logging.debug("LS(%s) %s to %s = %s",
+        #              cmssite, entry['Time'], tstrng, code)
+
+        glbSites.fillCounters('Links2hours', cmssite, start,
+            min(glbInfo['timestamp'], end), code)
+
+    glbSites.resolveCountersDownOkWarnErr('Links2hours')
+
+    glbLock.release()
+
+
+
 def sswp_site_readiness():
     # ############################################################# #
     # fill SAM site and HC 15 min results into site summary vectors #
@@ -3660,6 +3862,7 @@ def sswp_work3():
     sswp_ssb_manLifeStatus()
     sswp_ssb_manProdStatus()
     sswp_ssb_manCrabStatus()
+    sswp_ssb_PhEDExLinks()
     ncpu = time.clock() -cpt
     nsec = time.time() - tis
     logging.info("sswp_work3 took %8.3f / %d seconds", ncpu, nsec)
