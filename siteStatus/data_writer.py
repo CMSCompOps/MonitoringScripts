@@ -1364,8 +1364,8 @@ def sswp_init():
 
     # install URL opener that connects with a certificate and key:
     # ============================================================
-    url_opnr = urllib2.build_opener( HTTPSClientAuthHandler() )
-    urllib2.install_opener( url_opnr )
+    #url_opnr = urllib2.build_opener( HTTPSClientAuthHandler() )
+    #urllib2.install_opener( url_opnr )
 
     # fill timestamp dictionary:
     # ==========================
@@ -1404,8 +1404,9 @@ def sswp_sitedb():
     urlHandle = None
     try:
         request = urllib2.Request(URL_SITEDB_SITES,
-                              headers={'Accept':'application/json'})
-        urlHandle = urllib2.urlopen( request )
+                                  headers={'Accept':'application/json'})
+        urlOpener = urllib2.build_opener( HTTPSClientAuthHandler() )
+        urlHandle = urlOpener.open( request )
         myData = urlHandle.read()
         #
         # update cache:
@@ -1450,6 +1451,7 @@ def sswp_sitedb():
         if urlHandle is not None:
             urlHandle.close()
     del urlHandle
+    del urlOpener
     #
     sitedb = json.loads( myData )
 
@@ -1572,7 +1574,10 @@ def sswp_ggus():
     logging.info("Querying GGUS for Ticket information")
     urlHandle = None
     try:
-        urlHandle = urllib2.urlopen(URL_GGUS_TICKET)
+        request = urllib2.Request(URL_GGUS_TICKET,
+                                  headers={'Accept':'application/xml'})
+        urlOpener = urllib2.build_opener( HTTPSClientAuthHandler() )
+        urlHandle = urlOpener.open( request )
         myData = urlHandle.read()
         #
         # update cache:
@@ -1617,6 +1622,7 @@ def sswp_ggus():
         if urlHandle is not None:
             urlHandle.close()
     del urlHandle
+    del urlOpener
 
     glbLock.acquire()
 
