@@ -99,13 +99,15 @@ function main() {
         insertRow(site, 'sam', 50);
         insertRow(site, 'hc', 70);
         insertRow(site, 'ggus', 0);
-	var today = new Date();
-	var start = new Date(+today);
- 	start.setDate(start.getDate() - 14);
-	var current_datetime = set_datetime(today);
-	var start_datetime = set_datetime(start);
-        var url = "http://dashb-cms-job.cern.ch/dashboard/templates/web-job2/#user=&refresh=0&table=Jobs&p=1&records=25&activemenu=1&usr=&site=&submissiontool=&application=&activity=hcxrootd&status=&check=terminated&tier=&date1="+ start_datetime +"&date2="+ current_datetime +"&sortby=activity&scale=linear&bars=20&ce=&rb=&grid=&jobtype=&submissionui=&dataset=&submissiontype=&task=&subtoolver=&genactivity=&outputse=&appexitcode=&accesstype=&inputse="+ site +"&cores="
- 	$("a#hc").attr("href", url);
+		var today = new Date();
+		var start = new Date(+today);
+ 		start.setDate(start.getDate() - 14);
+		var current_datetime = set_datetime(today);
+		var start_datetime = set_datetime(start);
+    	var url = "http://dashb-cms-job.cern.ch/dashboard/templates/web-job2/#user=&refresh=0&table=Jobs&p=1&records=25&activemenu=1&usr=&site=&submissiontool=&application=&activity=hcxrootd&status=&check=terminated&tier=&date1="+ start_datetime +"&date2="+ current_datetime +"&sortby=activity&scale=linear&bars=20&ce=&rb=&grid=&jobtype=&submissionui=&dataset=&submissiontype=&task=&subtoolver=&genactivity=&outputse=&appexitcode=&accesstype=&inputse="+ site +"&cores="
+ 		var sam_url = "http://wlcg-sam-cms.cern.ch/templates/ember/#/historicalsmry/heatMap?metrics=org.cms.WN-xrootd-access%20(%2Fcms%2FRole_lcgadmin)&profile=CMS_CRITICAL_FULL&site="+ site +"&time=14d&view=Test%20History"
+		$("a#hc").attr("href", url);
+		$("a#sam").attr("href", sam_url);
     }
     $("td > div").mousemove(displayInfo);
     $("td > div").mouseleave(hideInfo);
@@ -168,7 +170,7 @@ div.aaa-monitoring-info {
       <tbody>
         <col width="10%">
         <col width="90%">
-        <tr><th>SAM</th>  <td id="sam" ></td></tr>
+        <tr><th>SAM</th>  <td><a href="" target="_blank" id="sam" style="display:block;"> </a></td></tr>
         <tr><th>HC</th>   <td><a href="" target="_blank" id="hc" style="display:block;"> </a></td></tr>
         <tr><th>GGUS</th> <td id="ggus"></td></tr>
       </tbody>
