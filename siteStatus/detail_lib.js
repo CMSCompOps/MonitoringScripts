@@ -17,6 +17,7 @@ var siteMetricLabel = { LifeStatus:       "Life Status",
                         wlcgSAMsite:      "SAM Status",
                         wlcgSAMservice:   "SAM Status",
                         wlcgSAMdowntime:  "SAM Downtime(s)",
+                        PhEDExLinks:      "PhEDEx Links",
                         summary:          "<B>Summary</B>" };
 var siteMetricOrder = [ "LifeStatus", "manualLifeStatus",
                         "ProdStatus", "manualProdStatus",
@@ -25,7 +26,8 @@ var siteMetricOrder = [ "LifeStatus", "manualLifeStatus",
                         "***GGUS***",
                         "downtime",
                         "***LINE***",
-                        "SiteReadiness", "wlcgSAMsite",
+                        "SiteReadiness", "wlcgSAMsite", "HC15min",
+                        "PhEDExLinks",
                         "***Othr***",
                         "summary",
                         "***LINE***",
@@ -273,170 +275,150 @@ function writeTable() {
          }
          myTableStr += '<TR>\n   <TD NOWRAP ALIGN="left">' + nName + '\n   <' +
             'TD NOWRAP>&nbsp;\n';
-         if (( siteMetricOrder[mCnt] == "wlcgSAMsite" ) ||
-             ( siteMetricOrder[mCnt] == "xHC15min" )) {
-            var urlStr = "";
-            // second, previous month's, column:
-            if ( siteMetricOrder[mCnt] == "wlcgSAMsite" ) {
-               urlStr = 'http://wlcg-sam-cms.cern.ch/templates/ember/#/histo' +
-                  'ricalsmry/heatMap?profile=CMS_CRITICAL_FULL&site=' +
-                  myData.site + '&start_time=' +
-                  dateString3(myData.time - 38 * 86400 ) + ' 00:00&end_time=' +
-                  dateString3( myData.time - 9 * 86400 ) + ' 23:59&time=manu' +
-                  'al&granularity=Daily&view=Service Availability';
-            } else if ( siteMetricOrder[mCnt] == "HC15min" ) {
-               urlStr = 'http://dashb-ssb.cern.ch/dashboard/request.py/sitev' +
-                  'iewhistory?columnid=217&debug=false#time=custom&start_dat' +
-                  'e=' + dateString3(myData.time - 38 * 86400 ) + '&end_date' +
-                  '=' + dateString3( myData.time - 8 * 86400 ) + '&values=fa' +
-                  'lse&spline=false&debug=false&resample=false&sites=one&clo' +
-                  'uds=all&site=' + myData.site;
-            }
-            myTableStr += '   <TD><A CLASS="toolTip1" HREF="' + urlStr +
-               '"><CANVAS ID="cnvs_' + siteMetricOrder[mCnt] + '_s1" WIDTH=' +
-               '"272" HEIGHT="18"></CANVAS><SPAN><TABLE WIDTH="100%" BORDER=' +
-               '"0" CELLPADDING="0" CELLSPACING="0"><TR><TD COLSPAN="2" ALIG' +
-               'N="center"><B>Previous Month of ' + nName + '</B><TR><TD COL' +
-               'SPAN="2">&nbsp;<TR><TD COLSPAN="2"><CANVAS ID="cnvs_' +
-               siteMetricOrder[mCnt] + '_m1" WIDTH="540" HEIGHT="36"></CANVA' +
-               'S><TR><TD ALIGN="left">' +
-               dateString2( myData.time - 38 * 86400 ) + '<TD ALIGN="right">' +
-               dateString2( myData.time - 9 * 86400 ) +
-               '</TABLE></SPAN></A>\n';
-            // third, previous week's, column:
-            if ( siteMetricOrder[mCnt] == "wlcgSAMsite" ) {
-               urlStr = 'http://wlcg-sam-cms.cern.ch/templates/ember/#/histo' +
-                  'ricalsmry/heatMap?profile=CMS_CRITICAL_FULL&site=' +
-                  myData.site + '&start_time=' +
-                  dateString3(myData.time - 8 * 86400 ) + ' 00:00&end_time=' +
-                  dateString3( myData.time - 2 * 86400 ) + ' 23:59&time=manu' +
-                  'al&granularity=Daily&view=Service Availability';
-            }
-            myTableStr += '   <TD><A CLASS="toolTip2" HREF="' + urlStr +
-               '"><CANVAS ID="cnvs_' + siteMetricOrder[mCnt] + '_s2" WIDTH=' +
-               '"198" HEIGHT="18"></CANVAS><SPAN><TABLE WIDTH="100%" BORDER=' +
-               '"0" CELLPADDING="0" CELLSPACING="0"><TR><TD COLSPAN="2" ALIG' +
-               'N="center"><B>Previous Week of ' + nName + '</B><TR><TD COLS' +
-               'PAN="2">&nbsp;<TR><TD COLSPAN="2"><CANVAS ID="cnvs_' +
-               siteMetricOrder[mCnt] + '_m2" WIDTH="728" HEIGHT="36"></CANVA' +
-               'S><TR><TD ALIGN="left">' +
-               dateString2( myData.time - 8 * 86400 ) + '<TD ALIGN="right">' +
-               dateString2( myData.time - 2 * 86400 ) +
-               '</TABLE></SPAN></A>\n';
-            // fourth, yesterday's, column:
-            if ( siteMetricOrder[mCnt] == "wlcgSAMsite" ) {
-               urlStr = 'http://wlcg-sam-cms.cern.ch/templates/ember/#/histo' +
-                  'ricalsmry/heatMap?profile=CMS_CRITICAL_FULL&site=' +
-                  myData.site + '&start_time=' +
-                  dateString3(myData.time - 86400 ) + ' 00:00&end_time=' +
-                  dateString3( myData.time ) + ' 00:00&time=manual&view=Test' +
-                  ' History';
-            }
-            myTableStr += '   <TD><A CLASS="toolTip3" HREF="' + urlStr +
-               '"><CANVAS ID="cnvs_' + siteMetricOrder[mCnt] + '_s3" WIDTH=' +
-               '"218" HEIGHT="18"></CANVAS><SPAN><TABLE WIDTH="100%" BORDER=' +
-               '"0" CELLPADDING="0" CELLSPACING="0"><TR><TD COLSPAN="2" ALIG' +
-               'N="center"><B>Yesterday' + ' (' +
-               dateString2( myData.time - 86400 ) + ') of ' + nName +
-               '</B><TR><TD COLSPAN="2">&nbsp;<TR><TD COLSPAN="2"><CANVAS ID' +
-               '="cnvs_' + siteMetricOrder[mCnt] + '_m3" WIDTH="432" HEIGHT=' +
-               '"36"></CANVAS><TR><TD ALIGN="left">00:00<TD ALIGN="right">24' +
-               ':00</TABLE></SPAN></A>\n';
-            // fifth, today's, column:
-            if ( siteMetricOrder[mCnt] == "wlcgSAMsite" ) {
-               urlStr = 'http://wlcg-sam-cms.cern.ch/templates/ember/#/histo' +
-                  'ricalsmry/heatMap?profile=CMS_CRITICAL_FULL&site=' +
-                  myData.site + '&start_time=' + dateString3(myData.time) +
-                  ' 00:00&end_time=' + dateString3( myData.time + 86400 ) +
-                  ' 00:00&time=manual&view=Test History';
-            }
-            myTableStr += '   <TD><A CLASS="toolTip4" HREF="' + urlStr +
-               '"><CANVAS ID="cnvs_' + siteMetricOrder[mCnt] + '_s4" WIDTH=' +
-               '"314" HEIGHT="18"></CANVAS><SPAN><TABLE WIDTH="100%" BORDER=' +
-               '"0" CELLPADDING="0" CELLSPACING="0"><TR><TD COLSPAN="2" ALIG' +
-               'N="center"><B>Today (' + dateString2( myData.time ) + ') of ' +
-               nName + '</B><TR><TD COLSPAN="2">&nbsp;<TR><TD COLSPAN="2"><C' +
-               'ANVAS ID="cnvs_' + siteMetricOrder[mCnt] + '_m4" WIDTH="528"' +
-               ' HEIGHT="36"></CANVAS><TR><TD ALIGN="left">00:00<TD ALIGN="r' +
-               'ight">24:00</TABLE></SPAN></A>\n';
-            // sixth, following week's column:
-            if ( siteMetricOrder[mCnt] == "wlcgSAMsite" ) {
-               urlStr = 'http://wlcg-sam-cms.cern.ch/templates/ember/#/histo' +
-                  'ricalsmry/heatMap?profile=CMS_CRITICAL_FULL&site=' +
-                  myData.site + '&start_time=' +
-                  dateString3(myData.time + 86400 ) + ' 00:00&end_time=' +
-                  dateString3( myData.time + 7 * 86400 ) + ' 23:59&time=manu' +
-                  'al&granularity=Daily&view=Service Availability';
-            }
-            myTableStr += '   <TD><A CLASS="toolTip5" HREF="' + urlStr +
-               '"><CANVAS ID="cnvs_' + siteMetricOrder[mCnt] + '_s5" WIDTH=' +
-               '"198" HEIGHT="18"></CANVAS><SPAN><TABLE WIDTH="100%" BORDER=' +
-               '"0" CELLPADDING="0" CELLSPACING="0"><TR><TD COLSPAN="2" ALIG' +
-               'N="center"><B>Following' + ' Week of ' + nName + '</B><TR><T' +
-               'D COLSPAN="2">&nbsp;<TR><TD COLSPAN="2"><CANVAS ID="cnvs_' +
-               siteMetricOrder[mCnt] + '_m5" WIDTH="728" HEIGHT="36"></CANVA' +
-               'S><TR><TD ALIGN="left">' +
-               dateString2( myData.time + 1 * 86400 ) + '<TD ALIGN="right">' +
-               dateString2( myData.time + 7 * 86400 ) +
-               '</TABLE></SPAN></A>\n';
+         var urlXstr = "";
+         // second, previous month's, column:
+         if ( siteMetricOrder[mCnt] == "wlcgSAMsite" ) {
+            urlXstr = ' HREF="http://wlcg-sam-cms.cern.ch/templates/ember/#/' +
+               'historicalsmry/heatMap?profile=CMS_CRITICAL_FULL&site=' +
+               myData.site + '&start_time=' +
+               dateString3(myData.time - 38 * 86400) + ' 00:00&end_time=' +
+               dateString3(myData.time - 8 * 86400) + ' 00:00&time=manual&gr' +
+               'anularity=Daily&view=Service Availability"';
+         } else if ( siteMetricOrder[mCnt] == "HC15min" ) {
+            urlXstr = ' HREF="http://dashb-ssb.cern.ch/dashboard/request.py/' +
+               'siteviewhistory?columnid=217&debug=false#time=custom&start_d' +
+               'ate=' + dateString4(myData.time - 38 * 86400) + '&end_date=' +
+               dateString4(myData.time - 8 * 86400) + '&values=false&spline=' +
+               'false&debug=false&resample=false&sites=one&clouds=all&site=' +
+               myData.site + '"';
          } else {
-            // second, previous month's, column:
-            myTableStr += '   <TD><A CLASS="toolTip1"><CANVAS ID="cnvs_' +
-               siteMetricOrder[mCnt] + '_s1" WIDTH="272" HEIGHT="18"></CAN' +
-               'VAS><SPAN><TABLE WIDTH="100%" BORDER="0" CELLPADDING="0" CEL' +
-               'LSPACING="0"><TR><TD COLSPAN="2" ALIGN="center"><B>Previous ' +
-               'Month of ' + siteMetricOrder[mCnt] + '</B><TR><TD COLSPAN="2' +
-               '">&nbsp;<TR><TD COLSPAN="2"><CANVAS ID="cnvs_' +
-               siteMetricOrder[mCnt] + '_m1" WIDTH="540" HEIGHT="36"></CAN' +
-               'VAS><TR><TD ALIGN="left">' +
-               dateString2( myData.time - 38 * 86400 ) + '<TD ALIGN="right">' +
-               dateString2( myData.time - 9 * 86400 ) +
-               '</TABLE></SPAN></A>\n';
-            // third, previous week's, column:
-            myTableStr += '   <TD><A CLASS="toolTip2"><CANVAS ID="cnvs_' +
-               siteMetricOrder[mCnt] + '_s2" WIDTH="198" HEIGHT="18"></CAN' +
-               'VAS><SPAN><TABLE WIDTH="100%" BORDER="0" CELLPADDING="0" CEL' +
-               'LSPACING="0"><TR><TD COLSPAN="2" ALIGN="center"><B>Previous ' +
-               'Week of ' + siteMetricOrder[mCnt] + '</B><TR><TD COLSPAN="2"' +
-               '>&nbsp;<TR><TD COLSPAN="2"><CANVAS ID="cnvs_' +
-               siteMetricOrder[mCnt] + '_m2" WIDTH="728" HEIGHT="36"></CAN' +
-               'VAS><TR><TD ALIGN="left">' +
-               dateString2( myData.time - 8 * 86400 ) + '<TD ALIGN="right">' +
-               dateString2( myData.time - 2 * 86400 ) +
-               '</TABLE></SPAN></A>\n';
-            // fourth, yesterday's, column:
-            myTableStr += '   <TD><A CLASS="toolTip3"><CANVAS ID="cnvs_' +
-               siteMetricOrder[mCnt] + '_s3" WIDTH="218" HEIGHT="18"></CAN' +
-               'VAS><SPAN><TABLE WIDTH="100%" BORDER="0" CELLPADDING="0" CEL' +
-               'LSPACING="0"><TR><TD COLSPAN="2" ALIGN="center"><B>Yesterday' +
-               ' (' + dateString2( myData.time - 86400 ) + ') of ' +
-               siteMetricOrder[mCnt] + '</B><TR><TD COLSPAN="2">&nbsp;<TR><T' +
-               'D COLSPAN="2"><CANVAS ID="cnvs_' + siteMetricOrder[mCnt] +
-               '_m3" WIDTH="432" HEIGHT="36"></CANVAS><TR><TD ALIGN="left"' +
-               '>00:00<TD ALIGN="right">24:00</TABLE></SPAN></A>\n';
-            // fifth, today's, column:
-            myTableStr += '   <TD><A CLASS="toolTip4"><CANVAS ID="cnvs_' +
-               siteMetricOrder[mCnt] + '_s4" WIDTH="314" HEIGHT="18"></CAN' +
-               'VAS><SPAN><TABLE WIDTH="100%" BORDER="0" CELLPADDING="0" CEL' +
-               'LSPACING="0"><TR><TD COLSPAN="2" ALIGN="center"><B>Today (' +
-               dateString2( myData.time ) + ') of ' + siteMetricOrder[mCnt] +
-               '</B><TR><TD COLSPAN="2">&nbsp;<TR><TD COLSPAN="2"><CANVAS ID' +
-               '="cnvs_' + siteMetricOrder[mCnt] + '_m4" WIDTH="528" HEIGH' +
-               'T="36"></CANVAS><TR><TD ALIGN="left">00:00<TD ALIGN="right">' +
-               '24:00</TABLE></SPAN></A>\n';
-            // sixth, following week's column:
-            myTableStr += '   <TD><A CLASS="toolTip5"><CANVAS ID="cnvs_' +
-               siteMetricOrder[mCnt] + '_s5" WIDTH="198" HEIGHT="18"></CAN' +
-               'VAS><SPAN><TABLE WIDTH="100%" BORDER="0" CELLPADDING="0" CEL' +
-               'LSPACING="0"><TR><TD COLSPAN="2" ALIGN="center"><B>Following' +
-               ' Week of ' + siteMetricOrder[mCnt] + '</B><TR><TD COLSPAN="2' +
-               '">&nbsp;<TR><TD COLSPAN="2"><CANVAS ID="cnvs_' +
-               siteMetricOrder[mCnt] + '_m5" WIDTH="728" HEIGHT="36"></CAN' +
-               'VAS><TR><TD ALIGN="left">' +
-               dateString2( myData.time + 1 * 86400 ) + '<TD ALIGN="right">' +
-               dateString2( myData.time + 7 * 86400 ) +
-               '</TABLE></SPAN></A>\n';
+            urlXstr = '';
          }
+         myTableStr += '   <TD><A CLASS="toolTip1"' + urlXstr + '><CANVAS ID' +
+            '="cnvs_' + siteMetricOrder[mCnt] + '_s1" WIDTH=' + '"272" HEIGH' +
+            'T="18"></CANVAS><SPAN><TABLE WIDTH="100%" BORDER="0" CELLPADDIN' +
+            'G="0" CELLSPACING="0"><TR><TD COLSPAN="2" ALIGN="center"><B>Pre' +
+            'vious Month of ' + nName + '</B><TR><TD COLSPAN="2">&nbsp;<TR><' +
+            'TD COLSPAN="2"><CANVAS ID="cnvs_' + siteMetricOrder[mCnt] +
+            '_m1" WIDTH="540" HEIGHT="36"></CANVAS><TR><TD ALIGN="left">' +
+            dateString2(myData.time - 38 * 86400) + '<TD ALIGN="right">' +
+            dateString2(myData.time - 9 * 86400) + '</TABLE></SPAN></A>\n';
+         // third, previous week's, column:
+         if ( siteMetricOrder[mCnt] == "wlcgSAMsite" ) {
+            urlXstr = ' HREF="http://wlcg-sam-cms.cern.ch/templates/ember/#/' +
+               'historicalsmry/heatMap?profile=CMS_CRITICAL_FULL&site=' +
+               myData.site + '&start_time=' +
+               dateString3(myData.time - 8 * 86400 ) + ' 00:00&end_time=' +
+               dateString3( myData.time - 86400 ) + ' 00:00&time=manual&gran' +
+               'ularity=Daily&view=Service Availability"';
+         } else if ( siteMetricOrder[mCnt] == "HC15min" ) {
+            urlXstr = ' HREF="http://dashb-ssb.cern.ch/dashboard/request.py/' +
+               'siteviewhistory?columnid=217&debug=false#time=custom&start_d' +
+               'ate=' + dateString4(myData.time - 8 * 86400) + '&end_date=' +
+               dateString4(myData.time - 86400) + '&values=false&spline=fals' +
+               'e&debug=false&resample=false&sites=one&clouds=all&site=' +
+               myData.site + '"';
+         } else {
+            urlXstr = '';
+         }
+         myTableStr += '   <TD><A CLASS="toolTip2"' + urlXstr + '><CANVAS ID' +
+            '="cnvs_' + siteMetricOrder[mCnt] + '_s2" WIDTH=' + '"198" HEIGH' +
+            'T="18"></CANVAS><SPAN><TABLE WIDTH="100%" BORDER="0" CELLPADDIN' +
+            'G="0" CELLSPACING="0"><TR><TD COLSPAN="2" ALIGN="center"><B>Pre' +
+            'vious Week of ' + nName + '</B><TR><TD COLSPAN="2">&nbsp;<TR><T' +
+            'D COLSPAN="2"><CANVAS ID="cnvs_' + siteMetricOrder[mCnt] +
+            '_m2" WIDTH="728" HEIGHT="36"></CANVAS><TR><TD ALIGN="left">' +
+            dateString2(myData.time - 8 * 86400) + '<TD ALIGN="right">' +
+            dateString2(myData.time - 2 * 86400) + '</TABLE></SPAN></A>\n';
+         // fourth, yesterday's, column:
+         if ( siteMetricOrder[mCnt] == "wlcgSAMsite" ) {
+            urlXstr = ' HREF="http://wlcg-sam-cms.cern.ch/templates/ember/#/' +
+               'historicalsmry/heatMap?profile=CMS_CRITICAL_FULL&site=' +
+               myData.site + '&start_time=' +
+               dateString3(myData.time - 86400) + ' 00:00&end_time=' +
+               dateString3(myData.time) + ' 00:00&time=manual&view=Test Hist' +
+               'ory"';
+         } else if ( siteMetricOrder[mCnt] == "HC15min" ) {
+            urlXstr = ' HREF="http://dashb-ssb.cern.ch/dashboard/request.py/' +
+               'siteviewhistory?columnid=217&debug=false#time=custom&start_d' +
+               'ate=' + dateString4(myData.time - 86400) + '&end_date=' +
+               dateString4(myData.time) + '&values=false&spline=false&debug=' +
+               'false&resample=false&sites=one&clouds=all&site=' +
+               myData.site + '"';
+         } else {
+            urlXstr = '';
+         }
+         myTableStr += '   <TD><A CLASS="toolTip3"' + urlXstr + '><CANVAS ID' +
+            '="cnvs_' + siteMetricOrder[mCnt] + '_s3" WIDTH="218" HEIGHT="18' +
+            '"></CANVAS><SPAN><TABLE WIDTH="100%" BORDER="0" CELLPADDING="0"' +
+            ' CELLSPACING="0"><TR><TD COLSPAN="2" ALIGN="center"><B>Yesterda' +
+            'y (' + dateString2( myData.time - 86400 ) + ') of ' + nName +
+            '</B><TR><TD COLSPAN="2">&nbsp;<TR><TD COLSPAN="2"><CANVAS ID="c' +
+            'nvs_' + siteMetricOrder[mCnt] + '_m3" WIDTH="432" HEIGHT="36"><' +
+            '/CANVAS><TR><TD ALIGN="left">00:00<TD ALIGN="right">24:00</TABL' +
+            'E></SPAN></A>\n';
+         // fifth, today's, column:
+         if ( siteMetricOrder[mCnt] == "manualLifeStatus" ) {
+            urlXstr = ' HREF="https://cmssst.web.cern.ch/cmssst/man_override' +
+               '/cgi/manualOverride.py/lifestatus"';
+         } else if ( siteMetricOrder[mCnt] == "manualProdStatus" ) {
+            urlXstr = ' HREF="https://cmssst.web.cern.ch/cmssst/man_override' +
+               '/cgi/manualOverride.py/prodstatus"';
+         } else if ( siteMetricOrder[mCnt] == "manualCrabStatus" ) {
+            urlXstr = ' HREF="https://cmssst.web.cern.ch/cmssst/man_override' +
+               '/cgi/manualOverride.py/crabstatus"';
+         } else if ( siteMetricOrder[mCnt] == "wlcgSAMsite" ) {
+            urlXstr = ' HREF="http://wlcg-sam-cms.cern.ch/templates/ember/#/' +
+               'historicalsmry/heatMap?profile=CMS_CRITICAL_FULL&site=' +
+               myData.site + '&start_time=' + dateString3(myData.time) +
+               ' 00:00&end_time=' + dateString3(myData.time + 86400) +
+               ' 00:00&time=manual&view=Test History"';
+         } else if ( siteMetricOrder[mCnt] == "HC15min" ) {
+            urlXstr = ' HREF="http://dashb-ssb.cern.ch/dashboard/request.py/' +
+               'siteviewhistory?columnid=217&debug=false#time=custom&start_d' +
+               'ate=' + dateString4(myData.time) + '&end_date=' +
+               dateString4(myData.time + 86400) + '&values=false&spline=fals' +
+               'e&debug=false&resample=false&sites=one&clouds=all&site=' +
+               myData.site + '"';
+         } else {
+            urlXstr = '';
+         }
+         myTableStr += '   <TD><A CLASS="toolTip4"' + urlXstr + '><CANVAS ID' +
+            '="cnvs_' + siteMetricOrder[mCnt] + '_s4" WIDTH="314" HEIGHT="18' +
+            '"></CANVAS><SPAN><TABLE WIDTH="100%" BORDER="0" CELLPADDING="0"' +
+            ' CELLSPACING="0"><TR><TD COLSPAN="2" ALIGN="center"><B>Today (' +
+            dateString2( myData.time ) + ') of ' + nName + '</B><TR><TD COLS' +
+            'PAN="2">&nbsp;<TR><TD COLSPAN="2"><CANVAS ID="cnvs_' +
+            siteMetricOrder[mCnt] + '_m4" WIDTH="528" HEIGHT="36"></CANVAS><' +
+            'TR><TD ALIGN="left">00:00<TD ALIGN="right">24:00</TABLE></SPAN>' +
+            '</A>\n';
+         // sixth, following week's column:
+         if ( siteMetricOrder[mCnt] == "wlcgSAMsite" ) {
+            urlXstr = ' HREF="http://wlcg-sam-cms.cern.ch/templates/ember/#/' +
+               'historicalsmry/heatMap?profile=CMS_CRITICAL_FULL&site=' +
+               myData.site + '&start_time=' +
+               dateString3(myData.time + 86400) + ' 00:00&end_time=' +
+               dateString3(myData.time + 8 * 86400) + ' 00:59&time=manual&gr' +
+               'anularity=Daily&view=Service Availability"';
+         } else if ( siteMetricOrder[mCnt] == "HC15min" ) {
+            urlXstr = ' HREF="http://dashb-ssb.cern.ch/dashboard/request.py/' +
+               'siteviewhistory?columnid=217&debug=false#time=custom&start_d' +
+               'ate=' + dateString4(myData.time + 86400) + '&end_date=' +
+               dateString4(myData.time + 8 * 86400) + '&values=false&spline=' +
+               'false&debug=false&resample=false&sites=one&clouds=all&site=' +
+               myData.site + '"';
+         } else {
+            urlXstr = '';
+         }
+         myTableStr += '   <TD><A CLASS="toolTip5"' + urlXstr + '><CANVAS ID' +
+            '="cnvs_' + siteMetricOrder[mCnt] + '_s5" WIDTH="198" HEIGHT="18' +
+            '"></CANVAS><SPAN><TABLE WIDTH="100%" BORDER="0" CELLPADDING="0"' +
+            ' CELLSPACING="0"><TR><TD COLSPAN="2" ALIGN="center"><B>Followin' +
+            'g Week of ' + nName + '</B><TR><TD COLSPAN="2">&nbsp;<TR><TD CO' +
+            'LSPAN="2"><CANVAS ID="cnvs_' + siteMetricOrder[mCnt] +
+            '_m5" WIDTH="728" HEIGHT="36"></CANVAS><TR><TD ALIGN="left">' +
+            dateString2( myData.time + 1 * 86400 ) + '<TD ALIGN="right">' +
+            dateString2( myData.time + 7 * 86400 ) + '</TABLE></SPAN></A>\n';
       } else if ( siteMetricOrder[mCnt] == "***Othr***" ) {
          // loop over site metrics and write any not in siteMetricOrder:
          for ( var mName in myData.metrics ) {
@@ -503,7 +485,7 @@ function writeTable() {
          for ( var cnt=0; cnt < myData.elements.length; cnt+=1 ) {
             // concatenate host and type excluding domain
             var indx = myData.elements[cnt].host.indexOf('.');
-            if ( indx > 0 ) {
+            if ( indx <= 0 ) {
                indx = myData.elements[cnt].host.length;
             }
             var eName = myData.elements[cnt].host.substring(0,indx) + ' / ' +
@@ -527,49 +509,96 @@ function writeTable() {
                      'sp ' + mName + '\n   <TD NOWRAP>&nbsp;\n';
                }
                // second, previous month's, column:
-               myTableStr += '   <TD><A CLASS="toolTip1"><CANVAS ID="cnvs_' +
-                  eName + '_' + mName + '_s1" WIDTH="272" HEIGHT="18"></CA' +
-                  'NVAS><SPAN><TABLE WIDTH="100%" BORDER="0" CELLPADDING="0"' +
-                  ' CELLSPACING="0"><TR><TD COLSPAN="2" ALIGN="center"><B>Pr' +
-                  'evious Month of ' + mName + '</B><TR><TD COLSPAN="2">&nbs' +
-                  'p;<TR><TD COLSPAN="2"><CANVAS ID="cnvs_' + eName + '_' +
-                  mName + '_m1" WIDTH="540" HEIGHT="36"></CANVAS><TR><TD A' +
-                  'LIGN="left">' + dateString2( myData.time - 38 * 86400 ) +
+               if ( mName =="wlcgSAMservice" ) {
+                  urlXstr = ' HREF="http://wlcg-sam-cms.cern.ch/templates/em' +
+                     'ber/#/historicalsmry/heatMap?profile=CMS_CRITICAL_FULL' +
+                     '&site=' + myData.site + '&hostname=' +
+                     myData.elements[cnt].host + '&start_time=' +
+                     dateString3(myData.time - 38 * 86400) +
+                     ' 00:00&end_time=' +
+                     dateString3(myData.time - 8 * 86400) +
+                     ' 00:00&time=manual&view=Test History"';
+               } else {
+                  urlXstr = '';
+               }
+               myTableStr += '   <TD><A CLASS="toolTip1"' + urlXstr + '><CAN' +
+                  'VAS ID="cnvs_' + eName + '_' + mName + '_s1" WIDTH="272" ' +
+                  'HEIGHT="18"></CANVAS><SPAN><TABLE WIDTH="100%" BORDER="0"' +
+                  ' CELLPADDING="0" CELLSPACING="0"><TR><TD COLSPAN="2" ALIG' +
+                  'N="center"><B>Previous Month of ' + mName + '</B><TR><TD ' +
+                  'COLSPAN="2">&nbsp;<TR><TD COLSPAN="2"><CANVAS ID="cnvs_' +
+                  eName + '_' + mName + '_m1" WIDTH="540" HEIGHT="36"></CANV' +
+                  'AS><TR><TD ALIGN="left">' +
+                  dateString2( myData.time - 38 * 86400 ) +
                   '<TD ALIGN="right">' +
                   dateString2( myData.time - 9 * 86400 ) +
                   '</TABLE></SPAN></A>\n';
                // third, previous week's, column:
-               myTableStr += '   <TD><A CLASS="toolTip2"><CANVAS ID="cnvs_' +
-                  eName + '_' + mName + '_s2" WIDTH="198" HEIGHT="18"></CA' +
-                  'NVAS><SPAN><TABLE WIDTH="100%" BORDER="0" CELLPADDING="0"' +
-                  ' CELLSPACING="0"><TR><TD COLSPAN="2" ALIGN="center"><B>Pr' +
-                  'evious Week of ' + mName + '</B><TR><TD COLSPAN="2">&nbsp' +
-                  ';<TR><TD COLSPAN="2"><CANVAS ID="cnvs_' + eName + '_' +
-                  mName + '_m2" WIDTH="728" HEIGHT="36"></CANVAS><TR><TD A' +
-                  'LIGN="left">' + dateString2( myData.time - 8 * 86400 ) +
-                  '<TD ALIGN="right">' +
-                  dateString2( myData.time - 2 * 86400 ) +
+               if ( mName =="wlcgSAMservice" ) {
+                  urlXstr = ' HREF="http://wlcg-sam-cms.cern.ch/templates/em' +
+                     'ber/#/historicalsmry/heatMap?profile=CMS_CRITICAL_FULL' +
+                     '&site=' + myData.site + '&hostname=' +
+                     myData.elements[cnt].host + '&start_time=' +
+                     dateString3(myData.time - 8* 86400) + ' 00:00&end_time=' +
+                     dateString3(myData.time - 86400) + ' 00:00&time=manual&' +
+                     'view=Test History"';
+               } else {
+                  urlXstr = '';
+               }
+               myTableStr += '   <TD><A CLASS="toolTip2"' + urlXstr + '><CAN' +
+                  'VAS ID="cnvs_' + eName + '_' + mName + '_s2" WIDTH="198" ' +
+                  'HEIGHT="18"></CANVAS><SPAN><TABLE WIDTH="100%" BORDER="0"' +
+                  ' CELLPADDING="0" CELLSPACING="0"><TR><TD COLSPAN="2" ALIG' +
+                  'N="center"><B>Previous Week of ' + mName + '</B><TR><TD C' +
+                  'OLSPAN="2">&nbsp;<TR><TD COLSPAN="2"><CANVAS ID="cnvs_' +
+                  eName + '_' + mName + '_m2" WIDTH="728" HEIGHT="36"></CANV' +
+                  'AS><TR><TD ALIGN="left">' +
+                  dateString2(myData.time - 8 * 86400) + '<TD ALIGN="right">' +
+                  dateString2(myData.time - 2 * 86400) +
                   '</TABLE></SPAN></A>\n';
                // fourth, yesterday's, column:
-               myTableStr += '   <TD><A CLASS="toolTip3"><CANVAS ID="cnvs_' +
-                  eName + '_' + mName + '_s3" WIDTH="218" HEIGHT="18"></CA' +
-                  'NVAS><SPAN><TABLE WIDTH="100%" BORDER="0" CELLPADDING="0"' +
-                  ' CELLSPACING="0"><TR><TD COLSPAN="2" ALIGN="center"><B>Ye' +
-                  'sterday (' + dateString2( myData.time - 86400 ) + ') of ' +
-                  mName + '</B><TR><TD COLSPAN="2">&nbsp;<TR><TD COLSPAN="2"' +
-                  '><CANVAS ID="cnvs_' + eName + '_' + mName + '_m3" WIDTH' +
-                  '="432" HEIGHT="36"></CANVAS><TR><TD ALIGN="left">00:00<TD' +
-                  ' ALIGN="right">24:00</TABLE></SPAN></A>\n';
-               // fifth, today's, column:
-               myTableStr += '   <TD><A CLASS="toolTip4"><CANVAS ID="cnvs_' +
-                  eName + '_' + mName + '_s4" WIDTH="314" HEIGHT="18"></CA' +
-                  'NVAS><SPAN><TABLE WIDTH="100%" BORDER="0" CELLPADDING="0"' +
-                  ' CELLSPACING="0"><TR><TD COLSPAN="2" ALIGN="center"><B>To' +
-                  'day (' + dateString2( myData.time ) + ') of ' + mName +
+               if ( mName =="wlcgSAMservice" ) {
+                  urlXstr = ' HREF="http://wlcg-sam-cms.cern.ch/templates/em' +
+                     'ber/#/historicalsmry/heatMap?profile=CMS_CRITICAL_FULL' +
+                     '&site=' + myData.site + '&hostname=' +
+                     myData.elements[cnt].host + '&start_time=' +
+                     dateString3(myData.time - 86400) + ' 00:00&end_time=' +
+                     dateString3(myData.time) + ' 00:00&time=manual&view=Tes' +
+                     't History"';
+               } else {
+                  urlXstr = '';
+               }
+               myTableStr += '   <TD><A CLASS="toolTip3"' + urlXstr + '><CAN' +
+                  'VAS ID="cnvs_' + eName + '_' + mName + '_s3" WIDTH="218" ' +
+                  'HEIGHT="18"></CANVAS><SPAN><TABLE WIDTH="100%" BORDER="0"' +
+                  ' CELLPADDING="0" CELLSPACING="0"><TR><TD COLSPAN="2" ALIG' +
+                  'N="center"><B>Yesterday (' +
+                  dateString2( myData.time - 86400 ) + ') of ' + mName +
                   '</B><TR><TD COLSPAN="2">&nbsp;<TR><TD COLSPAN="2"><CANVAS' +
-                  ' ID="cnvs_' + eName + '_' + mName + '_m4" WIDTH="528" H' +
-                  'EIGHT="36"></CANVAS><TR><TD ALIGN="left">00:00<TD ALIGN="' +
-                  'right">24:00</TABLE></SPAN></A>\n';
+                  ' ID="cnvs_' + eName + '_' + mName + '_m3" WIDTH="432" HEI' +
+                  'GHT="36"></CANVAS><TR><TD ALIGN="left">00:00<TD ALIGN="ri' +
+                  'ght">24:00</TABLE></SPAN></A>\n';
+               // fifth, today's, column:
+               if ( mName =="wlcgSAMservice" ) {
+                  urlXstr = ' HREF="http://wlcg-sam-cms.cern.ch/templates/em' +
+                     'ber/#/historicalsmry/heatMap?profile=CMS_CRITICAL_FULL' +
+                     '&site=' + myData.site + '&hostname=' +
+                     myData.elements[cnt].host + '&start_time=' +
+                     dateString3(myData.time) + ' 00:00&end_time=' +
+                     dateString3( myData.time + 86400 ) + ' 00:00&time=manua' +
+                     'l&view=Test History"';
+               } else {
+                  urlXstr = '';
+               }
+               myTableStr += '   <TD><A CLASS="toolTip4"' + urlXstr + '><CAN' +
+                  'VAS ID="cnvs_' + eName + '_' + mName + '_s4" WIDTH="314" ' +
+                  'HEIGHT="18"></CANVAS><SPAN><TABLE WIDTH="100%" BORDER="0"' +
+                  ' CELLPADDING="0" CELLSPACING="0"><TR><TD COLSPAN="2" ALIG' +
+                  'N="center"><B>Today (' + dateString2( myData.time ) +
+                  ') of ' + mName + '</B><TR><TD COLSPAN="2">&nbsp;<TR><TD C' +
+                  'OLSPAN="2"><CANVAS ID="cnvs_' + eName + '_' + mName +
+                  '_m4" WIDTH="528" HEIGHT="36"></CANVAS><TR><TD ALIGN="left' +
+                  '">00:00<TD ALIGN="right">24:00</TABLE></SPAN></A>\n';
                // sixth, following week's column:
                myTableStr += '   <TD><A CLASS="toolTip5"><CANVAS ID="cnvs_' +
                   eName + '_' + mName + '_s5" WIDTH="198" HEIGHT="18"></CA' +

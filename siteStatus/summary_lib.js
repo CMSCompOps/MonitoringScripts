@@ -915,3 +915,24 @@ function fillLegend() {
    cCtx.fillStyle = "#F4F4F4";
    cCtx.fillRect(0,0,6,18);
 }
+
+function fillDowntimeLegend() {
+   var cCtx;
+
+   cCtx = document.getElementById('cnvs_lgn_FullDowntime').getContext('2d');
+   cCtx.fillStyle = "#6080FF";
+   cCtx.fillRect(0,0,6,18);
+   cCtx = document.getElementById('cnvs_lgn_PartDowntime').getContext('2d');
+   cCtx.fillStyle = "#6080FF";
+   cCtx.fillRect(0,0,6,6);
+   cCtx.fillRect(0,12,6,6);
+   cCtx = document.getElementById('cnvs_lgn_AdhocDowntime').getContext('2d');
+   cCtx.fillStyle = "#6080FF";
+   cCtx.fillRect(0,0,6,4);
+   cCtx.fillRect(0,6,6,2);
+   cCtx.fillRect(0,10,6,2);
+   cCtx.fillRect(0,14,6,4);
+   cCtx = document.getElementById('cnvs_lgn_Unknown').getContext('2d');
+   cCtx.fillStyle = "#F4F4F4";
+   cCtx.fillRect(0,0,6,18);
+}
