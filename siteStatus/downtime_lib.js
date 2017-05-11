@@ -62,11 +62,10 @@ function writeTable() {
    var myTableStr = '<TABLE BORDER="0" CELLPADDING="0" CELLSPACING="0">\n<TR' +
       '>\n   <TH NOWRAP ALIGN="left"><BIG><B>Sitename</B></BIG>\n   <TH COLS' +
       'PAN="3" NOWRAP ALIGN="center"><BIG><B>GGUS</B></BIG>\n   <TH NOWRAP A' +
-      'LIGN="center"><BIG><B>Previous Month</B></BIG>\n   <TH NOWRAP ALIGN="' +
-      'center"><BIG><B>Previous Week</B></BIG>\n   <TH NOWRAP ALIGN="center"' +
-      '><BIG><B>Yesterday</B></BIG>\n   <TH NOWRAP ALIGN="center"><BIG><B>UT' +
-      'C Today</B></BIG>\n   <TH NOWRAP ALIGN="center"><BIG><B>Following Wee' +
-      'k</B></BIG>\n';
+      'LIGN="center"><BIG><B>Previous Week</B></BIG>\n   <TH NOWRAP ALIGN="c' +
+      'enter"><BIG><B>Yesterday</B></BIG>\n   <TH NOWRAP ALIGN="center" BGCO' +
+      'LOR="#FFFF50"><BIG><B>UTC Today</B></BIG>\n   <TH NOWRAP ALIGN="cente' +
+      'r"><BIG><B>Following Week</B></BIG>\n';
 
 
    // loop over site summary data and write a table row for each site:
@@ -77,10 +76,8 @@ function writeTable() {
       var sName = siteStatusData[sCnt].site.toString();
 
       // compose URL for individual site status page:
-      urlStr = siteStatusInfo['url'] + 'detail.html?site=' + sName;
       // write first, site name, column:
-      myTableStr += '<TR>\n   <TD ALIGN=\"left\"><A HREF=\"' + urlStr +
-         '\"><BIG>' + sName + '</BIG></A>\n';
+      myTableStr += '<TR>\n   <TD ALIGN=\"left\"><BIG>' + sName + '</BIG>\n';
 
       // compose URL for GGUS site-tickets-of-CMS search:
       urlStr = 'https://ggus.eu/?mode=ticket_search&show_columns_check[]=TIC' +
@@ -122,21 +119,6 @@ function writeTable() {
       myTableStr += '   <TD NOWRAP>&nbsp;\n   <TD ' + bgcStr + '><A HREF="' +
          urlStr + '"><B>' + cntStr + '</B></A>\n   <TD NOWRAP>&nbsp;\n';
 
-      // compose URL for previous month's site status page:
-      urlStr = siteStatusInfo['url'] + 'pmonth.html?site=' + sName;
-      // write third, previous month , column:
-      myTableStr += '   <TD><A CLASS="toolTip1" HREF="' + urlStr +
-         '"><CANVAS ID="cnvs_' + sName + '_sec1" WIDTH="272" HEIGHT="18"></C' +
-         'ANVAS><SPAN><TABLE WIDTH="100%" BORDER="0" CELLPADDING="0" CELLSPA' +
-         'CING="0"><TR><TD COLSPAN="2" ALIGN="center"><B>Previous Month of ' +
-         sName + '</B><TR><TD COLSPAN="2">&nbsp;<TR><TD COLSPAN="2"><CANVAS ' +
-         'ID="cnvs_' + sName + '_mag1" WIDTH="540" HEIGHT="36"></CANVAS><TR>' +
-         '<TD ALIGN="left">' +
-         dateString2( siteStatusInfo['time'] - 38 * 86400 ) +
-         '<TD ALIGN="right">' +
-         dateString2( siteStatusInfo['time'] - 9 * 86400 ) +
-         '</TABLE></SPAN></A>\n';
-
       // compose URL for previous week's site status page:
       urlStr = siteStatusInfo['url'] + 'pweek.html?site=' + sName;
       // write fourth, previous week , column:
@@ -168,10 +150,10 @@ function writeTable() {
       // compose URL for today's site status page:
       urlStr = siteStatusInfo['url'] + 'today.html?site=' + sName;
       // write sixth, today, column:
-      myTableStr += '   <TD><A CLASS="toolTip4" HREF="' + urlStr +
-         '"><CANVAS ID="cnvs_' + sName + '_sec4" WIDTH="314" HEIGHT="18"></C' +
-         'ANVAS><SPAN><TABLE WIDTH="100%" BORDER="0" CELLPADDING="0" CELLSPA' +
-         'CING="0"><TR><TD COLSPAN="2" ALIGN="center"><B>Today (' + 
+      myTableStr += '   <TD BGCOLOR="#FFFF50"><A CLASS="toolTip4" HREF="' +
+         urlStr + '"><CANVAS ID="cnvs_' + sName + '_sec4" WIDTH="314" HEIGHT' +
+         '="18"></CANVAS><SPAN><TABLE WIDTH="100%" BORDER="0" CELLPADDING="0' +
+         '" CELLSPACING="0"><TR><TD COLSPAN="2" ALIGN="center"><B>Today (' + 
          dateString2( siteStatusInfo['time'] ) +
          ') of ' + sName + '</B><TR><TD COLSPAN="2">&nbsp;<TR><TD COLSPAN="2' +
          '"><CANVAS ID="cnvs_' + sName + '_mag4" WIDTH="528" HEIGHT="36"></C' +
@@ -196,7 +178,7 @@ function writeTable() {
 
    // add a row/line in case there is a message:
    if ( siteStatusInfo['msg'] != '' ) {
-      myTableStr += '<TR>\n   <TD COLSPAN="9" ALIGN=\"left\"><SPAN STYLE="co' +
+      myTableStr += '<TR>\n   <TD COLSPAN="8" ALIGN=\"left\"><SPAN STYLE="co' +
          'lor:blue; font-weight:bold;">' + siteStatusInfo['msg'] + '</SPAN>\n';
    }
 
@@ -235,66 +217,6 @@ function fillCanvases() {
       var mData;
 
       var sName = siteStatusData[sCnt].site.toString();
-
-      // first canvas, previous month, 120 six-hour/quarter-day entries:
-      cData = siteStatusData[sCnt].pmonth.split("");
-      cDom = document.getElementById('cnvs_' + sName + '_sec1');
-      cCtx = cDom.getContext("2d");
-      mData = Math.min(cData.length, cDom.width / 2.25 );
-      for ( var qday=0; qday < mData; qday+=1) {
-         if ( qday % 4 == 0 ) {
-            if ( (dataDay - 38 + Math.trunc(qday/4)) % 7 == 0 ) {
-               // full scale tick at the start of the week, Sunday-to-Monday
-               cCtx.fillStyle = "#000000";
-               cCtx.fillRect(qday*2+Math.trunc(qday/4),0,1,18);
-            } else {
-               // 75% tick at the start of a day
-               cCtx.fillStyle = "#000000";
-               cCtx.fillRect(qday*2+Math.trunc(qday/4),4,1,14);
-            }
-         }
-         switch ( cData[ qday ] ) {
-            case "o":
-               cCtx.fillStyle = "#80FF80";
-               cCtx.fillRect(1+qday*2+Math.trunc(qday/4),0,2,18);
-               break;
-            case "w":
-               cCtx.fillStyle = "#FFFF00";
-               cCtx.fillRect(1+qday*2+Math.trunc(qday/4),0,2,18);
-               break;
-            case "e":
-               cCtx.fillStyle = "#FF0000";
-               cCtx.fillRect(1+qday*2+Math.trunc(qday/4),0,2,18);
-               break;
-            case "p":
-               cCtx.fillStyle = "#6080FF";
-               cCtx.fillRect(1+qday*2+Math.trunc(qday/4),0,2,6);
-               cCtx.fillRect(1+qday*2+Math.trunc(qday/4),12,2,6);
-               break;
-            case "d":
-               cCtx.fillStyle = "#6080FF";
-               cCtx.fillRect(1+qday*2+Math.trunc(qday/4),0,2,18);
-               break;
-            case "a":
-               cCtx.fillStyle = "#6080FF";
-               cCtx.fillRect(1+qday*2+Math.trunc(qday/4),0,2,4);
-               cCtx.fillRect(1+qday*2+Math.trunc(qday/4),6,2,2);
-               cCtx.fillRect(1+qday*2+Math.trunc(qday/4),10,2,2);
-               cCtx.fillRect(1+qday*2+Math.trunc(qday/4),14,2,4);
-               break;
-            case "W":
-               cCtx.fillStyle = "#A000A0";
-               cCtx.fillRect(1+qday*2+Math.trunc(qday/4),0,2,18);
-               break;
-            case "M":
-               cCtx.fillStyle = "#663300";
-               cCtx.fillRect(1+qday*2+Math.trunc(qday/4),0,2,18);
-               break;
-            default:
-               cCtx.fillStyle = "#F4F4F4";
-               cCtx.fillRect(1+qday*2+Math.trunc(qday/4),0,2,18);
-         }
-      }
 
       // second canvas, previous week, 7*24 one-hour entries:
       cData = siteStatusData[sCnt].pweek.split("");
@@ -565,66 +487,6 @@ function fillMagCanvases() {
 
       var sName = siteStatusData[sCnt].site.toString();
 
-      // first canvas, previous month, 120 six-hour/quarter-day entries:
-      cData = siteStatusData[sCnt].pmonth.split("");
-      cDom = document.getElementById('cnvs_' + sName + '_mag1');
-      cCtx = cDom.getContext("2d");
-      mData = Math.min(cData.length, cDom.width / 4.5 );
-      for ( var qday=0; qday < mData; qday+=1) {
-         if ( qday % 4 == 0 ) {
-            if ( (dataDay - 38 + Math.trunc(qday/4)) % 7 == 0 ) {
-               // full scale tick at the start of the week, Sunday-to-Monday
-               cCtx.fillStyle = "#000000";
-               cCtx.fillRect(qday*4+Math.trunc(qday/4)*2,0,2,36);
-            } else {
-               // 75% tick at the start of a day
-               cCtx.fillStyle = "#000000";
-               cCtx.fillRect(qday*4+Math.trunc(qday/4)*2,8,2,28);
-            }
-         }
-         switch ( cData[ qday ] ) {
-            case "o":
-               cCtx.fillStyle = "#80FF80";
-               cCtx.fillRect(2+qday*4+Math.trunc(qday/4)*2,0,4,36);
-               break;
-            case "w":
-               cCtx.fillStyle = "#FFFF00";
-               cCtx.fillRect(2+qday*4+Math.trunc(qday/4)*2,0,4,36);
-               break;
-            case "e":
-               cCtx.fillStyle = "#FF0000";
-               cCtx.fillRect(2+qday*4+Math.trunc(qday/4)*2,0,4,36);
-               break;
-            case "p":
-               cCtx.fillStyle = "#6080FF";
-               cCtx.fillRect(2+qday*4+Math.trunc(qday/4)*2,0,4,12);
-               cCtx.fillRect(2+qday*4+Math.trunc(qday/4)*2,24,4,12);
-               break;
-            case "d":
-               cCtx.fillStyle = "#6080FF";
-               cCtx.fillRect(2+qday*4+Math.trunc(qday/4)*2,0,4,36);
-               break;
-            case "a":
-               cCtx.fillStyle = "#6080FF";
-               cCtx.fillRect(2+qday*4+Math.trunc(qday/4)*2,0,4,8);
-               cCtx.fillRect(2+qday*4+Math.trunc(qday/4)*2,12,4,4);
-               cCtx.fillRect(2+qday*4+Math.trunc(qday/4)*2,20,4,4);
-               cCtx.fillRect(2+qday*4+Math.trunc(qday/4)*2,28,4,8);
-               break;
-            case "W":
-               cCtx.fillStyle = "#A000A0";
-               cCtx.fillRect(2+qday*4+Math.trunc(qday/4)*2,0,4,36);
-               break;
-            case "M":
-               cCtx.fillStyle = "#663300";
-               cCtx.fillRect(2+qday*4+Math.trunc(qday/4)*2,0,4,36);
-               break;
-            default:
-               cCtx.fillStyle = "#F4F4F4";
-               cCtx.fillRect(2+qday*4+Math.trunc(qday/4)*2,0,4,36);
-         }
-      }
-
       // second canvas, previous week, 7*24 one-hour entries:
       cData = siteStatusData[sCnt].pweek.split("");
       cDom = document.getElementById('cnvs_' + sName + '_mag2');
@@ -883,28 +745,13 @@ function fillMagCanvases() {
 function fillLegend() {
    var cCtx;
 
-   cCtx = document.getElementById('cnvs_lgn_Ok').getContext('2d');
-   cCtx.fillStyle = "#80FF80";
+   cCtx = document.getElementById('cnvs_lgn_FullDowntime').getContext('2d');
+   cCtx.fillStyle = "#6080FF";
    cCtx.fillRect(0,0,6,18);
    cCtx = document.getElementById('cnvs_lgn_PartDowntime').getContext('2d');
    cCtx.fillStyle = "#6080FF";
    cCtx.fillRect(0,0,6,6);
    cCtx.fillRect(0,12,6,6);
-   cCtx = document.getElementById('cnvs_lgn_WaitingRoom').getContext('2d');
-   cCtx.fillStyle = "#A000A0";
-   cCtx.fillRect(0,0,6,18);
-   cCtx = document.getElementById('cnvs_lgn_Warning').getContext('2d');
-   cCtx.fillStyle = "#FFFF00";
-   cCtx.fillRect(0,0,6,18);
-   cCtx = document.getElementById('cnvs_lgn_FullDowntime').getContext('2d');
-   cCtx.fillStyle = "#6080FF";
-   cCtx.fillRect(0,0,6,18);
-   cCtx = document.getElementById('cnvs_lgn_Morgue').getContext('2d');
-   cCtx.fillStyle = "#663300";
-   cCtx.fillRect(0,0,6,18);
-   cCtx = document.getElementById('cnvs_lgn_Error').getContext('2d');
-   cCtx.fillStyle = "#FF0000";
-   cCtx.fillRect(0,0,6,18);
    cCtx = document.getElementById('cnvs_lgn_AdhocDowntime').getContext('2d');
    cCtx.fillStyle = "#6080FF";
    cCtx.fillRect(0,0,6,4);

@@ -10,7 +10,7 @@
    </SCRIPT>
 
    <SCRIPT async type="text/javascript" language="javascript"
-           src="http://cmssst.web.cern.ch/cmssst/siteStatus/summary_lib.js">
+           src="http://cmssst.web.cern.ch/cmssst/siteStatus/downtime_lib.js">
    </SCRIPT>
 
    <STYLE TYPE="text/css">
@@ -19,24 +19,6 @@
       }
       .tableCellRound {
          border-radius: 12px;
-      }
-      .toolTip1 {
-         text-decoration:none; position:relative;
-      }
-      .toolTip1 span {
-         display:none;
-         border-radius:6px; -moz-border-radius:6px; -webkit-border-radius:6px;
-         color:black; background:white; 
-      }
-      .toolTip1:hover span {
-         display:block;
-         position:absolute;
-         top:0; left:0;
-         z-index:1000;
-         width:auto; max-width:552px; min-height:76px;
-         border:1px solid black; padding:6px;
-         margin-top:40px; margin-left:-4px;
-         overflow:hidden;
       }
       .toolTip2 {
          text-decoration:none; position:relative;
@@ -131,7 +113,9 @@
       <TD>Entries in the "Previous Month" column are per six hours, in the
          "Previous Week" and "Following Week" columns per hour, and in the
          "Yesterday" and "Today" columns for 15-minute periods (if the
-         granularity is available).
+         granularity is available). Page maintained by the CMS
+         <A HREF="mailto:cms-comp-ops-site-support-team(AT)cern.ch">Site
+         Support Team</A>.
       <TD WIDTH="32" NOWRAP>&nbsp;
       <TD STYLE="text-align:right; white-space:nowrap;"><BUTTON
          ONCLICK="location.reload(true)">Update</BUTTON>
@@ -151,7 +135,7 @@
             white-space:nowrap;">information as of <SPAN ID="legendSPAN"></SPAN>
       <TR>
          <TD><CANVAS ID='cnvs_lgn_Unknown' WIDTH="6" HEIGHT="18"></CANVAS>
-         <TD STYLE="white-space:nowrap;">Site status unknown
+         <TD STYLE="white-space:nowrap;">No known downtime
          <TD STYLE="width:24px; white-space: nowrap;">&nbsp; &nbsp;
          <TD><CANVAS ID="cnvs_lgn_AdhocDowntime" WIDTH="6" HEIGHT="18"></CANVAS>
          <TD STYLE="white-space:nowrap;">Site in unscheduled downtime
@@ -191,7 +175,7 @@
       writeTable();
       fillCanvases();
       fillMagCanvases();
-      fillDowntimeLegend();
+      fillLegend();
       updateTimestamps();
    }
 
