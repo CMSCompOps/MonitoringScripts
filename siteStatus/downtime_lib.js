@@ -4,6 +4,17 @@
 
 
 /* ************************************************************************* */
+/* data:                                                                     */
+/* ************************************************************************* */
+var siteMetricLabel = { downtime:         "Site Downtime(s)",
+                        wlcgSAMdowntime:  "Element Downtime(s)" };
+var siteMetricOrder = [ "downtime",
+                        "***LINE***",
+                        "**Elmnts**" ];
+
+
+
+/* ************************************************************************* */
 /* functons:                                                                 */
 /* ************************************************************************* */
 function dateString1(timeInSeconds) {
@@ -119,28 +130,24 @@ function writeTable() {
       myTableStr += '   <TD NOWRAP>&nbsp;\n   <TD ' + bgcStr + '><A HREF="' +
          urlStr + '"><B>' + cntStr + '</B></A>\n   <TD NOWRAP>&nbsp;\n';
 
-      // compose URL for previous week's site status page:
-      urlStr = siteStatusInfo['url'] + 'pweek.html?site=' + sName;
       // write fourth, previous week , column:
-      myTableStr += '   <TD><A CLASS="toolTip2" HREF="' + urlStr +
-         '"><CANVAS ID="cnvs_' + sName + '_sec2" WIDTH="198" HEIGHT="18"></C' +
-         'ANVAS><SPAN><TABLE WIDTH="100%" BORDER="0" CELLPADDING="0" CELLSPA' +
-         'CING="0"><TR><TD COLSPAN="2" ALIGN="center"><B>Previous Week of ' +
-         sName + '</B><TR><TD COLSPAN="2">&nbsp;<TR><TD COLSPAN="2"><CANVAS ' +
-         'ID="cnvs_' + sName + '_mag2" WIDTH="728" HEIGHT="36"></CANVAS><TR>' +
-         '<TD ALIGN="left">' +
+      myTableStr += '   <TD><A CLASS="toolTip2"><CANVAS ID="cnvs_' + sName +
+         '_sec2" WIDTH="198" HEIGHT="18"></CANVAS><SPAN><TABLE WIDTH="100%" ' +
+         'BORDER="0" CELLPADDING="0" CELLSPACING="0"><TR><TD COLSPAN="2" ALI' +
+         'GN="center"><B>Previous Week of ' + sName + '</B><TR><TD COLSPAN="' +
+         '2">&nbsp;<TR><TD COLSPAN="2"><CANVAS ID="cnvs_' + sName +
+         '_mag2" WIDTH="728" HEIGHT="36"></CANVAS><TR><TD ALIGN="left">' +
          dateString2( siteStatusInfo['time'] - 8 * 86400 ) +
          '<TD ALIGN="right">' +
          dateString2( siteStatusInfo['time'] - 2 * 86400 ) +
          '</TABLE></SPAN></A>\n';
 
       // compose URL for yesterday's site status page:
-      urlStr = siteStatusInfo['url'] + 'yesterday.html?site=' + sName;
       // write fifth, yesterday, column:
-      myTableStr += '   <TD><A CLASS="toolTip3" HREF="' + urlStr +
-         '"><CANVAS ID="cnvs_' + sName + '_sec3" WIDTH="218" HEIGHT="18"></C' +
-         'ANVAS><SPAN><TABLE WIDTH="100%" BORDER="0" CELLPADDING="0" CELLSPA' +
-         'CING="0"><TR><TD COLSPAN="2" ALIGN="center"><B>Yesterday (' +
+      myTableStr += '   <TD><A CLASS="toolTip3"><CANVAS ID="cnvs_' + sName +
+         '_sec3" WIDTH="218" HEIGHT="18"></CANVAS><SPAN><TABLE WIDTH="100%" ' +
+         'BORDER="0" CELLPADDING="0" CELLSPACING="0"><TR><TD COLSPAN="2" ALI' +
+         'GN="center"><B>Yesterday (' +
          dateString2( siteStatusInfo['time'] - 86400 ) +
          ') of ' + sName + '</B><TR><TD COLSPAN="2">&nbsp;<TR><TD COLSPAN="2' +
          '"><CANVAS ID="cnvs_' + sName + '_mag3" WIDTH="432" HEIGHT="36"></C' +
@@ -148,7 +155,7 @@ function writeTable() {
          'PAN></A>\n';
 
       // compose URL for today's site status page:
-      urlStr = siteStatusInfo['url'] + 'today.html?site=' + sName;
+      urlStr = siteStatusInfo['url'] + 'downtoday.html?site=' + sName;
       // write sixth, today, column:
       myTableStr += '   <TD BGCOLOR="#FFFF50"><A CLASS="toolTip4" HREF="' +
          urlStr + '"><CANVAS ID="cnvs_' + sName + '_sec4" WIDTH="314" HEIGHT' +
@@ -161,15 +168,13 @@ function writeTable() {
          'PAN></A>\n';
 
       // compose URL for following week's site status page:
-      urlStr = siteStatusInfo['url'] + 'fweek.html?site=' + sName;
       // write seventh, following week, column:
-      myTableStr += '   <TD><A CLASS="toolTip5" HREF="' + urlStr +
-         '"><CANVAS ID="cnvs_' + sName + '_sec5" WIDTH="198" HEIGHT="18"></C' +
-         'ANVAS><SPAN><TABLE WIDTH="100%" BORDER="0" CELLPADDING="0" CELLSPA' +
-         'CING="0"><TR><TD COLSPAN="2" ALIGN="center"><B>Following Week of ' +
-         sName + '</B><TR><TD COLSPAN="2">&nbsp;<TR><TD COLSPAN="2"><CANVAS ' +
-         'ID="cnvs_' + sName + '_mag5" WIDTH="728" HEIGHT="36"></CANVAS><TR>' +
-         '<TD ALIGN="left">' +
+      myTableStr += '   <TD><A CLASS="toolTip5"><CANVAS ID="cnvs_' + sName +
+         '_sec5" WIDTH="198" HEIGHT="18"></CANVAS><SPAN><TABLE WIDTH="100%" ' +
+         'BORDER="0" CELLPADDING="0" CELLSPACING="0"><TR><TD COLSPAN="2" ALI' +
+         'GN="center"><B>Following Week of ' + sName + '</B><TR><TD COLSPAN=' +
+         '"2">&nbsp;<TR><TD COLSPAN="2"><CANVAS ID="cnvs_' + sName +
+         '_mag5" WIDTH="728" HEIGHT="36"></CANVAS><TR><TD ALIGN="left">' +
          dateString2( siteStatusInfo['time'] + 1 * 86400 ) +
          '<TD ALIGN="right">' +
          dateString2( siteStatusInfo['time'] + 7 * 86400 ) +
@@ -191,12 +196,96 @@ function writeTable() {
    document.getElementById("mainDIV").innerHTML = myTableStr;
 }
 
+function writeTodayTable() {
+
+   // compose table header:
+   var myTableStr = '<TABLE BORDER="0" CELLPADDING="0" CELLSPACING="0">\n<TR' +
+      '>\n   <TH NOWRAP ALIGN="left"><BIG><B>Metric</B></BIG>\n   <TH NOWRAP' +
+      '><BIG>&nbsp;</BIG>\n   <TH NOWRAP ALIGN="left"><BIG><B>00:00</B></BIG' +
+      '>\n   <TH NOWRAP ALIGN="center"><BIG><B>UTC Today</B></BIG>\n   <TH N' +
+      'OWRAP ALIGN="right"><BIG><B>24:00</B></BIG>\n';
+
+
+   // loop over metrics in siteMetricOrder and write a table row for each:
+   for ( var mCnt=0; mCnt < siteMetricOrder.length; mCnt+=1 ) {
+      if ( siteMetricOrder[mCnt] == "***LINE***" ) {
+         myTableStr += '<TR>\n   <TD COLSPAN="5" bgcolor="#000000" STYLE="li' +
+            'ne-height:2px;">&nbsp;\n<TR>\n   <TD COLSPAN="5" bgcolor="#FFFF' +
+            'FF" STYLE="line-height:2px;">&nbsp;\n';
+      } else if ( siteMetricOrder[mCnt] in myData.metrics ) {
+         var nName = siteMetricOrder[mCnt];
+         if ( siteMetricOrder[mCnt] in siteMetricLabel ) {
+            nName = siteMetricLabel[siteMetricOrder[mCnt]];
+         }
+         myTableStr += '<TR>\n   <TD NOWRAP ALIGN="left">' + nName + '\n   <' +
+            'TD NOWRAP>&nbsp;\n';
+         var urlStr = "";
+         myTableStr += '   <TD COLSPAN="3"><CANVAS ID="cnvs_' +
+            siteMetricOrder[mCnt] + '_s4" WIDTH="626" HEIGHT="18">' +
+            '</CANVAS>\n';
+      } else if ( siteMetricOrder[mCnt] == "**Elmnts**" ) {
+         // loop over site elements and write the metrics of each:
+         for ( var cnt=0; cnt < myData.elements.length; cnt+=1 ) {
+            // concatenate host and type excluding domain
+            var indx = myData.elements[cnt].host.indexOf('.');
+            if ( indx <= 0 ) {
+               indx = myData.elements[cnt].host.length;
+            }
+            var lName = myData.elements[cnt].host.substring(0,indx) + ' / ' +
+               myData.elements[cnt].type;
+
+            myTableStr += '<TR>\n   <TD COLSPAN="5" bgcolor="#000000" STYLE=' +
+               '"line-height:2px;">&nbsp;\n<TR>\n   <TD COLSPAN="5" bgcolor=' +
+               '"#FFFFFF" STYLE="line-height:8px;">&nbsp;\n<TR>\n';
+            var eName = myData.elements[cnt].host + '/' +
+               myData.elements[cnt].type;
+            eName = eName.replace(' ', '');
+            // loop over metrics of element:
+            for ( var mName in myData.elements[cnt].metrics ) {
+               if ( mName =="wlcgSAMdowntime" ) {
+                  myTableStr += '<TR>\n   <TD NOWRAP ALIGN="left"> &nbsp &nb' +
+                     'sp ' + lName + '\n   <TD NOWRAP>&nbsp;\n';
+                  myTableStr += '   <TD COLSPAN="3"><CANVAS ID="cnvs_' +
+                     eName + '_' + mName + '_s4" WIDTH="626" HEIGHT="18">' +
+                     '</CANVAS>\n';
+               }
+            }
+         }
+      }
+   }
+
+   // add a row/line in case there is a message:
+   if ( myData.msg != '' ) {
+      myTableStr += '<TR>\n   <TD COLSPAN="5" ALIGN="left"><SPAN STYLE="colo' +
+         'r:blue; font-weight:bold;">' + siteStatusInfo['msg'] + '</SPAN>\n';
+   }
+
+   // compose table trailer:
+   myTableStr += '</TABLE>\n';
+
+   // update main DIV section with table:
+   document.getElementById("mainDIV").innerHTML = myTableStr;
+}
+
 function updateTimestamps() {
 
    document.getElementById("titleSPAN").innerHTML = '(' +
       dateString1( siteStatusInfo['time'] ) + ' GMT)';
 
    var timeObj = new Date( siteStatusInfo['time'] * 1000 );
+   document.getElementById("legendSPAN").innerHTML =
+      timeObj.toLocaleString(window.navigator.language, {weekday: "short",
+         year: "numeric", month: "long", day: "numeric", hour: "numeric",
+         minute: "2-digit", timeZoneName: "short" });
+
+}
+
+function updateTodayTimestamps() {
+
+   document.getElementById("titleSPAN").innerHTML = myData.site + ' Site Dow' +
+      'ntime Detail<BR>(' + dateString1( myData.time ) + ' GMT)';
+
+   var timeObj = new Date( myData.time * 1000 );
    document.getElementById("legendSPAN").innerHTML =
       timeObj.toLocaleString(window.navigator.language, {weekday: "short",
          year: "numeric", month: "long", day: "numeric", hour: "numeric",
@@ -470,6 +559,154 @@ function fillCanvases() {
                cCtx.fillRect(1+hour+Math.trunc(hour/6),0,4,18);
          }
       }
+   }
+}
+
+function fillTodayCanvases() {
+
+   // for the tic length we need to know the weekday:
+   var dataDay  = ( new Date(myData.time * 1000) ).getDay();
+   var cData;
+   var cDom;
+   var cCtx;
+   var mData;
+
+   // loop over site metrics and for each fill the s4 canvases:
+   var mName = "downtime";
+
+      // s4 canvas, today, 24*4 quarter-hour entries:
+      cData = myData.metrics[mName].today.split("");
+      cDom = document.getElementById('cnvs_' + mName + '_s4');
+      cCtx = cDom.getContext("2d");
+      mData = Math.min(cData.length, cDom.width / 6.50 );
+      for ( var qhour=0; qhour < mData; qhour+=1) {
+         if ( qhour == 0 ) {
+            if ( dataDay % 7 == 0 ) {
+               cCtx.fillStyle = "#000000";
+               cCtx.fillRect(6*qhour+2*Math.trunc(qhour/4),0,2,18);
+            } else {
+               cCtx.fillStyle = "#000000";
+               cCtx.fillRect(6*qhour+2*Math.trunc(qhour/4),4,2,14);
+            }
+         } else if ( qhour % 24 == 0 ) {
+            cCtx.fillStyle = "#000000";
+            cCtx.fillRect(6*qhour+2*Math.trunc(qhour/4),9,2,9);
+         } else if ( qhour % 4 == 0 ) {
+            cCtx.fillStyle = "#000000";
+            cCtx.fillRect(6*qhour+2*Math.trunc(qhour/4),14,2,4);
+         }
+         switch ( cData[ qhour ] ) {
+            case "o":
+               cCtx.fillStyle = "#80FF80";
+               cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),0,6,18);
+               break;
+            case "w":
+               cCtx.fillStyle = "#FFFF00";
+               cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),0,6,18);
+               break;
+            case "e":
+               cCtx.fillStyle = "#FF0000";
+               cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),0,6,18);
+               break;
+            case "p":
+               cCtx.fillStyle = "#6080FF";
+               cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),0,6,6);
+               cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),12,6,6);
+               break;
+            case "d":
+               cCtx.fillStyle = "#6080FF";
+               cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),0,6,18);
+               break;
+            case "a":
+               cCtx.fillStyle = "#6080FF";
+               cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),0,6,4);
+               cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),6,6,2);
+               cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),10,6,2);
+               cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),14,6,4);
+               break;
+            case "W":
+               cCtx.fillStyle = "#A000A0";
+               cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),0,6,18);
+               break;
+            case "M":
+               cCtx.fillStyle = "#663300";
+               cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),0,6,18);
+               break;
+            default:
+               cCtx.fillStyle = "#F4F4F4";
+               cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),0,6,18);
+         }
+      }
+
+   // loop over site elements and fill the s4 canvases of each metric:
+   for ( var cnt=0; cnt < myData.elements.length; cnt+=1 ) {
+      var eName = myData.elements[cnt].host + '/' + myData.elements[cnt].type;
+      eName = eName.replace(' ', '');
+      // loop over metrics of element:
+      mName = "wlcgSAMdowntime";
+         // s4 canvas, today, 24*4 quarter-hour entries:
+         cData = myData.elements[cnt].metrics[mName].today.split("");
+         cDom = document.getElementById('cnvs_' + eName + '_' + mName + '_s4');
+         cCtx = cDom.getContext("2d");
+         mData = Math.min(cData.length, cDom.width / 6.50 );
+         for ( var qhour=0; qhour < mData; qhour+=1) {
+            if ( qhour == 0 ) {
+               if ( dataDay % 7 == 0 ) {
+                  cCtx.fillStyle = "#000000";
+                  cCtx.fillRect(6*qhour+2*Math.trunc(qhour/4),0,2,18);
+               } else {
+                  cCtx.fillStyle = "#000000";
+                  cCtx.fillRect(6*qhour+2*Math.trunc(qhour/4),4,2,14);
+               }
+            } else if ( qhour % 24 == 0 ) {
+               cCtx.fillStyle = "#000000";
+               cCtx.fillRect(6*qhour+2*Math.trunc(qhour/4),9,2,9);
+            } else if ( qhour % 4 == 0 ) {
+               cCtx.fillStyle = "#000000";
+               cCtx.fillRect(6*qhour+2*Math.trunc(qhour/4),14,2,4);
+            }
+            switch ( cData[ qhour ] ) {
+               case "o":
+                  cCtx.fillStyle = "#80FF80";
+                  cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),0,6,18);
+                  break;
+               case "w":
+                  cCtx.fillStyle = "#FFFF00";
+                  cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),0,6,18);
+                  break;
+               case "e":
+                  cCtx.fillStyle = "#FF0000";
+                  cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),0,6,18);
+                  break;
+               case "p":
+                  cCtx.fillStyle = "#6080FF";
+                  cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),0,6,6);
+                  cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),12,6,6);
+                  break;
+               case "d":
+                  cCtx.fillStyle = "#6080FF";
+                  cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),0,6,18);
+                  break;
+               case "a":
+                  cCtx.fillStyle = "#6080FF";
+                  cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),0,6,4);
+                  cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),6,6,2);
+                  cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),10,6,2);
+                  cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),14,6,4);
+                  break;
+               case "W":
+                  cCtx.fillStyle = "#A000A0";
+                  cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),0,6,18);
+                  break;
+               case "M":
+                  cCtx.fillStyle = "#663300";
+                  cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),0,6,18);
+                  break;
+               default:
+                  cCtx.fillStyle = "#F4F4F4";
+                  cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),0,6,18);
+            }
+         }
    }
 }
 

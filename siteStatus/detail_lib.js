@@ -483,12 +483,8 @@ function writeTable() {
       } else if ( siteMetricOrder[mCnt] == "**Elmnts**" ) {
          // loop over site elements and write the metrics of each:
          for ( var cnt=0; cnt < myData.elements.length; cnt+=1 ) {
-            // concatenate host and type excluding domain
-            var indx = myData.elements[cnt].host.indexOf('.');
-            if ( indx <= 0 ) {
-               indx = myData.elements[cnt].host.length;
-            }
-            var eName = myData.elements[cnt].host.substring(0,indx) + ' / ' +
+            // concatenate host and type
+            var eName = myData.elements[cnt].host + ' / ' +
                myData.elements[cnt].type;
 
             myTableStr += '<TR>\n   <TD COLSPAN="7" bgcolor="#000000" STYLE=' +
