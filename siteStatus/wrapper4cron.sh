@@ -13,6 +13,7 @@ trap '(/bin/rm -f ${EXC_LOCK} ${ERR_FILE}) 1> /dev/null 2>&1' 0
 
 EMAIL_ADDR="lammel@fnal.gov"
 CACHE_DIR="/data/cmssst/MonitoringScripts/siteStatus/cache"
+SMMRY_FILE="/afs/cern.ch/user/c/cmssst/www/siteStatus/data/summary.js"
 #
 #
 /bin/rm -f ${ERR_FILE} 1>/dev/null 2>&1
@@ -36,6 +37,21 @@ if [ $? -ne 0 ]; then
    # check process holding lock is still active
    /bin/ps -fp ${LKPID} 1>/dev/null 2>&1
    if [ $? -eq 0 ]; then
+      # check data are not expired (6 hours):
+      NOW=`/bin/date '+%s'`
+      ALRT=`/usr/bin/stat -c %Y ${SMMRY_FILE} | awk -v n=${NOW} '{a=int((n-$1)/900);if((a>24)&&(a%24==1)){print 1}else{print 0}}'`
+      if [ ${ALRT} -ne 0 ]; then
+         /bin/touch ${ERR_FILE}
+         echo "" 1>> ${ERR_FILE}
+         echo "data expired:" 1>> ${ERR_FILE}
+         /bin/ls -l `/usr/bin/dirname ${SMMRY_FILE}` 1>> ${ERR_FILE}
+         /bin/cat ${ERR_FILE}
+         if [ ! -t 0 ]; then
+            /usr/bin/Mail -s "$0 expired data" ${EMAIL_ADDR} < ${ERR_FILE}
+         fi
+      fi
+      /bin/rm ${ERR_FILE} 1>/dev/null 2>&1
+      #
       echo "   active process ${LKPID} holds lock, exiting"
       exit 1
    fi
