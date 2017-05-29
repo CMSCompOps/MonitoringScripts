@@ -1,12 +1,12 @@
 #!/bin/bash
 
 #check if openssl is installed
-if [ -x "/usr/bin/openssl" ]; then
-	echo `openssl version`
-else
-	echo $ERROR_NO_OPENSSL_MSG
-	exit $ERROR_NO_OPENSSL
-fi
+# if [ -x "/usr/bin/openssl" ]; then
+# 	echo `openssl version`
+# else
+# 	echo $ERROR_NO_OPENSSL_MSG
+# 	exit $ERROR_NO_OPENSSL
+# fi
 
 voms_server=`voms-proxy-info --uri`
 echo "VOMS server: ${voms_server}"
@@ -20,7 +20,7 @@ elif [ -e "$HOME/.globus/certificates/" ]; then
 elif [ -e "/etc/grid-security/certificates/" ]; then
 	cert_dir=/etc/grid-security/certificates/
 else
-	$ERROR_NO_CERT_DIR_MSG
+	echo $ERROR_NO_CERT_DIR_MSG
 	exit $ERROR_NO_CERT_DIR
 fi
 echo "CertDir: $cert_dir"
@@ -34,27 +34,6 @@ else
 	exit $ERROR_NO_X509_PROXY
 fi
 echo "Proxy: $proxy"
-
-# # Check proxy copy as in glidein pilots
-# local_proxy_dir=~/ticket
-# mkdir $local_proxy_dir &>/dev/null
-# if [ $? -ne 0 ]; then
-# 	echo "ERROR: could not find create $local_proxy_dir"
-# 	echo "summary: CANT_CREATE_DIR"
-# 	echo $ERROR_NO_PROXY_DIR 1>&2
-# 	exit 1
-# fi
-# cp $X509_USER_PROXY $local_proxy_dir/myproxy &>/dev/null
-# if [ $? -ne 0 ]; then
-# 	echo "ERROR: could not copy proxy $X509_USER_PROXY"
-# 	echo "summary: NO_COPY_PROXY"
-# 	echo $ERROR_X509_USER_PROXY_CP 1>&2
-# 	exit 1
-# fi
-
-# if [ -d "$local_proxy_dir" ]; then
-# 	rm -rf $local_proxy_dir &>/dev/null
-# fi
 
 type -t voms-proxy-info
 result=$?

@@ -7,10 +7,10 @@ if [ $? -eq 0 ]; then
 	exit 0
 fi
 
-echo -e "GET http://cern.ch HTTP/1.0\n\n" | nc cern.sh 80 > /dev/null 2>&1
+echo -e "GET http://google.com HTTP/1.0\n\n" | nc google.com 80 > /dev/null 2>&1
 if [ $? -eq 0 ]; then
 	echo "Online"
 else
-	echo "Offline"
+	echo $ERROR_NO_CONNECTION_MSG
 	exit $ERROR_NO_CONNECTION
 fi

@@ -9,7 +9,7 @@ This is the xml for the frontend configuration:
       <file absfname="<path>/psst.tgz" after_entry="True" after_group="False" const="True" executable="False" untar="True" wrapper="False">
          <untar_options absdir_outattr="psst" cond_attr="TRUE"/>
       </file>
-      <file absfname="<path>/psst/psst.sh" after_entry="True" after_group="False" const="True" executable="True" untar="False" wrapper="False">
+      <file absfname="<path>/psst/psst_wrapper.sh" after_entry="True" after_group="False" const="True" executable="True" untar="False" wrapper="False">
          <untar_options cond_attr="TRUE"/>
       </file>
       

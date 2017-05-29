@@ -1,6 +1,7 @@
 #!/bin/bash
 
 cpus="$1"
+error_gen="$2"
 
 #if CPUs variable is not set, let's assume that it is single core pilot
 if [ "x$cpus" = "x" ]; then
@@ -8,12 +9,13 @@ if [ "x$cpus" = "x" ]; then
 fi
 
 # Software area definition and existence
-isEGEE=false
-isOSG=false
-hasCVMFS=false
+hasCVMFS=0
+/usr/bin/cvmfs_config stat -v cms.cern.ch > /dev/null 2>&1
+if [ $? -eq 0 ]; then
+    hasCVMFS=1
+fi
 
 if [ -n "$OSG_GRID" ] ; then
-	isOSG=true
 	[ -f $OSG_GRID/setup.sh ] && source $OSG_GRID/setup.sh
 	if [ -d $OSG_APP/cmssoft/cms ] ;then
 		SW_DIR=$OSG_APP/cmssoft/cms
@@ -23,27 +25,25 @@ if [ -n "$OSG_GRID" ] ; then
 		SW_DIR=/cvmfs/cms.cern.ch
 	else
 		echo $ERROR_NO_CMS_SW_DIR_MSG
-		exit $ERROR_NO_CMS_SW_DIR
+		return $ERROR_NO_CMS_SW_DIR
 	fi
 	echo "SwArea: $SW_DIR"
 
 elif [ -n "$VO_CMS_SW_DIR" ] ; then
-	isEGEE=true
 	SW_DIR=$VO_CMS_SW_DIR
 	echo "SwArea: $SW_DIR"
 
 elif [ -n "$CMS_PATH" ] && [ -d "/cvmfs/cms.cern.ch" ] ; then
 	SW_DIR=$CMS_PATH
-	hasCVMFS=true
 	echo "SwArea: $SW_DIR"
 else
 	echo $ERROR_NO_CMS_SW_DIR_MSG
-	exit $ERROR_NO_CMS_SW_DIR
+	return $ERROR_NO_CMS_SW_DIR
 fi
 
 if [ ! -d $SW_DIR -o ! -r $SW_DIR ] ; then
 	echo $ERROR_NO_CMS_SW_DIR_MSG
-	exit $ERROR_NO_CMS_SW_DIR
+	return $ERROR_NO_CMS_SW_DIR
 fi
 
 echo -n "Software location: "
@@ -70,35 +70,51 @@ if [ $result != 0 ] ; then
 	cat $tmpfile
 	rm -f $tmpfile
 	echo "ERROR: CMS software initialisation script cmsset_default.sh failed"
-	exit $ERROR_CMSSET_DEFAULT_FAILED
+	return $ERROR_CMSSET_DEFAULT_FAILED
 fi
 rm -f $tmpfile
 
-cvmfs_max_cache=`cvmfs_config stat -v cms.cern.ch | grep '^Cache Usage'| awk '{print $5}' | sed 's/k/ /g'`
-cvmfs_current_cache=`cvmfs_config stat -v cms.cern.ch | grep '^Cache Usage'| awk '{print $3}' | sed 's/k/ /g'`
 
-cvmfs_free_cache=`echo "$((cvmfs_max_cache-cvmfs_current_cache))  / 1024^2" | bc`
-echo "Free space in CVMFS cache: ${cvmfs_free_cache} GB"
+if [ $hasCVMFS == 1 ]; then
+	echo "Checking CVMFS cache"
 
-#Required cvmfs free cache size 0.5GB/core
-required_cvmfs_free_cache=`echo 0.5*${cpus}| bc`
+	# cvmfs_cache_quota=`cvmfs_config stat -v cms.cern.ch | grep '^Cache Usage'| awk '{print $5}' | sed 's/k/ /g'`
+	# cvmfs_used_cache=`cvmfs_config stat -v cms.cern.ch | grep '^Cache Usage'| awk '{print $3}' | sed 's/k/ /g'`
 
-# if [ $cvmfs_free_cache -le $required_cvmfs_free_cache ]; then
-if [ $(echo "$cvmfs_free_cache >= $required_cvmfs_free_cache" | bc) -eq 0 ]; then
-	echo $ERROR_LOW_CVMFS_CACHE_MSG: $cvmfs_free_cache GB 
-	exit $ERROR_LOW_CVMFS_CACHE
+	# cvmfs_free_cache=`echo "$((cvmfs_cache_quota-cvmfs_used_cache))  / 1024" | bc`
+
+	#approach from /usr/bin/cvmfs_config
+	mount_point="/cvmfs/cms.cern.ch"
+	cache_use=`df -P $mount_point | tail -n 1 | awk '{print int($3)"/" 1024}' | bc ` || exit 34
+	cache_avail=`df -P $mount_point | tail -n 1 | awk '{print int($4)"/" 1024}' | bc ` || exit 34
+  	cache_max=$(($cache_use+$cache_avail))
+
+	echo "Free space in CVMFS cache: ${cache_avail} MB"
+
+	metrics+=" free_cvmfs_cache_space ${cache_avail}"
+	metrics+=" cvmfs_cache_quota ${cache_max}"
+
+	#Required cvmfs free cache size 1024MB/core
+	# required_cvmfs_free_cache=`echo 1024*${cpus}| bc`
+	# echo "Required space for cvmfs cache: ${required_cvmfs_free_cache} MB"
+
+	# # if [ $cvmfs_free_cache -le $required_cvmfs_free_cache ]; then
+	# if [ $(echo "$cache_avail >= $required_cvmfs_free_cache" | bc) -eq 0 ]; then
+	# 	echo $ERROR_LOW_CVMFS_CACHE_MSG: $cache_avail MB 
+	# 	return $ERROR_LOW_CVMFS_CACHE
+	# fi
 fi
 
 echo "Default SCRAM_ARCH: $SCRAM_ARCH"
 
 if [ -z $CMS_PATH ]; then
 	echo $ERROR_CMS_PATH_UNDEFINED_MSG
-	exit $ERROR_CMS_PATH_UNDEFINED
+	return $ERROR_CMS_PATH_UNDEFINED
 fi
 
 if [ ! -d $CMS_PATH ] ; then
 	echo $ERROR_CMS_PATH_DIR_MISSING_MSG $CMS_PATH
-	exit $ERROR_CMS_PATH_DIR_MISSING
+	return $ERROR_CMS_PATH_DIR_MISSING
 fi
 
 echo -n "scramv1_version: "
@@ -107,7 +123,7 @@ result=$?
 if [ $result != 0 ]
 then
 	echo $ERROR_SCRAM_NOT_FOUND_MSG
-	exit $ERROR_SCRAM_NOT_FOUND
+	return $ERROR_SCRAM_NOT_FOUND
 fi
 
 echo "Retrieving list of CMSSW versions installed..."
@@ -124,7 +140,7 @@ do
 	result=$?
 	if [ $result != 0 ]; then
 		echo "ERROR: Required CMSSW version $cmssw_ver not installed"
-		exit 1
+		return $ERROR_NO_CMSSW
 	else
 		#Getting path of cmssw_ver in CVMFS
 		cmssw_ver_path=`scram -a slc* l -a -c ${cmssw_ver} | tr -s " " | cut -d " " -f3 | sed -n 1p`
@@ -136,12 +152,11 @@ do
 			wc_byte_count=`wc -c ${file} | cut -d " " -f1`
 			if [ $ls_byte_count != $wc_byte_count ]; then
 				echo $ERORR_CORRUPTED_CMSSW_FILES_MSG $file
-				exit $ERORR_CORRUPTED_CMSSW_FILES
-			else
-				echo "${file}: ls_byte_count=${ls_byte_count}; wc_byte_count=${wc_byte_count}"
+				return $ERORR_CORRUPTED_CMSSW_FILES
+			# else
+				# echo "${file}: ls_byte_count=${ls_byte_count}; wc_byte_count=${wc_byte_count}"
 			fi
 		done
 	fi
 done
-
-exit 0
+# return 0
