@@ -19,7 +19,7 @@ import htcondor
 
 
 
-VOFD_VERSION = "v0.01.03"
+VOFD_VERSION = "v1.01.02"
 #VOFD_OUTPUT_FILE = "vofeed.xml"
 #VOFD_IN_USE_FILE = "in_use.txt"
 #VOFD_CACHE_DIR = "."
@@ -576,6 +576,7 @@ def vofd_write_xml():
         myFile.write("<root>\n   <title>CMS Topology Information</title>\n")
         myFile.write("   <description>List of CMS grid sites and resources f" +
             "or SAM/WLCG monitoring</description>\n")
+        myFile.write("   <version>%s</version>\n" % VOFD_VERSION)
         myFile.write("   <feed_responsible>DN=\"%s\"</feed_responsible>\n" %
             glbInfo['certowner'])
         myFile.write("   <last_update>%s</last_update>\n" %
