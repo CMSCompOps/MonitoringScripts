@@ -25,7 +25,7 @@ VOFD_VERSION = "v1.01.02"
 #VOFD_CACHE_DIR = "."
 VOFD_OUTPUT_FILE = "/afs/cern.ch/user/c/cmssst/www/vofeed/vofeed.xml"
 VOFD_IN_USE_FILE = "/afs/cern.ch/user/c/cmssst/www/vofeed/in_use.txt"
-VOFD_CACHE_DIR = "/data/cmssst/MonitoringScripts/vofeed"
+VOFD_CACHE_DIR = "/data/cmssst/MonitoringScripts/vofeed/cache"
 
 #VOFD_CERTIFICATE_CRT = "/lml/user/lammel/.globus/usercert.pem"
 #VOFD_CERTIFICATE_KEY = "/lml/user/lammel/.globus/userkey.pem"
@@ -318,7 +318,7 @@ def vofd_sitedb():
             continue
         if ( result[typeIndex] == 'xrootd' ):
             endpoint = result[fqdnIndex]
-            hostname, port = endpoint.split(":",1)
+            hostname, port = (endpoint + ":").split(":",1)
             hostname = hostname.lower()
             if (( endpoint == hostname ) or ( port == "1094" )):
                 glbTopology.addResource(myDict[sitedbname]['cmssite'], "",
@@ -580,13 +580,13 @@ def vofd_write_xml():
         myFile.write("<root>\n   <title>CMS Topology Information</title>\n")
         myFile.write("   <description>List of CMS grid sites and resources f" +
             "or SAM/WLCG monitoring</description>\n")
-        myFile.write("   <version>%s</version>\n" % VOFD_VERSION)
         myFile.write("   <feed_responsible>DN=\"%s\"</feed_responsible>\n" %
             glbInfo['certowner'])
         myFile.write("   <last_update>%s</last_update>\n" %
             time.strftime("%Y-%m-%dT%H:%M:%SZ",
                          
                            time.gmtime(glbInfo['timestamp'])))
+        myFile.write("   <version>%s</version>\n" % VOFD_VERSION)
         myFile.write("   <vo>cms</vo>\n")
         #
         # write main multi-CMS and multi-grid site in first pass for GGUS:
