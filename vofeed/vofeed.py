@@ -19,7 +19,7 @@ import htcondor
 
 
 
-VOFD_VERSION = "v1.01.02"
+VOFD_VERSION = "v1.01.03"
 #VOFD_OUTPUT_FILE = "vofeed.xml"
 #VOFD_IN_USE_FILE = "in_use.txt"
 #VOFD_CACHE_DIR = "."
@@ -318,15 +318,11 @@ def vofd_sitedb():
             continue
         if ( result[typeIndex] == 'xrootd' ):
             endpoint = result[fqdnIndex]
-            hostname, port = (endpoint + ":").split(":",1)
+            hostname, port = (endpoint.split(":",1) + ["1094"])[:2]
             hostname = hostname.lower()
-            if (( endpoint == hostname ) or ( port == "1094" )):
-                glbTopology.addResource(myDict[sitedbname]['cmssite'], "",
-                                        hostname, "XROOTD")
-            else:
-                glbTopology.addResource(myDict[sitedbname]['cmssite'], "",
-                                        hostname, "XROOTD", True, "", "",
-                                        endpoint)
+            glbTopology.addResource(myDict[sitedbname]['cmssite'], "",
+                                    hostname, "XROOTD", True, "", "",
+                                    hostname + ":" + port)
 # ########################################################################### #
 
 
