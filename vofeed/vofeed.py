@@ -408,10 +408,6 @@ def vofd_phedex():
             glbTopology.addResource(phedex_site, "", phedex_host, "SRM", False)
         else:
             glbTopology.addResource(phedex_site, "", phedex_host, "SRM")
-
-    # patch to add new SE at Florida to receive SAM tests:
-    glbTopology.addResource("T2_US_Florida", "", "cmsio.rc.ufl.edu", "SRM",
-                            False)
 # ########################################################################### #
 
 
