@@ -19,13 +19,13 @@ import htcondor
 
 
 
-VOFD_VERSION = "v0.01.03"
+VOFD_VERSION = "v1.01.03"
 #VOFD_OUTPUT_FILE = "vofeed.xml"
 #VOFD_IN_USE_FILE = "in_use.txt"
 #VOFD_CACHE_DIR = "."
 VOFD_OUTPUT_FILE = "/afs/cern.ch/user/c/cmssst/www/vofeed/vofeed.xml"
 VOFD_IN_USE_FILE = "/afs/cern.ch/user/c/cmssst/www/vofeed/in_use.txt"
-VOFD_CACHE_DIR = "/data/cmssst/MonitoringScripts/vofeed"
+VOFD_CACHE_DIR = "/data/cmssst/MonitoringScripts/vofeed/cache"
 
 #VOFD_CERTIFICATE_CRT = "/lml/user/lammel/.globus/usercert.pem"
 #VOFD_CERTIFICATE_KEY = "/lml/user/lammel/.globus/userkey.pem"
@@ -73,7 +73,7 @@ class vofdTopology:
             self.topo[cmssite].append( {'gsite': gridsite, 'rsrcs': []} )
 
     def addResource(self, cmssite, gridsite,
-                    host, flavour, prod=True, queue="", batch=""):
+                    host, flavour, prod=True, queue="", batch="", endpoint=""):
         if not self.topo.has_key(cmssite):
             print("cmssite unknown, skipping %s(%s) at %s" %
                 (host, flavour, cmssite))
@@ -99,7 +99,8 @@ class vofdTopology:
                     (host, flavour, cmssite))
                 return
         self.topo[cmssite][index]['rsrcs'].append( {'host': host,
-            'type': flavour, 'prod': prod, 'queue': queue, 'batch': batch} )
+            'type': flavour, 'prod': prod, 'queue': queue, 'batch': batch,
+            'endpoint': endpoint} )
 
     def write(self, file=sys.stdout, offset=0):
         off = "".ljust(offset)
@@ -110,7 +111,11 @@ class vofdTopology:
                 file.write("%s   %s\n" %
                     (off, self.topo[cmssite][indx]['gsite']))
                 for rsrc in self.topo[cmssite][indx]['rsrcs']:
-                    if ( rsrc['queue'] == "" ):
+                    if ( rsrc['endpoint'] != "" ):
+                        file.write("%s      %s (%s) prod=%r endpoint=%s\n" %
+                            (off, rsrc['host'], rsrc['type'], rsrc['prod'],
+                             rsrc['endpoint']))
+                    elif ( rsrc['queue'] == "" ):
                         file.write("%s      %s (%s) prod=%r\n" %
                             (off, rsrc['host'], rsrc['type'], rsrc['prod']))
                     elif ( rsrc['batch'] == "" ):
@@ -242,6 +247,82 @@ def vofd_sitedb():
                 for indx in range( len(myDict[entry]['gridsite']) ):
                     glbTopology.addSite(myDict[entry]['cmssite'],
                                         myDict[entry]['gridsite'][indx])
+
+
+
+    # ############################################################### #
+    # fill vofdTopology object with SE/xrootd information from SiteDB #
+    # ############################################################### #
+    URL_SITEDB_XROOTD = 'https://cmsweb.cern.ch/sitedb/data/prod/site-resources'
+
+    # get list of xrootd endpoints from SiteDB:
+    # =========================================
+    print("Querying SiteDB for xrootd information")
+    urlHandle = None
+    try:
+        request = urllib2.Request(URL_SITEDB_XROOTD,
+                              headers={'Accept':'application/json'})
+        urlHandle = urllib2.urlopen( request )
+        myData = urlHandle.read()
+        #
+        # update cache:
+        try:
+            myFile = open("%s/cache_SiteDBxrootd.json_new" % VOFD_CACHE_DIR, 'w')
+            try:
+                myFile.write(myData)
+                renameFlag = True
+            except:
+                renameFlag = False
+            finally:
+                myFile.close()
+                del myFile
+            if renameFlag:
+                os.rename("%s/cache_SiteDBxrootd.json_new" % VOFD_CACHE_DIR,
+                    "%s/cache_SiteDBxrootd.json" % VOFD_CACHE_DIR)
+                print("   cache of SiteDB xrootd updated")
+            del renameFlag
+        except:
+            pass
+    except:
+        print("   failed to fetch SiteDB xrootd data")
+        try:
+            myFile = open("%s/cache_SiteDBxrootd.json" % VOFD_CACHE_DIR, 'r')
+            try:
+                myData = myFile.read()
+                print("   using cached SiteDB xrootd data")
+            except:
+                print("   failed to access cached SiteDB xrootd data")
+                return
+            finally:
+                myFile.close()
+                del myFile
+        except:
+            print("   no SiteDB xrootd cache available")
+            return
+    finally:
+        if urlHandle is not None:
+            urlHandle.close()
+    del urlHandle
+    #
+    sitedb = json.loads( myData )
+
+    # find indices with information of interest:
+    columns = sitedb['desc']['columns']
+    nameIndex = columns.index('site_name')
+    typeIndex = columns.index('type')
+    fqdnIndex = columns.index('fqdn')
+
+    for result in sitedb['result']:
+        sitedbname = result[nameIndex]
+        if not myDict.has_key(sitedbname):
+            continue
+        if ( result[typeIndex] == 'xrootd' ):
+            endpoint = result[fqdnIndex]
+            hostname, port = (endpoint.split(":",1) + ["1094"])[:2]
+            hostname = hostname.lower()
+            glbTopology.addResource(myDict[sitedbname]['cmssite'], "",
+                                    hostname, "XROOTD", True, "", "",
+                                    hostname + ":" + port)
 # ########################################################################### #
 
 
@@ -497,6 +578,7 @@ def vofd_write_xml():
             time.strftime("%Y-%m-%dT%H:%M:%SZ",
                          
                            time.gmtime(glbInfo['timestamp'])))
+        myFile.write("   <version>%s</version>\n" % VOFD_VERSION)
         myFile.write("   <vo>cms</vo>\n")
         #
         # write main multi-CMS and multi-grid site in first pass for GGUS:
@@ -513,6 +595,8 @@ def vofd_write_xml():
                     for rsrc in toposite[indx]['rsrcs']:
                         myFile.write(("      <service hostname=\"%s\" flavou" +
                             "r=\"%s\"") % (rsrc['host'], rsrc['type']))
+                        if ( rsrc['endpoint'] != "" ):
+                            myFile.write(" endpoint=\"%s\"" % rsrc['endpoint'])
                         if ( not rsrc['prod'] ):
                             myFile.write(" production_status=\"false\"")
                         if (( rsrc['queue'] != "" ) and
@@ -560,6 +644,8 @@ def vofd_write_xml():
                 for rsrc in toposite[indx]['rsrcs']:
                     myFile.write(("      <service hostname=\"%s\" flavour=" +
                         "\"%s\"") % (rsrc['host'], rsrc['type']))
+                    if ( rsrc['endpoint'] != "" ):
+                        myFile.write(" endpoint=\"%s\"" % rsrc['endpoint'])
                     if ( not rsrc['prod'] ):
                         myFile.write(" production_status=\"false\"")
                     if (( rsrc['queue'] != "" ) and
