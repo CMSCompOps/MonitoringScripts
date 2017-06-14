@@ -1,63 +1,79 @@
 #!/bin/bash
-
-# ###################################
+#
 # Pilot Startup Site Test main script
-# ###################################
 
-#function for ending PSST validation script if one of the test fails (returns not 0).
-test_result() {	
-	if [ "$exit_code" -ne 0 ]; then
-		send_dashboard_report
-		rm $log_file
-		exit $exit_code
-	fi
+#######################################
+# Checking exit code of each test
+# if exit code is not zero
+# report to ES will be sent
+# log file will be removed
+# PSST will exit
+#######################################
+test_result() {
+if [ "$exit_code" -ne 0 ]; then
+  send_dashboard_report
+  rm $log_file
+  exit $exit_code
+fi
 }
 
+#######################################
+# Generating report file, which is
+# passed to reporting script
+#######################################
 send_dashboard_report() {
-	#Range(10000 - 19999) Failures related to the environment setup
-	#https://twiki.cern.ch/twiki/bin/view/CMSPublic/JobExitCodes
-	exit_code_range=10000
-	logs=`cat ${log_file}`
-    #timestamp in UTC with miliseconds
-	end_timestamp=`date -u +%s%3N`
-	metrics+=" timestamp ${end_timestamp}" 
-	#Check job status that will be reported to the dashboard
-	if [ "$exit_code" = 0 ]; then
-		if [[ $metrics != *"status"* ]]; then
-			metrics+=" status OK"
-		else
-			#we will report only last status
-			last_status=`echo $metrics | grep --only-matching 'status\s*[CRITICAL|WARNING|OK]*' | tail -n 1`
-			#deleting all statuses
-			metrics=`echo $metrics | sed -e 's/\<status\>\s*[a-zA-Z]*//g'`
-			#let's add back latest status
-			metrics+=" ${last_status}"
-		fi
-		#generating otrb_output.xml - http://glideinwms.fnal.gov/doc.prd/factory/custom_scripts.html#xml_output
-		"$error_gen" -ok "psst.sh" "exit_code" 0 $metrics "logs" "${logs}"
-	else
-		metrics=`echo $metrics | sed -e 's/\<status\>\s*[a-zA-Z]*//g'`
-		metrics+=" status CRITICAL"
-		psst_exit_code=$((exit_code + exit_code_range))
-		#generating otrb_output.xml - http://glideinwms.fnal.gov/doc.prd/factory/custom_scripts.html#xml_output
-		"$error_gen" -error "psst.sh" "WN_Resource" "${logs}" "exit_code" $psst_exit_code $metrics
-	fi
-	echo "Sending metrics to ES"
-	echo $metrics
-	/usr/bin/python ${my_tar_dir}/reporting/es_report.py otrb_output.xml
-	checkError "Reporting to job ES failed. Metrics: ${metrics}"
+  #Range(10000 - 19999) Failures related to the environment setup
+  #https://twiki.cern.ch/twiki/bin/view/CMSPublic/JobExitCodes
+  exit_code_range=10000
+  logs=`cat ${log_file}`
+  #timestamp in UTC with miliseconds
+  end_timestamp=`date -u +%s%3N`
+  metrics+=" timestamp ${end_timestamp}"
+  #Check job status that will be reported to the dashboard
+  if [ "$exit_code" = 0 ]; then
+    if [[ $metrics != *"status"* ]]; then
+      metrics+=" status OK"
+    else
+      #we will report only last status
+      last_status=`echo $metrics | grep --only-matching 'status\s*[CRITICAL|WARNING|OK]*' | tail -n 1`
+      #deleting all statuses
+      metrics=`echo $metrics | sed -e 's/\<status\>\s*[a-zA-Z]*//g'`
+      #let's add back latest status
+      metrics+=" ${last_status}"
+    fi
+    #generating otrb_output.xml - http://glideinwms.fnal.gov/doc.prd/factory/custom_scripts.html#xml_output
+    "$error_gen" -ok "psst.sh" "exit_code" 0 $metrics "logs" "${logs}"
+  else
+    metrics=`echo $metrics | sed -e 's/\<status\>\s*[a-zA-Z]*//g'`
+    metrics+=" status CRITICAL"
+    psst_exit_code=$((exit_code + exit_code_range))
+    #generating otrb_output.xml - http://glideinwms.fnal.gov/doc.prd/factory/custom_scripts.html#xml_output
+    "$error_gen" -error "psst.sh" "WN_Resource" "${logs}" "exit_code" $psst_exit_code $metrics
+  fi
+  echo "Sending metrics to ES"
+  echo $metrics
+  /usr/bin/python ${my_tar_dir}/reporting/es_report.py otrb_output.xml
+  checkError "Reporting to job ES failed. Metrics: ${metrics}"
 }
 
+
+#######################################
+# In case of unexpected script failure
+# email alert will be sent and PSST
+# exit with 0
+#######################################
 function checkError(){
-	if [ $(echo $?) -ne 0 ]; then
-		hostname=`hostname`
-		MSG="PSST ERROR: ${1}; hostname: ${hostname}"
-		echo $MSG
-		cat $log_file | /usr/bin/Mail -s "${MSG}" ${EMAIL_ADDR}
-		# cat exmple.log | /usr/bin/Mail -s "${MSG}" ${EMAIL_ADDR}
-		rm $log_file
-		exit 0
-	fi
+  if [ $(echo $?) -ne 0 ]; then
+    hostname=`hostname`
+    MSG="PSST ERROR: ${1}; hostname: ${hostname}"
+    echo $MSG
+    if [ "$debug" != "True" ]; then
+      cat $log_file | /usr/bin/Mail -s "${MSG}" ${email_addr}
+    fi
+    # cat exmple.log | /usr/bin/Mail -s "${MSG}" ${email_addr}
+    rm $log_file
+    exit 0
+  fi
 }
 
 start_timestamp=`date -u +%s%3N`
@@ -70,7 +86,7 @@ trap "rm $log_file; exit" SIGHUP SIGINT SIGTERM
 exec >  >(tee -ia ${log_file})
 exec 2> >(tee -ia ${log_file} >&2)
 
-EMAIL_ADDR="rokas.maciulaitis@cern.ch"
+email_addr="rokas.maciulaitis@cern.ch"
 
 metrics="start_timestamp ${start_timestamp}"
 glidein_config="$1"
@@ -119,13 +135,13 @@ grid_type=`grep -m1 -i '^GLIDEIN_GridType' $glidein_config|awk 'END { if (NR==0 
 checkError "Can't find CE type"
 echo "GridType: ${grid_type}"
 if [ $grid_type = "gt2" ]; then
-	ce_flavour="GLOBUS"
+  ce_flavour="GLOBUS"
 elif [ $grid_type = "nordugrid" ]; then
-	ce_flavour="ARC-CE"
+  ce_flavour="ARC-CE"
 elif [ $grid_type = "cream" ]; then
-	ce_flavour="CREAM-CE"
-elif [ $grid_type = "condor" ]; then	
-	ce_flavour="HTCONDOR-CE"
+  ce_flavour="CREAM-CE"
+elif [ $grid_type = "condor" ]; then
+  ce_flavour="HTCONDOR-CE"
 fi
 echo $ce_flavour
 metrics+=" service_flavour ${ce_flavour}"
@@ -135,25 +151,24 @@ cpus=`grep -m1 -i '^GLIDEIN_CPUS' $glidein_config| awk 'END { if (NR==0 || $2=="
 #2017-03-20 many factory entries are missing GLIDEIN_CPUS field in glidein
 #config, by default it is set to 1
 if [ "X$cpus" = X ]; then
-	echo "No GLIDEIN_CPUS field in glidein_config, let's set it to 1"
-	cpus=1
+  echo "No GLIDEIN_CPUS field in glidein_config, let's set it to 1"
+  cpus=1
 fi
 checkError "Can't find number of CPUs"
 echo $cpus
+
+echo "Grep debug level"
+debug=`grep -m1 -i '^PSST_DEBUG' $glidein_config | awk 'END { if (NR==0 || $2=="")  exit 1; else print $2;}'`
+echo $debug
 
 echo "Source error codes"
 source ${my_tar_dir}/exit_codes.txt
 export $(cut -d= -f1 ${my_tar_dir}/exit_codes.txt)
 export metrics
 
-# find error reporting helper script 
+# find error reporting helper script
 error_gen=`grep '^ERROR_GEN_PATH ' $glidein_config | awk '{print $2}'`
 
-# Not needed as PSST runs inside singularity
-# echo "Check OS"
-# ${my_tar_dir}/tests/check_os.sh
-# exit_code=$?
-# echo "Exit code:" $exit_code
 
 echo "Check connection"
 ${my_tar_dir}/tests/check_connection.sh
@@ -172,18 +187,12 @@ exit_code=$?
 echo "Exit code:" $exit_code
 test_result
 
-# As PSST runs inside singularity it is not needed anymore
-# echo "Check RPMs"
-# ${my_tar_dir}/tests/check_RPMs.sh $my_tar_dir
-# exit_code=$?
-# echo "Exit code:" $exit_code
-# test_result
-
 echo "Check scratch space"
 . ${my_tar_dir}/tests/check_scratch_space.sh $work_dir $cpus
 exit_code=$?
 echo "Exit code:" $exit_code
 test_result
+
 
 echo "Check proxy"
 ${my_tar_dir}/tests/check_proxy.sh

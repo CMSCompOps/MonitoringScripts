@@ -53,6 +53,6 @@ if [ $free_space -lt $required_space ]; then
 	else
 		echo $WARNING_LOW_SCRATCH_SPACE_MSG ${work_dir}
 		metrics+=" status WARNING"
-	 	# return $WARNING_LOW_SCRATCH_SPACE
+		# return $WARNING_LOW_SCRATCH_SPACE
 	fi
 fi

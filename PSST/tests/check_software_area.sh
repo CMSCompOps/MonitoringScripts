@@ -78,11 +78,6 @@ rm -f $tmpfile
 if [ $hasCVMFS == 1 ]; then
 	echo "Checking CVMFS cache"
 
-	# cvmfs_cache_quota=`cvmfs_config stat -v cms.cern.ch | grep '^Cache Usage'| awk '{print $5}' | sed 's/k/ /g'`
-	# cvmfs_used_cache=`cvmfs_config stat -v cms.cern.ch | grep '^Cache Usage'| awk '{print $3}' | sed 's/k/ /g'`
-
-	# cvmfs_free_cache=`echo "$((cvmfs_cache_quota-cvmfs_used_cache))  / 1024" | bc`
-
 	#approach from /usr/bin/cvmfs_config
 	mount_point="/cvmfs/cms.cern.ch"
 	cache_use=`df -P $mount_point | tail -n 1 | awk '{print int($3)"/" 1024}' | bc ` || exit 34
@@ -100,7 +95,7 @@ if [ $hasCVMFS == 1 ]; then
 
 	# # if [ $cvmfs_free_cache -le $required_cvmfs_free_cache ]; then
 	# if [ $(echo "$cache_avail >= $required_cvmfs_free_cache" | bc) -eq 0 ]; then
-	# 	echo $ERROR_LOW_CVMFS_CACHE_MSG: $cache_avail MB 
+	# 	echo $ERROR_LOW_CVMFS_CACHE_MSG: $cache_avail MB
 	# 	return $ERROR_LOW_CVMFS_CACHE
 	# fi
 fi
@@ -159,4 +154,3 @@ do
 		done
 	fi
 done
-# return 0
