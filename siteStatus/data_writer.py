@@ -1896,17 +1896,20 @@ def sswp_site_downtime():
                 # count number of CEs belonging to site:
                 ceTotal = glbTopology.countProdCEs(cmssite)
                 if ( ceTotal > 0 ):
-                    ceCount = 0
+                    dCount = 0
+                    aCount = 0
                     for vector in ceTuple:
                         binCode = vector.getBin(bin)
                         if ( binCode == 'd' ):
-                            ceCount += 1
+                            dCount += 1
                         elif ( binCode == 'a' ):
-                            code = 'a'
-                    if ( ceCount == ceTotal ):
+                            aCount += 1
+                    if ( dCount == ceTotal ):
                         code = 'd'
-                    elif ( ceCount > 0 ):
+                    elif ( dCount > 0 ):
                         code = 'p'
+                    elif ( aCount == ceTotal ):
+                        code = 'a'
             if ( bin < sswpVector.getDefaultBins() ):
                 glbSites.setBin('downtime', cmssite, bin, code)
 
