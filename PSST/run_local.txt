@@ -1,8 +1,0 @@
-GLIDECLIENT_CMS_PSST .
-GLIDEIN_CMSSite T2_CH_TEST
-GLIDEIN_WORK_DIR .
-GLIDEIN_Gatekeeper arc02.lcg.cscs.ch
-GLIDEIN_CPUS 1
-ERROR_GEN_PATH ./error_gen.sh
-GLIDEIN_GridType nordugrid
-PSST_DEBUG True

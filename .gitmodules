@@ -1,0 +1,3 @@
+[submodule "PSST"]
+	path = PSST
+	url = https://github.com/roksys/CMSglideinWMSValidation
