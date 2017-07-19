@@ -206,8 +206,21 @@
       }
 
       // write/update page in browser:
-      writeTable();
-      fillCanvases();
+      var myWidth = 1600;
+      if ( window.innerWidth ) {
+         myWidth = window.innerWidth;
+      }
+      if ( myWidth < 1440 ) {
+         writeNarrowTable();
+         fillNarrowCanvases();
+      } else if ( myWidth < 2048 ) {
+         writeTable();
+         fillCanvases();
+      } else {
+         // special handling for 4k display in Fermilab ROC (QSXGA and higher)
+         writeWideTable();
+         fillWideCanvases();
+      }
       fillMagCanvases();
       fillLegend();
       updateTimestamps();
