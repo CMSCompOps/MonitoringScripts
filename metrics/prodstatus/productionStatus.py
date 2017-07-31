@@ -20,6 +20,9 @@ import dateutil.parser
 import json
 from optparse import OptionParser
 import sys
+from pprint import pprint
+import bisect
+from _bisect import bisect_left
 
 # Reads a metric from SS1B
 def getJSONMetric(metricNumber, hoursToRead, sitesStr, sitesVar, dateStart="2000-01-01", dateEnd=datetime.now().strftime('%Y-%m-%d')):
@@ -86,6 +89,7 @@ COLORS[TIER0_STATUS] = 'green'
 BAD_LIFESTATUS = ['Waiting_Room', 'Morgue', 'waiting_room', 'morgue', 'waitingroom']
 DOWNTIMECOLOR = 'saddlebrown'
 SITEREADINESS_OK = 'Ok'
+SITEREADINESS_DOWNTIME = 'Downtime'
 SITEREADINESS_BAD = 'Error'
 
 
@@ -96,20 +100,21 @@ downtimes = getJSONMetricforAllSitesForDate(121, formatDate(downtimeStart),forma
 print'Got Downtimes'
 #Site Readiness from last 7 days
 srStart = datetime.utcnow() - timedelta(days = 7)
-srEnd = datetime.utcnow() 
+srEnd = datetime.utcnow() + timedelta(days = 1)
 srStatus = getJSONMetricforAllSitesForDate(234, formatDate(srStart),formatDate(srEnd))
 print 'Got Readiness'
 #LifeStatus
 lfStart = datetime.utcnow() - timedelta(days = 2)
-lfEnd = datetime.utcnow() 
+lfEnd = datetime.utcnow() + timedelta(days = 1)
 lfStatus = getJSONMetricforAllSitesForDate(235, formatDate(lfStart),formatDate(lfEnd))
 print 'Got LifeStatus'
 #Current value prod_status
 pdStart = datetime.utcnow() - timedelta(days = 1)
-pdEnd = datetime.utcnow() 
+pdEnd = datetime.utcnow() + timedelta(days = 1)
 pdStatus = getJSONMetricforAllSitesForDate(237, formatDate(pdStart),formatDate(pdEnd))
 
 allsites = set(srStatus.getSites()).union(set(lfStatus.getSites())).union(set(downtimes.getSites()))
+print str(allsites)
 
 allsitesMetric = []
 for site in allsites:
@@ -125,7 +130,7 @@ for site in allsites:
         #Check if the site will be on downtime in 24 hours or is on downtime 
         flagDowntime = False
         for key, value in siteDowntimes.iteritems():
-            if value.color == 'saddlebrown':
+            if value.color == DOWNTIMECOLOR:
                 dateEnd = datetime.utcfromtimestamp(key)
                 dateStart = datetime.utcfromtimestamp(value.date)
                 intersection = 0 
@@ -137,87 +142,94 @@ for site in allsites:
                     intersection = timedelta_total_seconds(earliest_end - latest_start)
                 if intersection > 0:
                     flagDowntime = True
-        #Check SR last 3 days
-        siteSiteReadinessTotal = {}
-        siteSiteReadiness2day = {}
-        for key, value in siteSiteReadiness.iteritems():
-            dateEnd = datetime.fromtimestamp(key)
-            dateStart = datetime.fromtimestamp(value.date)
-            #print str(dateStart) + " to " + str(dateEnd)
-            status = value.value
-            # last day
-            dayloop = 0
-            days = []
-            currentDayEnd = datetime.utcnow().replace(hour=00, minute=00, second=00, microsecond=00)
-            for x in range(1, 7):
-                day_end = currentDayEnd - timedelta(days = x) 
-                day_start = currentDayEnd - timedelta(days = x + 1) 
-                day = [day_start , day_end]
-                days.append(day)
-#            for day in days:
-#                print str(day[0]) + " " + str(day[1])
-            counter = 0 
-            for day in days:
-                if counter > 1:
-                    break
-                if day[0].weekday() < 8:
-                    siteSiteReadiness2day[status] = siteSiteReadiness2day.get(status, 0 ) +secondsofIntersection(dateStart, dateEnd, day[0], day[1])
-                    counter +=  1
-                else:
-                    continue
-            counter = 0 
-            for day in days:
-                if counter > 2:
-                    break
-                if day[0].weekday() < 6:
-                    siteSiteReadinessTotal[status] = siteSiteReadinessTotal.get(status, 0 ) +secondsofIntersection(dateStart, dateEnd, day[0], day[1])
-                    counter +=  1
-                else:
-                    continue
-        totalseconds = 0
-        for key, value in siteSiteReadinessTotal.iteritems():
-            if key == 'Ok' or key == 'Error' or key == 'OK':
-                totalseconds += value
-        if totalseconds > 0 :
-            print (siteSiteReadinessTotal.get('Ok', 0.0) +  siteSiteReadinessTotal.get('OK', 0.0))
-            readinessScore  = (siteSiteReadinessTotal.get('Ok', 0.0) +  siteSiteReadinessTotal.get('OK', 0.0)) / totalseconds
+        #Check SR last 3 days, excluding weekends for T2sites!
+        siteReadinessStatus = srStatus.getValuesForPeriod(site, 86400)
+        print "\n Status!!!" + site
+        bad_last_three_days = 0
+        good_last_three_days = 0
+        if siteReadinessStatus != None:
+            #finding an index!
+            dates = siteReadinessStatus.keys()
+            dates.sort()
+            just_before = bisect.bisect_left(dates, datetime.utcnow() - timedelta(days=1))
+            dates = dates[0:just_before]
+            #print dates
+            #pprint(siteReadinessStatus)
+            counter =0
+            while counter < 3:
+                day = dates.pop()
+                dayValue = siteReadinessStatus.get(day,{})
+                if dayValue.get(SITEREADINESS_OK,0) >= dayValue.get(SITEREADINESS_BAD,0) and dayValue.get(SITEREADINESS_OK,0) > dayValue.get(SITEREADINESS_DOWNTIME,0):
+                    good_last_three_days = good_last_three_days + 1
+                    print str(day) + " - " +str(dayValue) + "OK" + str(counter)
+                    counter += 1
+                if dayValue.get(SITEREADINESS_BAD,0) > dayValue.get(SITEREADINESS_OK,0):
+                    if tier==2 and day.weekday() > 4:
+                        print str(day) + " - Bad weekend day skipped - " + site
+                        continue
+                    bad_last_three_days = bad_last_three_days + 1
+                    print str(day) + " - " +str(dayValue) + "BAD" +str(counter)
+                    counter += 1
+                if dayValue.get(SITEREADINESS_DOWNTIME,0) > dayValue.get(SITEREADINESS_OK,0) and dayValue.get(SITEREADINESS_DOWNTIME,0) > dayValue.get(SITEREADINESS_BAD,0) :
+                    counter += 1
         else:
-            readinessScore = -1.0 
-        totalseconds2 = 0
-        for key, value in siteSiteReadiness2day.iteritems():
-            if key == 'Ok' or key == 'Error' or key == 'OK':
-                totalseconds2 += value
-        if totalseconds > 0 :
-            print (siteSiteReadiness2day.get('Ok', 0.0) +  siteSiteReadiness2day.get('OK', 0.0))
-            readinessScore2day  = (siteSiteReadiness2day.get('Ok', 0.0) +  siteSiteReadiness2day.get('OK', 0.0)) / totalseconds2
+            bad_last_three_days = 666
+            good_last_three_days = 666
+        print site +  " - Last bad 3 days total = "  + str(bad_last_three_days) + " - Good last 3 total = " + str(good_last_three_days)
+        
+        ok_days_in_a_row = 0
+        if siteReadinessStatus != None:
+            #finding an index!
+            dates = siteReadinessStatus.keys()
+            dates.sort()
+            just_before = bisect.bisect_left(dates, datetime.utcnow() - timedelta(days=1))
+            dates = dates[0:just_before]
+            #print dates
+            #pprint(siteReadinessStatus)
+            counter =0
+            while counter < 2:
+                day = dates.pop()
+                dayValue = siteReadinessStatus.get(day,{})
+                if dayValue.get(SITEREADINESS_OK,0) >= dayValue.get(SITEREADINESS_BAD,0) and dayValue.get(SITEREADINESS_OK,0) > dayValue.get(SITEREADINESS_DOWNTIME,0):
+                    ok_days_in_a_row = ok_days_in_a_row + 1
+                counter += 1
         else:
-            readinessScore2day = -1.0 
-        #Logic to calculate new prod status
-        print "site + " + site + " 2 day = " + str(readinessScore2day) +" ," + str(totalseconds2) + " 3 day = " + str(readinessScore) + " , " + str(totalseconds2)
+            ok_days_in_a_row = 666
+        print site +  " - OK Days in a row = "  + str(ok_days_in_a_row) 
+
+        if siteCurrentProd_Status != None:
+            print "Site current Status =  " + str(siteCurrentProd_Status)
+        else:
+            print "Site " + " No current ProdStatus"
         newProdStatus = 'unknown'
+        print "Flag LifeStatus = " + str(flagLifeStatus)
+        print "Flag Downtime = " + str(flagDowntime)
         if siteCurrentProd_Status != None and siteCurrentProd_Status.value == TIER0_STATUS:
             newProdStatus = TIER0_STATUS
         if siteCurrentProd_Status != None and siteCurrentProd_Status.value == DOWN_STATUS:
             newProdStatus = DOWN_STATUS
-        if siteCurrentProd_Status != None and siteCurrentProd_Status.value == ON_STATUS:
-            if (flagDowntime or flagLifeStatus) or (readinessScore < 0.6):
+        if siteCurrentProd_Status != None :
+            if (flagDowntime or flagLifeStatus) or ((bad_last_three_days > 2) and not (ok_days_in_a_row > 1) ) :
+                print "1"
                 newProdStatus = DRAIN_STATUS
             else:
                 newProdStatus = ON_STATUS
         if siteCurrentProd_Status != None and siteCurrentProd_Status.value == DRAIN_STATUS:
-            if not flagDowntime and not flagLifeStatus and readinessScore2day > 0.9:
+            if not flagDowntime and not flagLifeStatus and ok_days_in_a_row > 1:
                 newProdStatus = ON_STATUS
             else:
                 newProdStatus = DRAIN_STATUS
-	if siteCurrentProd_Status == None and newProdStatus == 'unknown':
-		if (flagDowntime or flagLifeStatus) or readinessScore < 0.6:
-			newProdStatus = DRAIN_STATUS
-		elif readinessScore2day > 0.9:
-			newProdStatus = ON_STATUS
-                else:
-                        newProdStatus = DRAIN_STATUS
+        if siteCurrentProd_Status == None and newProdStatus == 'unknown':
+            if (flagDowntime or flagLifeStatus) or ((bad_last_three_days > 2) and not (ok_days_in_a_row > 1) ) :
+                print "2"
+                newProdStatus = DRAIN_STATUS
+            if not flagDowntime and not flagLifeStatus and ok_days_in_a_row > 1 :
+                newProdStatus = ON_STATUS
+        if siteCurrentProd_Status != None and (ok_days_in_a_row == 666 or bad_last_three_days == 666):
+            newProdStatus = "unknown"
+        print site +" - new Status = " + newProdStatus
         if newProdStatus != 'unknown':
-        	allsitesMetric.append(dashboard.entry(date = datetime.now().strftime("%Y-%m-%d %H:%M:%S"), name = site, value = newProdStatus, color = COLORS.get(newProdStatus, 'white'), url = 'https://twiki.cern.ch/twiki/bin/view/CMS/SiteSupportSiteStatusSiteReadiness'))
+            allsitesMetric.append(dashboard.entry(date = datetime.now().strftime("%Y-%m-%d %H:%M:%S"), name = site, value = newProdStatus, color = COLORS.get(newProdStatus, 'white'), url = 'https://twiki.cern.ch/twiki/bin/view/CMS/SiteSupportSiteStatusSiteReadiness'))
 
 if len(allsitesMetric) > 1:
     outputFileP = open(OUTPUT_P_FILE_NAME, 'w')

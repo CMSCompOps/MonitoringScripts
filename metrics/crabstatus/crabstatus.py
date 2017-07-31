@@ -21,6 +21,7 @@ import sys
 # Reads a metric from SS1B
 def getJSONMetric(metricNumber, hoursToRead, sitesStr, sitesVar, dateStart="2000-01-01", dateEnd=datetime.now().strftime('%Y-%m-%d')):
     urlstr = "http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=" + str(metricNumber) + "&time=" + str(hoursToRead) + "&dateFrom=" + dateStart + "&dateTo=" + dateEnd + "&site=" + sitesStr + "&sites=" + sitesVar + "&clouds=all&batch=1"
+    print urlstr
     try:
         metricData = url.read(urlstr)
         return dashboard.parseJSONMetric(metricData)
@@ -92,6 +93,19 @@ lfStatus = getJSONMetricforAllSitesForDate(235, formatDate(lfStart),formatDate(l
 
 allsites = list(set(hcStatus.getSites()))
 
+sitesWithInfo = 0
+for site in allsites:
+    siteHC = hcStatus.getSiteEntries(site).values()
+    for entry in siteHC:
+        if entry.color == HAMMERCLOUD_OK_COLOR: 
+            sitesWithInfo += 1
+            break
+print "Sites With Info : " + str(sitesWithInfo) + " : % "+ str(sitesWithInfo*100.0/len(allsites)) 
+if (sitesWithInfo*100.0/len(allsites)) > 80.0:
+    useHC = True
+else:
+    useHC = False
+
 allsitesMetric = []
 for site in allsites:
     if "_Disk" in site or "_Buffer" in site or "_MSS" in site:
@@ -107,7 +121,7 @@ for site in allsites:
     siteHC = hcStatus.getSiteEntries(site).values()
     #Check HC for the last 3 days
     for entry in siteHC:
-        if entry.color == HAMMERCLOUD_OK_COLOR:
+        if entry.color == HAMMERCLOUD_OK_COLOR or useHC == False:
             flagGoodHC = True 
     if flagBadLifeStatus == False and flagGoodHC == True:
         newCrabStatus = ENABLED_STATUS 

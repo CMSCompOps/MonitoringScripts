@@ -34,18 +34,19 @@ dayToProcessMinus30Str = dayToProcessMinus30.strftime("%Y-%m-%d")
 LIFE_STATUS_COLUMN_NUMBER = 235
 LIFE_STATUS_MANUAL_OVERRIDE_COLUMN_NUMBER = 232
 SITE_READINESS_COLUMN_NUMBER = 234
-STATUS_OK = "OK"
-STATUS_WAITING_ROOM_OLD = "Waiting Room"
-STATUS_WAITING_ROOM = "Waiting_Room"
-STATUS_WAITING_ROOM_ARRAY = [STATUS_WAITING_ROOM_OLD, STATUS_WAITING_ROOM]
-STATUS_MORGUE = "Morgue"
+STATUS_OK = "enabled"
+STATUS_WAITING_ROOM_OLD = "Waiting_Room"
+STATUS_WAITING_ROOM = "waiting_room"
+STATUS_WAITING_ROOM_ARRAY = [STATUS_WAITING_ROOM_OLD, STATUS_WAITING_ROOM, "Waiting Room", "WaitingRoom"]
+STATUS_MORGUE = "morgue"
 STATUS_READY = "Ok"
 STATUS_NOTREADY = "Error"
 STATUS_DOWNTIME = "Downtime"
-COLOR_OK = "cOk"
-COLOR_WAITING_ROOM = "cWaitingRoom"
-COLOR_MORGUE = "cMorgue"
+COLOR_OK = "green"
+COLOR_WAITING_ROOM = "yellow"
+COLOR_MORGUE = "red"
 OUTPUT_FILE_LIFESTATUS_NAME = os.path.join(sys.argv[2],"lifeStatus.txt")
+OUTPUT_FILE_LIFESTATUSPRIMAL_NAME = os.path.join(sys.argv[2],"primalLifeStatus.txt")
 OUTPUT_FILE_WAITING_ROOM_NAME = os.path.join(sys.argv[2],"waitingRoom.txt") 
 OUTPUT_FILE_MORGUE_NAME = os.path.join(sys.argv[2],"morgue.txt")
 OUTPUT_FILE_ACTIVE_T2s_NAME = os.path.join(sys.argv[2],"activeT2s.txt") 
@@ -54,7 +55,7 @@ OUTPUT_FILE_CORRECTIONS = os.path.join(sys.argv[2],"lifeStatus_POSTREQUEST.txt")
 DAYS_IN_MORGUE_THRESHOLD = 29
 LOGFILE_URL = "https://twiki.cern.ch/twiki/bin/view/CMSPublic/CurrentWaitingRoomAndMorgue"
 LOG_HEADER =  "|*Site Name*|*Current Life Status*|*%OK in last week*|*%OK last 3 months*|*Days in Waiting Room in last 3 months*|*Days in Morgue in last 2 weeks*|"
-todayAtMidnight = dayToProcess.replace(hour=0, minute=0, second=1, microsecond=0).strftime("%Y-%m-%d %H:%M:%S")
+todayAtMidnight = dayToRequest.replace(hour=0, minute=0, second=1, microsecond=0).strftime("%Y-%m-%d %H:%M:%S")
 print todayAtMidnight
 
 # Reads a metric from SSB
@@ -124,26 +125,27 @@ class SiteData:
             print self.name + ' bad 5 - ' + str(self.badDaysin15days) + " last day " + str(self.lastDay) + " new : " + self.newlifeStatus
         
     def calculateSiteStatus(self):
-        if self.name == "T2_BE_UCL":
-            print "Stop"
-        print self.name + " bad15 " + str(self.badDaysin15days) + " last " + self.lastDay
-        if self.manualOverride is None and self.currentLifeStatus is None:
-            return None
-        elif self.manualOverride is not None and self.manualOverride.strip() == STATUS_OK:
-            print "Site %s life status manually overriden to %s" % (self.name, self.manualOverride)
-            return STATUS_OK
-        elif self.manualOverride is not None and self.manualOverride.strip() in STATUS_WAITING_ROOM_ARRAY:
-            print "Site %s life status manually overriden to %s" % (self.name, self.manualOverride)
-            return STATUS_WAITING_ROOM
-        elif self.manualOverride is not None and self.manualOverride.strip() == STATUS_MORGUE:
-            print "Site %s life status manually overriden to %s" % (self.name, self.manualOverride)
-            return STATUS_MORGUE
-        elif self.currentLifeStatus.lower().strip() == STATUS_OK.lower():
+        #if self.name == "T2_BE_UCL":
+        #    print "Stop"
+        #print self.name + " bad15 " + str(self.badDaysin15days) + " last " + self.lastDay
+        #if self.manualOverride is None and self.currentLifeStatus is None:
+        #    return None
+        #elif self.manualOverride is not None and self.manualOverride.strip() == STATUS_OK:
+        #    print "Site %s life status manually overriden to %s" % (self.name, self.manualOverride)
+        #    return STATUS_OK
+        #elif self.manualOverride is not None and self.manualOverride.strip() in STATUS_WAITING_ROOM_ARRAY:
+        #    print "Site %s life status manually overriden to %s" % (self.name, self.manualOverride)
+        #    return STATUS_WAITING_ROOM
+        #elif self.manualOverride is not None and self.manualOverride.strip() == STATUS_MORGUE:
+        #    print "Site %s life status manually overriden to %s" % (self.name, self.manualOverride)
+        #    return STATUS_MORGUE
+        if self.currentLifeStatus.lower().strip() == STATUS_OK.lower():
             if (self.badDaysin15days >= 5 and self.lastDay == STATUS_NOTREADY):
                 return STATUS_WAITING_ROOM
             else:
-                return STATUS_OK
+               return STATUS_OK
         elif self.currentLifeStatus.strip() in STATUS_WAITING_ROOM_ARRAY:
+            print self.name +  " " + str(self.goodLast3)  
             if (self.goodLast3 >= 3 and self.lastDay == STATUS_READY and self.daysInMorgue < 1):
                 return STATUS_OK
             elif (self.daysInWaitingRoom > (DAYS_IN_MORGUE_THRESHOLD - 1)):
@@ -155,6 +157,11 @@ class SiteData:
                 return STATUS_WAITING_ROOM
             else :
                 return STATUS_MORGUE
+        elif self.currentLifeStatus.lower().strip() == "unknown":
+            if (self.goodLast3 >= 3 and self.lastDay == STATUS_READY):
+                return STATUS_OK
+            elif (self.badDaysin15days >= 5 and self.lastDay == STATUS_NOTREADY):
+                return STATUS_WAITING_ROOM
         else :
             return self.currentLifeStatus
     def __str__(self):
@@ -183,7 +190,7 @@ def binSiteEntries(daysInArray, siteEntries, dateEnd):
         for endDateUnix, entry in siteEntries.iteritems():
             endDate = datetime.utcfromtimestamp(endDateUnix)
             startDate = datetime.utcfromtimestamp(entry.date)
-            if secondsofIntersection(day.replace(hour=0, minute=0, second=1), day.replace(hour=23, minute=59, second=1), startDate, endDate) > 3600 :
+            if secondsofIntersection(day.replace(hour=0, minute=0, second=1), day.replace(hour=23, minute=59, second=1), startDate, endDate) > 43200 :
             #if day > startDate and day < endDate:
                 dayBin[day] = entry.value
     stats = {}
@@ -216,13 +223,14 @@ currentManualLifeStatus = getJSONMetricforAllSitesHours(LIFE_STATUS_MANUAL_OVERR
 # Get a list of all sites
 allsites = set(currentLifeStatus.getSites())
 allsites = allsites.union(set(currentManualLifeStatus.getSites()))
+allsites = allsites.union(set(fifteenDaysReadiness.getSites()))
 allSitesInfo ={}
 
 for site in allsites:
     if site == "T2_BE_UCL":
         print "STOP"
     #Get current life status
-    siteCurrentStatus = currentLifeStatus.getLatestEntry(site).value if currentLifeStatus.getLatestEntry(site) is not None else None
+    siteCurrentStatus = currentLifeStatus.getLatestEntry(site).value if currentLifeStatus.getLatestEntry(site) is not None else"unknown" 
     #Get current manual life status
     siteCurrentManualoverride = currentManualLifeStatus.getLatestEntry(site).value if currentManualLifeStatus.getLatestEntry(site) is not None else None
     siteFifteenDaysReadiness = fifteenDaysReadiness.getSiteEntries(site)
@@ -253,6 +261,7 @@ print "\n\n--Calculating new life status."
 
 for sitename, siteInfo in allSitesInfo.iteritems():
     newlifeStatus = siteInfo.newlifeStatus
+    #print sitename +" " + newlifeStatus
     if newlifeStatus == STATUS_MORGUE:
         siteColor = COLOR_MORGUE
         morgueColor = "red"
@@ -277,29 +286,41 @@ for sitename, siteInfo in allSitesInfo.iteritems():
 
 logOutputFile = open(OUTPUT_FILE_LOGFILE, 'a')
 #logOutputFile.write(LOG_HEADER+'\n')
-lifeStatusOutputFile = open(OUTPUT_FILE_LIFESTATUS_NAME, 'w')
+#lifeStatusOutputFile = open(OUTPUT_FILE_LIFESTATUS_NAME, 'w')
+lifeStatusPOutputFile = open(OUTPUT_FILE_LIFESTATUSPRIMAL_NAME, 'w')
+#lifeStatusOutputFile.write(dashboard.printHeader(scriptName = "LifeStatus", documentationUrl=""))
+lifeStatusPOutputFile.write(dashboard.printHeader(scriptName = "LifeStatus", documentationUrl=""))
 for site in lifeStatusEntries:
-    lifeStatusOutputFile.write(str(site) + '\n')
+    #lifeStatusOutputFile.write(str(site) + '\n')
+    lifeStatusPOutputFile.write(str(site) + '\n')
     if str(allSitesInfo.get(site.name, "")) != "":
         logline = str(allSitesInfo.get(site.name, ""))
         logOutputFile.write(logline + '\n')
 logOutputFile.write("<!-- # At %s --> \n" % todayAtMidnight)
-print "\n--Life Status Output written to %s" % OUTPUT_FILE_LIFESTATUS_NAME
+print "\n--Life Status Output written to %s" % OUTPUT_FILE_LIFESTATUSPRIMAL_NAME 
 #print "\n--Log Output written to %s" % OUTPUT_FILE_LOGFILE
-lifeStatusOutputFile.close()
+#lifeStatusOutputFile.close()
+lifeStatusPOutputFile.close()
 logOutputFile.close()
 
-morgueOutputFile = open(OUTPUT_FILE_MORGUE_NAME, 'w')
-for site in morgueEntries:
-    morgueOutputFile.write(str(site) + '\n')
-print "\n--Morgue output written to %s" % OUTPUT_FILE_MORGUE_NAME
-morgueOutputFile.close()
+#morgueOutputFile = open(OUTPUT_FILE_MORGUE_NAME, 'w')
+#for site in morgueEntries:
+#    morgueOutputFile.write(str(site) + '\n')
+#print "\n--Morgue output written to %s" % OUTPUT_FILE_MORGUE_NAME
+#morgueOutputFile.close()
 
-waitingRoomOutputFile = open(OUTPUT_FILE_WAITING_ROOM_NAME, 'w')
-for site in waitingRoomEntries:
-    waitingRoomOutputFile.write(str(site) + '\n')
-print "\n--Waiting Room output written to %s" % OUTPUT_FILE_WAITING_ROOM_NAME
-waitingRoomOutputFile.close()
+#waitingRoomOutputFile = open(OUTPUT_FILE_WAITING_ROOM_NAME, 'w')
+#for site in waitingRoomEntries:
+#    waitingRoomOutputFile.write(str(site) + '\n')
+#print "\n--Waiting Room output written to %s" % OUTPUT_FILE_WAITING_ROOM_NAME
+#waitingRoomOutputFile.close()
+
+#activeT2OutputFile = open(OUTPUT_FILE_ACTIVE_T2s_NAME, 'w')
+#for site in lifeStatusEntries:
+#    if site.value == "OK" and "T2" in site.name:
+#	activeT2OutputFile.write(todayAtMidnight + '\t' + str(site.name) + '\t' + '1' + '\t' + 'green' + '\t' + str(site.url) + '\n')
+#print "\n--Active T2 sites output written to %s" % OUTPUT_FILE_ACTIVE_T2s_NAME
+#activeT2OutputFile.close()
 
 correctionOutputFile = open(OUTPUT_FILE_CORRECTIONS, 'a')
 startDateStr = dayToProcess.replace(hour=0, minute=0, second=1, microsecond=0).strftime("%Y-%m-%d %H:%M:%S")

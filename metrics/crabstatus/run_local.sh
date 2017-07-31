@@ -9,4 +9,4 @@ if [ ! -d "$OUT" ]; then
 fi
 
 python crabstatus.py $OUT
-cp $OUT/*.txt /afs/cern.ch/user/c/cmssst/www/crabstatus/
+#cp $OUT/*.txt /afs/cern.ch/user/c/cmssst/www/crabstatus/
