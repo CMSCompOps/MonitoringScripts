@@ -19,7 +19,7 @@ import htcondor
 
 
 
-VOFD_VERSION = "v1.01.03"
+VOFD_VERSION = "v1.01.04"
 #VOFD_OUTPUT_FILE = "vofeed.xml"
 #VOFD_IN_USE_FILE = "in_use.txt"
 #VOFD_CACHE_DIR = "."
@@ -536,8 +536,6 @@ def vofd_glideinWMSfactory():
             glbTopology.addResource(classAd['GLIDEIN_CMSSite'], gridsite,
                 host, ceType, factory['prd'], queue, batch)
             if ( classAd['GLIDEIN_CMSSite'] == "T2_CH_CERN" ):
-                glbTopology.addResource("T0_CH_CERN", gridsite,
-                    host, ceType, factory['prd'], queue, batch)
                 glbTopology.addResource("T3_CH_CERN_CAF", gridsite,
                     host, ceType, factory['prd'], queue, batch)
 # ########################################################################### #
