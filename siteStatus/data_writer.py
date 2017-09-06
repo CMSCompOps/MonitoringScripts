@@ -3595,10 +3595,12 @@ def sswp_write_downtime_js():
         myfile.write("var siteStatusData = [")
         mypreceding = False
         for cmssite in sorted(glbTopology.sites()):
-            vector = glbSites.getVector('downtime', cmssite)
+            vector = glbSites.getVector('summary', cmssite)
             ticket = glbTickets.getSummary(cmssite, glbInfo['timestamp'])
             if (( vector is None ) and ( ticket[0] == 0 )):
                 continue
+
+            vector = glbSites.getVector('downtime', cmssite)
 
             if mypreceding:
                 myfile.write(",\n   { site: \"%s\",\n" % cmssite)
