@@ -115,6 +115,8 @@ class sswpTopology:
             pass
         elif ( type.find("SRM") >= 0 ):
             type = "SRM"
+        elif ( type.lower() == "gridftp" ):
+            type = "SRM"
         elif ( type.lower() == "glexec" ):
             type = "CE"
         else:
