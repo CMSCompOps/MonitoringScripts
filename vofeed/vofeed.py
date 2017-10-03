@@ -311,6 +311,7 @@ def vofd_sitedb():
     nameIndex = columns.index('site_name')
     typeIndex = columns.index('type')
     fqdnIndex = columns.index('fqdn')
+    prmyIndex = columns.index('is_primary')
 
     for result in sitedb['result']:
         sitedbname = result[nameIndex]
@@ -320,9 +321,14 @@ def vofd_sitedb():
             endpoint = result[fqdnIndex]
             hostname, port = (endpoint.split(":",1) + ["1094"])[:2]
             hostname = hostname.lower()
-            glbTopology.addResource(myDict[sitedbname]['cmssite'], "",
-                                    hostname, "XROOTD", True, "", "",
-                                    hostname + ":" + port)
+            if ( result[prmyIndex][0].lower() == 'y' ):
+                glbTopology.addResource(myDict[sitedbname]['cmssite'], "",
+                                        hostname, "XROOTD", True, "", "",
+                                        hostname + ":" + port)
+            else:
+                glbTopology.addResource(myDict[sitedbname]['cmssite'], "",
+                                        hostname, "XROOTD", False, "", "",
+                                        hostname + ":" + port)
 # ########################################################################### #
 
 
