@@ -1,19 +1,17 @@
 #!/bin/sh
 # #############################################################################
-# Bourne shell script to wrapper the siteStatus python script. It acquires an
-#    execution lock, checks there is a valid grid certificate, Kerberos ticket,
-#    AFS token and then launches the Python script.
+# Bourne shell script to wrapper the eval_hc.py python script. It acquires an
+#    execution lock, checks there is a valid Kerberos ticket, AFS token and
+#    then launches the Python script.
 # #############################################################################
 EXC_LOCK=""
-ERR_FILE="/tmp/cmssst_siteStatus_$$.err"
+ERR_FILE="/tmp/cmssst_evalHC_$$.err"
 trap 'exit 1' 1 2 3 15
 trap '(/bin/rm -f ${EXC_LOCK} ${ERR_FILE}) 1> /dev/null 2>&1' 0
 
 
 
 EMAIL_ADDR="lammel@fnal.gov"
-CACHE_DIR="/data/cmssst/MonitoringScripts/siteStatus/cache"
-SMMRY_FILE="/afs/cern.ch/user/c/cmssst/www/siteStatus/data/summary.js"
 #
 #
 /bin/rm -f ${ERR_FILE} 1>/dev/null 2>&1
@@ -21,17 +19,17 @@ SMMRY_FILE="/afs/cern.ch/user/c/cmssst/www/siteStatus/data/summary.js"
 
 
 
-# get cmssst/siteStatus_wrapper lock:
+# get cmssst/evalHC_wrapper lock:
 # ===================================
-echo "Acquiring lock for cmssst/siteStatus_wrapper"
+echo "Acquiring lock for cmssst/evalHC_wrapper"
 if [ ! -d /var/tmp/cmssst ]; then
    /bin/rm -f /var/tmp/cmssst 1>/dev/null 2>&1
    /bin/mkdir /var/tmp/cmssst 1>/dev/null 2>&1
 fi
-/bin/ln -s $$ /var/tmp/cmssst/siteStatus_wrapper.lock
+/bin/ln -s $$ /var/tmp/cmssst/evalHC_wrapper.lock
 if [ $? -ne 0 ]; then
    # locking failed, get lock information
-   LKINFO=`/bin/ls -il /var/tmp/cmssst/siteStatus_wrapper.lock 2>/dev/null`
+   LKINFO=`/bin/ls -il /var/tmp/cmssst/evalHC_wrapper.lock 2>/dev/null`
    LKFID=`echo ${LKINFO} | /usr/bin/awk '{print $1; exit}' 2>/dev/null`
    LKPID=`echo ${LKINFO} | /usr/bin/awk '{print $NF;exit}' 2>/dev/null`
    # check process holding lock is still active
@@ -61,7 +59,7 @@ if [ $? -ne 0 ]; then
    LKFID=""
    LKINFO=""
    #
-   /bin/ln -s $$ /var/tmp/cmssst/siteStatus_wrapper.lock
+   /bin/ln -s $$ /var/tmp/cmssst/evalHC_wrapper.lock
    if [ $? -ne 0 ]; then
       echo "   failed to acquire lock, exiting"
       exit 1
@@ -69,13 +67,13 @@ if [ $? -ne 0 ]; then
 fi
 #
 # double check we have the lock
-LKPID=`(/bin/ls -l /var/tmp/cmssst/siteStatus_wrapper.lock | /usr/bin/awk '{if($(NF-1)=="->")print $NF;else print "";exit}') 2>/dev/null`
+LKPID=`(/bin/ls -l /var/tmp/cmssst/evalHC_wrapper.lock | /usr/bin/awk '{if($(NF-1)=="->")print $NF;else print "";exit}') 2>/dev/null`
 if [ "${LKPID}" != "$$" ]; then
    echo "   lost lock to process ${LKPID}, exiting"
    exit 1
 fi
 LKPID=""
-EXC_LOCK="/var/tmp/cmssst/siteStatus_wrapper.lock"
+EXC_LOCK="/var/tmp/cmssst/evalHC_wrapper.lock"
 # #############################################################################
 
 
@@ -114,47 +112,16 @@ fi
 
 
 
-# generate siteStatus summary JavaScript and site-detail JSON files:
-# ==================================================================
-/bin/touch ${ERR_FILE}
-/usr/bin/timeout 3000 `dirname $0`/data_writer.py 1>> ${ERR_FILE} 2>&1
-RC=$?
-if [ ${RC} -eq 124 ]; then
-   if [ ! -t 0 ]; then
-      /usr/bin/Mail -s "$0 data_writer.py timed out" ${EMAIL_ADDR} < ${ERR_FILE}
-   fi
-fi
-/bin/rm ${ERR_FILE} 1>/dev/null 2>&1
+# evaluate Hammer Cloud results, post SSB file(s) and JSON:
+# =========================================================
+`dirname $0`/eval_hc.py
 # #############################################################################
 
 
 
-# check for expired caches and email alerts:
-# ==========================================
-NOW=`/bin/date '+%s'`
-for FILE in ${CACHE_DIR}/cache_*.*; do
-   ALRT=`/usr/bin/stat -c %Y ${FILE} | awk -v n=${NOW} '{a=int((n-$1)/3600);if((a>24)&&(a%24==1)){print 1}else{print 0}}'`
-   if [ ${ALRT} -ne 0 ]; then
-       /bin/touch ${ERR_FILE}
-       echo "" 1>> ${ERR_FILE}
-       echo "cache expired:" 1>> ${ERR_FILE}
-       /bin/ls -l ${FILE} 1>> ${ERR_FILE}
-   fi
-done
-if [ -f ${ERR_FILE} ]; then
-   /bin/cat ${ERR_FILE}
-   if [ ! -t 0 ]; then
-      /usr/bin/Mail -s "$0 expired cache" ${EMAIL_ADDR} < ${ERR_FILE}
-   fi
-fi
-/bin/rm ${ERR_FILE} 1>/dev/null 2>&1
-# #############################################################################
-
-
-
-# release cmssst/siteStatus_wrapper lock:
+# release cmssst/evalHC_wrapper lock:
 # =======================================
-echo "Releasing lock for cmssst/siteStatus_wrapper"
+echo "Releasing lock for cmssst/evalHC_wrapper"
 /bin/rm ${EXC_LOCK}
 EXC_LOCK=""
 # #############################################################################
