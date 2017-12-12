@@ -12,6 +12,7 @@ trap '(/bin/rm -f ${EXC_LOCK} ${ERR_FILE}) 1> /dev/null 2>&1' 0
 
 
 EMAIL_ADDR="lammel@fnal.gov"
+HC15MIN_SSB_FILE="/afs/cern.ch/user/c/cmssst/www/hammercloud/hc15min.txt"
 #
 #
 /bin/rm -f ${ERR_FILE} 1>/dev/null 2>&1
@@ -37,7 +38,7 @@ if [ $? -ne 0 ]; then
    if [ $? -eq 0 ]; then
       # check data are not expired (6 hours):
       NOW=`/bin/date '+%s'`
-      ALRT=`/usr/bin/stat -c %Y ${SMMRY_FILE} | awk -v n=${NOW} '{a=int((n-$1)/900);if((a>24)&&(a%24==1)){print 1}else{print 0}}'`
+      ALRT=`/usr/bin/stat -c %Y ${HC15MIN_SSB_FILE} | awk -v n=${NOW} '{a=int((n-$1)/900);if((a>24)&&(a%24==1)){print 1}else{print 0}}'`
       if [ ${ALRT} -ne 0 ]; then
          /bin/touch ${ERR_FILE}
          echo "" 1>> ${ERR_FILE}
