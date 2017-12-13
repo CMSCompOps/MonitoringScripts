@@ -29,8 +29,10 @@ from email.mime.text import MIMEText
 
 
 
-EVHC_SSB_DIR = "/afs/cern.ch/user/c/cmssst/www/hammercloud"
-EVHC_JSON_DIR = "/data/cmssst/MonitoringScripts/hammer_cloud/cache"
+EVHC_SSB_DIR = "."
+EVHC_JSON_DIR = "./cache"
+#EVHC_SSB_DIR = "/afs/cern.ch/user/c/cmssst/www/hammercloud"
+#EVHC_JSON_DIR = "/data/cmssst/MonitoringScripts/hammer_cloud/cache"
 EVHC_MONIT_URL = "http://monit-metrics-dev.cern.ch:10012/"
 # ########################################################################### #
 
@@ -82,19 +84,23 @@ class ssbMetric:
 
         timeStamp = time.strftime("%Y-%m-%d %H:%M:%S",
             time.gmtime(self.time_bin * self.time_interval))
-        for entry in self.entries():
-            if ( self.data[entry]['status'] == "ok" ):
+        for siteName in self.entries():
+            if self.data[siteName]['value'] is not None:
+                value = self.data[siteName]['value']
+            else:
+                value = -1.0
+            if ( self.data[siteName]['status'] == "ok" ):
                 colour = "green"
-            elif ( self.data[entry]['status'] == "warning" ):
+            elif ( self.data[siteName]['status'] == "warning" ):
                 colour = "yellow"
-            elif ( self.data[entry]['status'] == "error" ):
+            elif ( self.data[siteName]['status'] == "error" ):
                 colour = "red"
             else:
                 colour = "white"
-            url = URL_JOB_DASHBOARD_HC_SITE % entry
+            url = URL_JOB_DASHBOARD_HC_SITE % siteName
             #
             file.write("%s\t%s\t%s\t%s\t%s\n" %
-                (timeStamp, entry, self.data[entry]['value'], colour, url))
+                (timeStamp, siteName, value, colour, url))
 
     def updateSSB(self):
         filePath = os.path.join(EVHC_SSB_DIR, self.metric_name + ".txt")
@@ -119,24 +125,27 @@ class ssbMetric:
 
     def compJSONstring(self):
         # time in milliseconds, middle of the timebin
-        jsonString = ("{\n 'producer': \"cmssst\",\n 'type': \"ssbmetric\"," +
-                "\n 'path': \"%s\",\n 'timestamp': %d,\n 'type_prefix': \"ra" +
-                "w\",\n 'data': [") % ( self.metric_name, ((self.time_bin *
-                self.time_interval) + self.time_interval/2) * 1000)
+        jsonString = ("{\n \"producer\": \"cmssst\",\n" +
+                         " \"type\": \"ssbmetric\",\n" +
+                         " \"path\": \"%s\",\n" +
+                         " \"timestamp\": %d,\n" +
+                         " \"type_prefix\": \"raw\",\n" +
+                         " \"data\": [") % (self.metric_name, ((self.time_bin *
+                            self.time_interval) + self.time_interval/2) * 1000)
 
         commaFlag = False
         for siteName in self.entries():
             if commaFlag:
-                jsonString += ",\n    { 'name': \"%s\",\n" % siteName
+                jsonString += ",\n    { \"name\": \"%s\",\n" % siteName
             else:
-                jsonString += "\n    { 'name': \"%s\",\n" % siteName
-            jsonString += ("      'status': \"%s\",\n" %
+                jsonString += "\n    { \"name\": \"%s\",\n" % siteName
+            jsonString += ("      \"status\": \"%s\",\n" %
                 self.data[siteName]['status'])
             if self.data[siteName]['value'] is not None:
-               jsonString += ("      'value': %.3f\n" %
+               jsonString += ("      \"value\": %.3f\n" %
                    self.data[siteName]['value'])
             else:
-               jsonString += "      'value': None\n"
+               jsonString += "      \"value\": null\n"
             jsonString += "    }"
             commaFlag = True
         jsonString += "\n ]\n}"
@@ -196,23 +205,28 @@ class ssbMetric:
         successFlag = False
         #
         try:
-            requestsObj = requests.post(EVHC_MONIT_URL, data=jsonString,
+            # MonIT needs an array and without newline characters:
+            requestsObj = requests.post(EVHC_MONIT_URL,
+                data="[" + json.dumps(json.loads(jsonString)) + "]",
                 headers={'Content-Type': "application/json; charset=UTF-8"},
                 timeout=15)
             #requests.post('http://some.url/streamed', data=f, verify=False,
             #    cert=('/path/client.cert', '/path/client.key'))
             #requests.post('http://some.url/streamed', data=f, verify=False,
             #    cert='/path/client.cert')
-            requestsObj.raise_for_status()
-            successFlag = True
-            logging.info("JSON string uploaded to MonIT")
         except requests.exceptions.ConnectionError:
             logging.error("[E]: Failed to upload JSON, connection error")
         except requests.exceptions.Timeout:
             logging.error("[E]: Failed to upload JSON, reached 15 sec timeout")
-        except:
-            logging.error("[E]: Failed to upload JSON, HTML code %d" %
-                          requestsObj.status_code)
+        except Exception as excptn:
+            logging.error("[E]: Failed to upload JSON, %s" % str(excptn))
+        else:
+            if ( requestsObj.status_code == requests.codes.ok ):
+                successFlag = True
+                logging.info("JSON string uploaded to MonIT")
+            else:
+                logging.error("[E]: Failed to upload JSON, %d \"%s\"" %
+                          requestsObj.status_code, requestsObj.text)
         #
         return successFlag
 
@@ -371,7 +385,7 @@ class ssbMetric:
 
 
 def evalHCpost(metricName, timeBin, timeInterval,
-               ssbFlag, monitFlag, cacheFlag, alertFlag):
+               ssbFlag, monitFlag, alertFlag):
     """function to query job dashboard and post initial HC 15min results"""
     #
     # create ssbMetric object for HC 15min/1hour/6hours/1day:
@@ -391,9 +405,8 @@ def evalHCpost(metricName, timeBin, timeInterval,
     jsonString = metricObj.compJSONstring()
     #
     filePath = metricObj.compJSONcacheFileName()
-    if cacheFlag:
-        # write JSON string into a file in the cache area
-        ssbMetric.writeJSONfile(filePath, jsonString)
+    # write JSON string into a file in the cache area
+    ssbMetric.writeJSONfile(filePath, jsonString)
     #
     if monitFlag:
         # upload JSON string to MonIT
@@ -401,8 +414,6 @@ def evalHCpost(metricName, timeBin, timeInterval,
         if ( not successFlag ):
             ssbMetric.writeJSONfile(filePath + "_upload", jsonString)
         del successFlag
-    elif not cacheFlag:
-        ssbMetric.writeJSONfile(filePath, jsonString)
     del filePath
     #
     #
@@ -437,6 +448,8 @@ def verifyHC15min(timeBin, postFlag):
     #
     # compare the two strings:
     if ( nowJSONstring != oldJSONstring ):
+        ssbMetric.writeJSONfile(filePath, nowJSONstring)
+        #
         if postFlag:
             successFlag = ssbMetric.uploadJSONstring( nowJSONstring )
             #
@@ -444,8 +457,6 @@ def verifyHC15min(timeBin, postFlag):
                 ssbMetric.writeJSONfile(filePath + "_upload", nowJSONstring)
                 # JSON upload and write to cache failed, not much more we can do
             del successFlag
-        else:
-            ssbMetric.writeJSONfile(filePath, nowJSONstring)
 
     del oldJSONstring
     del filePath
@@ -574,7 +585,7 @@ if __name__ == '__main__':
             timeBin = int( timeStamp / 900 ) - 2
             # evaluate HC 15min, update SSB, write JSON to cache, and upload
             evalHCpost("hc15min", timeBin, 900,
-                       argStruct.post, argStruct.post, True, False)
+                       argStruct.post, argStruct.post, False)
             #
             #
             # check HC 15min results for time bin that started 75 min ago
@@ -588,16 +599,14 @@ if __name__ == '__main__':
             # evaluate HC 1hour results for time bin that started 2 hours ago
             # ===============================================================
             timeBin = int( timeStamp / 3600 ) - 2
-            evalHCpost("hc1hour", timeBin, 3600,
-                       False, argStruct.post, True, True)
+            evalHCpost("hc1hour", timeBin, 3600, False, argStruct.post, True)
         #
         #
         if ( argStruct.qday ) and ( int( timeStamp / 900 ) % 24 == 4 ):
             # evaluate HC 6hour results for time bin that started 7 hours ago
             # ===============================================================
             timeBin = int( timeStamp / 21600 ) - 1
-            evalHCpost("hc6hour", timeBin, 21600,
-                       False, argStruct.post, True, False)
+            evalHCpost("hc6hour", timeBin, 21600, False, argStruct.post, False)
         #
         #
         if ( argStruct.day ) and ( int( timeStamp / 900 ) % 96 == 4 ):
@@ -605,11 +614,11 @@ if __name__ == '__main__':
             # ===============================================================
             timeBin = int( timeStamp / 86400 ) - 1
             evalHCpost("hc1day", timeBin, 86400,
-                       argStruct.post, argStruct.post, True, False)
+                       argStruct.post, argStruct.post, False)
     else:
         if argStruct.timeSpec.isdigit():
             # argument should be the time in seconds for which to evaluate HC
-            timeStamp = int( sys.argv[1] )
+            timeStamp = int( argStruct.timeSpec )
         else:
             # argument should be the time in "YYYY-Mmm-dd HH:MM" format
             timeStamp = calendar.timegm( time.strptime("%s UTC" %
@@ -621,8 +630,7 @@ if __name__ == '__main__':
             # =============================================
             timeBin = int( timeStamp / 900 )
             # evaluate HC 15min, write and upload JSON
-            evalHCpost("hc15min", timeBin, 900,
-                       False, argStruct.post, False, False)
+            evalHCpost("hc15min", timeBin, 900, False, argStruct.post, False)
         #
         #
         if ( argStruct.hour ) and ( int( timeStamp / 900 ) % 4 == 0 ):
@@ -630,8 +638,7 @@ if __name__ == '__main__':
             # =============================================
             timeBin = int( timeStamp / 3600 )
             # evaluate HC 1hour, write and upload JSON
-            evalHCpost("hc1hour", timeBin, 3600,
-                       False, argStruct.post, False, False)
+            evalHCpost("hc1hour", timeBin, 3600, False, argStruct.post, False)
         #
         #
         if ( argStruct.qday ) and ( int( timeStamp / 900 ) % 24 == 0 ):
@@ -639,8 +646,7 @@ if __name__ == '__main__':
             # =============================================
             timeBin = int( timeStamp / 21600 )
             # evaluate HC 6hour, write and upload JSON
-            evalHCpost("hc6hour", timeBin, 21600,
-                       False, argStruct.post, False, False)
+            evalHCpost("hc6hour", timeBin, 21600, False, argStruct.post, False)
         #
         #
         if ( argStruct.day ) and ( int( timeStamp / 900 ) % 96 == 0 ):
@@ -648,8 +654,7 @@ if __name__ == '__main__':
             # ============================================
             timeBin = int( timeStamp / 86400 )
             # evaluate HC 1day, write and upload JSON
-            evalHCpost("hc1day", timeBin, 86400,
-                       False, argStruct.post, False, False)
+            evalHCpost("hc1day", timeBin, 86400, False, argStruct.post, False)
     #
     #
     # re-upload any previous JSON post failures
