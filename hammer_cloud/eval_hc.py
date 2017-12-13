@@ -29,10 +29,10 @@ from email.mime.text import MIMEText
 
 
 
-EVHC_SSB_DIR = "."
-EVHC_JSON_DIR = "./cache"
-#EVHC_SSB_DIR = "/afs/cern.ch/user/c/cmssst/www/hammercloud"
-#EVHC_JSON_DIR = "/data/cmssst/MonitoringScripts/hammer_cloud/cache"
+#EVHC_SSB_DIR = "."
+#EVHC_JSON_DIR = "./cache"
+EVHC_SSB_DIR = "/afs/cern.ch/user/c/cmssst/www/hammercloud"
+EVHC_JSON_DIR = "/data/cmssst/MonitoringScripts/hammer_cloud/cache"
 EVHC_MONIT_URL = "http://monit-metrics-dev.cern.ch:10012/"
 # ########################################################################### #
 
@@ -86,7 +86,7 @@ class ssbMetric:
             time.gmtime(self.time_bin * self.time_interval))
         for siteName in self.entries():
             if self.data[siteName]['value'] is not None:
-                value = self.data[siteName]['value']
+                value = self.data[siteName]['value'] * 100.0
             else:
                 value = -1.0
             if ( self.data[siteName]['status'] == "ok" ):
@@ -99,7 +99,7 @@ class ssbMetric:
                 colour = "white"
             url = URL_JOB_DASHBOARD_HC_SITE % siteName
             #
-            file.write("%s\t%s\t%s\t%s\t%s\n" %
+            file.write("%s\t%s\t%.1f\t%s\t%s\n" %
                 (timeStamp, siteName, value, colour, url))
 
     def updateSSB(self):
@@ -298,7 +298,9 @@ class ssbMetric:
                     else:
                         status = "warning"
                         statusCount[1] += 1
-                logging.debug("HC eval, %s: %s" % (siteStruct['name'], status))
+                logging.debug("HC eval, %s: %s s-u/t-c-u=%d/%d/%d/%d/%d" %
+                    (siteStruct['name'], status, sumSucces, sumUnsucc,
+                    sumTerm, sumCancel, sumUnknown))
             elif ( sumTerm > 0 ) or ( siteStruct['running'] > 0 ):
                 status = "unknown"
                 value = None
