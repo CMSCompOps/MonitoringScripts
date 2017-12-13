@@ -245,6 +245,8 @@ class ssbMetric:
             (self.metric_name, UTCStart.replace("+", " ")))
         urlHandle = None
         try:
+            # job-dashboard has summary counts in only 10 minute granularity,
+            #    so 15min will be expanded to 20min by the dashboard
             requestObj = urllib2.Request(URL_JOB_DASHBOARD_HC,
                                          headers={'Accept':'application/json'})
             urlHandle = urllib2.urlopen( requestObj )
@@ -516,23 +518,22 @@ def cleanHCcache(timeStamp, qhourFlag, hourFlag, qdayFlag, dayFlag):
                     # only files older than 10 minutes are eligible for cleanup
                     timeBin = int(fileName[tbIndex:])
                     if ( qhourFlag and ( fileName[:13] == "hc15min.json_" )):
-                       if ( timeBin > int( timeStamp / 900 ) - 8 ):
+                       if ( timeBin >= int( timeStamp / 900 ) - 9 ):
                            continue
                     elif ( hourFlag and ( fileName[:13] == "hc1hour.json_" )):
-                       if ( timeBin > int( timeStamp / 3600 ) - 8 ):
+                       if ( timeBin >= int( timeStamp / 3600 ) - 8 ):
                            continue
                     elif ( qdayFlag and ( fileName[:13] == "hc6hour.json_" )):
-                       if ( timeBin > int( timeStamp / 21600 ) - 6 ):
+                       if ( timeBin >= int( timeStamp / 21600 ) - 6 ):
                            continue
                     elif ( dayFlag and ( fileName[:12] == "hc1day.json_" )):
-                       if ( timeBin > int( timeStamp / 86400 ) - 2 ):
+                       if ( timeBin >= int( timeStamp / 86400 ) - 2 ):
                            continue
                     else:
                        continue
                     logging.info("[I] Deleting file %s from JSON cache" %
                                  fileName)
-                    print("would delete file %s" % fileName)
-                    #os.unlink(filePath)
+                    os.unlink(filePath)
 # ########################################################################### #
 
 
