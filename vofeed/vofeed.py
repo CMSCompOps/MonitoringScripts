@@ -19,7 +19,7 @@ import htcondor
 
 
 
-VOFD_VERSION = "v1.01.05"
+VOFD_VERSION = "v1.01.06"
 #VOFD_OUTPUT_FILE = "vofeed.xml"
 #VOFD_IN_USE_FILE = "in_use.txt"
 #VOFD_CACHE_DIR = "."
@@ -337,22 +337,22 @@ def vofd_phedex():
     # ############################################################## #
     # fill vofdTopology object with SE/SRMv2 information from PhEDEx #
     # ############################################################## #
-    URL_PHEDEX_SENAME = 'https://cmsweb.cern.ch/phedex/datasvc/json/prod/senames?protocol=srmv2'
+    URL_PHEDEX_LFN2PFN = 'https://cmsweb.cern.ch/phedex/datasvc/json/prod/lfn2pfn?node=T*&lfn=/store/data&lfn=/store/hidata&lfn=/store/mc&lfn=/store/himc&lfn=/store/relval&lfn=/store/hirelval&lfn=/store/user&lfn=/store/group&lfn=/store/results&lfn=/store/unmerged&lfn=/store/temp&lfn=/store/temp/user&lfn=/store/backfill/1&lfn=/store/backfill/2&lfn=/store/generator&lfn=/store/local&protocol=srmv2&custodial=n'
 
-    # get list of CMS sites from SiteDB:
-    # ==================================
-    print("Querying PhEDEx for SRMv2 SE name information")
+    # get list of LFN-to-PFN translations for all sites:
+    # ==================================================
+    print("Querying PhEDEx for SRMv2 LFN-to-PFN translations")
     urlHandle = None
     try:
-        request = urllib2.Request(URL_PHEDEX_SENAME,
+        request = urllib2.Request(URL_PHEDEX_LFN2PFN,
                               headers={'Accept':'application/json'})
         urlHandle = urllib2.urlopen( request )
         myData = urlHandle.read()
         #
         # sanity check:
-        if (( myData.count("T0_") < 2 ) or ( myData.count("T1_") < 10 ) or
-            ( myData.count("T2_") < 48 ) or ( myData.count("T3_") < 16 )):
-            raise IOError("PhEDEx SRMv2 data failed sanity check")
+        if (( myData.count("T0_") < 24 ) or ( myData.count("T1_") < 160 ) or
+            ( myData.count("T2_") < 440 ) or ( myData.count("T3_") < 250 )):
+            raise IOError("PhEDEx LFN2PFN data failed sanity check")
         #
         # update cache:
         try:
@@ -368,41 +368,53 @@ def vofd_phedex():
             if renameFlag:
                 os.rename("%s/cache_PhEDEx.json_new" % VOFD_CACHE_DIR,
                     "%s/cache_PhEDEx.json" % VOFD_CACHE_DIR)
-                print("   cache of PhEDEx SRMv2 SE name updated")
+                print("   cache of PhEDEx SRMv2 LFN-to-PFN data updated")
             del renameFlag
         except:
             pass
     except:
-        print("   failed to fetch PhEDEx SRMv2 SE name data")
+        print("   failed to fetch PhEDEx SRMv2 LFN-to-PFN translation data")
         try:
             myFile = open("%s/cache_PhEDEx.json" % VOFD_CACHE_DIR, 'r')
             try:
                 myData = myFile.read()
-                print("   using cached PhEDEx SRMv2 SE name data")
+                print("   using cached PhEDEx SRMv2 LFN-to-PFN data")
             except:
-                print("   failed to access cached PhEDEx SRMv2 SE name data")
+                print("   failed to access cached PhEDEx SRMv2 LFN-to-PFN data")
                 return
             finally:
                 myFile.close()
                 del myFile
         except:
-            print("   no PhEDEx SRMv2 SE name cache available")
+            print("   no PhEDEx SRMv2 SRMv2 LFN-to-PFN cache available")
             return
     finally:
         if urlHandle is not None:
             urlHandle.close()
     del urlHandle
     #
-    # unpack JSON data of PhEDEx SRMv2 SE name information:
+    # unpack JSON data of PhEDEx SRMv2 LFN-to-PFN translation:
     phedex = json.loads( myData )
     
     # PhEDEx provides a snapshot in time:
-    senames = phedex['phedex']['senames']
+    lfn2psn = phedex['phedex']['mapping']
 
-    for entry in senames:
+    for entry in lfn2psn:
+        if (( entry['node'] is None ) or ( entry['pfn'] is None )):
+            continue
         phedex_site = entry['node']
-        phedex_host = entry['sename']
-
+        phedex_pfn = entry['pfn']
+        #
+        phedex_prot = phedex_pfn.split("://")[0]
+        if ( phedex_prot == phedex_pfn ):
+            phedex_prot = "srm"
+            phedex_epnt = phedex_pfn.split("/")[0]
+        else:
+            phedex_epnt = phedex_pfn.split("://")[1].split("/")[0]
+        phedex_host = phedex_epnt.split(":")[0]
+        if ( phedex_epnt == phedex_host ):
+            phedex_epnt = ""
+        #
         # remove any "_Disk", "_Buffer", and "_MSS" from site names
         phedex_site = phedex_site.replace('_Disk','')
         phedex_site = phedex_site.replace('_Buffer','')
@@ -411,9 +423,11 @@ def vofd_phedex():
         #print("SE: %s\t%s" % (phedex_site, phedex_host))
         if (( phedex_site == "T1_US_FNAL" ) and
             ( phedex_host == "cmslmon.fnal.gov" )):
-            glbTopology.addResource(phedex_site, "", phedex_host, "SRM", False)
+            phedex_prod = False
         else:
-            glbTopology.addResource(phedex_site, "", phedex_host, "SRM")
+            phedex_prod = True
+        glbTopology.addResource(phedex_site, "", phedex_host, "SRM",
+                                phedex_prod, "", "", phedex_epnt)
 # ########################################################################### #
 
 
@@ -505,8 +519,8 @@ def vofd_glideinWMSfactory():
         #
         for classAd in myData:
             gridsite = classAd['GLIDEIN_ResourceName']
-            host = classAd['GLIDEIN_Gatekeeper']
-            host = host.split()[-1].split(":")[0]
+            gkeeper = classAd['GLIDEIN_Gatekeeper'].split()[-1]
+            host = gkeeper.split(":")[0]
             ceType = "CE"
             if classAd['GLIDEIN_GridType'] == 'cream':
                 ceType = "CREAM-CE"
@@ -517,12 +531,14 @@ def vofd_glideinWMSfactory():
             elif ( classAd['GLIDEIN_GridType'].find('gt') == 0 ):
                 ceType = "GLOBUS"
             #
+            endpoint = gkeeper.split("/")[0]
+            if ( endpoint == host ):
+                endpoint = ""
             queue = ""
-            batch = classAd['GLIDEIN_Gatekeeper'].split()[-1]
-            if ( batch.find("/") <= 0 ):
+            if ( gkeeper.find("/") <= 0 ):
                 batch = ""
             else:
-                batch = batch.split("/")[1]
+                batch = gkeeper.split("/")[1]
                 if ( batch.find("-") <= 0 ):
                     batch = ""
                 else:
@@ -540,10 +556,10 @@ def vofd_glideinWMSfactory():
             #print("CE: %s\t%s\t%s\t%s\t%s" %
             #    (gridsite, classAd['GLIDEIN_CMSSite'], host, ceType, queue))
             glbTopology.addResource(classAd['GLIDEIN_CMSSite'], gridsite,
-                host, ceType, factory['prd'], queue, batch)
+                host, ceType, factory['prd'], queue, batch, endpoint)
             if ( classAd['GLIDEIN_CMSSite'] == "T2_CH_CERN" ):
                 glbTopology.addResource("T3_CH_CERN_CAF", gridsite,
-                    host, ceType, factory['prd'], queue, batch)
+                    host, ceType, factory['prd'], queue, batch, endpoint)
 # ########################################################################### #
 
 
