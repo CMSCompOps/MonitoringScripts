@@ -19,7 +19,7 @@ import htcondor
 
 
 
-VOFD_VERSION = "v1.01.06"
+VOFD_VERSION = "v1.01.07pp"
 #VOFD_OUTPUT_FILE = "vofeed.xml"
 #VOFD_IN_USE_FILE = "in_use.txt"
 #VOFD_CACHE_DIR = "."
@@ -220,9 +220,9 @@ def vofd_sitedb():
     siteIndex = columns.index('alias')
 
     myDict = {}
-    # patch to advance Purdue-Hadoop grid site ahead of the SiteDB list:
+    # patch to advance Purdue-Hammer grid site ahead of the SiteDB list:
     myDict['Purdue'] = {'cmssite':'T2_US_Purdue', 'gridsite':[]}
-    myDict['Purdue']['gridsite'].append('Purdue-Hadoop')
+    myDict['Purdue']['gridsite'].append('Purdue-Hammer')
     for result in sitedb['result']:
         sitedbname = result[nameIndex]
         if not myDict.has_key(sitedbname):
@@ -521,6 +521,15 @@ def vofd_glideinWMSfactory():
             gridsite = classAd['GLIDEIN_ResourceName']
             gkeeper = classAd['GLIDEIN_Gatekeeper'].split()[-1]
             host = gkeeper.split(":")[0]
+            #-start of patch for IN2P3 to move Tier-2 to IP-aliases
+            if ( classAd['GLIDEIN_CMSSite'] == "T2_FR_CCIN2P3"):
+                if ( host == "cccreamceli01.in2p3.fr" ):
+                    host = "cccreamceli01-t2.in2p3.fr"
+                elif ( host == "cccreamceli03.in2p3.fr" ):
+                    host = "cccreamceli03-t2.in2p3.fr"
+                elif ( host == "cccreamceli04.in2p3.fr" ):
+                    host = "cccreamceli04-t2.in2p3.fr"
+            #-end of patch
             ceType = "CE"
             if classAd['GLIDEIN_GridType'] == 'cream':
                 ceType = "CREAM-CE"
@@ -555,8 +564,18 @@ def vofd_glideinWMSfactory():
 
             #print("CE: %s\t%s\t%s\t%s\t%s" %
             #    (gridsite, classAd['GLIDEIN_CMSSite'], host, ceType, queue))
-            glbTopology.addResource(classAd['GLIDEIN_CMSSite'], gridsite,
-                host, ceType, factory['prd'], queue, batch, endpoint)
+            #-start of patch for Rome to test Singularity on cmsgshort queue
+            #glbTopology.addResource(classAd['GLIDEIN_CMSSite'], gridsite,
+            #    host, ceType, factory['prd'], queue, batch, endpoint)
+            if (( classAd['GLIDEIN_CMSSite'] == "T2_IT_Rome" ) and
+                ( host == "cmsrm-cream02.roma1.infn.it" ) and
+                ( queue == "cmsglong" )):
+                glbTopology.addResource(classAd['GLIDEIN_CMSSite'], gridsite,
+                    host, ceType, False, "cmsgshort", batch)
+            else:
+                glbTopology.addResource(classAd['GLIDEIN_CMSSite'], gridsite,
+                    host, ceType, factory['prd'], queue, batch)
+            #-end of patch
             if ( classAd['GLIDEIN_CMSSite'] == "T2_CH_CERN" ):
                 glbTopology.addResource("T3_CH_CERN_CAF", gridsite,
                     host, ceType, factory['prd'], queue, batch, endpoint)
@@ -571,7 +590,7 @@ def vofd_write_xml():
     FIRST_PASS_SITES = [
        {'cmssite': "T0_CH_CERN", 'gridsite': "CERN-PROD"},
        {'cmssite': "T2_CH_CSCS", 'gridsite': "CSCS-LCG2"},
-       {'cmssite': "T2_US_Purdue", 'gridsite': "Purdue-Hadoop"},
+       {'cmssite': "T2_US_Purdue", 'gridsite': "Purdue-Hammer"},
        {'cmssite': "T2_US_Nebraska", 'gridsite': "Nebraska"},
     ]
     SAM3_GROUPS = {
