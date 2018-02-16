@@ -19,7 +19,7 @@ import htcondor
 
 
 
-VOFD_VERSION = "v1.01.07pp"
+VOFD_VERSION = "v1.01.08pp"
 #VOFD_OUTPUT_FILE = "vofeed.xml"
 #VOFD_IN_USE_FILE = "in_use.txt"
 #VOFD_CACHE_DIR = "."
@@ -85,6 +85,9 @@ class vofdTopology:
                 print("no gridsite, skipping %s(%s) at %s" %
                     (host, flavour, cmssite))
                 return
+        elif ( len(self.topo[cmssite]) == 0 ):
+            self.topo[cmssite].append( {'gsite': gridsite, 'rsrcs': []} )
+            index = 0
         else:
             for index in range( len(self.topo[cmssite]) ):
                 if ( self.topo[cmssite][index]['gsite'] == gridsite ):
@@ -241,9 +244,7 @@ def vofd_sitedb():
     # add CMS site to VO-feed topology:
     for entry in myDict.keys():
         if ( myDict[entry]['cmssite'] != "" ):
-            if ( len(myDict[entry]['gridsite']) == 0 ):
-               glbTopology.addSite(myDict[entry]['cmssite'])
-            else:
+            if ( len(myDict[entry]['gridsite']) != 0 ):
                 for indx in range( len(myDict[entry]['gridsite']) ):
                     glbTopology.addSite(myDict[entry]['cmssite'],
                                         myDict[entry]['gridsite'][indx])
