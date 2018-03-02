@@ -565,18 +565,8 @@ def vofd_glideinWMSfactory():
 
             #print("CE: %s\t%s\t%s\t%s\t%s" %
             #    (gridsite, classAd['GLIDEIN_CMSSite'], host, ceType, queue))
-            #-start of patch for Rome to test Singularity on cmsgshort queue
-            #glbTopology.addResource(classAd['GLIDEIN_CMSSite'], gridsite,
-            #    host, ceType, factory['prd'], queue, batch, endpoint)
-            if (( classAd['GLIDEIN_CMSSite'] == "T2_IT_Rome" ) and
-                ( host == "cmsrm-cream02.roma1.infn.it" ) and
-                ( queue == "cmsglong" )):
-                glbTopology.addResource(classAd['GLIDEIN_CMSSite'], gridsite,
-                    host, ceType, False, "cmsgshort", batch)
-            else:
-                glbTopology.addResource(classAd['GLIDEIN_CMSSite'], gridsite,
-                    host, ceType, factory['prd'], queue, batch)
-            #-end of patch
+            glbTopology.addResource(classAd['GLIDEIN_CMSSite'], gridsite,
+                host, ceType, factory['prd'], queue, batch, endpoint)
             if ( classAd['GLIDEIN_CMSSite'] == "T2_CH_CERN" ):
                 glbTopology.addResource("T3_CH_CERN_CAF", gridsite,
                     host, ceType, factory['prd'], queue, batch, endpoint)
