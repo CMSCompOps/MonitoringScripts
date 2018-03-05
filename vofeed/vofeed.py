@@ -414,7 +414,10 @@ def vofd_phedex():
             phedex_epnt = phedex_pfn.split("://")[1].split("/")[0]
         phedex_host = phedex_epnt.split(":")[0]
         if ( phedex_epnt == phedex_host ):
-            phedex_epnt = ""
+            if ( phedex_prot == "gsiftp" ):
+                phedex_epnt = phedex_host + ":2811"
+            else:
+                phedex_epnt = ""
         #
         # remove any "_Disk", "_Buffer", and "_MSS" from site names
         phedex_site = phedex_site.replace('_ECHO_Disk','')
