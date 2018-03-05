@@ -417,6 +417,7 @@ def vofd_phedex():
             phedex_epnt = ""
         #
         # remove any "_Disk", "_Buffer", and "_MSS" from site names
+        phedex_site = phedex_site.replace('_ECHO_Disk','')
         phedex_site = phedex_site.replace('_Disk','')
         phedex_site = phedex_site.replace('_Buffer','')
         phedex_site = phedex_site.replace('_Export','')
