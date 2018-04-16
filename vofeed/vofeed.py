@@ -19,7 +19,7 @@ import htcondor
 
 
 
-VOFD_VERSION = "v1.01.08pp"
+VOFD_VERSION = "v1.01.09p"
 #VOFD_OUTPUT_FILE = "vofeed.xml"
 #VOFD_IN_USE_FILE = "in_use.txt"
 #VOFD_CACHE_DIR = "."
@@ -457,7 +457,7 @@ def vofd_glideinWMSfactory():
         collector = None
         try:
             collector = htcondor.Collector(factory['uri'])
-            classAds = collector.query(htcondor.AdTypes.Any, "(MyType =?= \"glidefactory\") && (GLIDEIN_CMSSite isnt Undefined) && (GLIDEIN_ResourceName isnt Undefined) && (GLIDEIN_Gatekeeper isnt Undefined) && (GLIDEIN_GridType isnt Undefined)", ['GLIDEIN_CMSSite', 'GLIDEIN_ResourceName', 'GLIDEIN_Gatekeeper', 'GLIDEIN_GridType', 'GLIDEIN_GlobusRSL'])
+            classAds = collector.query(htcondor.AdTypes.Any, "(MyType =?= \"glidefactory\") && (GLIDEIN_CMSSite isnt Undefined) && (GLIDEIN_ResourceName isnt Undefined) && (GLIDEIN_Gatekeeper isnt Undefined) && (GLIDEIN_GridType isnt Undefined) && (GLIDEIN_Supported_VOs isnt Undefined)", ['GLIDEIN_CMSSite', 'GLIDEIN_ResourceName', 'GLIDEIN_Gatekeeper', 'GLIDEIN_GridType', 'GLIDEIN_GlobusRSL', 'GLIDEIN_In_Downtime', 'GLIDEIN_Supported_VOs'])
             # catch HT Condor's faulty error handling:
             if not classAds:
                 raise IOError("Empty Collector ClassAd List")
@@ -470,11 +470,17 @@ def vofd_glideinWMSfactory():
                     globusRSL = classAd['GLIDEIN_GlobusRSL']
                 else:
                     globusRSL = ""
+                if 'GLIDEIN_In_Downtime' in classAd:
+                    inDowntime = classAd['GLIDEIN_In_Downtime']
+                else:
+                    inDowntime = "False"
                 myData.append( {
                     'GLIDEIN_ResourceName': classAd['GLIDEIN_ResourceName'],
                     'GLIDEIN_GridType': classAd['GLIDEIN_GridType'],
                     'GLIDEIN_Gatekeeper': classAd['GLIDEIN_Gatekeeper'],
                     'GLIDEIN_GlobusRSL': globusRSL,
+                    'GLIDEIN_In_Downtime': inDowntime,
+                    'GLIDEIN_Supported_VOs': classAd['GLIDEIN_Supported_VOs'],
                     'GLIDEIN_CMSSite': classAd['GLIDEIN_CMSSite']
                     } )
             #
@@ -523,6 +529,11 @@ def vofd_glideinWMSfactory():
         del collector
         #
         for classAd in myData:
+            if ( classAd['GLIDEIN_In_Downtime'] == "True" ):
+                # exclude entries set to indefinite downtime by factory team
+                continue
+            if 'CMS' not in classAd['GLIDEIN_Supported_VOs']:
+                continue
             gridsite = classAd['GLIDEIN_ResourceName']
             gkeeper = classAd['GLIDEIN_Gatekeeper'].split()[-1]
             host = gkeeper.split(":")[0]
@@ -532,8 +543,6 @@ def vofd_glideinWMSfactory():
                     host = "cccreamceli01-t2.in2p3.fr"
                 elif ( host == "cccreamceli03.in2p3.fr" ):
                     host = "cccreamceli03-t2.in2p3.fr"
-                elif ( host == "cccreamceli04.in2p3.fr" ):
-                    host = "cccreamceli04-t2.in2p3.fr"
             #-end of patch
             ceType = "CE"
             if classAd['GLIDEIN_GridType'] == 'cream':
