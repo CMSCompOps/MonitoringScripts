@@ -1398,7 +1398,7 @@ def sswp_sitedb():
     # ############################################################# #
     # fill global topology object with site information from SiteDB #
     # ############################################################# #
-    URL_SITEDB_SITES = 'https://cmsweb.cern.ch/sitedb/data/prod/site-names'
+    URL_SITEDB_SITES = 'https://cmsweb.cern.ch:8443/sitedb/data/prod/site-names'
 
     # get list of CMS sites from SiteDB:
     # ==================================
