@@ -158,7 +158,7 @@ def vofd_sitedb():
     # ########################################################## #
     # fill vofdTopology object with site information from SiteDB #
     # ########################################################## #
-    URL_SITEDB_SITES = 'https://cmsweb.cern.ch/sitedb/data/prod/site-names'
+    URL_SITEDB_SITES = 'https://cmsweb.cern.ch:8443/sitedb/data/prod/site-names'
 
     # get list of CMS sites from SiteDB:
     # ==================================
@@ -254,7 +254,7 @@ def vofd_sitedb():
     # ############################################################### #
     # fill vofdTopology object with SE/xrootd information from SiteDB #
     # ############################################################### #
-    URL_SITEDB_XROOTD = 'https://cmsweb.cern.ch/sitedb/data/prod/site-resources'
+    URL_SITEDB_XROOTD = 'https://cmsweb.cern.ch:8443/sitedb/data/prod/site-resources'
 
     # get list of xrootd endpoints from SiteDB:
     # =========================================
@@ -338,7 +338,7 @@ def vofd_phedex():
     # ############################################################## #
     # fill vofdTopology object with SE/SRMv2 information from PhEDEx #
     # ############################################################## #
-    URL_PHEDEX_LFN2PFN = 'https://cmsweb.cern.ch/phedex/datasvc/json/prod/lfn2pfn?node=T*&lfn=/store/data&lfn=/store/hidata&lfn=/store/mc&lfn=/store/himc&lfn=/store/relval&lfn=/store/hirelval&lfn=/store/user&lfn=/store/group&lfn=/store/results&lfn=/store/unmerged&lfn=/store/temp&lfn=/store/temp/user&lfn=/store/backfill/1&lfn=/store/backfill/2&lfn=/store/generator&lfn=/store/local&protocol=srmv2&custodial=n'
+    URL_PHEDEX_LFN2PFN = 'https://cmsweb.cern.ch:8443/phedex/datasvc/json/prod/lfn2pfn?node=T*&lfn=/store/data&lfn=/store/hidata&lfn=/store/mc&lfn=/store/himc&lfn=/store/relval&lfn=/store/hirelval&lfn=/store/user&lfn=/store/group&lfn=/store/results&lfn=/store/unmerged&lfn=/store/temp&lfn=/store/temp/user&lfn=/store/backfill/1&lfn=/store/backfill/2&lfn=/store/generator&lfn=/store/local&protocol=srmv2&custodial=n'
 
     # get list of LFN-to-PFN translations for all sites:
     # ==================================================
