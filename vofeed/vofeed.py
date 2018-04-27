@@ -19,7 +19,7 @@ import htcondor
 
 
 
-VOFD_VERSION = "v1.01.09p"
+VOFD_VERSION = "v1.01.10p"
 #VOFD_OUTPUT_FILE = "vofeed.xml"
 #VOFD_IN_USE_FILE = "in_use.txt"
 #VOFD_CACHE_DIR = "."
@@ -413,6 +413,8 @@ def vofd_phedex():
         else:
             phedex_epnt = phedex_pfn.split("://")[1].split("/")[0]
         phedex_host = phedex_epnt.split(":")[0]
+        if ( phedex_host == "" ):
+            continue
         if ( phedex_epnt == phedex_host ):
             if ( phedex_prot == "gsiftp" ):
                 phedex_epnt = phedex_host + ":2811"
