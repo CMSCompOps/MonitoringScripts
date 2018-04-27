@@ -19,7 +19,7 @@ import htcondor
 
 
 
-VOFD_VERSION = "v1.01.10p"
+VOFD_VERSION = "v1.01.11"
 #VOFD_OUTPUT_FILE = "vofeed.xml"
 #VOFD_IN_USE_FILE = "in_use.txt"
 #VOFD_CACHE_DIR = "."
@@ -539,13 +539,6 @@ def vofd_glideinWMSfactory():
             gridsite = classAd['GLIDEIN_ResourceName']
             gkeeper = classAd['GLIDEIN_Gatekeeper'].split()[-1]
             host = gkeeper.split(":")[0]
-            #-start of patch for IN2P3 to move Tier-2 to IP-aliases
-            if ( classAd['GLIDEIN_CMSSite'] == "T2_FR_CCIN2P3"):
-                if ( host == "cccreamceli01.in2p3.fr" ):
-                    host = "cccreamceli01-t2.in2p3.fr"
-                elif ( host == "cccreamceli03.in2p3.fr" ):
-                    host = "cccreamceli03-t2.in2p3.fr"
-            #-end of patch
             ceType = "CE"
             if classAd['GLIDEIN_GridType'] == 'cream':
                 ceType = "CREAM-CE"
