@@ -19,7 +19,7 @@ import htcondor
 
 
 
-VOFD_VERSION = "v1.01.11"
+VOFD_VERSION = "v1.01.12p"
 #VOFD_OUTPUT_FILE = "vofeed.xml"
 #VOFD_IN_USE_FILE = "in_use.txt"
 #VOFD_CACHE_DIR = "."
@@ -64,7 +64,7 @@ class vofdTopology:
         self.topo = {}
 
     def addSite(self, cmssite, gridsite=""):
-        if not self.topo.has_key(cmssite):
+        if cmssite not in self.topo:
             self.topo[cmssite] = []
         if ( gridsite != "" ):
             for site in self.topo[cmssite]:
@@ -74,7 +74,7 @@ class vofdTopology:
 
     def addResource(self, cmssite, gridsite,
                     host, flavour, prod=True, queue="", batch="", endpoint=""):
-        if not self.topo.has_key(cmssite):
+        if cmssite not in self.topo:
             print("cmssite unknown, skipping %s(%s) at %s" %
                 (host, flavour, cmssite))
             return
@@ -228,7 +228,7 @@ def vofd_sitedb():
     myDict['Purdue']['gridsite'].append('Purdue-Hammer')
     for result in sitedb['result']:
         sitedbname = result[nameIndex]
-        if not myDict.has_key(sitedbname):
+        if sitedbname not in myDict:
             myDict[sitedbname] = {'cmssite':'', 'gridsite':[]}
         if ( result[typeIndex] == 'cms' ):
             cmssite = result[siteIndex]
@@ -316,7 +316,7 @@ def vofd_sitedb():
 
     for result in sitedb['result']:
         sitedbname = result[nameIndex]
-        if not myDict.has_key(sitedbname):
+        if sitedbname not in myDict:
             continue
         if ( result[typeIndex] == 'xrootd' ):
             endpoint = result[fqdnIndex]
@@ -573,8 +573,16 @@ def vofd_glideinWMSfactory():
 
             #print("CE: %s\t%s\t%s\t%s\t%s" %
             #    (gridsite, classAd['GLIDEIN_CMSSite'], host, ceType, queue))
-            glbTopology.addResource(classAd['GLIDEIN_CMSSite'], gridsite,
-                host, ceType, factory['prd'], queue, batch, endpoint)
+            #-LML DESY SL 6 patch, start !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            #glbTopology.addResource(classAd['GLIDEIN_CMSSite'], gridsite,
+            #    host, ceType, factory['prd'], queue, batch, endpoint)
+            # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            if ((( host != "grid-arcce0.desy.de" ) and
+                 ( host != "grid-arcce1.desy.de" )) or
+                (( queue != "grid" ) and ( queue != "gridsl6" ))):
+                glbTopology.addResource(classAd['GLIDEIN_CMSSite'], gridsite,
+                    host, ceType, factory['prd'], queue, batch, endpoint)
+            #-LML DESY SL 6 patch, end !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             if ( classAd['GLIDEIN_CMSSite'] == "T2_CH_CERN" ):
                 glbTopology.addResource("T3_CH_CERN_CAF", gridsite,
                     host, ceType, factory['prd'], queue, batch, endpoint)
