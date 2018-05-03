@@ -19,7 +19,7 @@ import htcondor
 
 
 
-VOFD_VERSION = "v1.01.12p"
+VOFD_VERSION = "v1.01.13p"
 #VOFD_OUTPUT_FILE = "vofeed.xml"
 #VOFD_IN_USE_FILE = "in_use.txt"
 #VOFD_CACHE_DIR = "."
@@ -444,11 +444,10 @@ def vofd_glideinWMSfactory():
     # fill vofdTopology object with CE information from glide-in WMS factory #
     # ###################################################################### #
     DICT_GLIDEIN_FACTORIES = [
-       {'lbl': "UCSD",   'uri': "gfactory-1.t2.ucsd.edu",   'prd': True},
-       {'lbl': "OSG",    'uri': "glidein.grid.iu.edu",      'prd': True},
-       {'lbl': "CERN",   'uri': "vocms0805.cern.ch",        'prd': True},
-       {'lbl': "FNAL",   'uri': "cmsgwms-factory.fnal.gov", 'prd': True},
-       {'lbl': "OSGint", 'uri': "glidein-itb.grid.iu.edu",  'prd': False} ]
+       {'lbl': "UCSD",    'uri': "gfactory-1.t2.ucsd.edu",   'prd': True},
+       {'lbl': "CERN",    'uri': "vocms0805.cern.ch",        'prd': True},
+       {'lbl': "CERNint", 'uri': "vocms0204.cern.ch",        'prd': False},
+       {'lbl': "FNAL",    'uri': "cmsgwms-factory.fnal.gov", 'prd': True} ]
 
     # get list of CEs used by CMS from the glide-in WMS factories:
     # ============================================================
