@@ -12,9 +12,9 @@ sites_admins_api = '/sitedb/data/prod/site-responsibilities'
 site_names_api = '/sitedb/data/prod/site-names'
 gitlab_token = "****************"
 admin_roles = ['Site Executive', 'Site Admin', 'Admin']
-group_url = 'https://gitlab.cern.ch/api/v3/groups/4099/projects?per_page=100&page=%s&private_token=%s'
-user_url = 'https://gitlab.cern.ch/api/v3/users?username=%s&private_token=%s'
-project_members_url = 'https://gitlab.cern.ch/api/v3/projects/%s/members?private_token=%s'
+group_url = 'https://gitlab.cern.ch/api/v4/groups/4099/projects?per_page=100&page=%s&private_token=%s'
+user_url = 'https://gitlab.cern.ch/api/v4/users?username=%s&private_token=%s'
+project_members_url = 'https://gitlab.cern.ch/api/v4/projects/%s/members?private_token=%s'
 headers = {"Accept": "application/json"}
 
 
@@ -67,5 +67,5 @@ for project in group_projects:
 	project_members = [member['username'] for member in project_members]
 	for admin in admins:
 		if project['name'] == admin[1] and admin[0] not in project_members:
-			subprocess.call('curl --header "PRIVATE-TOKEN: %s" -X POST "https://gitlab.cern.ch/api/v3/projects/%s/members?user_id=%s&access_level=30"' 
+			subprocess.call('curl --header "PRIVATE-TOKEN: %s" -X POST "https://gitlab.cern.ch/api/v4/projects/%s/members?user_id=%s&access_level=30"' 
 				%(gitlab_token, project['id'], admin[3]), shell=True)
