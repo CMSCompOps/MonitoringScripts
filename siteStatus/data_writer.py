@@ -1652,7 +1652,7 @@ def sswp_osg_downtime():
     # ################################################################ #
     # fill sswp_sites site element arrays with OSG downtime informaton #
     # ################################################################ #
-    URL_OSG_DOWNTIME = "http://myosg.grid.iu.edu/rgdowntime/xml?summary_attrs_showrsvstatus=on&downtime_attrs_showpast=39&summary_attrs_showfqdn=on&all_resources=on&gridtype=on&gridtype_1=on&active=on&active_value=1&has_wlcg=on"
+    URL_OSG_DOWNTIME = "http://my.opensciencegrid.org/rgdowntime/xml?summary_attrs_showrsvstatus=on&downtime_attrs_showpast=39&summary_attrs_showfqdn=on&all_resources=on&gridtype=on&gridtype_1=on&active=on&active_value=1&has_wlcg=on"
 
     # get list of all CMS impacting downtimes from OSG:
     # =================================================
