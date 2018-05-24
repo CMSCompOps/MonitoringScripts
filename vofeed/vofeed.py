@@ -19,7 +19,7 @@ import htcondor
 
 
 
-VOFD_VERSION = "v1.01.13p"
+VOFD_VERSION = "v1.01.14p"
 #VOFD_OUTPUT_FILE = "vofeed.xml"
 #VOFD_IN_USE_FILE = "in_use.txt"
 #VOFD_CACHE_DIR = "."
@@ -435,6 +435,10 @@ def vofd_phedex():
             phedex_prod = True
         glbTopology.addResource(phedex_site, "", phedex_host, "SRM",
                                 phedex_prod, "", "", phedex_epnt)
+        if (( phedex_site == "T2_CH_CERN" ) and
+            ( phedex_host == "eoscmsftp.cern.ch" )):
+            glbTopology.addResource("T0_CH_CERN", "", phedex_host, "SRM",
+                                    phedex_prod, "", "", phedex_epnt)
 # ########################################################################### #
 
 
@@ -582,6 +586,10 @@ def vofd_glideinWMSfactory():
                 glbTopology.addResource(classAd['GLIDEIN_CMSSite'], gridsite,
                     host, ceType, factory['prd'], queue, batch, endpoint)
             #-LML DESY SL 6 patch, end !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            if (( classAd['GLIDEIN_CMSSite'] == "T2_CH_CERN" ) and
+                ( factory['prd'] == True )):
+                glbTopology.addResource("T0_CH_CERN", gridsite,
+                    host, ceType, True, queue, batch, endpoint)
             if ( classAd['GLIDEIN_CMSSite'] == "T2_CH_CERN" ):
                 glbTopology.addResource("T3_CH_CERN_CAF", gridsite,
                     host, ceType, factory['prd'], queue, batch, endpoint)
