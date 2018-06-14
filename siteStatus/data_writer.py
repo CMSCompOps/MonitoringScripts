@@ -67,6 +67,8 @@ class sswpTopology:
             return "CE"
         elif ( type.find("SRM") >= 0 ):
             return "SE"
+        elif ( type.find("XROOTD") >= 0 ):
+            return "XRD"
         elif ( type.lower() == "glexec" ):
             return "CE"
         else:
@@ -86,6 +88,8 @@ class sswpTopology:
             pass
         elif ( type.find("SRM") >= 0 ):
             pass
+        elif ( type == "XROOTD" ):
+            type = "XRD"
         else:
             return
         host = host.lower()
@@ -117,6 +121,10 @@ class sswpTopology:
             type = "SRM"
         elif ( type.lower() == "gridftp" ):
             type = "SRM"
+        elif ( type.lower() == "gsiftp" ):
+            type = "SRM"
+        elif ( type == "XROOTD" ):
+            type = "XRD"
         elif ( type.lower() == "glexec" ):
             type = "CE"
         else:
@@ -1873,6 +1881,7 @@ def sswp_site_downtime():
         # locate relevant downtime vectors:
         ceTuple = ()
         seTuple = ()
+        xrdTuple = ()
         for element in glbTopology.getProdElements(cmssite):
             vector = glbElements.getVector('downtime', element)
             if vector is not None:
@@ -1882,6 +1891,8 @@ def sswp_site_downtime():
                     ceTuple += (vector, )
                 elif ( type == "SE" ):
                     seTuple += (vector, )
+                elif ( type == "XRD" ):
+                    xrdTuple += (vector, )
         #
         # evaluate site downtime status based on element downtime states:
         for bin in range( sswpVector.getDefaultBins15m() ):
@@ -1911,6 +1922,14 @@ def sswp_site_downtime():
                     elif ( dCount > 0 ):
                         code = 'p'
                     elif ( aCount == ceTotal ):
+                        code = 'a'
+            if (( code == 'u' ) or ( code == 'a' )):
+                for vector in xrdTuple:
+                    binCode = vector.getBin(bin)
+                    if ( binCode == 'd' ):
+                        code = 'p'
+                        break
+                    elif ( binCode == 'a' ):
                         code = 'a'
             if ( bin < sswpVector.getDefaultBins() ):
                 glbSites.setBin('downtime', cmssite, bin, code)
@@ -2802,7 +2821,8 @@ def sswp_wlcg_sam_services():
                         {'no': 550, 'desc': "ARC-CEs"},
                         {'no': 1382, 'desc': "HTCONDOR-CEs"},
                         {'no': 1438, 'desc': "GLOBUS-CEs"},
-                        {'no': 1442, 'desc': "SRM"}]
+                        {'no': 1442, 'desc': "SRM"},
+                        {'no': 1494, 'desc': "XROOTD"}]
     #
     ts1 = time.gmtime( glbInfo['timestamp'] - 39*24*60*60)
     ts2 = time.gmtime( glbInfo['timestamp'] + 24*60*60)
