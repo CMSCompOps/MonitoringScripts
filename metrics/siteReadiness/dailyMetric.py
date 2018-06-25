@@ -17,6 +17,7 @@ import sys, os
 import re
 import dateutil.parser
 import pytz
+import random
 
 # Date for generating the daily Metric value
 
@@ -43,12 +44,13 @@ realDateEndStr = realDateEnd.strftime("%Y-%m-%d")
 dateEndStr = dateEnd.strftime("%Y-%m-%d")
 
 atMidnight = (realDateStart\
-            .replace(hour=0, minute=0, second=1, microsecond=0) \
+            .replace(hour=0, minute=random.randint(0,1), second=random.randint(0,59), microsecond=0) \
              ).strftime("%Y-%m-%d %H:%M:%S")
 
 dashboardUrl = "https://dashb-ssb.cern.ch/dashboard/request.py/sitehistory?site=%s#currentView=Site+Readiness&time=custom&start_date="+ realDateStartStr +"&end_date="+ realDateEndStr+"&values=false&spline=false&white=false"
 
 # Column IDs.
+SITE_READINESS_COLUMN_NUMBER = 234
 HAMMERCLOUD_COLUMN_ID = 135
 MAINTENANCE_COLUMN_ID = 121
 SAM_COLUMN_ID = 126
@@ -69,6 +71,7 @@ ACTIVE_T2_LINKS_TO_T1 = 36
 
 #Output file
 OUTPUT_FILE_NAME = os.path.join(sys.argv[2],"siteReadiness.txt")
+OUTPUT_FILE_CORRECTIONS = os.path.join(sys.argv[2],"siteReadiness_POSTREQUEST.txt")
 #Output status
 NOT_READY = "Error"
 READY = "Ok"
@@ -152,8 +155,6 @@ if len(allSites) > 0 :
                 isSiteIgnored = True
         if isSiteIgnored:
             continue
-        if site == "T1_IT_CNAF":
-            print 1
         siteSam = sam.getSiteEntries(site)
         siteHammercloud = hammerCloud.getSiteEntries(site)
         siteMaintenance = maintenace.getSiteEntries(site)
@@ -185,18 +186,46 @@ if len(allSites) > 0 :
         filteredSiteGoodT1LinksFromT2 = filterMetric( siteGoodT1LinksFromT2 ,periodStart,periodEnd)
         filteredSiteGoodT2LinksFromT1 = filterMetric( siteGoodT2LinksFromT1 ,periodStart,periodEnd)
         filteredSiteGoodT2LinksToT1 = filterMetric( siteGoodT2LinksToT1 ,periodStart,periodEnd)
-        filteredSiteActiveT1LinksFromT0 = filterMetric( siteActiveT1LinksFromT0 ,periodStart,periodEnd)
-        filteredSiteActiveT1LinksToFromT1 = filterMetric( siteActiveT1LinksToFromT1 ,periodStart,periodEnd)
-        filteredSiteActiveT1LinksToT2 = filterMetric( siteActiveT1LinksToT2 ,periodStart,periodEnd)
-        filteredSiteActiveT2LinksFromT1 = filterMetric( siteActiveT2LinksFromT1 ,periodStart,periodEnd)
-        filteredSiteActiveT2LinksToT1 = filterMetric( siteActiveT2LinksToT1 ,periodStart,periodEnd)
-        siteFilteredGoodLinks = [filteredSiteGoodT1LinksFromT0, filteredSiteGoodT1LinksFromT1, filteredSiteGoodT1LinksToT1, filteredSiteGoodT1LinksToT2, filteredSiteGoodT1LinksFromT2, filteredSiteGoodT2LinksFromT1, filteredSiteGoodT2LinksToT1 ]
+        filteredSiteActiveT1LinksFromT0 = siteActiveT1LinksFromT0 
+        filteredSiteActiveT1LinksToFromT1 = siteActiveT1LinksToFromT1 
+        filteredSiteActiveT1LinksToT2 =  siteActiveT1LinksToT2 
+        filteredSiteActiveT2LinksFromT1 = siteActiveT2LinksFromT1 
+        filteredSiteActiveT2LinksToT1 = siteActiveT2LinksToT1 
+        #siteFilteredGoodLinks = [filteredSiteGoodT1LinksFromT0, filteredSiteGoodT1LinksFromT1, filteredSiteGoodT1LinksToT1, filteredSiteGoodT1LinksToT2, filteredSiteGoodT1LinksFromT2, filteredSiteGoodT2LinksFromT1, filteredSiteGoodT2LinksToT1 ]
+        siteFilteredGoodLinks = [filteredSiteGoodT1LinksFromT1, filteredSiteGoodT1LinksToT1, filteredSiteGoodT1LinksToT2, filteredSiteGoodT1LinksFromT2, filteredSiteGoodT2LinksFromT1, filteredSiteGoodT2LinksToT1 ]
         hammerCloudNaFlag = True
         samNaFlag = True
         linksFlag = True
         siteTier = sites.getTier(site)
         dailyMetric = READY
-        if siteTier == 1:
+        if siteTier == 0:
+            #Evaluate Hammercloud for the period. Values between 0 and 100
+            # HC must be above 90% for all values
+            for key, entry in filteredSiteHammercloud.iteritems():
+                if entry.value != "n/a":
+                    hammerCloudNaFlag = False
+                    try:
+                        value = float(entry.value)
+                        if value < 90.0 or entry.color == "red":
+                            dailyMetric = NOT_READY
+                    except:
+                        pass
+                else:
+                    hammerCloudNaFlag = True
+            #Evaluate SAM for the period. values between 0 and 100
+            # SAM must be above 90% for all sites.
+            for key, entry in filteredSiteSam.iteritems():
+                if entry.value != "n/a":
+                    samNaFlag = False
+                    try:
+                        value = float(entry.value)
+                        if value < 90.0 or entry.color == "red":
+                            dailyMetric = NOT_READY
+                    except:
+                        pass
+                else:
+                    samNaFlag = True
+        elif siteTier == 1:
             #Evaluate Hammercloud for the period. Values between 0 and 100
             # HC must be above 90% for all values
             for key, entry in filteredSiteHammercloud.iteritems():
@@ -295,14 +324,14 @@ if len(allSites) > 0 :
             #    Active T2 links from T1 > 4
             for key, entry in filteredSiteActiveT2LinksFromT1.iteritems():
                 try:
-                    if int(entry.value) < 4:
+                    if int(entry.value) < 4 or entry.color == 'red':
                         dailyMetric = NOT_READY
                 except:
                     pass
             #    Active T2 links from T1 > 2
             for key, entry in filteredSiteActiveT2LinksToT1.iteritems():
                 try:
-                    if int(entry.value) < 2:
+                    if int(entry.value) < 2 or entry.color == "red":
                         dailyMetric = NOT_READY
                 except:
                     pass
@@ -313,7 +342,7 @@ if len(allSites) > 0 :
                         good, total = re.match("(\d+)/(\d+)", entry.value).groups()
                         good = float(good)
                         total = float(total)
-                        if good/total < 0.5 or good < 1 or entry.color == "red":
+                        if good/total < 0.5 or good < 1 or total < 1 or entry.color == "red":
                             dailyMetric = NOT_READY
                     except:
                         pass
@@ -338,10 +367,17 @@ for metric in allsitesMetric:
     if (not (metric[3] == True and metric[2] == True)):
         dailyMetricEntries.append(dashboard.entry(date = atMidnight, name = metric[0], value = metric[1], color = OUTPUT_COLORS[metric[1]], url = dashboardUrl % metric[0]))
 
+startDateStr = realDateStart.replace(hour=0, minute=0, second=0, microsecond=0).strftime("%Y-%m-%d %H:%M:%S")
+endDateStr = (realDateStart.replace(hour=00, minute=00, second=00, microsecond=0) + timedelta(days=1)).strftime("%Y-%m-%d %H:%M:%S")
+
+
 if len(dailyMetricEntries) > 1:
     outputFile = open(OUTPUT_FILE_NAME, 'w')
+    correctionOutputFile = open(OUTPUT_FILE_CORRECTIONS, 'a')
     for site in dailyMetricEntries:
         outputFile.write(str(site) + '\n')
+        correctionOutputFile.write(("\t".join([startDateStr, endDateStr, str(SITE_READINESS_COLUMN_NUMBER), site.name, site.value, site.color, site.url, "nvalue=0"]))+"\n")
     print "\n--Output written to %s" % OUTPUT_FILE_NAME
+    correctionOutputFile.close()
     outputFile.close()
 
