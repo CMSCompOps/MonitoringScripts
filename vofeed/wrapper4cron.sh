@@ -140,7 +140,7 @@ done
 if [ -f ${ERR_FILE} ]; then
    /bin/cat ${ERR_FILE}
    if [ ! -t 0 ]; then
-      /usr/bin/Mail -s "$0 expired cache" "lammel@fnal.gov,amjad.kotobi@cern.ch" < ${ERR_FILE}
+      /usr/bin/Mail -s "$0 expired cache" "osg-gfactory-support@physics.ucsd.edu" < ${ERR_FILE}
    fi
 fi
 /bin/rm ${ERR_FILE} 1>/dev/null 2>&1
