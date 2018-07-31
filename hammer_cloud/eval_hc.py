@@ -31,9 +31,10 @@ from email.mime.text import MIMEText
 
 #EVHC_SSB_DIR = "."
 #EVHC_JSON_DIR = "./cache"
+#EVHC_MONIT_URL = "http://monit-metrics-dev.cern.ch:10012/"
 EVHC_SSB_DIR = "/afs/cern.ch/user/c/cmssst/www/hammercloud"
 EVHC_JSON_DIR = "/data/cmssst/MonitoringScripts/hammer_cloud/cache"
-EVHC_MONIT_URL = "http://monit-metrics-dev.cern.ch:10012/"
+EVHC_MONIT_URL = "http://monit-metrics.cern.ch:10012/"
 # ########################################################################### #
 
 
@@ -51,9 +52,9 @@ class ssbMetric:
         self.time_interval = timeInterval
         self.data = {}
 
-    def addEntry(self, name, status, value):
-        if name not in self.data:
-            self.data[name] = {'status': status, 'value': value}
+    def addEntry(self, site, status, value, detail):
+        if site not in self.data:
+            self.data[site] = {'status': status, 'value': value, 'detail': detail}
 
     def entries(self):
         return sorted(self.data.keys())
@@ -123,33 +124,38 @@ class ssbMetric:
         except:
             logging.error("[E]: Failed to open new SSB file")
 
-    def compJSONstring(self):
+    def compJSONarray(self):
         # time in milliseconds, middle of the timebin
-        jsonString = ("{\n \"producer\": \"cmssst\",\n" +
-                         " \"type\": \"ssbmetric\",\n" +
-                         " \"path\": \"%s\",\n" +
-                         " \"timestamp\": %d,\n" +
-                         " \"type_prefix\": \"raw\",\n" +
-                         " \"data\": [") % (self.metric_name, ((self.time_bin *
-                            self.time_interval) + self.time_interval/2) * 1000)
+        jsonArray = "[\n "
+        hdrString = (("{\n   \"producer\": \"cmssst\",\n" +
+                         "   \"type\": \"ssbmetric\",\n" +
+                         "   \"path\": \"%s\",\n" +
+                         "   \"timestamp\": %d,\n" +
+                         "   \"type_prefix\": \"raw\",\n" +
+                         "   \"data\": {\n") %
+                     (self.metric_name, ((self.time_bin * self.time_interval) +
+                                         self.time_interval/2) * 1000))
 
         commaFlag = False
         for siteName in self.entries():
             if commaFlag:
-                jsonString += ",\n    { \"name\": \"%s\",\n" % siteName
+                jsonArray += ",\n " + hdrString
             else:
-                jsonString += "\n    { \"name\": \"%s\",\n" % siteName
-            jsonString += ("      \"status\": \"%s\",\n" %
-                self.data[siteName]['status'])
+                jsonArray += hdrString
+            jsonArray += (("      \"site\": \"%s\",\n" +
+                           "      \"status\": \"%s\",\n") %
+                          (siteName, self.data[siteName]['status']))
             if self.data[siteName]['value'] is not None:
-               jsonString += ("      \"value\": %.3f\n" %
-                   self.data[siteName]['value'])
+               jsonArray += ("      \"value\": %.3f,\n" %
+                             self.data[siteName]['value'])
             else:
-               jsonString += "      \"value\": null\n"
-            jsonString += "    }"
+               jsonArray += "      \"value\": null,\n"
+
+            jsonArray += ("      \"detail\": \"%s\"\n   }\n }" %
+                          self.data[siteName]['detail'])
             commaFlag = True
-        jsonString += "\n ]\n}"
-        return jsonString
+        jsonArray += "\n]"
+        return jsonArray
 
     def compJSONcacheFileName(self):
         filePath = os.path.join(EVHC_JSON_DIR,
@@ -157,15 +163,15 @@ class ssbMetric:
         return filePath
 
     @classmethod
-    def writeJSONfile(myClass, filePath, jsonString):
+    def writeJSONfile(myClass, filePath, jsonArray):
         successFlag = False
         #
         try:
             fileObj = open(filePath, 'w')
             try:
-                fileObj.write( jsonString )
+                fileObj.write( jsonArray )
                 successFlag = True
-                logging.info("JSON string written to file in cache area")
+                logging.info("JSON array written to file in cache area")
             except:
                 fileName = os.path.basename(filePath)
                 logging.error("[E]: Failed to write JSON file %s to cache area"
@@ -183,11 +189,11 @@ class ssbMetric:
 
     @classmethod
     def readJSONfile(myClass, filePath):
-        jsonString = "{}"
+        jsonArray = "[]"
         try:
             fileObj = open(filePath, 'r')
             try:
-                jsonString = fileObj.read()
+                jsonArray = fileObj.read()
             except:
                 fileName = os.path.basename(filePath)
                 logging.error(("[E]: Failed to read JSON file %s from cache " +
@@ -198,16 +204,16 @@ class ssbMetric:
             fileName = os.path.basename(filePath)
             logging.error("[W]: No JSON file %s in cache area" % fileName)
         #
-        return jsonString
+        return jsonArray
 
     @classmethod
-    def uploadJSONstring(myClass, jsonString):
+    def uploadJSONarray(myClass, jsonArray):
         successFlag = False
         #
         try:
-            # MonIT needs an array and without newline characters:
+            # MonIT needs a document array and without newline characters:
             requestsObj = requests.post(EVHC_MONIT_URL,
-                data="[" + json.dumps(json.loads(jsonString)) + "]",
+                data=json.dumps(json.loads(jsonArray)),
                 headers={'Content-Type': "application/json; charset=UTF-8"},
                 timeout=15)
             #requests.post('http://some.url/streamed', data=f, verify=False,
@@ -310,9 +316,12 @@ class ssbMetric:
                 logging.debug("HC eval, %s: %s" % (siteStruct['name'], status))
             else:
                 continue
+            detail = (("Job count: AppSuccessful = %d, Unsuccessful = %d, " +
+                       "Terminated = %d, Cancelled = %d, AllUnknown = %d") %
+                      (sumSucces, sumUnsucc, sumTerm, sumCancel,sumUnknown))
     
             # fill ssbMetric with site evaluation:
-            self.addEntry(siteStruct['name'], status, value)
+            self.addEntry(siteStruct['name'], status, value, detail)
 
         logging.info("[I] HC%s results for %s UTC o/w/e/u = %d/%d/%d/%d" %
             (self.metric_name[2:], UTCStart.replace("+", " "), statusCount[0],
@@ -406,7 +415,7 @@ def evalHCpost(metricName, timeBin, timeInterval,
         metricObj.updateSSB()
     #
     # flatten ssbMetric object into JSON string:
-    jsonString = metricObj.compJSONstring()
+    jsonString = metricObj.compJSONarray()
     #
     filePath = metricObj.compJSONcacheFileName()
     # write JSON string into a file in the cache area
@@ -414,7 +423,7 @@ def evalHCpost(metricName, timeBin, timeInterval,
     #
     if monitFlag:
         # upload JSON string to MonIT
-        successFlag = ssbMetric.uploadJSONstring( jsonString )
+        successFlag = ssbMetric.uploadJSONarray( jsonString )
         if ( not successFlag ):
             ssbMetric.writeJSONfile(filePath + "_upload", jsonString)
         del successFlag
@@ -444,7 +453,7 @@ def verifyHC15min(timeBin, postFlag):
         return
     #
     # flatten ssbMetric object into JSON string:
-    nowJSONstring = metricObj.compJSONstring()
+    nowJSONstring = metricObj.compJSONarray()
     #
     # read initial HC 15min JSON file into a string:
     filePath = metricObj.compJSONcacheFileName()
@@ -455,7 +464,7 @@ def verifyHC15min(timeBin, postFlag):
         ssbMetric.writeJSONfile(filePath, nowJSONstring)
         #
         if postFlag:
-            successFlag = ssbMetric.uploadJSONstring( nowJSONstring )
+            successFlag = ssbMetric.uploadJSONarray( nowJSONstring )
             #
             if ( not successFlag ):
                 ssbMetric.writeJSONfile(filePath + "_upload", nowJSONstring)
@@ -497,7 +506,7 @@ def uploadHCcache(timeStamp, qhourFlag, hourFlag, qdayFlag, dayFlag):
                 jsonString = ssbMetric.readJSONfile(filePath)
                 if ( jsonString != "{}" ):
                     # upload JSON string to MonIT
-                    successFlag = ssbMetric.uploadJSONstring(jsonString)
+                    successFlag = ssbMetric.uploadJSONarray(jsonString)
                     if successFlag:
                         os.unlink(filePath)
                         logging.info("[I] File %s from JSON cache uploaded" %
@@ -518,7 +527,7 @@ def cleanHCcache(timeStamp, qhourFlag, hourFlag, qdayFlag, dayFlag):
                     # only files older than 10 minutes are eligible for cleanup
                     timeBin = int(fileName[tbIndex:])
                     if ( qhourFlag and ( fileName[:13] == "hc15min.json_" )):
-                       if ( timeBin >= int( timeStamp / 900 ) - 9 ):
+                       if ( timeBin >= int( timeStamp / 900 ) - 12 ):
                            continue
                     elif ( hourFlag and ( fileName[:13] == "hc1hour.json_" )):
                        if ( timeBin >= int( timeStamp / 3600 ) - 8 ):
@@ -591,9 +600,9 @@ if __name__ == '__main__':
                        argStruct.post, argStruct.post, False)
             #
             #
-            # check HC 15min results for time bin that started 75 min ago
+            # check HC 15min results for time bin that started 90 min ago
             # ===========================================================
-            timeBin = int( timeStamp / 900 ) - 5
+            timeBin = int( timeStamp / 900 ) - 6
             # evaluate HC 15min and upload if different from initial evaluation
             verifyHC15min(timeBin, argStruct.post)
         #
