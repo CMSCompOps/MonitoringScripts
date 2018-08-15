@@ -2,7 +2,7 @@ import urllib2
 import json, time, string
 #______________________get all datas from SSB___________________________
 def getDatafromURL():
-	url='http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=136&time=720&dateFrom=&dateTo=&site=T0_CH_CERN&sites=all&clouds=undefined&batch=1';
+	url='http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid=136&time=48&dateFrom=&dateTo=&site=T0_CH_CERN&sites=all&clouds=undefined&batch=1';
 	print "Getting the url %s" % url
 	obj = urllib2.urlopen(url)
 	data = obj.read()
