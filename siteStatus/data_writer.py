@@ -125,7 +125,9 @@ class sswpTopology:
             type = "SRM"
         elif ( type.lower() == "gsiftp" ):
             type = "SRM"
-        elif ( type == "XROOTD" ):
+        elif ( type == "XRD" ):
+            pass
+        elif ( type.lower() == "xrootd" ):
             type = "XRD"
         elif ( type.lower() == "glexec" ):
             type = "CE"
