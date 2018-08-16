@@ -121,6 +121,8 @@ class sswpTopology:
             type = "SRM"
         elif ( type.lower() == "gridftp" ):
             type = "SRM"
+        elif ( type.lower() == "globus-gridftp" ):
+            type = "SRM"
         elif ( type.lower() == "gsiftp" ):
             type = "SRM"
         elif ( type == "XROOTD" ):
