@@ -59,6 +59,54 @@ def getSites():
                 ret[siteName]['hosts'].append(serviceName)
     return ret
 
+#Returns a dictionary with Sitename as the key and a list of SRM endpoints associated with it
+def getSRMEndpoints():
+    XML   = url.read('http://cmssst.web.cern.ch/cmssst/vofeed/vofeed.xml')
+    XML   = ET.fromstring(XML)
+    sites = XML.findall('atp_site')
+    ret   = dict()
+    for site in sites:
+        groups   = site.findall('group')
+        siteName = None
+        for i in groups:
+            if i.attrib['type'] == 'CMS_Site':
+                siteName = groups[1].attrib['name']
+                break
+        if not siteName: 
+            continue
+        services = site.findall('service')
+        srms = []
+        for j in services:
+            if j.attrib["flavour"] == 'SRM':
+               srms.append(j.attrib["hostname"])
+        tier = getTier(siteName)
+        if (tier >= 0 and tier <= 2) and srms:
+            ret[siteName]=srms
+    return ret
+
+def getInvertedSRMEndpoints():
+    XML   = url.read('http://cmssst.web.cern.ch/cmssst/vofeed/vofeed.xml')
+    XML   = ET.fromstring(XML)
+    sites = XML.findall('atp_site')
+    ret   = dict()
+    for site in sites:
+        groups   = site.findall('group')
+        siteName = None
+        for i in groups:
+            if i.attrib['type'] == 'CMS_Site':
+                siteName = groups[1].attrib['name']
+                break
+        if not siteName: 
+            continue
+        services = site.findall('service')
+        srms = []
+        for j in services:
+            if j.attrib["flavour"] == 'SRM':
+               ret[j.attrib["hostname"]]=siteName
+    return ret
+
+
+
 if __name__ == '__main__':
     siteList = getSites()
     for i in siteList:
