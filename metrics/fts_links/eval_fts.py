@@ -9,8 +9,8 @@
 #    results. Script should be run several minutes into the 15 min time slot, #
 #    i.e. hour plus 10, 25, 40, and 55 minutes.
 #                                                                             #
-#Last modification:2018-Jun-13  Maria P. Acosta 
-#                               Based on the HC script by Stephan Lammel      #
+#Last modification:2018-Aug-21  Maria P. Acosta 
+#                               Adapted from HC script by Stephan Lammel      #
 # ########################################################################### #
 
 

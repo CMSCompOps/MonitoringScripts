@@ -1,8 +1,10 @@
 #!/bin/bash
 # #############################################################################
-# Bourne shell script to wrapper the eval_hc.py python script. It acquires an
+# Bourne shell script to wrapper the eval_fts.py python script. It acquires an
 #    execution lock, checks there is a valid Kerberos ticket, AFS token and
 #    then launches the Python script.
+# Created by Stephan Lammel, adapted by Maria A
+# CMS Site Support Team
 # #############################################################################
 EXC_LOCK=""
 ERR_FILE="/tmp/cmssst_evalFTS_$$.err"
