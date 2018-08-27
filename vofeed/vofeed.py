@@ -448,7 +448,7 @@ def vofd_glideinWMSfactory():
     # ###################################################################### #
     DICT_GLIDEIN_FACTORIES = [
        {'lbl': "UCSD",    'uri': "gfactory-1.t2.ucsd.edu",   'prd': True},
-       {'lbl': "CERN",    'uri': "vocms0805.cern.ch",        'prd': True},
+       {'lbl': "CERN",    'uri': "vocms0206.cern.ch",        'prd': True},
        {'lbl': "CERNint", 'uri': "vocms0204.cern.ch",        'prd': False},
        {'lbl': "FNAL",    'uri': "cmsgwms-factory.fnal.gov", 'prd': True} ]
 
