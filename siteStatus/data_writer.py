@@ -49,7 +49,7 @@ class HTTPSClientAuthHandler(urllib2.HTTPSHandler):
     def https_open(self, req):
         return self.do_open(self.getConnection, req)
 
-    def getConnection(self, host, timeout=90):
+    def getConnection(self, host, timeout=180):
         return httplib.HTTPSConnection(host, key_file=SSWP_CERTIFICATE_KEY,
                                              cert_file=SSWP_CERTIFICATE_CRT)
 # ########################################################################### #
@@ -3197,12 +3197,13 @@ def sswp_ssb_HammerCloud15min():
             del renameFlag
         except:
             pass
-    except:
+    except BaseException as e:
         if 'stale' not in glbInfo:
             glbInfo['stale'] = "No/stale information (SSB HammerCloud 15 min"
         else:
             glbInfo['stale'] += ", SSB HammerCloud 15 min"
-        logging.warning("   failed to fetch SSB HammerCloud 15 min data")
+        logging.warning("   failed to fetch SSB HammerCloud 15 min data: %s" %
+                        str(e))
         try:
             myFile = open("%s/cache_ssbHammerCloud15m.json" % SSWP_CACHE_DIR,
                           'r')
