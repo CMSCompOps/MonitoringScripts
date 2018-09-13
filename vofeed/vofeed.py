@@ -19,7 +19,7 @@ import htcondor
 
 
 
-VOFD_VERSION = "v1.01.14p"
+VOFD_VERSION = "v1.01.15p"
 #VOFD_OUTPUT_FILE = "vofeed.xml"
 #VOFD_IN_USE_FILE = "in_use.txt"
 #VOFD_CACHE_DIR = "."
@@ -256,9 +256,9 @@ def vofd_sitedb():
     # ############################################################### #
     URL_SITEDB_XROOTD = 'https://cmsweb.cern.ch:8443/sitedb/data/prod/site-resources'
 
-    # get list of xrootd endpoints from SiteDB:
-    # =========================================
-    print("Querying SiteDB for xrootd information")
+    # get list of xrootd and perfSONAR endpoints from SiteDB:
+    # =======================================================
+    print("Querying SiteDB for xrootd/perfSONAR information")
     urlHandle = None
     try:
         request = urllib2.Request(URL_SITEDB_XROOTD,
@@ -318,7 +318,7 @@ def vofd_sitedb():
         sitedbname = result[nameIndex]
         if sitedbname not in myDict:
             continue
-        if ( result[typeIndex] == 'xrootd' ):
+        if ( result[typeIndex] == "xrootd" ):
             endpoint = result[fqdnIndex]
             hostname, port = (endpoint.split(":",1) + ["1094"])[:2]
             hostname = hostname.lower()
@@ -330,6 +330,15 @@ def vofd_sitedb():
                 glbTopology.addResource(myDict[sitedbname]['cmssite'], "",
                                         hostname, "XROOTD", False, "", "",
                                         hostname + ":" + port)
+        elif ( result[typeIndex] == "perfSONAR" ):
+            endpoint = result[fqdnIndex]
+            hostname = endpoint.split(":",1)[0].lower()
+            if ( result[prmyIndex][0].lower() == 'y' ):
+                glbTopology.addResource(myDict[sitedbname]['cmssite'], "",
+                                        hostname, "perfSONAR", True)
+            else:
+                glbTopology.addResource(myDict[sitedbname]['cmssite'], "",
+                                        hostname, "perfSONAR", False)
 # ########################################################################### #
 
 
