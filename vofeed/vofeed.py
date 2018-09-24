@@ -19,7 +19,7 @@ import htcondor
 
 
 
-VOFD_VERSION = "v1.01.15p"
+VOFD_VERSION = "v1.02.00p"
 #VOFD_OUTPUT_FILE = "vofeed.xml"
 #VOFD_IN_USE_FILE = "in_use.txt"
 #VOFD_CACHE_DIR = "."
@@ -36,7 +36,27 @@ VOFD_CERTIFICATE_KEY = "/tmp/x509up_u79522"
 
 
 glbInfo = {}
+glbHost2Site = {}
 glbTopology = None
+glbFlavours = {'CE': "CE",
+               'gLite-CE': "CE",
+               'ARC-CE': "CE",
+               'CREAM-CE': "CE",
+               'gLExec': "CE",
+               'SE': "SE",
+               'SRM': "SE",
+               'SRMv2': "SE",
+               'SRMv1': "SE",
+               'globus-GRIDFTP': "SE",
+               'GridFtp': "SE",
+               'XROOTD': "XROOTD",
+               'XRootD': "XROOTD",
+               'XRootD.Redirector': "XROOTD",
+               'XRootD origin server': "XROOTD",
+               'XRootD component': "XROOTD",
+               'perfSONAR': "perfSONAR",
+               'net.perfSONAR.Bandwidth': "perfSONAR",
+               'net.perfSONAR.Latency': "perfSONAR"}
 # ########################################################################### #
 
 
@@ -63,14 +83,9 @@ class vofdTopology:
     def __init__(self):
         self.topo = {}
 
-    def addSite(self, cmssite, gridsite=""):
+    def addSite(self, cmssite):
         if cmssite not in self.topo:
             self.topo[cmssite] = []
-        if ( gridsite != "" ):
-            for site in self.topo[cmssite]:
-                if ( site['gsite'] == gridsite ):
-                   return
-            self.topo[cmssite].append( {'gsite': gridsite, 'rsrcs': []} )
 
     def addResource(self, cmssite, gridsite,
                     host, flavour, prod=True, queue="", batch="", endpoint=""):
@@ -79,13 +94,14 @@ class vofdTopology:
                 (host, flavour, cmssite))
             return
         if ( gridsite == "" ):
-            if ( len(self.topo[cmssite]) >= 1 ):
-                index = 0
-            else:
-                print("no gridsite, skipping %s(%s) at %s" %
-                    (host, flavour, cmssite))
-                return
-        elif ( len(self.topo[cmssite]) == 0 ):
+            if (host in glbHost2Site ) and ( flavour in glbFlavours):
+                if glbFlavours[flavour] in glbHost2Site[host]:
+                    gridsite = glbHost2Site[host][ glbFlavours[flavour] ]
+            if ( gridsite == "" ):
+                print("host not found in OSG/EGI list, %s (%s) at %s" %
+                      (host, flavour, cmssite))
+
+        if ( len(self.topo[cmssite]) == 0 ):
             self.topo[cmssite].append( {'gsite': gridsite, 'rsrcs': []} )
             index = 0
         else:
@@ -98,8 +114,8 @@ class vofdTopology:
 
         for rsrc in self.topo[cmssite][index]['rsrcs']:
             if (( rsrc['host'] == host ) and ( rsrc['type'] == flavour )):
-                print("duplicate entry, skipping %s(%s) at %s" %
-                    (host, flavour, cmssite))
+                #print("duplicate entry, skipping %s(%s) at %s" %
+                #    (host, flavour, cmssite))
                 return
         self.topo[cmssite][index]['rsrcs'].append( {'host': host,
             'type': flavour, 'prod': prod, 'queue': queue, 'batch': batch,
@@ -154,6 +170,248 @@ def vofd_init():
 
 
 
+def vofd_cricsites():
+    # ######################################################## #
+    # fill vofdTopology object with site information from CRIC #
+    # ######################################################## #
+    URL_CRIC_SITES = 'https://cms-cric.cern.ch/api/core/site/query/?json'
+
+    # get list of CMS sites from CRIC:
+    # ================================
+    print("Querying CRIC for site information")
+    urlHandle = None
+    try:
+        urlHandle = urllib2.urlopen(URL_CRIC_SITES)
+        myData = urlHandle.read()
+        #
+        # sanity check:
+        if (( myData.count("T0_") < 2 ) or ( myData.count("T1_") < 10 ) or
+            ( myData.count("T2_") < 64 ) or ( myData.count("T3_") < 96 )):
+            raise IOError("CRIC-sites data failed sanity check")
+        #
+        # update cache:
+        try:
+            myFile = open("%s/cache_CRICsites.json_new" % VOFD_CACHE_DIR, 'w')
+            try:
+                myFile.write(myData)
+                renameFlag = True
+            except:
+                renameFlag = False
+            finally:
+                myFile.close()
+                del myFile
+            if renameFlag:
+                os.rename("%s/cache_CRICsites.json_new" % VOFD_CACHE_DIR,
+                    "%s/cache_CRICsites.json" % VOFD_CACHE_DIR)
+                print("   cache of CRIC-sites updated")
+            del renameFlag
+        except:
+            pass
+    except:
+        print("   failed to fetch CRIC-sites data")
+        try:
+            myFile = open("%s/cache_CRICsites.json" % VOFD_CACHE_DIR, 'r')
+            try:
+                myData = myFile.read()
+                print("   using cached CRIC-sites data")
+            except:
+                print("   failed to access cached CRIC-sites data")
+                return
+            finally:
+                myFile.close()
+                del myFile
+        except:
+            print("   no CRIC-sites cache available")
+            return
+    finally:
+        if urlHandle is not None:
+            urlHandle.close()
+    del urlHandle
+    #
+    cric = json.loads( myData )
+
+    # add CMS site to VO-feed topology:
+    for entry in cric:
+        cmssite = cric[entry]['name']
+        if (( cmssite[0:1] != "T") or (not (cmssite[1:2]).isdigit()) or
+            ( cmssite[2:3] != "_" ) or ( cmssite[5:6] != "_" )):
+            continue
+        glbTopology.addSite(cmssite)
+
+
+
+def vofd_host2siteOSG():
+    # ###########################################################
+    # get topology information and fill host to site dictionary #
+    # ###########################################################
+    URL_OSG_RGSUM = "https://my.opensciencegrid.org/rgsummary/xml"
+    global glbHost2Site
+
+    # get resource group summary from myOSG:
+    # ======================================
+    print("Querying myOSG for resource group summary")
+    urlHandle = None
+    try:
+        urlHandle = urllib2.urlopen(URL_OSG_RGSUM)
+        myData = urlHandle.read()
+        #
+        #
+        # update cache:
+        try:
+            myFile = open("%s/cache_myOSG.xml_new" % VOFD_CACHE_DIR, 'w')
+            try:
+                myFile.write(myData)
+                renameFlag = True
+            except:
+                renameFlag = False
+            finally:
+                myFile.close()
+                del myFile
+            if renameFlag:
+                os.rename("%s/cache_myOSG.xml_new" % VOFD_CACHE_DIR,
+                    "%s/cache_myOSG.xml" % VOFD_CACHE_DIR)
+                print("   cache of myOSG updated")
+            del renameFlag
+        except:
+            pass
+    except:
+        print("   failed to fetch myOSG data")
+        try:
+            myFile = open("%s/cache_myOSG.xml" % VOFD_CACHE_DIR, 'r')
+            try:
+                myData = myFile.read()
+                print("   using cached myOSG data")
+            except:
+                print("   failed to access cached myOSG data")
+                return
+            finally:
+                myFile.close()
+                del myFile
+        except:
+            print("   no myOSG cache available")
+            return
+    finally:
+        if urlHandle is not None:
+            urlHandle.close()
+    del urlHandle
+    #
+    rgroups = ET.fromstring( myData )
+    del myData
+    #
+    # loop over resource group elements:
+    for rgroup in rgroups.findall('ResourceGroup'):
+        gridsite = rgroup.find('GroupName').text
+        resources = rgroup.find('Resources')
+        for resource in resources.findall('Resource'):
+            host = resource.find('FQDN').text
+            services = resource.find('Services')
+            for service in services.findall('Service'):
+                flavour = service.find('Name').text
+                if flavour not in glbFlavours:
+                    continue
+                flavor = glbFlavours[flavour]
+                if host not in glbHost2Site:
+                    glbHost2Site[host] = {}
+                if flavor not in glbHost2Site[host]:
+                    glbHost2Site[host][flavor] = gridsite
+                elif ( gridsite != glbHost2Site[host][flavor] ):
+                    if ( len(glbHost2Site[host][flavor]) <= len(gridsite) ):
+                        print(("host %s (%s) belongs to mutiple sites, keepi" +
+                               "ng %s, ignoring %s") % (host, flavor,
+                               glbHost2Site[host][flavor], gridsite))
+                    else:
+                        print(("host %s (%s) belongs to mutiple sites, keepi" +
+                               "ng %s, ignoring %s") % (host, flavor, gridsite,
+                               glbHost2Site[host][flavor]))
+                        glbHost2Site[host][flavor] = gridsite
+# ########################################################################### #
+
+
+
+def vofd_host2siteEGI():
+    # ###########################################################
+    # get topology information and fill host to site dictionary #
+    # ###########################################################
+    URL_EGI_RGSUM = "https://goc.egi.eu/gocdbpi/public/?method=get_service_endpoint&scope=cms"
+    global glbHost2Site
+
+    # get resource group summary from myOSG:
+    # ======================================
+    print("Querying GocDB for service endpoint list")
+    urlHandle = None
+    try:
+        urlHandle = urllib2.urlopen(URL_EGI_RGSUM)
+        myData = urlHandle.read()
+        #
+        #
+        # update cache:
+        try:
+            myFile = open("%s/cache_GocDB.xml_new" % VOFD_CACHE_DIR, 'w')
+            try:
+                myFile.write(myData)
+                renameFlag = True
+            except:
+                renameFlag = False
+            finally:
+                myFile.close()
+                del myFile
+            if renameFlag:
+                os.rename("%s/cache_GocDB.xml_new" % VOFD_CACHE_DIR,
+                    "%s/cache_GocDB.xml" % VOFD_CACHE_DIR)
+                print("   cache of GocDB updated")
+            del renameFlag
+        except:
+            pass
+    except:
+        print("   failed to fetch GocDB data")
+        try:
+            myFile = open("%s/cache_GocDB.xml" % VOFD_CACHE_DIR, 'r')
+            try:
+                myData = myFile.read()
+                print("   using cached GocDB data")
+            except:
+                print("   failed to access cached GocDB data")
+                return
+            finally:
+                myFile.close()
+                del myFile
+        except:
+            print("   no GocDB cache available")
+            return
+    finally:
+        if urlHandle is not None:
+            urlHandle.close()
+    del urlHandle
+    #
+    sendpoints = ET.fromstring( myData )
+    del myData
+    #
+    # loop over services elements:
+    for sendpoint in sendpoints.findall('SERVICE_ENDPOINT'):
+        flavour = sendpoint.find('SERVICE_TYPE').text
+        if flavour not in glbFlavours:
+            continue
+        flavor = glbFlavours[flavour]
+        host = sendpoint.find('HOSTNAME').text
+        if host not in glbHost2Site:
+            glbHost2Site[host] = {}
+        gridsite = sendpoint.find('SITENAME').text
+        if flavor not in glbHost2Site[host]:
+            glbHost2Site[host][flavor] = gridsite
+        elif ( gridsite != glbHost2Site[host][flavor] ):
+            if ( len(glbHost2Site[host][flavor]) <= len(gridsite) ):
+                print(("host %s (%s) belongs to mutiple sites, keeping %s, " +
+                       "ignoring %s") % (host, flavor,
+                       glbHost2Site[host][flavor], gridsite))
+            else:
+                print(("host %s (%s) belongs to mutiple sites, keeping %s, " +
+                       "ignoring %s") % (host, flavor, gridsite,
+                       glbHost2Site[host][flavor]))
+                glbHost2Site[host][flavor] = gridsite
+# ########################################################################### #
+
+
+
 def vofd_sitedb():
     # ########################################################## #
     # fill vofdTopology object with site information from SiteDB #
@@ -167,7 +425,8 @@ def vofd_sitedb():
     try:
         request = urllib2.Request(URL_SITEDB_SITES,
                               headers={'Accept':'application/json'})
-        urlHandle = urllib2.urlopen( request )
+        urlOpener = urllib2.build_opener( HTTPSClientAuthHandler() )
+        urlHandle = urlOpener.open( request )
         myData = urlHandle.read()
         #
         # sanity check:
@@ -242,18 +501,18 @@ def vofd_sitedb():
             myDict[sitedbname]['gridsite'].append(gridsite)
 
     # add CMS site to VO-feed topology:
-    for entry in myDict.keys():
-        if ( myDict[entry]['cmssite'] != "" ):
-            if ( len(myDict[entry]['gridsite']) != 0 ):
-                for indx in range( len(myDict[entry]['gridsite']) ):
-                    glbTopology.addSite(myDict[entry]['cmssite'],
-                                        myDict[entry]['gridsite'][indx])
+    #for entry in myDict.keys():
+    #    if ( myDict[entry]['cmssite'] != "" ):
+    #        if ( len(myDict[entry]['gridsite']) != 0 ):
+    #            for indx in range( len(myDict[entry]['gridsite']) ):
+    #                glbTopology.addSite(myDict[entry]['cmssite'],
+    #                                    myDict[entry]['gridsite'][indx])
 
 
 
-    # ############################################################### #
-    # fill vofdTopology object with SE/xrootd information from SiteDB #
-    # ############################################################### #
+    # ###################################################################### #
+    # fill vofdTopology object with xrootd/perfSONAR information from SiteDB #
+    # ###################################################################### #
     URL_SITEDB_XROOTD = 'https://cmsweb.cern.ch:8443/sitedb/data/prod/site-resources'
 
     # get list of xrootd and perfSONAR endpoints from SiteDB:
@@ -263,7 +522,8 @@ def vofd_sitedb():
     try:
         request = urllib2.Request(URL_SITEDB_XROOTD,
                               headers={'Accept':'application/json'})
-        urlHandle = urllib2.urlopen( request )
+        urlOpener = urllib2.build_opener( HTTPSClientAuthHandler() )
+        urlHandle = urlOpener.open( request )
         myData = urlHandle.read()
         #
         # update cache:
@@ -435,6 +695,9 @@ def vofd_phedex():
         phedex_site = phedex_site.replace('_Buffer','')
         phedex_site = phedex_site.replace('_Export','')
         phedex_site = phedex_site.replace('_MSS','')
+        if ( phedex_site == "T2_KR_KNU" ):
+            # site kept T2* PhEDEx nodename when switching to Tier-3
+            phedex_site = "T3_KR_KNU"
         #print("SE: %s\t%s" % (phedex_site, phedex_host))
         if (( phedex_site == "T1_US_FNAL" ) and
             ( phedex_host == "cmslmon.fnal.gov" )):
@@ -800,14 +1063,12 @@ def vofd_write_metric():
 
 if __name__ == '__main__':
 
-    # install URL opener that connects with a certificate and key:
-    # ============================================================
-    url_opnr = urllib2.build_opener( HTTPSClientAuthHandler() )
-    urllib2.install_opener( url_opnr )
-
     #import pdb; pdb.set_trace()
 
     vofd_init()
+    vofd_cricsites()
+    vofd_host2siteOSG()
+    vofd_host2siteEGI()
     vofd_sitedb()
     vofd_phedex()
     vofd_glideinWMSfactory()
