@@ -18,6 +18,7 @@ import re
 import dateutil.parser
 import pytz
 import random
+import time, calendar
 
 # Date for generating the daily Metric value
 
@@ -96,7 +97,13 @@ def getJSONMetric(metricNumber, hoursToRead, sitesStr, sitesVar, dateStart="2000
         metricData = url.read(urlstr)
         return dashboard.parseJSONMetric(metricData)
     except:
-        return None
+        print("Fetching URL failed, sleeping and retrying...")
+        time.sleep(3)
+        try:
+            metricData = url.read(urlstr)
+            return dashboard.parseJSONMetric(metricData)
+        except:
+            return None
 
 def getJSONMetricforSite(metricNumber, hoursToRead, sitesStr):
     return getJSONMetric(metricNumber, hoursToRead, sitesStr, "one")
@@ -121,9 +128,21 @@ def filterMetric(metric, dateStart, dateEnd):
 
 #Getting all the metrics
 hammerCloud  = getJSONMetricforAllSitesForDate(HAMMERCLOUD_COLUMN_ID, dateStartStr, dateEndStr)
+if hammerCloud is None:
+    print("HammerCloud metric, %d, fetching failed" % HAMMERCLOUD_COLUMN_ID)
+else:
+   print("HammerCloud metric, %d, contains %d sites" % (HAMMERCLOUD_COLUMN_ID, len(hammerCloud.getSites())))
 #Maintenance uses RealDates!!!!
 maintenace  = getJSONMetricforAllSitesForDate(MAINTENANCE_COLUMN_ID, realDateStartStr, dateEndStr)
+if maintenace is None:
+    print("Maintenance metric, %d, fetching failed" % MAINTENANCE_COLUMN_ID)
+else:
+   print("Maintenance metric, %d, contains %d sites" % (MAINTENANCE_COLUMN_ID, len(maintenace.getSites())))
 sam  = getJSONMetricforAllSitesForDate(SAM_COLUMN_ID, dateStartStr, dateEndStr)
+if sam is None:
+    print("SAM availability metric, %d, fetching failed" % SAM_COLUMN_ID)
+else:
+   print("SAM availability metric, %d, contains %d sites" % (SAM_COLUMN_ID, len(sam.getSites())))
 
 GoodT1LinksFromT0  = getJSONMetricforAllSitesForDate(GOOD_T1_LINKS_FROM_T0, dateStartStr, dateEndStr)
 GoodT1LinksFromT1  = getJSONMetricforAllSitesForDate(GOOD_T1_LINKS_FROM_T1, dateStartStr, dateEndStr)
@@ -373,7 +392,9 @@ endDateStr = (realDateStart.replace(hour=00, minute=00, second=00, microsecond=0
 
 if len(dailyMetricEntries) > 1:
     outputFile = open(OUTPUT_FILE_NAME, 'w')
-    correctionOutputFile = open(OUTPUT_FILE_CORRECTIONS, 'a')
+    outputFile.write("#txt\n# Site Support Team, Site Readiness Metric\n")
+    outputFile.write("#    written at %s by /data/cmssst/MonitoringScripts/metrics/siteReadiness/run.sh\n#\n" % time.strftime("%Y-%m-%d %H:%M:%S UTC", time.gmtime(int(time.time()))))
+    correctionOutputFile = open(OUTPUT_FILE_CORRECTIONS, 'w')
     for site in dailyMetricEntries:
         outputFile.write(str(site) + '\n')
         correctionOutputFile.write(("\t".join([startDateStr, endDateStr, str(SITE_READINESS_COLUMN_NUMBER), site.name, site.value, site.color, site.url, "nvalue=0"]))+"\n")
