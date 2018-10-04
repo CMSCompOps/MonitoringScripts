@@ -45,7 +45,7 @@ my $url = "http://cmssst.web.cern.ch/cmssst/vofeed/vofeed.xml";
 #    }
 #}
 my @sites;
-$dom = XML::LibXML->load_xml(location => $url);
+my $dom = XML::LibXML->load_xml(location => $url);
 foreach my $grid ($dom->findnodes('/root/atp_site/group')) {
    my $grptyp = $grid->findvalue('./@type');
    if ( $grptyp eq 'CMS_Site' ) {

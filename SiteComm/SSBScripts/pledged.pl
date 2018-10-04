@@ -3,6 +3,8 @@
 use strict;
 
 eval "use JSON; 1" or eval "use JSON::XS; 1" or die;
+use LWP::Simple;
+use XML::LibXML;
 use Net::SSL;
 use LWP::UserAgent;
 
@@ -28,13 +30,17 @@ $ENV{HTTPS_CA_FILE} = $GSIPROXY;
 $ENV{HTTPS_CERT_FILE} = $GSIPROXY;
 $ENV{HTTPS_KEY_FILE}  = $GSIPROXY;
 
-$ssbdir = "/afs/cern.ch/user/c/cmssst/www/ssb/storage/";
+$ssbdir = $ARGV[0];
 $file_pledged_disk = "$ssbdir/pledged_disk.txt";
 $file_pledged_tape = "$ssbdir/pledged_tape.txt";
 
 # Get JSON file from SiteDB
-my $url_p = "https://cmsweb.cern.ch/sitedb/data/prod/resource-pledges";
-my $url_s = "https://cmsweb.cern.ch/sitedb/data/prod/site-names";
+#my $url_p = "https://cmsweb.cern.ch/sitedb/data/prod/resource-pledges";
+my @time = gmtime(time);
+my $year = 1900 + $time[5];
+my $url_p = "https://wlcg-rebus.cern.ch/apps/pledges/resources/" . $year . "/all/json";
+#my $url_s = "https://cmsweb.cern.ch/sitedb/data/prod/site-names";
+my $url_s = "http://cmssst.web.cern.ch/cmssst/vofeed/dev/vofeed.xml";
 
 # Parse JSON
 my $ua = LWP::UserAgent->new;
@@ -42,38 +48,54 @@ $ua->default_header(Accept => 'application/json');
 my $response = $ua->get($url_p) or die "Cannot retrieve JSON\n";
 print $response->decoded_content;
 $ref_pledges = decode_json($response->decoded_content);
-$response = $ua->get($url_s) or die "Cannot retrieve JSON\n";
-$ref_sites = decode_json($response->decoded_content);
-
-# Build site name maps
+#$response = $ua->get($url_s) or die "Cannot retrieve JSON\n";
+#$ref_sites = decode_json($response->decoded_content);
+#
+## Build site name maps
+#my %site2cms = my %cms2site = ();
+#foreach my $item (@{$ref_sites->{'result'}}) {
+#    my $type = $item->[0];
+#    if ($type eq 'cms') {
+#	$site2cms{$item->[1]} = $item->[2];
+#	$cms2site{$item->[2]} = $item->[1];
+#    }
+#}
 my %site2cms = my %cms2site = ();
-foreach my $item (@{$ref_sites->{'result'}}) {
-    my $type = $item->[0];
-    if ($type eq 'cms') {
-	$site2cms{$item->[1]} = $item->[2];
-	$cms2site{$item->[2]} = $item->[1];
-    }
+my $dom = XML::LibXML->load_xml(location => $url_s);
+foreach my $grid ($dom->findnodes('/root/atp_site/group')) {
+   my $grptyp = $grid->findvalue('./@type');
+   if ( $grptyp eq 'CMS_Site' ) {
+      my $grpnam = $grid->findvalue('./@name');
+      my $atpnam = $grid->findvalue('../@name');
+      if ( $atpnam ne "" ) {
+         $site2cms{$atpnam} = $grpnam;
+         $cms2site{$grpnam} = $atpnam;
+      }
+   }
 }
 
 # Extract pledge data
 %data = ();
-foreach my $cms (keys %cms2site) {
+foreach my $cms (sort keys %cms2site) {
+    my $tier = substr($cms, 1 ,1);
+    my $name = substr($cms, 6);
     my $site = $cms2site{$cms};
-    my $disk = my $tape = -1;
-    my $time = 0.;
-    my $quarter = 0;
-    foreach my $item (@{$ref_pledges->{'result'}}) {
-	my $s = $item->[0];
-	next if ($s ne $site or $item->[2] > &curr_quarter());
-	if ($item->[1] > $time) {
-	    $disk = $item->[4];
-	    $tape = $item->[5];
-	    $time = $item->[1];
-	    $quarter = $item->[2];
-	}
+    my $disk = my $tape = 0;
+    foreach my $item (@{$ref_pledges}) {
+	my $s = $item->{'Federation'};
+        my $t = substr($item->{'Tier'}, 5, 1);
+        next if ( $t ne $tier);
+	if ((index($s, $site) != -1) or (index($s, $name) != -1)) {
+	   if (($item->{'PledgeType'} eq "Disk") and ( $item->{'CMS'} ne "")){
+              $disk = $item->{'CMS'};
+           }
+           if (($item->{'PledgeType'} eq "Tape") and ( $item->{'CMS'} ne "")) {
+              $tape = $item->{'CMS'};
+           }
+        }
     }
-    next if ($quarter == 0);
-    $data{$cms} = [$quarter, $disk, $tape];
+    next if (($disk == 0) and ($tape == 0));
+    $data{$cms} = [$year, $disk, $tape];
 }
 
 open(DISK, "> $file_pledged_disk") or
@@ -89,7 +111,7 @@ foreach my $cms (sort keys %data){
     my $colour = 'green';
     $colour = "yellow" if (&curr_quarter() > $quarter);
     $colour = "red" if (&curr_quarter() - $quarter > 1);
-    my $pledge_url = "https://cmsweb.cern.ch/sitedb/prod/pledges?q=$quarter";
+    my $pledge_url = "https://wlcg-rebus.cern.ch/apps/pledges/resources/";
     printf DISK "%s\t%s\t%s\t%s\t%s\n", $timestamp, $cms, $disk,
     $colour, $pledge_url;
     printf TAPE "%s\t%s\t%s\t%s\t%s\n", $timestamp, $cms, $tape,
