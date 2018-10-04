@@ -7,6 +7,8 @@
 #
 
 eval "use JSON; 1" or eval "use JSON::XS; 1" or die;
+use LWP::Simple;
+use XML::LibXML;
 use Net::SSL;
 use LWP::UserAgent;
 use File::Temp("tempfile");
@@ -21,27 +23,37 @@ $ENV{HTTPS_CERT_FILE} = $GSIPROXY;
 $ENV{HTTPS_KEY_FILE}  = $GSIPROXY;
 
 #Get JSON file from SiteDB
-my $url = "https://cmsweb.cern.ch/sitedb/data/prod/site-names";
-#problem with sertificate, so I added new url
-#my $url = "https://cmssst.web.cern.ch/cmssst/siteDbInfo/site_names.json";
+#my $url = "https://cmsweb.cern.ch/sitedb/data/prod/site-names";
+# take site list from VO-feed:
+my $url = "http://cmssst.web.cern.ch/cmssst/vofeed/vofeed.xml";
 # Set header to select output format
-$header = HTTP::Headers->new(
-			     Accept => 'application/json');
-
-$ua = LWP::UserAgent->new;
-$ua->default_headers($header);
-
-my $response = $ua->get($url) or die "Cannot retrieve JSON\n";
-
-# Parse JSON
-print $response->decoded_content;
-my $ref = decode_json($response->decoded_content);
+#$header = HTTP::Headers->new(
+#			     Accept => 'application/json');
+#$ua = LWP::UserAgent->new;
+#$ua->default_headers($header);
+#
+#my $response = $ua->get($url) or die "Cannot retrieve JSON\n";
+#
+## Parse JSON
+#print $response->decoded_content;
+#my $ref = decode_json($response->decoded_content);
+#my @sites;
+#foreach my $item (@{$ref->{'result'}}) {
+#    my $type = $item->[0];
+#    if ($type eq 'cms') {
+#	push @sites, $item->[2];
+#    }
+#}
 my @sites;
-foreach my $item (@{$ref->{'result'}}) {
-    my $type = $item->[0];
-    if ($type eq 'cms') {
-	push @sites, $item->[2];
-    }
+$dom = XML::LibXML->load_xml(location => $url);
+foreach my $grid ($dom->findnodes('/root/atp_site/group')) {
+   my $grptyp = $grid->findvalue('./@type');
+   if ( $grptyp eq 'CMS_Site' ) {
+      my $grpnam = $grid->findvalue('./@name');
+      if ( ! grep( /^$grpnam$/, @sites ) ) {
+         push @sites, $grpnam;
+      }
+   }
 }
 
 # Define output file
