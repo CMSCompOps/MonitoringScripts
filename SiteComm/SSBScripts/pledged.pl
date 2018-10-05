@@ -40,7 +40,7 @@ my @time = gmtime(time);
 my $year = 1900 + $time[5];
 my $url_p = "https://wlcg-rebus.cern.ch/apps/pledges/resources/" . $year . "/all/json";
 #my $url_s = "https://cmsweb.cern.ch/sitedb/data/prod/site-names";
-my $url_s = "http://cmssst.web.cern.ch/cmssst/vofeed/dev/vofeed.xml";
+my $url_s = "http://cmssst.web.cern.ch/cmssst/vofeed/vofeed.xml";
 
 # Parse JSON
 my $ua = LWP::UserAgent->new;
