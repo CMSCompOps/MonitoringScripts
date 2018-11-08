@@ -36,7 +36,7 @@ downTimesURL="http://dashb-ssb.cern.ch/dashboard/request.py/getplotdata?columnid
 
 # notice the ebedded time frame parameters
 ggusEnd=`date +%d+%b+%Y`
-ggusStart=$(date  --date="2 weeks ago" +%d+%b+%Y)
+ggusStart=$(date  --date="5 weeks ago" +%d+%b+%Y)
 ggusURL="https://ggus.eu/?mode=ticket_search&show_columns_check%5B%5D=TICKET_TYPE&show_columns_check%5B%5D=AFFECTED_VO&show_columns_check%5B%5D=AFFECTED_SITE&show_columns_check%5B%5D=CMS_SITE&show_columns_check%5B%5D=PRIORITY&show_columns_check%5B%5D=RESPONSIBLE_UNIT&show_columns_check%5B%5D=CMS_SU&show_columns_check%5B%5D=STATUS&show_columns_check%5B%5D=DATE_OF_CHANGE&show_columns_check%5B%5D=TYPE_OF_PROBLEM&show_columns_check%5B%5D=SHORT_DESCRIPTION&ticket_id=&supportunit=&su_hierarchy=0&vo=cms&cms_su=&user=&keyword=&involvedsupporter=&assignedto=&affectedsite=&cms_site=&specattrib=none&status=open&priority=&typeofproblem=CMS_AAA+WAN+Access&ticket_category=all&mouarea=&date_type=creation+date&timeframe=lastweek&tf_radio=2&from_date=$ggusStart&to_date=$ggusEnd&untouched_date=&orderticketsby=REQUEST_ID&orderhow=desc&search_submit=GO%21&writeFormat=XML"
 
 # download the xml file
