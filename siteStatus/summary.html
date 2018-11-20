@@ -209,21 +209,8 @@
       }
 
       // write/update page in browser:
-      var myWidth = 1600;
-      if ( window.innerWidth ) {
-         myWidth = window.innerWidth;
-      }
-      if ( myWidth < 1440 ) {
-         writeTable("compact");
-         fillCanvases("compact");
-      } else if ( myWidth < 2048 ) {
-         writeTable("standard");
-         fillCanvases("standard");
-      } else {
-         // special handling for 4k display in Fermilab ROC (QSXGA and higher)
-         writeTable("full-screen");
-         fillCanvases("full-screen");
-      }
+      writeTable();
+      fillCanvases();
       fillLegend();
       updateTimestamps();
    }

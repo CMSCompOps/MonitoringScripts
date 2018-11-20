@@ -4,6 +4,14 @@
 
 
 /* ************************************************************************* */
+/* data:                                                                     */
+/* ************************************************************************* */
+var sizeCnvs;
+var noBins;
+
+
+
+/* ************************************************************************* */
 /* functons:                                                                 */
 /* ************************************************************************* */
 function dateString1(timeInSeconds) {
@@ -56,45 +64,53 @@ function dateString2(timeInSeconds) {
    return timeStr;
 }
 
-function writeTable(widthName) {
-   if ( widthName == 'compact' ) {
-      var fontHdrSite = 'font-size: 20px; font-weight: 700';
-      var fontHdrGGUS = 'font-size: 14px; font-weight: 600';
-      var fontHdrOthr = 'font-size: 18px; font-weight: 600';
-      var fontSiteName = 'font-size: 18px; font-weight: 500';
+function writeTable() {
+
+   var myWidth = 1600;
+   if ( window.innerWidth ) {
+      myWidth = window.innerWidth;
+   }
+   if ( myWidth < 1440 ) {
+      var fontHdrSite = 'font-size: 20px; font-weight: 700;';
+      var fontHdrGGUS = 'font-size: 14px; font-weight: 600;';
+      var fontHdrOthr = 'font-size: 18px; font-weight: 600;';
+      var fontSiteName = 'font-size: 18px; font-weight: 500;';
       // Previous Month:   (4*30)+30+1   Magnified: 4*(4*30)+2*30
       // Previous Week:    (7*24)+28+1   Magnified: 4*(7*24)+2*28
       // Yesterday:        (24*4)+24+1   Magnified: 4*(24*4)+2*24
       // Today:          2*(24*4)+24+1   Magnified: 5*(24*4)+2*24
       // Following Week:   (7*24)+28+1   Magnified: 4*(7*24)+2*28
-      var sizeCnvs = [ "151", "197", "121", "217", "197" ];
+      sizeCnvs = [ "151", "197", "121", "217", "197" ];
       var sizeMagn = [ "540", "728", "432", "528", "728" ];
-   } else if ( widthName == 'standard' ) {
-      var fontHdrSite = 'font-size: 22px; font-weight: 700';
-      var fontHdrGGUS = 'font-size: 16px; font-weight: 600';
-      var fontHdrOthr = 'font-size: 20px; font-weight: 600';
-      var fontSiteName = 'font-size: 18px; font-weight: 500';
+      noBins  = [ 1, 1, 1, 2, 1 ];
+   } else if ( myWidth < 2048 ) {
+      // standard page/view:
+      var fontHdrSite = 'font-size: 22px; font-weight: 700;';
+      var fontHdrGGUS = 'font-size: 16px; font-weight: 600;';
+      var fontHdrOthr = 'font-size: 20px; font-weight: 600;';
+      var fontSiteName = 'font-size: 18px; font-weight: 500;';
       // Previous Month: 2*(4*30)+30+2   Magnified: 4*(4*30)+2*30
       // Previous Week:    (7*24)+28+2   Magnified: 4*(7*24)+2*28
       // Yesterday:      2*(24*4)+24+2   Magnified: 4*(24*4)+2*24
       // Today:          3*(24*4)+24+2   Magnified: 5*(24*4)+2*24
       // Following Week:   (7*24)+28+2   Magnified: 4*(7*24)+2*28
-      var sizeCnvs = [ "272", "198", "218", "314", "198" ];
+      sizeCnvs = [ "272", "198", "218", "314", "197" ];
       var sizeMagn = [ "540", "728", "432", "528", "728" ];
-   } else if ( widthName == 'full-screen' ) {
-      var fontHdrSite = 'font-size: 26px; font-weight: 700';
-      var fontHdrGGUS = 'font-size: 18px; font-weight: 600';
-      var fontHdrOthr = 'font-size: 24px; font-weight: 700';
-      var fontSiteName = 'font-size: 20px; font-weight: 500';
+      noBins  = [ 2, 1, 2, 3, 1 ];
+   } else {
+      // 4k display (QSXGA and higher):
+      var fontHdrSite = 'font-size: 26px; font-weight: 700;';
+      var fontHdrGGUS = 'font-size: 18px; font-weight: 600;';
+      var fontHdrOthr = 'font-size: 24px; font-weight: 700;';
+      var fontSiteName = 'font-size: 20px; font-weight: 500;';
       // Previous Month: 3*(4*30)+30+2   Magnified: 4*(4*30)+2*30
       // Previous Week:  2*(7*24)+28+2   Magnified: 4*(7*24)+2*28
       // Yesterday:      3*(24*4)+24+2   Magnified: 4*(24*4)+2*24
       // Today:          5*(24*4)+24+2   Magnified: 5*(24*4)+2*24
       // Following Week:   (7*24)+28+2   Magnified: 4*(7*24)+2*28
-      var sizeCnvs = [ "392", "366", "314", "506", "198" ];
+      sizeCnvs = [ "392", "366", "314", "506", "197" ];
       var sizeMagn = [ "540", "728", "432", "528", "728" ];
-   } else {
-      return;
+      noBins  = [ 3, 2, 3, 5, 1 ];
    }
 
    // compose table header:
@@ -263,16 +279,7 @@ function updateTimestamps() {
 
 }
 
-function fillCanvases(widthName) {
-   if ( widthName == 'compact' ) {
-      var noBins  = [ 1, 1, 1, 2, 1 ];
-   } else if ( widthName == 'standard' ) {
-      var noBins  = [ 2, 1, 2, 3, 1 ];
-   } else if ( widthName == 'full-screen' ) {
-      var noBins  = [ 3, 2, 3, 5, 1 ];
-   } else {
-      return;
-   }
+function fillCanvases() {
 
    // for the tic length we need to know the weekday:
    var dataDay  = ( new Date(siteStatusInfo['time'] * 1000) ).getDay();
@@ -357,19 +364,19 @@ function fillCanvases(widthName) {
                cCtxM.fillRect(2+qday*4+Math.trunc(qday/4)*2,20,4,4);
                cCtxM.fillRect(2+qday*4+Math.trunc(qday/4)*2,28,4,8);
                break;
+            case "U":
             case "V":
             case "W":
             case "X":
-            case "Y":
                cCtxS.fillStyle = "#A000A0";
                cCtxS.fillRect(1+xleft,0,noBins[0],18);
                cCtxM.fillStyle = "#A000A0";
                cCtxM.fillRect(2+qday*4+Math.trunc(qday/4)*2,0,4,36);
                break;
+            case "K":
             case "L":
             case "M":
             case "N":
-            case "O":
                cCtxS.fillStyle = "#663300";
                cCtxS.fillRect(1+xleft,0,noBins[0],18);
                cCtxM.fillStyle = "#663300";
@@ -456,12 +463,22 @@ function fillCanvases(widthName) {
                cCtxM.fillRect(2+hour*4+Math.trunc(hour/6)*2,20,4,4);
                cCtxM.fillRect(2+hour*4+Math.trunc(hour/6)*2,28,4,8);
                break;
-            case "V":
-               cCtxS.fillStyle = "#6080FF";
+            case "U":
+               cCtxS.fillStyle = "#80FF80";
                cCtxS.fillRect(1+xleft,0,noBins[1],4);
                cCtxS.fillStyle = "#A000A0";
                cCtxS.fillRect(1+xleft,4,noBins[1],14);
-               cCtxM.fillStyle = "#6080FF";
+               cCtxM.fillStyle = "#80FF80";
+               cCtxM.fillRect(2+hour*4+Math.trunc(hour/6)*2,0,4,8);
+               cCtxM.fillStyle = "#A000A0";
+               cCtxM.fillRect(2+hour*4+Math.trunc(hour/6)*2,8,4,28);
+               break;
+            case "V":
+               cCtxS.fillStyle = "#FFFF00";
+               cCtxS.fillRect(1+xleft,0,noBins[1],4);
+               cCtxS.fillStyle = "#A000A0";
+               cCtxS.fillRect(1+xleft,4,noBins[1],14);
+               cCtxM.fillStyle = "#FFFF00";
                cCtxM.fillRect(2+hour*4+Math.trunc(hour/6)*2,0,4,8);
                cCtxM.fillStyle = "#A000A0";
                cCtxM.fillRect(2+hour*4+Math.trunc(hour/6)*2,8,4,28);
@@ -473,31 +490,31 @@ function fillCanvases(widthName) {
                cCtxM.fillRect(2+hour*4+Math.trunc(hour/6)*2,0,4,36);
                break;
             case "X":
-               cCtxS.fillStyle = "#80FF80";
-               cCtxS.fillRect(1+xleft,0,noBins[1],4);
-               cCtxS.fillStyle = "#A000A0";
-               cCtxS.fillRect(1+xleft,4,noBins[1],14);
-               cCtxM.fillStyle = "#80FF80";
-               cCtxM.fillRect(2+hour*4+Math.trunc(hour/6)*2,0,4,8);
-               cCtxM.fillStyle = "#A000A0";
-               cCtxM.fillRect(2+hour*4+Math.trunc(hour/6)*2,8,4,28);
-               break;
-            case "Y":
-               cCtxS.fillStyle = "#FFFF00";
-               cCtxS.fillRect(1+xleft,0,noBins[1],4);
-               cCtxS.fillStyle = "#A000A0";
-               cCtxS.fillRect(1+xleft,4,noBins[1],14);
-               cCtxM.fillStyle = "#FFFF00";
-               cCtxM.fillRect(2+hour*4+Math.trunc(hour/6)*2,0,4,8);
-               cCtxM.fillStyle = "#A000A0";
-               cCtxM.fillRect(2+hour*4+Math.trunc(hour/6)*2,8,4,28);
-               break;
-            case "L":
                cCtxS.fillStyle = "#6080FF";
+               cCtxS.fillRect(1+xleft,0,noBins[1],4);
+               cCtxS.fillStyle = "#A000A0";
+               cCtxS.fillRect(1+xleft,4,noBins[1],14);
+               cCtxM.fillStyle = "#6080FF";
+               cCtxM.fillRect(2+hour*4+Math.trunc(hour/6)*2,0,4,8);
+               cCtxM.fillStyle = "#A000A0";
+               cCtxM.fillRect(2+hour*4+Math.trunc(hour/6)*2,8,4,28);
+               break;
+            case "K":
+               cCtxS.fillStyle = "#80FF80";
                cCtxS.fillRect(1+xleft,0,noBins[1],2);
                cCtxS.fillStyle = "#663300";
                cCtxS.fillRect(1+xleft,2,noBins[1],16);
-               cCtxM.fillStyle = "#6080FF";
+               cCtxM.fillStyle = "#80FF80";
+               cCtxM.fillRect(2+hour*4+Math.trunc(hour/6)*2,0,4,4);
+               cCtxM.fillStyle = "#663300";
+               cCtxM.fillRect(2+hour*4+Math.trunc(hour/6)*2,4,4,32);
+               break;
+            case "L":
+               cCtxS.fillStyle = "#FFFF00";
+               cCtxS.fillRect(1+xleft,0,noBins[1],2);
+               cCtxS.fillStyle = "#663300";
+               cCtxS.fillRect(1+xleft,2,noBins[1],16);
+               cCtxM.fillStyle = "#FFFF00";
                cCtxM.fillRect(2+hour*4+Math.trunc(hour/6)*2,0,4,4);
                cCtxM.fillStyle = "#663300";
                cCtxM.fillRect(2+hour*4+Math.trunc(hour/6)*2,4,4,32);
@@ -509,21 +526,11 @@ function fillCanvases(widthName) {
                cCtxM.fillRect(2+hour*4+Math.trunc(hour/6)*2,0,4,36);
                break;
             case "N":
-               cCtxS.fillStyle = "#80FF80";
+               cCtxS.fillStyle = "#6080FF";
                cCtxS.fillRect(1+xleft,0,noBins[1],2);
                cCtxS.fillStyle = "#663300";
                cCtxS.fillRect(1+xleft,2,noBins[1],16);
-               cCtxM.fillStyle = "#80FF80";
-               cCtxM.fillRect(2+hour*4+Math.trunc(hour/6)*2,0,4,4);
-               cCtxM.fillStyle = "#663300";
-               cCtxM.fillRect(2+hour*4+Math.trunc(hour/6)*2,4,4,32);
-               break;
-            case "O":
-               cCtxS.fillStyle = "#FFFF00";
-               cCtxS.fillRect(1+xleft,0,noBins[1],2);
-               cCtxS.fillStyle = "#663300";
-               cCtxS.fillRect(1+xleft,2,noBins[1],16);
-               cCtxM.fillStyle = "#FFFF00";
+               cCtxM.fillStyle = "#6080FF";
                cCtxM.fillRect(2+hour*4+Math.trunc(hour/6)*2,0,4,4);
                cCtxM.fillStyle = "#663300";
                cCtxM.fillRect(2+hour*4+Math.trunc(hour/6)*2,4,4,32);
@@ -613,12 +620,22 @@ function fillCanvases(widthName) {
                cCtxM.fillRect(2+qhour*4+Math.trunc(qhour/4)*2,20,4,4);
                cCtxM.fillRect(2+qhour*4+Math.trunc(qhour/4)*2,28,4,8);
                break;
-            case "V":
-               cCtxS.fillStyle = "#6080FF";
+            case "U":
+               cCtxS.fillStyle = "#80FF80";
                cCtxS.fillRect(1+xleft,0,noBins[2],4);
                cCtxS.fillStyle = "#A000A0";
                cCtxS.fillRect(1+xleft,4,noBins[2],14);
-               cCtxM.fillStyle = "#6080FF";
+               cCtxM.fillStyle = "#80FF80";
+               cCtxM.fillRect(2+qhour*4+Math.trunc(qhour/4)*2,0,4,8);
+               cCtxM.fillStyle = "#A000A0";
+               cCtxM.fillRect(2+qhour*4+Math.trunc(qhour/4)*2,8,4,28);
+               break;
+            case "V":
+               cCtxS.fillStyle = "#FFFF00";
+               cCtxS.fillRect(1+xleft,0,noBins[2],4);
+               cCtxS.fillStyle = "#A000A0";
+               cCtxS.fillRect(1+xleft,4,noBins[2],14);
+               cCtxM.fillStyle = "#FFFF00";
                cCtxM.fillRect(2+qhour*4+Math.trunc(qhour/4)*2,0,4,8);
                cCtxM.fillStyle = "#A000A0";
                cCtxM.fillRect(2+qhour*4+Math.trunc(qhour/4)*2,8,4,28);
@@ -630,31 +647,31 @@ function fillCanvases(widthName) {
                cCtxM.fillRect(2+qhour*4+Math.trunc(qhour/4)*2,0,4,36);
                break;
             case "X":
-               cCtxS.fillStyle = "#80FF80";
-               cCtxS.fillRect(1+xleft,0,noBins[2],4);
-               cCtxS.fillStyle = "#A000A0";
-               cCtxS.fillRect(1+xleft,4,noBins[2],14);
-               cCtxM.fillStyle = "#80FF80";
-               cCtxM.fillRect(2+qhour*4+Math.trunc(qhour/4)*2,0,4,8);
-               cCtxM.fillStyle = "#A000A0";
-               cCtxM.fillRect(2+qhour*4+Math.trunc(qhour/4)*2,8,4,28);
-               break;
-            case "Y":
-               cCtxS.fillStyle = "#FFFF00";
-               cCtxS.fillRect(1+xleft,0,noBins[2],4);
-               cCtxS.fillStyle = "#A000A0";
-               cCtxS.fillRect(1+xleft,4,noBins[2],14);
-               cCtxM.fillStyle = "#FFFF00";
-               cCtxM.fillRect(2+qhour*4+Math.trunc(qhour/4)*2,0,4,8);
-               cCtxM.fillStyle = "#A000A0";
-               cCtxM.fillRect(2+qhour*4+Math.trunc(qhour/4)*2,8,4,28);
-               break;
-            case "L":
                cCtxS.fillStyle = "#6080FF";
+               cCtxS.fillRect(1+xleft,0,noBins[2],4);
+               cCtxS.fillStyle = "#A000A0";
+               cCtxS.fillRect(1+xleft,4,noBins[2],14);
+               cCtxM.fillStyle = "#6080FF";
+               cCtxM.fillRect(2+qhour*4+Math.trunc(qhour/4)*2,0,4,8);
+               cCtxM.fillStyle = "#A000A0";
+               cCtxM.fillRect(2+qhour*4+Math.trunc(qhour/4)*2,8,4,28);
+               break;
+            case "K":
+               cCtxS.fillStyle = "#80FF80";
                cCtxS.fillRect(1+xleft,0,noBins[2],2);
                cCtxS.fillStyle = "#663300";
                cCtxS.fillRect(1+xleft,2,noBins[2],16);
-               cCtxM.fillStyle = "#6080FF";
+               cCtxM.fillStyle = "#80FF80";
+               cCtxM.fillRect(2+qhour*4+Math.trunc(qhour/4)*2,0,4,4);
+               cCtxM.fillStyle = "#663300";
+               cCtxM.fillRect(2+qhour*4+Math.trunc(qhour/4)*2,4,4,32);
+               break;
+            case "L":
+               cCtxS.fillStyle = "#FFFF00";
+               cCtxS.fillRect(1+xleft,0,noBins[2],2);
+               cCtxS.fillStyle = "#663300";
+               cCtxS.fillRect(1+xleft,2,noBins[2],16);
+               cCtxM.fillStyle = "#FFFF00";
                cCtxM.fillRect(2+qhour*4+Math.trunc(qhour/4)*2,0,4,4);
                cCtxM.fillStyle = "#663300";
                cCtxM.fillRect(2+qhour*4+Math.trunc(qhour/4)*2,4,4,32);
@@ -666,21 +683,11 @@ function fillCanvases(widthName) {
                cCtxM.fillRect(2+qhour*4+Math.trunc(qhour/4)*2,0,4,36);
                break;
             case "N":
-               cCtxS.fillStyle = "#80FF80";
+               cCtxS.fillStyle = "#6080FF";
                cCtxS.fillRect(1+xleft,0,noBins[2],2);
                cCtxS.fillStyle = "#663300";
                cCtxS.fillRect(1+xleft,2,noBins[2],16);
-               cCtxM.fillStyle = "#80FF80";
-               cCtxM.fillRect(2+qhour*4+Math.trunc(qhour/4)*2,0,4,4);
-               cCtxM.fillStyle = "#663300";
-               cCtxM.fillRect(2+qhour*4+Math.trunc(qhour/4)*2,4,4,32);
-               break;
-            case "O":
-               cCtxS.fillStyle = "#FFFF00";
-               cCtxS.fillRect(1+xleft,0,noBins[2],2);
-               cCtxS.fillStyle = "#663300";
-               cCtxS.fillRect(1+xleft,2,noBins[2],16);
-               cCtxM.fillStyle = "#FFFF00";
+               cCtxM.fillStyle = "#6080FF";
                cCtxM.fillRect(2+qhour*4+Math.trunc(qhour/4)*2,0,4,4);
                cCtxM.fillStyle = "#663300";
                cCtxM.fillRect(2+qhour*4+Math.trunc(qhour/4)*2,4,4,32);
@@ -770,12 +777,22 @@ function fillCanvases(widthName) {
                cCtxM.fillRect(2+qhour*5+Math.trunc(qhour/4)*2,20,5,4);
                cCtxM.fillRect(2+qhour*5+Math.trunc(qhour/4)*2,28,5,8);
                break;
-            case "V":
-               cCtxS.fillStyle = "#6080FF";
+            case "U":
+               cCtxS.fillStyle = "#80FF80";
                cCtxS.fillRect(1+xleft,0,noBins[3],4);
                cCtxS.fillStyle = "#A000A0";
                cCtxS.fillRect(1+xleft,4,noBins[3],14);
-               cCtxM.fillStyle = "#6080FF";
+               cCtxM.fillStyle = "#80FF80";
+               cCtxM.fillRect(2+qhour*5+Math.trunc(qhour/4)*2,0,5,8);
+               cCtxM.fillStyle = "#A000A0";
+               cCtxM.fillRect(2+qhour*5+Math.trunc(qhour/4)*2,8,5,28);
+               break;
+            case "V":
+               cCtxS.fillStyle = "#FFFF00";
+               cCtxS.fillRect(1+xleft,0,noBins[3],4);
+               cCtxS.fillStyle = "#A000A0";
+               cCtxS.fillRect(1+xleft,4,noBins[3],14);
+               cCtxM.fillStyle = "#FFFF00";
                cCtxM.fillRect(2+qhour*5+Math.trunc(qhour/4)*2,0,5,8);
                cCtxM.fillStyle = "#A000A0";
                cCtxM.fillRect(2+qhour*5+Math.trunc(qhour/4)*2,8,5,28);
@@ -787,31 +804,31 @@ function fillCanvases(widthName) {
                cCtxM.fillRect(2+qhour*5+Math.trunc(qhour/4)*2,0,5,36);
                break;
             case "X":
-               cCtxS.fillStyle = "#80FF80";
-               cCtxS.fillRect(1+xleft,0,noBins[3],4);
-               cCtxS.fillStyle = "#A000A0";
-               cCtxS.fillRect(1+xleft,4,noBins[3],14);
-               cCtxM.fillStyle = "#80FF80";
-               cCtxM.fillRect(2+qhour*5+Math.trunc(qhour/4)*2,0,5,8);
-               cCtxM.fillStyle = "#A000A0";
-               cCtxM.fillRect(2+qhour*5+Math.trunc(qhour/4)*2,8,5,28);
-               break;
-            case "Y":
-               cCtxS.fillStyle = "#FFFF00";
-               cCtxS.fillRect(1+xleft,0,noBins[3],4);
-               cCtxS.fillStyle = "#A000A0";
-               cCtxS.fillRect(1+xleft,4,noBins[3],14);
-               cCtxM.fillStyle = "#FFFF00";
-               cCtxM.fillRect(2+qhour*5+Math.trunc(qhour/4)*2,0,5,8);
-               cCtxM.fillStyle = "#A000A0";
-               cCtxM.fillRect(2+qhour*5+Math.trunc(qhour/4)*2,8,5,28);
-               break;
-            case "L":
                cCtxS.fillStyle = "#6080FF";
+               cCtxS.fillRect(1+xleft,0,noBins[3],4);
+               cCtxS.fillStyle = "#A000A0";
+               cCtxS.fillRect(1+xleft,4,noBins[3],14);
+               cCtxM.fillStyle = "#6080FF";
+               cCtxM.fillRect(2+qhour*5+Math.trunc(qhour/4)*2,0,5,8);
+               cCtxM.fillStyle = "#A000A0";
+               cCtxM.fillRect(2+qhour*5+Math.trunc(qhour/4)*2,8,5,28);
+               break;
+            case "K":
+               cCtxS.fillStyle = "#80FF80";
                cCtxS.fillRect(1+xleft,0,noBins[3],2);
                cCtxS.fillStyle = "#663300";
                cCtxS.fillRect(1+xleft,2,noBins[3],16);
-               cCtxM.fillStyle = "#6080FF";
+               cCtxM.fillStyle = "#80FF80";
+               cCtxM.fillRect(2+qhour*5+Math.trunc(qhour/4)*2,0,5,4);
+               cCtxM.fillStyle = "#663300";
+               cCtxM.fillRect(2+qhour*5+Math.trunc(qhour/4)*2,4,5,32);
+               break;
+            case "L":
+               cCtxS.fillStyle = "#FFFF00";
+               cCtxS.fillRect(1+xleft,0,noBins[3],2);
+               cCtxS.fillStyle = "#663300";
+               cCtxS.fillRect(1+xleft,2,noBins[3],16);
+               cCtxM.fillStyle = "#FFFF00";
                cCtxM.fillRect(2+qhour*5+Math.trunc(qhour/4)*2,0,5,4);
                cCtxM.fillStyle = "#663300";
                cCtxM.fillRect(2+qhour*5+Math.trunc(qhour/4)*2,4,5,32);
@@ -823,21 +840,11 @@ function fillCanvases(widthName) {
                cCtxM.fillRect(2+qhour*5+Math.trunc(qhour/4)*2,0,5,36);
                break;
             case "N":
-               cCtxS.fillStyle = "#80FF80";
+               cCtxS.fillStyle = "#6080FF";
                cCtxS.fillRect(1+xleft,0,noBins[3],2);
                cCtxS.fillStyle = "#663300";
                cCtxS.fillRect(1+xleft,2,noBins[3],16);
-               cCtxM.fillStyle = "#80FF80";
-               cCtxM.fillRect(2+qhour*5+Math.trunc(qhour/4)*2,0,5,4);
-               cCtxM.fillStyle = "#663300";
-               cCtxM.fillRect(2+qhour*5+Math.trunc(qhour/4)*2,4,5,32);
-               break;
-            case "O":
-               cCtxS.fillStyle = "#FFFF00";
-               cCtxS.fillRect(1+xleft,0,noBins[3],2);
-               cCtxS.fillStyle = "#663300";
-               cCtxS.fillRect(1+xleft,2,noBins[3],16);
-               cCtxM.fillStyle = "#FFFF00";
+               cCtxM.fillStyle = "#6080FF";
                cCtxM.fillRect(2+qhour*5+Math.trunc(qhour/4)*2,0,5,4);
                cCtxM.fillStyle = "#663300";
                cCtxM.fillRect(2+qhour*5+Math.trunc(qhour/4)*2,4,5,32);
@@ -923,19 +930,19 @@ function fillCanvases(widthName) {
                cCtxM.fillRect(2+hour*4+Math.trunc(hour/6)*2,20,8,4);
                cCtxM.fillRect(2+hour*4+Math.trunc(hour/6)*2,28,8,8);
                break;
+            case "U":
             case "V":
             case "W":
             case "X":
-            case "Y":
                cCtxS.fillStyle = "#A000A0";
                cCtxS.fillRect(1+xleft,0,noBins[4],18);
                cCtxM.fillStyle = "#A000A0";
                cCtxM.fillRect(2+hour*4+Math.trunc(hour/6)*2,0,8,36);
                break;
+            case "K":
             case "L":
             case "M":
             case "N":
-            case "O":
                cCtxS.fillStyle = "#663300";
                cCtxS.fillRect(1+xleft,0,noBins[4],18);
                cCtxM.fillStyle = "#663300";
@@ -986,4 +993,3 @@ function fillLegend() {
    cCtx.fillStyle = "#F4F4F4";
    cCtx.fillRect(0,0,6,18);
 }
-
