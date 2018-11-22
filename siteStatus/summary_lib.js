@@ -890,33 +890,33 @@ function fillCanvases() {
                cCtxS.fillStyle = "#80FF80";
                cCtxS.fillRect(1+xleft,0,noBins[4],18);
                cCtxM.fillStyle = "#80FF80";
-               cCtxM.fillRect(2+hour*4+Math.trunc(hour/6)*2,0,8,36);
+               cCtxM.fillRect(2+hour*4+Math.trunc(hour/6)*2,0,4,36);
                break;
             case "w":
                cCtxS.fillStyle = "#FFFF00";
                cCtxS.fillRect(1+xleft,0,noBins[4],18);
                cCtxM.fillStyle = "#FFFF00";
-               cCtxM.fillRect(2+hour*4+Math.trunc(hour/6)*2,0,8,36);
+               cCtxM.fillRect(2+hour*4+Math.trunc(hour/6)*2,0,4,36);
                break;
             case "e":
                cCtxS.fillStyle = "#FF0000";
                cCtxS.fillRect(1+xleft,0,noBins[4],18);
                cCtxM.fillStyle = "#FF0000";
-               cCtxM.fillRect(2+hour*4+Math.trunc(hour/6)*2,0,8,36);
+               cCtxM.fillRect(2+hour*4+Math.trunc(hour/6)*2,0,4,36);
                break;
             case "p":
                cCtxS.fillStyle = "#6080FF";
                cCtxS.fillRect(1+xleft,0,noBins[4],6);
                cCtxS.fillRect(1+xleft,12,noBins[4],6);
                cCtxM.fillStyle = "#6080FF";
-               cCtxM.fillRect(2+hour*4+Math.trunc(hour/6)*2,0,8,12);
-               cCtxM.fillRect(2+hour*4+Math.trunc(hour/6)*2,24,8,12);
+               cCtxM.fillRect(2+hour*4+Math.trunc(hour/6)*2,0,4,12);
+               cCtxM.fillRect(2+hour*4+Math.trunc(hour/6)*2,24,4,12);
                break;
             case "d":
                cCtxS.fillStyle = "#6080FF";
                cCtxS.fillRect(1+xleft,0,noBins[4],18);
                cCtxM.fillStyle = "#6080FF";
-               cCtxM.fillRect(2+hour*4+Math.trunc(hour/6)*2,0,8,36);
+               cCtxM.fillRect(2+hour*4+Math.trunc(hour/6)*2,0,4,36);
                break;
             case "a":
                cCtxS.fillStyle = "#6080FF";
@@ -925,10 +925,10 @@ function fillCanvases() {
                cCtxS.fillRect(1+xleft,10,noBins[4],2);
                cCtxS.fillRect(1+xleft,14,noBins[4],4);
                cCtxM.fillStyle = "#6080FF";
-               cCtxM.fillRect(2+hour*4+Math.trunc(hour/6)*2,0,8,8);
-               cCtxM.fillRect(2+hour*4+Math.trunc(hour/6)*2,12,8,4);
-               cCtxM.fillRect(2+hour*4+Math.trunc(hour/6)*2,20,8,4);
-               cCtxM.fillRect(2+hour*4+Math.trunc(hour/6)*2,28,8,8);
+               cCtxM.fillRect(2+hour*4+Math.trunc(hour/6)*2,0,4,8);
+               cCtxM.fillRect(2+hour*4+Math.trunc(hour/6)*2,12,4,4);
+               cCtxM.fillRect(2+hour*4+Math.trunc(hour/6)*2,20,4,4);
+               cCtxM.fillRect(2+hour*4+Math.trunc(hour/6)*2,28,4,8);
                break;
             case "U":
             case "V":
@@ -937,7 +937,7 @@ function fillCanvases() {
                cCtxS.fillStyle = "#A000A0";
                cCtxS.fillRect(1+xleft,0,noBins[4],18);
                cCtxM.fillStyle = "#A000A0";
-               cCtxM.fillRect(2+hour*4+Math.trunc(hour/6)*2,0,8,36);
+               cCtxM.fillRect(2+hour*4+Math.trunc(hour/6)*2,0,4,36);
                break;
             case "K":
             case "L":
@@ -946,13 +946,13 @@ function fillCanvases() {
                cCtxS.fillStyle = "#663300";
                cCtxS.fillRect(1+xleft,0,noBins[4],18);
                cCtxM.fillStyle = "#663300";
-               cCtxM.fillRect(2+hour*4+Math.trunc(hour/6)*2,0,8,36);
+               cCtxM.fillRect(2+hour*4+Math.trunc(hour/6)*2,0,4,36);
                break;
             default:
                cCtxS.fillStyle = "#F4F4F4";
                cCtxS.fillRect(1+xleft,0,noBins[4],18);
                cCtxM.fillStyle = "#F4F4F4";
-               cCtxM.fillRect(2+hour*4+Math.trunc(hour/6)*2,0,8,36);
+               cCtxM.fillRect(2+hour*4+Math.trunc(hour/6)*2,0,4,36);
          }
       }
    }
@@ -970,7 +970,7 @@ function fillLegend() {
    cCtx.fillRect(0,12,6,6);
    cCtx = document.getElementById('cnvs_lgn_WaitingRoom').getContext('2d');
    cCtx.fillStyle = "#A000A0";
-   cCtx.fillRect(0,0,6,14);
+   cCtx.fillRect(0,4,6,14);
    cCtx = document.getElementById('cnvs_lgn_Warning').getContext('2d');
    cCtx.fillStyle = "#FFFF00";
    cCtx.fillRect(0,0,6,18);
@@ -979,7 +979,7 @@ function fillLegend() {
    cCtx.fillRect(0,0,6,18);
    cCtx = document.getElementById('cnvs_lgn_Morgue').getContext('2d');
    cCtx.fillStyle = "#663300";
-   cCtx.fillRect(0,0,6,16);
+   cCtx.fillRect(0,2,6,16);
    cCtx = document.getElementById('cnvs_lgn_Error').getContext('2d');
    cCtx.fillStyle = "#FF0000";
    cCtx.fillRect(0,0,6,18);

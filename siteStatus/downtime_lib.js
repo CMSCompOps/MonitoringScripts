@@ -6,8 +6,8 @@
 /* ************************************************************************* */
 /* data:                                                                     */
 /* ************************************************************************* */
-var siteMetricLabel = { downtime:         "Site Downtime(s)",
-                        wlcgSAMdowntime:  "Element Downtime(s)" };
+var siteMetricLabel = { downtime:         "Downtime(s)",
+                        wlcgSAMdowntime:  "SAM Downtime(s)" };
 var siteMetricOrder = [ "downtime",
                         "***LINE***",
                         "**Elmnts**" ];
@@ -242,7 +242,7 @@ function writeTodayTable() {
             eName = eName.replace(' ', '');
             // loop over metrics of element:
             for ( var mName in myData.elements[cnt].metrics ) {
-               if ( mName =="wlcgSAMdowntime" ) {
+               if ( mName =="downtime" ) {
                   myTableStr += '<TR>\n   <TD NOWRAP ALIGN="left"> &nbsp &nb' +
                      'sp ' + lName + '\n   <TD NOWRAP>&nbsp;\n';
                   myTableStr += '   <TD COLSPAN="3"><CANVAS ID="cnvs_' +
@@ -727,7 +727,7 @@ function fillTodayCanvases() {
       cData = myData.metrics[mName].today.split("");
       cDom = document.getElementById('cnvs_' + mName + '_s4');
       cCtx = cDom.getContext("2d");
-      mData = Math.min(cData.length, cDom.width / 6.50 );
+      mData = Math.min(cData.length, 96 );
       for ( var qhour=0; qhour < mData; qhour+=1) {
          if ( qhour == 0 ) {
             if ( dataDay % 7 == 0 ) {
@@ -795,12 +795,12 @@ function fillTodayCanvases() {
       var eName = myData.elements[cnt].host + '/' + myData.elements[cnt].type;
       eName = eName.replace(' ', '');
       // loop over metrics of element:
-      mName = "wlcgSAMdowntime";
+      mName = "downtime";
          // s4 canvas, today, 24*4 quarter-hour entries:
          cData = myData.elements[cnt].metrics[mName].today.split("");
          cDom = document.getElementById('cnvs_' + eName + '_' + mName + '_s4');
          cCtx = cDom.getContext("2d");
-         mData = Math.min(cData.length, cDom.width / 6.50 );
+         mData = Math.min(cData.length, 96 );
          for ( var qhour=0; qhour < mData; qhour+=1) {
             if ( qhour == 0 ) {
                if ( dataDay % 7 == 0 ) {

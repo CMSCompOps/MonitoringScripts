@@ -17,7 +17,9 @@ var siteMetricLabel = { LifeStatus:       "Life Status",
                         wlcgSAMsite:      "SAM Status",
                         wlcgSAMservice:   "SAM Status",
                         wlcgSAMdowntime:  "SAM Downtime(s)",
-                        HC15min:          "HammerCloud",
+                        HammerCloud:      "Hammer Cloud",
+                        PhEDExLinks:      "PhEDEx Links",
+                        PhEDEx2hours:     "PhEDEx Links 2h",
                         summary:          "<B>Summary</B>" };
 var siteMetricOrder = [ "LifeStatus", "manualLifeStatus",
                         "ProdStatus", "manualProdStatus",
@@ -26,7 +28,9 @@ var siteMetricOrder = [ "LifeStatus", "manualLifeStatus",
                         "***GGUS***",
                         "downtime",
                         "***LINE***",
-                        "SiteReadiness", "wlcgSAMsite", "HC15min",
+                        "SiteReadiness", "wlcgSAMsite",
+                        "HC15min", "HammerCloud",
+                        "PhEDExLinks", "PhEDEx2hours",
                         "***Othr***",
                         "summary",
                         "***LINE***",
@@ -88,14 +92,16 @@ function dateString2(timeInSeconds) {
 }
 
 function dateString3(timeInSeconds) {
-   // function to return an abbreviated date string like "2017/01/01"
+   // function to return an abbreviated date string like "2017/01/01 00:00"
    var timeStr = "";
 
    var timeObj = new Date( timeInSeconds * 1000 );
 
    timeStr = timeObj.getUTCFullYear() + '/' +
       ("0" + (timeObj.getUTCMonth() + 1)).slice(-2) + '/' +
-      ("0" + timeObj.getUTCDate()).slice(-2);
+      ("0" + timeObj.getUTCDate()).slice(-2) + ' ' +
+      ("0" + timeObj.getUTCHours()).slice(-2) + ':' +
+      ("0" + timeObj.getUTCMinutes()).slice(-2);
 
    return timeStr;
 }
@@ -113,17 +119,108 @@ function dateString4(timeInSeconds) {
    return timeStr;
 }
 
-function dateMidnight(timeInSeconds) {
-   // function to return the time in seconds at midnight of the timestamp
-   var midnight = 0;
+function canvas_clicked(id, event) {
 
-   var timeObj = new Date( timeInSeconds * 1000 );
-   timeObj.setUTCHours(0);
-   timeObj.setUTCMinutes(0);
-   timeObj.setUTCSeconds(0);
-   midnight = Math.trunc( timeObj.getTime() / 1000 );
+   var myArray = id.id.split("/");
+   if ( myArray.length >= 3 ) {
+      var myMetric = myArray[0];
+      var mySecton = myArray[1];
+      var mySitHst = myArray[2];
+   } else {
+      return false;
+   }
 
-   return midnight;
+   var myTime = new Date( myData.time * 1000 );
+   myTime.setUTCHours(0, 0, 0, 0);
+   var myTIS = Math.trunc( myTime.valueOf() / 1000 );
+   var boundingBox = id.getBoundingClientRect();
+   var xcoord = event.clientX - boundingBox.left;
+   var myOffset;
+   var myTarget;
+   var myPeriod;
+   if ( mySecton == "pmonth" ) {
+      myOffset = myTIS - ( 38 * 86400 );
+      myTarget = Math.min(119, Math.max(0, Math.trunc(
+                    ( xcoord - 2 ) * 120 / 780 ) ) );
+      myPeriod = 6 * 60 * 60;
+   } else if ( mySecton == "pweek" ) {
+      myOffset = myTIS - ( 8 * 86400 );
+      myTarget = Math.min(167, Math.max(0, Math.trunc(
+                    ( xcoord - 2 ) * 168 / 730 ) ) );
+      myPeriod = 60 * 60;
+   } else if ( mySecton == "yrday" ) {
+      myOffset = myTIS - 86400;
+      myTarget = Math.min(95, Math.max(0, Math.trunc(
+                    ( xcoord - 2 ) * 96 / 626 ) ) );
+      myPeriod = 15 * 60;
+   } else if ( mySecton == "today" ) {
+      myOffset = myTIS;
+      myTarget = Math.min(95, Math.max(0, Math.trunc(
+                    ( xcoord - 2 ) * 96 / 626 ) ) );
+      myPeriod = 15 * 60;
+   } else if ( mySecton == "fweek" ) {
+      myOffset = myTIS + 86400;
+      myTarget = Math.min(167, Math.max(0, Math.trunc(
+                    ( xcoord - 2 ) * 168 / 730 ) ) );
+      myPeriod = 60 * 60;
+   } else {
+      return false;
+   }
+
+   var myStart;
+   var myEnd;
+   if ( myMetric == "manualLifeStatus" ) {
+      if ( mySecton == "today" ) {
+         id.href = 'https://cmssst.web.cern.ch/cmssst/man_override/cgi/manua' +
+            'lOverride.py/lifestatus';
+      }
+   } else if ( myMetric == "manualProdStatus" ) {
+      if ( mySecton == "today" ) {
+         id.href = 'https://cmssst.web.cern.ch/cmssst/man_override/cgi/manua' +
+            'lOverride.py/prodstatus';
+      }
+   } else if ( myMetric == "manualCrabStatus" ) {
+      if ( mySecton == "today" ) {
+         id.href = 'https://cmssst.web.cern.ch/cmssst/man_override/cgi/manua' +
+            'lOverride.py/crabstatus';
+      }
+   } else if ( myMetric == "wlcgSAMsite" ) {
+      myStart = myOffset + ( ( myTarget - 1 ) * myPeriod );
+      myEnd = myOffset + ( ( myTarget + 2 ) * myPeriod );
+      id.href = 'http://wlcg-sam-cms.cern.ch/templates/ember/#/historicalsmr' +
+         'y/heatMap?profile=CMS_CRITICAL_FULL&site=' + mySitHst +
+         '&start_time=' + dateString3(myStart) + '&end_time=' +
+         dateString3(myEnd) + '&time=manual&view=Test History';
+   } else if ( myMetric == "HC15min" ) {
+      myStart = myOffset + ( myTarget * myPeriod );
+      myEnd = myStart + 86400;
+      id.href = 'http://dashb-ssb.cern.ch/dashboard/request.py/siteviewhisto' +
+         'ry?columnid=217&debug=false#time=custom&start_date=' +
+         dateString4(myStart) + '&end_date=' + dateString4(myEnd) + '&values' +
+         '=false&spline=false&debug=false&resample=false&sites=one&clouds=al' +
+         'l&site=' + mySitHst;
+   } else if ( myMetric == "HammerCloud" ) {
+      var myType;
+      if ( mySecton == "pmonth" ) {
+         myType = "hc6hour";
+      } else if (( mySecton == "pweek" ) || ( mySecton == "fweek" )) {
+         myType = "hc1hour";
+      } else {
+         myType = "hc15min";
+      }
+      myStart = myOffset + ( ( myTarget - 1) * myPeriod );
+      id.href = 'https://cmssst.web.cern.ch/cmssst/siteStatus' +
+         '/log/' + myType + '/' + myStart + '/' + mySitHst;
+   } else if ( myMetric =="wlcgSAMservice" ) {
+      myStart = myOffset + ( ( myTarget - 1 ) * myPeriod );
+      myEnd = myOffset + ( ( myTarget + 2 ) * myPeriod );
+      id.href = 'http://wlcg-sam-cms.cern.ch/templates/ember/#/historicalsmr' +
+         'y/heatMap?profile=CMS_CRITICAL_FULL&hostname=' + mySitHst +
+         '&start_time=' + dateString3(myStart) + '&end_time=' +
+         dateString3(myEnd) + '&time=manual&view=Test History';
+   }
+
+   return false;
 }
 
 function writePmonthTable() {
@@ -134,7 +231,7 @@ function writePmonthTable() {
       '><BIG>&nbsp;</BIG>\n   <TH NOWRAP ALIGN="left"><BIG><B>' +
       dateString2(myData.time - 38 * 86400) + '</B></BIG>\n   <TH NOWRAP ALI' +
       'GN="center"><BIG><B>Previous Month</B></BIG>\n   <TH NOWRAP ALIGN="ri' +
-      'ght"><BIG><B>' + dateString2(myData.time - 8 * 86400) + '</B></BIG>\n';
+      'ght"><BIG><B>' + dateString2(myData.time - 9 * 86400) + '</B></BIG>\n';
 
 
    // loop over metrics in siteMetricOrder and write a table row for each:
@@ -146,14 +243,16 @@ function writePmonthTable() {
       } else if ( siteMetricOrder[mCnt] == "***GGUS***" ) {
          myTableStr += '<TR>\n   <TD ALIGN="left">GGUS tickets:\n' +
             '   <TD NOWRAP>&nbsp;';
-         var nidnight = dateMidnight( myData.time );
+         var myTime = new Date( myData.time * 1000 );
+         myTime.setUTCHours(0, 0, 0, 0);
+         var midnight = Math.trunc( myTime.valueOf() / 1000 );
          myData.ggus.sort();
          // GGUS tickets opened the previous month:
          myTableStr += '\n   <TD COLSPAN="3"><DIV STYLE="text-align: center"' +
             '>&nbsp;';
          for ( var iTckt = 0; iTckt < myData.ggus.length; iTckt += 1 ) {
-            if (( myData.ggus[iTckt][1] >= nidnight - 3283200 ) &&
-                ( myData.ggus[iTckt][1] <= nidnight - 691200 )) {
+            if (( myData.ggus[iTckt][1] >= midnight - 3283200 ) &&
+                ( myData.ggus[iTckt][1] <= midnight - 691200 )) {
                myTableStr += '[<A HREF="https://ggus.eu/?mode=ticket_info&ti' +
                   'cket_id=' + myData.ggus[iTckt][0] + '">' +
                   myData.ggus[iTckt][0] + '</A>]&nbsp;';
@@ -167,30 +266,11 @@ function writePmonthTable() {
          }
          myTableStr += '<TR>\n   <TD NOWRAP ALIGN="left">' + nName + '\n   <' +
             'TD NOWRAP>&nbsp;\n';
-         var urlStr = "";
-         if ( siteMetricOrder[mCnt] == "wlcgSAMsite" ) {
-            myTableStr += '   <TD COLSPAN="3"><A HREF="http://wlcg-sam-cms.c' +
-               'ern.ch/templates/ember/#/historicalsmry/heatMap?profile=CMS_' +
-               'CRITICAL_FULL&site=' + myData.site + '&start_time=' +
-               dateString3(myData.time - 38 * 86400) + ' 00:00&end_time=' +
-               dateString3(myData.time - 8 * 86400) + ' 00:00&time=manual&gr' +
-               'anularity=Daily&view=Service Availability"><CANVAS ID="cnvs_' +
-               siteMetricOrder[mCnt] + '_s1" WIDTH="782" HEIGHT="18"></CANVA' +
-               'S></A>\n';
-         } else if ( siteMetricOrder[mCnt] == "HC15min" ) {
-            myTableStr += '   <TD COLSPAN="3"><A HREF="http://dashb-ssb.cern' +
-               '.ch/dashboard/request.py/siteviewhistory?columnid=217&debug=' +
-               'false#time=custom&start_date=' +
-               dateString4(myData.time - 38 * 86400) + '&end_date=' +
-               dateString4(myData.time - 8 * 86400) + '&values=false&spline=' +
-               'false&debug=false&resample=false&sites=one&clouds=all&site=' +
-               myData.site + '"><CANVAS ID="cnvs_' + siteMetricOrder[mCnt] +
-               '_s1" WIDTH="782" HEIGHT="18"></CANVAS></A>\n';
-         } else {
-            myTableStr += '   <TD COLSPAN="3"><CANVAS ID="cnvs_' +
-               siteMetricOrder[mCnt] + '_s1" WIDTH="782" HEIGHT="18"></CANVA' +
-               'S>\n';
-         }
+         myTableStr += '   <TD COLSPAN="3"><A HREF="javascript:void(0);" ID=' +
+            '"' + siteMetricOrder[mCnt] + '/pmonth/' + myData.site +
+            '" ONMOUSEDOWN="canvas_clicked(this, event)"><CANVAS ID="cnvs_' +
+            siteMetricOrder[mCnt] + '_s1" WIDTH="782" HEIGHT="18"></CANVAS><' +
+            '\A>\n';
       } else if ( siteMetricOrder[mCnt] == "***Othr***" ) {
          // loop over site metrics and write any not in siteMetricOrder:
          for ( var mName in myData.metrics ) {
@@ -231,22 +311,11 @@ function writePmonthTable() {
                   myTableStr += '<TR>\n   <TD NOWRAP ALIGN="left"> &nbsp &nb' +
                      'sp ' + mName + '\n   <TD NOWRAP>&nbsp;\n';
                }
-               if ( mName =="wlcgSAMservice" ) {
-                  myTableStr += '   <TD COLSPAN="3"><A HREF="http://wlcg-sam' +
-                     '-cms.cern.ch/templates/ember/#/historicalsmry/heatMap?' +
-                     'profile=CMS_CRITICAL_FULL&site=' + myData.site +
-                     '&flavours=' + myData.elements[cnt].type +
-                     '&start_time=' + dateString3(myData.time - 38 * 86400) +
-                     ' 00:00&end_time=' +
-                     dateString3(myData.time - 8 * 86400) + ' 00:00&time=man' +
-                     'ual&view=Service Availability"><CANVAS ID="cnvs_' +
-                     eName + '_' + mName + '_s1" WIDTH="782" HEIGHT="18"></C' +
-                     'ANVAS></A>\n';
-               } else {
-                  myTableStr += '   <TD COLSPAN="3"><CANVAS ID="cnvs_' +
-                     eName + '_' + mName + '_s1" WIDTH="782" HEIGHT="18">' +
-                     '</CANVAS>\n';
-               }
+               myTableStr += '   <TD COLSPAN="3"><A HREF="javascript:void(0)' +
+                  ';" ID="' + mName + '/pmonth/' + myData.elements[cnt].host +
+                  '" ONMOUSEDOWN="canvas_clicked(this, event)"><CANVAS ID="c' +
+                  'nvs_' + eName + '_' + mName + '_s1" WIDTH="782" HEIGHT="1' +
+                  '8"></CANVAS><\A>\n';
             }
          }
       }
@@ -286,14 +355,16 @@ function writePweekTable() {
       } else if ( siteMetricOrder[mCnt] == "***GGUS***" ) {
          myTableStr += '<TR>\n   <TD ALIGN="left">GGUS tickets:\n' +
             '   <TD NOWRAP>&nbsp;';
-         var nidnight = dateMidnight( myData.time );
+         var myTime = new Date( myData.time * 1000 );
+         myTime.setUTCHours(0, 0, 0, 0);
+         var midnight = Math.trunc( myTime.valueOf() / 1000 );
          myData.ggus.sort();
          // GGUS tickets opened the previous week:
          myTableStr += '\n   <TD COLSPAN="3"><DIV STYLE="text-align: center"' +
             '>&nbsp;';
          for ( var iTckt = 0; iTckt < myData.ggus.length; iTckt += 1 ) {
-            if (( myData.ggus[iTckt][1] >= nidnight - 691200 ) &&
-                ( myData.ggus[iTckt][1] <= nidnight - 86400 )) {
+            if (( myData.ggus[iTckt][1] >= midnight - 691200 ) &&
+                ( myData.ggus[iTckt][1] <= midnight - 86400 )) {
                myTableStr += '[<A HREF="https://ggus.eu/?mode=ticket_info&ti' +
                   'cket_id=' + myData.ggus[iTckt][0] + '">' +
                   myData.ggus[iTckt][0] + '</A>]&nbsp;';
@@ -307,29 +378,11 @@ function writePweekTable() {
          }
          myTableStr += '<TR>\n   <TD NOWRAP ALIGN="left">' + nName + '\n   <' +
             'TD NOWRAP>&nbsp;\n';
-         var urlStr = "";
-         if ( siteMetricOrder[mCnt] == "wlcgSAMsite" ) {
-            myTableStr += '   <TD COLSPAN="3"><A HREF="http://wlcg-sam-cms.c' +
-               'ern.ch/templates/ember/#/historicalsmry/heatMap?profile=CMS_' +
-               'CRITICAL_FULL&site=' + myData.site + '&start_time=' +
-               dateString3(myData.time - 8 * 86400) + ' 00:00&end_time=' +
-               dateString3(myData.time - 86400) + ' 00:00&time=manual&view=T' +
-               'est History"><CANVAS ID="cnvs_' + siteMetricOrder[mCnt] +
-               '_s2" WIDTH="730" HEIGHT="18"></CANVAS></A>\n';
-         } else if ( siteMetricOrder[mCnt] == "HC15min" ) {
-            myTableStr += '   <TD COLSPAN="3"><A HREF="http://dashb-ssb.cern' +
-               '.ch/dashboard/request.py/siteviewhistory?columnid=217&debug=' +
-               'false#time=custom&start_date=' +
-               dateString4(myData.time - 8 * 86400) + '&end_date=' +
-               dateString4(myData.time - 86400) + '&values=false&spline=fals' +
-               'e&debug=false&resample=false&sites=one&clouds=all&site=' +
-               myData.site + '"><CANVAS ID="cnvs_' + siteMetricOrder[mCnt] +
-               '_s2" WIDTH="730" HEIGHT="18"></CANVAS></A>\n';
-         } else {
-            myTableStr += '   <TD COLSPAN="3"><CANVAS ID="cnvs_' +
-               siteMetricOrder[mCnt] + '_s2" WIDTH="730" HEIGHT="18"></CANVA' +
-               'S>\n';
-         }
+         myTableStr += '   <TD COLSPAN="3"><A HREF="javascript:void(0);" ID=' +
+            '"' + siteMetricOrder[mCnt] + '/pweek/' + myData.site +
+            '" ONMOUSEDOWN="canvas_clicked(this, event)"><CANVAS ID="cnvs_' +
+            siteMetricOrder[mCnt] + '_s2" WIDTH="730" HEIGHT="18"></CANVAS><' +
+            '/A>\n';
       } else if ( siteMetricOrder[mCnt] == "***Othr***" ) {
          // loop over site metrics and write any not in siteMetricOrder:
          for ( var mName in myData.metrics ) {
@@ -370,21 +423,11 @@ function writePweekTable() {
                   myTableStr += '<TR>\n   <TD NOWRAP ALIGN="left"> &nbsp &nb' +
                      'sp ' + mName + '\n   <TD NOWRAP>&nbsp;\n';
                }
-               if ( mName =="wlcgSAMservice" ) {
-                  myTableStr += '   <TD COLSPAN="3"><A HREF="http://wlcg-sam' +
-                     '-cms.cern.ch/templates/ember/#/historicalsmry/heatMap?' +
-                     'profile=CMS_CRITICAL_FULL&site=' + myData.site + '&hos' +
-                     'tname=' + myData.elements[cnt].host + '&start_time=' +
-                     dateString3(myData.time - 8 * 86400) +
-                     ' 00:00&end_time=' + dateString3(myData.time - 86400) +
-                     ' 00:00&time=manual&view=Test History"><CANVAS ID="cnvs' +
-                     '_' + eName + '_' + mName + '_s2" WIDTH="730" HEIGHT="1' +
-                     '8"></CANVAS></A>\n';
-               } else {
-                  myTableStr += '   <TD COLSPAN="3"><CANVAS ID="cnvs_' +
-                     eName + '_' + mName + '_s2" WIDTH="730" HEIGHT="18">' +
-                     '</CANVAS>\n';
-               }
+               myTableStr += '   <TD COLSPAN="3"><A HREF="javascript:void(0)' +
+                  ';" ID="' + mName + '/pweek/' + myData.elements[cnt].host +
+                  '" ONMOUSEDOWN="canvas_clicked(this, event)"><CANVAS ID="c' +
+                  'nvs_' + eName + '_' + mName + '_s2" WIDTH="730" HEIGHT="1' +
+                  '8"></CANVAS></A>\n';
             }
          }
       }
@@ -424,14 +467,16 @@ function writeYesterdayTable() {
       } else if ( siteMetricOrder[mCnt] == "***GGUS***" ) {
          myTableStr += '<TR>\n   <TD ALIGN="left">GGUS tickets:\n' +
             '   <TD NOWRAP>&nbsp;';
-         var nidnight = dateMidnight( myData.time );
+         var myTime = new Date( myData.time * 1000 );
+         myTime.setUTCHours(0, 0, 0, 0);
+         var midnight = Math.trunc( myTime.valueOf() / 1000 );
          myData.ggus.sort();
          // GGUS tickets opened yesterday:
          myTableStr += '\n   <TD COLSPAN="3"><DIV STYLE="text-align: center"' +
             '>&nbsp;';
          for ( var iTckt = 0; iTckt < myData.ggus.length; iTckt += 1 ) {
-            if (( myData.ggus[iTckt][1] >= nidnight - 86400 ) &&
-                ( myData.ggus[iTckt][1] <= nidnight )) {
+            if (( myData.ggus[iTckt][1] >= midnight - 86400 ) &&
+                ( myData.ggus[iTckt][1] <= midnight )) {
                myTableStr += '[<A HREF="https://ggus.eu/?mode=ticket_info&ti' +
                   'cket_id=' + myData.ggus[iTckt][0] + '">' +
                   myData.ggus[iTckt][0] + '</A>]&nbsp;';
@@ -445,29 +490,11 @@ function writeYesterdayTable() {
          }
          myTableStr += '<TR>\n   <TD NOWRAP ALIGN="left">' + nName + '\n   <' +
             'TD NOWRAP>&nbsp;\n';
-         var urlStr = "";
-         if ( siteMetricOrder[mCnt] == "wlcgSAMsite" ) {
-            myTableStr += '   <TD COLSPAN="3"><A HREF="http://wlcg-sam-cms.c' +
-               'ern.ch/templates/ember/#/historicalsmry/heatMap?profile=CMS_' +
-               'CRITICAL_FULL&site=' + myData.site + '&start_time=' +
-               dateString3(myData.time - 86400) + ' 00:00&end_time=' +
-               dateString3( myData.time) + ' 00:00&time=manual&view=Test His' +
-               'tory"><CANVAS ID="cnvs_' + siteMetricOrder[mCnt] + '_s3" WID' +
-               'TH="626" HEIGHT="18"></CANVAS></A>\n';
-         } else if ( siteMetricOrder[mCnt] == "HC15min" ) {
-            myTableStr += '   <TD COLSPAN="3"><A HREF="http://dashb-ssb.cern' +
-               '.ch/dashboard/request.py/siteviewhistory?columnid=217&debug=' +
-               'false#time=custom&start_date=' +
-               dateString4(myData.time - 86400) + '&end_date=' +
-               dateString4(myData.time) + '&values=false&spline=false&debug=' +
-               'false&resample=false&sites=one&clouds=all&site=' +
-               myData.site + '"><CANVAS ID="cnvs_' + siteMetricOrder[mCnt] +
-               '_s3" WIDTH="626" HEIGHT="18"></CANVAS></A>\n';
-         } else {
-            myTableStr += '   <TD COLSPAN="3"><CANVAS ID="cnvs_' +
-               siteMetricOrder[mCnt] + '_s3" WIDTH="626" HEIGHT="18"></CANVA' +
-               'S>\n';
-         }
+         myTableStr += '   <TD COLSPAN="3"><A HREF="javascript:void(0);" ID=' +
+            '"' + siteMetricOrder[mCnt] + '/yrday/' + myData.site +
+            '" ONMOUSEDOWN="canvas_clicked(this, event)"><CANVAS ID="cnvs_' +
+            siteMetricOrder[mCnt] + '_s3" WIDTH="626" HEIGHT="18"></CANVAS><' +
+            '/A>\n';
       } else if ( siteMetricOrder[mCnt] == "***Othr***" ) {
          // loop over site metrics and write any not in siteMetricOrder:
          for ( var mName in myData.metrics ) {
@@ -508,20 +535,11 @@ function writeYesterdayTable() {
                   myTableStr += '<TR>\n   <TD NOWRAP ALIGN="left"> &nbsp &nb' +
                      'sp ' + mName + '\n   <TD NOWRAP>&nbsp;\n';
                }
-               if ( mName =="wlcgSAMservice" ) {
-                  myTableStr += '   <TD COLSPAN="3"><A HREF="http://wlcg-sam' +
-                     '-cms.cern.ch/templates/ember/#/historicalsmry/heatMap?' +
-                     'profile=CMS_CRITICAL_FULL&site=' + myData.site + '&hos' +
-                     'tname=' + myData.elements[cnt].host + '&start_time=' +
-                     dateString3(myData.time - 86400) + ' 00:00&end_time=' +
-                     dateString3(myData.time) + ' 00:00&time=manual&view=Tes' +
-                     't History"><CANVAS ID="cnvs' + '_' + eName + '_' +
-                     mName + '_s3" WIDTH="626" HEIGHT="18"></CANVAS></A>\n';
-               } else {
-                  myTableStr += '   <TD COLSPAN="3"><CANVAS ID="cnvs_' +
-                     eName + '_' + mName + '_s3" WIDTH="626" HEIGHT="18">' +
-                     '</CANVAS>\n';
-               }
+               myTableStr += '   <TD COLSPAN="3"><A HREF="javascript:void(0)' +
+                  ';" ID="' + mName + '/yrday/' + myData.elements[cnt].host +
+                  '" ONMOUSEDOWN="canvas_clicked(this, event)"><CANVAS ID="c' +
+                  'nvs_' + eName + '_' + mName + '_s3" WIDTH="626" HEIGHT="1' +
+                  '8"></CANVAS></A>\n';
             }
          }
       }
@@ -560,13 +578,15 @@ function writeTodayTable() {
       } else if ( siteMetricOrder[mCnt] == "***GGUS***" ) {
          myTableStr += '<TR>\n   <TD ALIGN="left">GGUS tickets:\n' +
             '   <TD NOWRAP>&nbsp;';
-         var nidnight = dateMidnight( myData.time );
+         var myTime = new Date( myData.time * 1000 );
+         myTime.setUTCHours(0, 0, 0, 0);
+         var midnight = Math.trunc( myTime.valueOf() / 1000 );
          myData.ggus.sort();
          // GGUS tickets opened today:
          myTableStr += '\n   <TD COLSPAN="3"><DIV STYLE="text-align: center"' +
             '>&nbsp;';
          for ( var iTckt = 0; iTckt < myData.ggus.length; iTckt += 1 ) {
-            if ( myData.ggus[iTckt][1] >= nidnight ) {
+            if ( myData.ggus[iTckt][1] >= midnight ) {
                myTableStr += '[<A HREF="https://ggus.eu/?mode=ticket_info&ti' +
                   'cket_id=' + myData.ggus[iTckt][0] + '">' +
                   myData.ggus[iTckt][0] + '</A>]&nbsp;';
@@ -580,29 +600,11 @@ function writeTodayTable() {
          }
          myTableStr += '<TR>\n   <TD NOWRAP ALIGN="left">' + nName + '\n   <' +
             'TD NOWRAP>&nbsp;\n';
-         var urlStr = "";
-         if ( siteMetricOrder[mCnt] == "wlcgSAMsite" ) {
-            myTableStr += '   <TD COLSPAN="3"><A HREF="http://wlcg-sam-cms.c' +
-               'ern.ch/templates/ember/#/historicalsmry/heatMap?profile=CMS_' +
-               'CRITICAL_FULL&site=' + myData.site + '&start_time=' +
-               dateString3(myData.time) + ' 00:00&end_time=' +
-               dateString3(myData.time + 86400) + ' 00:00&time=manual&view=T' +
-               'est History"><CANVAS ID="cnvs_' + siteMetricOrder[mCnt] +
-               '_s4" WIDTH="626" HEIGHT="18"></CANVAS></A>\n';
-         } else if ( siteMetricOrder[mCnt] == "HC15min" ) {
-            myTableStr += '   <TD COLSPAN="3"><A HREF="http://dashb-ssb.cern' +
-               '.ch/dashboard/request.py/siteviewhistory?columnid=217&debug=' +
-               'false#time=custom&start_date=' + dateString4(myData.time) +
-               '&end_date=' + dateString4(myData.time + 86400) + '&values=fa' +
-               'lse&spline=false&debug=false&resample=false&sites=one&clouds' +
-               '=all&site=' + myData.site + '"><CANVAS ID="cnvs_' +
-               siteMetricOrder[mCnt] + '_s4" WIDTH="626" HEIGHT="18">' +
-               '</CANVAS></A>\n';
-         } else {
-            myTableStr += '   <TD COLSPAN="3"><CANVAS ID="cnvs_' +
-               siteMetricOrder[mCnt] + '_s4" WIDTH="626" HEIGHT="18">' +
-               '</CANVAS>\n';
-         }
+         myTableStr += '   <TD COLSPAN="3"><A HREF="javascript:void(0);" ID=' +
+            '"' + siteMetricOrder[mCnt] + '/today/' + myData.site +
+            '" ONMOUSEDOWN="canvas_clicked(this, event)"><CANVAS ID="cnvs_' +
+            siteMetricOrder[mCnt] + '_s4" WIDTH="626" HEIGHT="18"></CANVAS><' +
+            '/A>\n';
       } else if ( siteMetricOrder[mCnt] == "***Othr***" ) {
          // loop over site metrics and write any not in siteMetricOrder:
          for ( var mName in myData.metrics ) {
@@ -643,21 +645,11 @@ function writeTodayTable() {
                   myTableStr += '<TR>\n   <TD NOWRAP ALIGN="left"> &nbsp &nb' +
                      'sp ' + mName + '\n   <TD NOWRAP>&nbsp;\n';
                }
-               if ( mName =="wlcgSAMservice" ) {
-                  myTableStr += '   <TD COLSPAN="3"><A HREF="http://wlcg-sam' +
-                     '-cms.cern.ch/templates/ember/#/historicalsmry/heatMap?' +
-                     'profile=CMS_CRITICAL_FULL&site=' + myData.site + '&hos' +
-                     'tname=' + myData.elements[cnt].host + '&start_time=' +
-                     dateString3(myData.time) + ' 00:00&end_time=' +
-                     dateString3(myData.time + 86400) + ' 00:00&time=manual&' +
-                     'view=Test History"><CANVAS ID="cnvs' + '_' + eName +
-                     '_' + mName + '_s4" WIDTH="626" HEIGHT="18">' +
-                     '</CANVAS></A>\n';
-               } else {
-                  myTableStr += '   <TD COLSPAN="3"><CANVAS ID="cnvs_' +
-                     eName + '_' + mName + '_s4" WIDTH="626" HEIGHT="18">' +
-                     '</CANVAS>\n';
-               }
+               myTableStr += '   <TD COLSPAN="3"><A HREF="javascript:void(0)' +
+                  ';" ID="' + mName + '/today/' + myData.elements[cnt].host +
+                  '" ONMOUSEDOWN="canvas_clicked(this, event)"><CANVAS ID="c' +
+                  'nvs_' + eName + '_' + mName + '_s4" WIDTH="626" HEIGHT="1' +
+                  '8"></CANVAS></A>\n';
             }
          }
       }
@@ -697,13 +689,15 @@ function writeFweekTable() {
       } else if ( siteMetricOrder[mCnt] == "***GGUS***" ) {
          myTableStr += '<TR>\n   <TD ALIGN="left">GGUS tickets:\n' +
             '   <TD NOWRAP>&nbsp;';
-         var nidnight = dateMidnight( myData.time );
+         var myTime = new Date( myData.time * 1000 );
+         myTime.setUTCHours(0, 0, 0, 0);
+         var midnight = Math.trunc( myTime.valueOf() / 1000 );
          myData.ggus.sort();
          // GGUS tickets opened the following week:
          myTableStr += '\n   <TD COLSPAN="3"><DIV STYLE="text-align: center"' +
             '>&nbsp;';
          for ( var iTckt = 0; iTckt < myData.ggus.length; iTckt += 1 ) {
-            if ( myData.ggus[iTckt][1] >= nidnight + 86400 ) {
+            if ( myData.ggus[iTckt][1] >= midnight + 86400 ) {
                myTableStr += '[<A HREF="https://ggus.eu/?mode=ticket_info&ti' +
                   'cket_id=' + myData.ggus[iTckt][0] + '">' +
                   myData.ggus[iTckt][0] + '</A>]&nbsp;';
@@ -717,29 +711,11 @@ function writeFweekTable() {
          }
          myTableStr += '<TR>\n   <TD NOWRAP ALIGN="left">' + nName + '\n   <' +
             'TD NOWRAP>&nbsp;\n';
-         var urlStr = "";
-         if ( siteMetricOrder[mCnt] == "wlcgSAMsite" ) {
-            myTableStr += '   <TD COLSPAN="3"><A HREF="http://wlcg-sam-cms.c' +
-               'ern.ch/templates/ember/#/historicalsmry/heatMap?profile=CMS_' +
-               'CRITICAL_FULL&site=' + myData.site + '&start_time=' +
-               dateString3(myData.time + 86400) + ' 00:00&end_time=' +
-               dateString3(myData.time + 8 * 86400) + ' 00:00&time=manual&vi' +
-               'ew=Test History"><CANVAS ID="cnvs_' + siteMetricOrder[mCnt] +
-               '_s5" WIDTH="730" HEIGHT="18"></CANVAS></A>\n';
-         } else if ( siteMetricOrder[mCnt] == "HC15min" ) {
-            myTableStr += '   <TD COLSPAN="3"><A HREF="http://dashb-ssb.cern' +
-               '.ch/dashboard/request.py/siteviewhistory?columnid=217&debug=' +
-               'false#time=custom&start_date=' +
-               dateString4(myData.time + 86400) + '&end_date=' +
-               dateString4(myData.time + 8 * 86400) + '&values=false&spline=' +
-               'false&debug=false&resample=false&sites=one&clouds=all&site=' +
-               myData.site + '"><CANVAS ID="cnvs_' + siteMetricOrder[mCnt] +
-               '_s5" WIDTH="730" HEIGHT="18"></CANVAS></A>\n';
-         } else {
-            myTableStr += '   <TD COLSPAN="3"><CANVAS ID="cnvs_' +
-               siteMetricOrder[mCnt] + '_s5" WIDTH="730" HEIGHT="18"></CANVA' +
-               'S>\n';
-         }
+         myTableStr += '   <TD COLSPAN="3"><A HREF="javascript:void(0);" ID=' +
+            '"' + siteMetricOrder[mCnt] + '/fweek/' + myData.site +
+            '" ONMOUSEDOWN="canvas_clicked(this, event)"><CANVAS ID="cnvs_' +
+            siteMetricOrder[mCnt] + '_s5" WIDTH="730" HEIGHT="18"></CANVAS><' +
+            '/A>\n';
       } else if ( siteMetricOrder[mCnt] == "***Othr***" ) {
          // loop over site metrics and write any not in siteMetricOrder:
          for ( var mName in myData.metrics ) {
@@ -780,20 +756,11 @@ function writeFweekTable() {
                   myTableStr += '<TR>\n   <TD NOWRAP ALIGN="left"> &nbsp &nb' +
                      'sp ' + mName + '\n   <TD NOWRAP>&nbsp;\n';
                }
-               if ( mName =="wlcgSAMservice" ) {
-                  myTableStr += '   <TD COLSPAN="3"><A HREF="http://wlcg-sam' +
-                     '-cms.cern.ch/templates/ember/#/historicalsmry/heatMap?' +
-                     'profile=CMS_CRITICAL_FULL&site=' + myData.site + '&hos' +
-                     'tname=' + myData.elements[cnt].host + '&start_time=' +
-                     dateString3(myData.time + 86400) + ' 00:00&end_time=' +
-                     dateString3(myData.time + 8 * 86400) + ' 00:00&time=man' +
-                     'ual&view=Test History"><CANVAS ID="cnvs_' + eName + '_' +
-                     mName + '_s5" WIDTH="730" HEIGHT="18"></CANVAS></A>\n';
-               } else {
-                  myTableStr += '   <TD COLSPAN="3"><CANVAS ID="cnvs_' +
-                     eName + '_' + mName + '_s5" WIDTH="730" HEIGHT="18">' +
-                     '</CANVAS>\n';
-               }
+               myTableStr += '   <TD COLSPAN="3"><A HREF="javascript:void(0)' +
+                  ';" ID="' + mName + '/fweek/' + myData.elements[cnt].host +
+                  '" ONMOUSEDOWN="canvas_clicked(this, event)"><CANVAS ID="c' +
+                  'nvs_' + eName + '_' + mName + '_s5" WIDTH="730" HEIGHT="1' +
+                  '8"></CANVAS></A>\n';
             }
          }
       }
@@ -842,7 +809,7 @@ function fillPmonthCanvases() {
       cData = myData.metrics[mName].pmonth.split("");
       cDom = document.getElementById('cnvs_' + mName + '_s1');
       cCtx = cDom.getContext("2d");
-      mData = Math.min(cData.length, cDom.width / 6.50 );
+      mData = Math.min(cData.length, 120 );
       for ( var qday=0; qday < mData; qday+=1) {
          if ( qday % 4 == 0 ) {
             if ( (dataDay - 38 + Math.trunc(qday/4)) % 7 == 0 ) {
@@ -884,11 +851,17 @@ function fillPmonthCanvases() {
                cCtx.fillRect(2+6*qday+2*Math.trunc(qday/4),10,6,2);
                cCtx.fillRect(2+6*qday+2*Math.trunc(qday/4),14,6,4);
                break;
+            case "U":
+            case "V":
             case "W":
+            case "X":
                cCtx.fillStyle = "#A000A0";
                cCtx.fillRect(2+6*qday+2*Math.trunc(qday/4),0,6,18);
                break;
+            case "K":
+            case "L":
             case "M":
+            case "N":
                cCtx.fillStyle = "#663300";
                cCtx.fillRect(2+6*qday+2*Math.trunc(qday/4),0,6,18);
                break;
@@ -909,7 +882,7 @@ function fillPmonthCanvases() {
          cData = myData.elements[cnt].metrics[mName].pmonth.split("");
          cDom = document.getElementById('cnvs_' + eName + '_' + mName + '_s1');
          cCtx = cDom.getContext("2d");
-         mData = Math.min(cData.length, cDom.width / 6.50 );
+         mData = Math.min(cData.length, 120 );
          for ( var qday=0; qday < mData; qday+=1) {
             if ( qday % 4 == 0 ) {
                if ( (dataDay - 38 + Math.trunc(qday/4)) % 7 == 0 ) {
@@ -951,11 +924,17 @@ function fillPmonthCanvases() {
                   cCtx.fillRect(2+6*qday+2*Math.trunc(qday/4),10,6,2);
                   cCtx.fillRect(2+6*qday+2*Math.trunc(qday/4),14,6,4);
                   break;
+               case "U":
+               case "V":
                case "W":
+               case "X":
                   cCtx.fillStyle = "#A000A0";
                   cCtx.fillRect(2+6*qday+2*Math.trunc(qday/4),0,6,18);
                   break;
+               case "K":
+               case "L":
                case "M":
+               case "N":
                   cCtx.fillStyle = "#663300";
                   cCtx.fillRect(2+6*qday+2*Math.trunc(qday/4),0,6,18);
                   break;
@@ -984,7 +963,7 @@ function fillPweekCanvases() {
       cData = myData.metrics[mName].pweek.split("");
       cDom = document.getElementById('cnvs_' + mName + '_s2');
       cCtx = cDom.getContext("2d");
-      mData = Math.min(cData.length, cDom.width / 4.33 );
+      mData = Math.min(cData.length, 168 );
       for ( var hour=0; hour < mData; hour+=1) {
          if ( hour % 24 == 0 ) {
             if ( (dataDay - 8 + Math.trunc(hour/24)) % 7 == 0 ) {
@@ -1028,13 +1007,49 @@ function fillPweekCanvases() {
                cCtx.fillRect(2+4*hour+2*Math.trunc(hour/6),10,4,2);
                cCtx.fillRect(2+4*hour+2*Math.trunc(hour/6),14,4,4);
                break;
+            case "U":
+               cCtx.fillStyle = "#80FF80";
+               cCtx.fillRect(2+4*hour+2*Math.trunc(hour/6),0,4,4);
+               cCtx.fillStyle = "#A000A0";
+               cCtx.fillRect(2+4*hour+2*Math.trunc(hour/6),4,4,14);
+               break;
+            case "V":
+               cCtx.fillStyle = "#FFFF00";
+               cCtx.fillRect(2+4*hour+2*Math.trunc(hour/6),0,4,4);
+               cCtx.fillStyle = "#A000A0";
+               cCtx.fillRect(2+4*hour+2*Math.trunc(hour/6),4,4,14);
+               break;
             case "W":
                cCtx.fillStyle = "#A000A0";
                cCtx.fillRect(2+4*hour+2*Math.trunc(hour/6),0,4,18);
                break;
+            case "X":
+               cCtx.fillStyle = "#6080FF";
+               cCtx.fillRect(2+4*hour+2*Math.trunc(hour/6),0,4,4);
+               cCtx.fillStyle = "#A000A0";
+               cCtx.fillRect(2+4*hour+2*Math.trunc(hour/6),4,4,14);
+               break;
+            case "K":
+               cCtx.fillStyle = "#80FF80";
+               cCtx.fillRect(2+4*hour+2*Math.trunc(hour/6),0,4,2);
+               cCtx.fillStyle = "#663300";
+               cCtx.fillRect(2+4*hour+2*Math.trunc(hour/6),2,4,16);
+               break;
+            case "L":
+               cCtx.fillStyle = "#FFFF00";
+               cCtx.fillRect(2+4*hour+2*Math.trunc(hour/6),0,4,2);
+               cCtx.fillStyle = "#663300";
+               cCtx.fillRect(2+4*hour+2*Math.trunc(hour/6),2,4,16);
+               break;
             case "M":
                cCtx.fillStyle = "#663300";
                cCtx.fillRect(2+4*hour+2*Math.trunc(hour/6),0,4,18);
+               break;
+            case "K":
+               cCtx.fillStyle = "#6080FF";
+               cCtx.fillRect(2+4*hour+2*Math.trunc(hour/6),0,4,2);
+               cCtx.fillStyle = "#663300";
+               cCtx.fillRect(2+4*hour+2*Math.trunc(hour/6),2,4,16);
                break;
             default:
                cCtx.fillStyle = "#F4F4F4";
@@ -1053,7 +1068,7 @@ function fillPweekCanvases() {
          cData = myData.elements[cnt].metrics[mName].pweek.split("");
          cDom = document.getElementById('cnvs_' + eName + '_' + mName + '_s2');
          cCtx = cDom.getContext("2d");
-         mData = Math.min(cData.length, cDom.width / 4.33 );
+         mData = Math.min(cData.length, 168 );
          for ( var hour=0; hour < mData; hour+=1) {
             if ( hour % 24 == 0 ) {
                if ( (dataDay - 8 + Math.trunc(hour/24)) % 7 == 0 ) {
@@ -1097,13 +1112,49 @@ function fillPweekCanvases() {
                   cCtx.fillRect(2+4*hour+2*Math.trunc(hour/6),10,4,2);
                   cCtx.fillRect(2+4*hour+2*Math.trunc(hour/6),14,4,4);
                   break;
+               case "U":
+                  cCtx.fillStyle = "#80FF80";
+                  cCtx.fillRect(2+4*hour+2*Math.trunc(hour/6),0,4,4);
+                  cCtx.fillStyle = "#A000A0";
+                  cCtx.fillRect(2+4*hour+2*Math.trunc(hour/6),4,4,14);
+                  break;
+               case "V":
+                  cCtx.fillStyle = "#FFFF00";
+                  cCtx.fillRect(2+4*hour+2*Math.trunc(hour/6),0,4,4);
+                  cCtx.fillStyle = "#A000A0";
+                  cCtx.fillRect(2+4*hour+2*Math.trunc(hour/6),4,4,14);
+                  break;
                case "W":
                   cCtx.fillStyle = "#A000A0";
                   cCtx.fillRect(2+4*hour+2*Math.trunc(hour/6),0,4,18);
                   break;
+               case "X":
+                  cCtx.fillStyle = "#6080FF";
+                  cCtx.fillRect(2+4*hour+2*Math.trunc(hour/6),0,4,4);
+                  cCtx.fillStyle = "#A000A0";
+                  cCtx.fillRect(2+4*hour+2*Math.trunc(hour/6),4,4,14);
+                  break;
+               case "K":
+                  cCtx.fillStyle = "#80FF80";
+                  cCtx.fillRect(2+4*hour+2*Math.trunc(hour/6),0,4,2);
+                  cCtx.fillStyle = "#663300";
+                  cCtx.fillRect(2+4*hour+2*Math.trunc(hour/6),2,4,16);
+                  break;
+               case "L":
+                  cCtx.fillStyle = "#FFFF00";
+                  cCtx.fillRect(2+4*hour+2*Math.trunc(hour/6),0,4,2);
+                  cCtx.fillStyle = "#663300";
+                  cCtx.fillRect(2+4*hour+2*Math.trunc(hour/6),2,4,16);
+                  break;
                case "M":
                   cCtx.fillStyle = "#663300";
                   cCtx.fillRect(2+4*hour+2*Math.trunc(hour/6),0,4,18);
+                  break;
+               case "N":
+                  cCtx.fillStyle = "#6080FF";
+                  cCtx.fillRect(2+4*hour+2*Math.trunc(hour/6),0,4,2);
+                  cCtx.fillStyle = "#663300";
+                  cCtx.fillRect(2+4*hour+2*Math.trunc(hour/6),2,4,16);
                   break;
                default:
                   cCtx.fillStyle = "#F4F4F4";
@@ -1130,7 +1181,7 @@ function fillYesterdayCanvases() {
       cData = myData.metrics[mName].yesterday.split("");
       cDom = document.getElementById('cnvs_' + mName + '_s3');
       cCtx = cDom.getContext("2d");
-      mData = Math.min(cData.length, cDom.width / 6.50 );
+      mData = Math.min(cData.length, 96 );
       for ( var qhour=0; qhour < mData; qhour+=1) {
          if ( qhour == 0 ) {
             if ( dataDay % 7 == 0 ) {
@@ -1176,13 +1227,49 @@ function fillYesterdayCanvases() {
                cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),10,6,2);
                cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),14,6,4);
                break;
+            case "U":
+               cCtx.fillStyle = "#80FF80";
+               cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),0,6,4);
+               cCtx.fillStyle = "#A000A0";
+               cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),4,6,14);
+               break;
+            case "V":
+               cCtx.fillStyle = "#FFFF00";
+               cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),0,6,4);
+               cCtx.fillStyle = "#A000A0";
+               cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),4,6,14);
+               break;
             case "W":
                cCtx.fillStyle = "#A000A0";
                cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),0,6,18);
                break;
+            case "X":
+               cCtx.fillStyle = "#6080FF";
+               cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),0,6,4);
+               cCtx.fillStyle = "#A000A0";
+               cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),4,6,14);
+               break;
+            case "K":
+               cCtx.fillStyle = "#80FF80";
+               cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),0,6,2);
+               cCtx.fillStyle = "#663300";
+               cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),2,6,16);
+               break;
+            case "L":
+               cCtx.fillStyle = "#FFFF00";
+               cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),0,6,2);
+               cCtx.fillStyle = "#663300";
+               cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),2,6,16);
+               break;
             case "M":
                cCtx.fillStyle = "#663300";
                cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),0,6,18);
+               break;
+            case "N":
+               cCtx.fillStyle = "#6080FF";
+               cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),0,6,2);
+               cCtx.fillStyle = "#663300";
+               cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),2,6,16);
                break;
             default:
                cCtx.fillStyle = "#F4F4F4";
@@ -1201,7 +1288,7 @@ function fillYesterdayCanvases() {
          cData = myData.elements[cnt].metrics[mName].yesterday.split("");
          cDom = document.getElementById('cnvs_' + eName + '_' + mName + '_s3');
          cCtx = cDom.getContext("2d");
-         mData = Math.min(cData.length, cDom.width / 6.50 );
+         mData = Math.min(cData.length, 96 );
          for ( var qhour=0; qhour < mData; qhour+=1) {
             if ( qhour == 0 ) {
                if ( dataDay % 7 == 0 ) {
@@ -1247,13 +1334,49 @@ function fillYesterdayCanvases() {
                   cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),10,6,2);
                   cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),14,6,4);
                   break;
+               case "U":
+                  cCtx.fillStyle = "#80FF80";
+                  cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),0,6,4);
+                  cCtx.fillStyle = "#A000A0";
+                  cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),4,6,14);
+                  break;
+               case "V":
+                  cCtx.fillStyle = "#FFFF00";
+                  cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),0,6,4);
+                  cCtx.fillStyle = "#A000A0";
+                  cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),4,6,14);
+                  break;
                case "W":
                   cCtx.fillStyle = "#A000A0";
                   cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),0,6,18);
                   break;
+               case "X":
+                  cCtx.fillStyle = "#6080FF";
+                  cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),0,6,4);
+                  cCtx.fillStyle = "#A000A0";
+                  cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),4,6,14);
+                  break;
+               case "K":
+                  cCtx.fillStyle = "#80FF80";
+                  cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),0,6,2);
+                  cCtx.fillStyle = "#663300";
+                  cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),2,6,16);
+                  break;
+               case "L":
+                  cCtx.fillStyle = "#FFFF00";
+                  cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),0,6,2);
+                  cCtx.fillStyle = "#663300";
+                  cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),2,6,16);
+                  break;
                case "M":
                   cCtx.fillStyle = "#663300";
                   cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),0,6,18);
+                  break;
+               case "N":
+                  cCtx.fillStyle = "#6080FF";
+                  cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),0,6,2);
+                  cCtx.fillStyle = "#663300";
+                  cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),2,6,16);
                   break;
                default:
                   cCtx.fillStyle = "#F4F4F4";
@@ -1280,7 +1403,7 @@ function fillTodayCanvases() {
       cData = myData.metrics[mName].today.split("");
       cDom = document.getElementById('cnvs_' + mName + '_s4');
       cCtx = cDom.getContext("2d");
-      mData = Math.min(cData.length, cDom.width / 6.50 );
+      mData = Math.min(cData.length, 96 );
       for ( var qhour=0; qhour < mData; qhour+=1) {
          if ( qhour == 0 ) {
             if ( dataDay % 7 == 0 ) {
@@ -1326,13 +1449,49 @@ function fillTodayCanvases() {
                cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),10,6,2);
                cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),14,6,4);
                break;
+            case "U":
+               cCtx.fillStyle = "#80FF80";
+               cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),0,6,4);
+               cCtx.fillStyle = "#A000A0";
+               cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),4,6,14);
+               break;
+            case "V":
+               cCtx.fillStyle = "#FFFF00";
+               cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),0,6,4);
+               cCtx.fillStyle = "#A000A0";
+               cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),4,6,14);
+               break;
             case "W":
                cCtx.fillStyle = "#A000A0";
                cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),0,6,18);
                break;
+            case "X":
+               cCtx.fillStyle = "#6080FF";
+               cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),0,6,4);
+               cCtx.fillStyle = "#A000A0";
+               cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),4,6,14);
+               break;
+            case "K":
+               cCtx.fillStyle = "#80FF80";
+               cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),0,6,2);
+               cCtx.fillStyle = "#663300";
+               cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),2,6,16);
+               break;
+            case "L":
+               cCtx.fillStyle = "#FFFF00";
+               cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),0,6,2);
+               cCtx.fillStyle = "#663300";
+               cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),2,6,16);
+               break;
             case "M":
                cCtx.fillStyle = "#663300";
                cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),0,6,18);
+               break;
+            case "N":
+               cCtx.fillStyle = "#6080FF";
+               cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),0,6,2);
+               cCtx.fillStyle = "#663300";
+               cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),2,6,16);
                break;
             default:
                cCtx.fillStyle = "#F4F4F4";
@@ -1351,7 +1510,7 @@ function fillTodayCanvases() {
          cData = myData.elements[cnt].metrics[mName].today.split("");
          cDom = document.getElementById('cnvs_' + eName + '_' + mName + '_s4');
          cCtx = cDom.getContext("2d");
-         mData = Math.min(cData.length, cDom.width / 6.50 );
+         mData = Math.min(cData.length, 96 );
          for ( var qhour=0; qhour < mData; qhour+=1) {
             if ( qhour == 0 ) {
                if ( dataDay % 7 == 0 ) {
@@ -1397,13 +1556,49 @@ function fillTodayCanvases() {
                   cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),10,6,2);
                   cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),14,6,4);
                   break;
+               case "U":
+                  cCtx.fillStyle = "#80FF80";
+                  cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),0,6,4);
+                  cCtx.fillStyle = "#A000A0";
+                  cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),4,6,14);
+                  break;
+               case "V":
+                  cCtx.fillStyle = "#FFFF00";
+                  cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),0,6,4);
+                  cCtx.fillStyle = "#A000A0";
+                  cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),4,6,14);
+                  break;
                case "W":
                   cCtx.fillStyle = "#A000A0";
                   cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),0,6,18);
                   break;
+               case "X":
+                  cCtx.fillStyle = "#6080FF";
+                  cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),0,6,4);
+                  cCtx.fillStyle = "#A000A0";
+                  cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),4,6,14);
+                  break;
+               case "K":
+                  cCtx.fillStyle = "#80FF80";
+                  cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),0,6,2);
+                  cCtx.fillStyle = "#663300";
+                  cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),2,6,16);
+                  break;
+               case "L":
+                  cCtx.fillStyle = "#FFFF00";
+                  cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),0,6,2);
+                  cCtx.fillStyle = "#663300";
+                  cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),2,6,16);
+                  break;
                case "M":
                   cCtx.fillStyle = "#663300";
                   cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),0,6,18);
+                  break;
+               case "N":
+                  cCtx.fillStyle = "#6080FF";
+                  cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),0,6,2);
+                  cCtx.fillStyle = "#663300";
+                  cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),2,6,16);
                   break;
                default:
                   cCtx.fillStyle = "#F4F4F4";
@@ -1430,7 +1625,7 @@ function fillFweekCanvases() {
       cData = myData.metrics[mName].fweek.split("");
       cDom = document.getElementById('cnvs_' + mName + '_s5');
       cCtx = cDom.getContext("2d");
-      mData = Math.min(cData.length, cDom.width / 4.33 );
+      mData = Math.min(cData.length, 168 );
       for ( var hour=0; hour < mData; hour+=1) {
          if ( hour % 24 == 0 ) {
             if ( (dataDay - 8 + Math.trunc(hour/24)) % 7 == 0 ) {
@@ -1474,11 +1669,17 @@ function fillFweekCanvases() {
                cCtx.fillRect(2+4*hour+2*Math.trunc(hour/6),10,4,2);
                cCtx.fillRect(2+4*hour+2*Math.trunc(hour/6),14,4,4);
                break;
+            case "U":
+            case "V":
             case "W":
+            case "X":
                cCtx.fillStyle = "#A000A0";
                cCtx.fillRect(2+4*hour+2*Math.trunc(hour/6),0,4,18);
                break;
+            case "K":
+            case "L":
             case "M":
+            case "N":
                cCtx.fillStyle = "#663300";
                cCtx.fillRect(2+4*hour+2*Math.trunc(hour/6),0,4,18);
                break;
@@ -1499,7 +1700,7 @@ function fillFweekCanvases() {
          cData = myData.elements[cnt].metrics[mName].fweek.split("");
          cDom = document.getElementById('cnvs_' + eName + '_' + mName + '_s5');
          cCtx = cDom.getContext("2d");
-         mData = Math.min(cData.length, cDom.width / 4.33 );
+         mData = Math.min(cData.length, 168 );
          for ( var hour=0; hour < mData; hour+=1) {
             if ( hour % 24 == 0 ) {
                if ( (dataDay - 8 + Math.trunc(hour/24)) % 7 == 0 ) {
@@ -1543,11 +1744,17 @@ function fillFweekCanvases() {
                   cCtx.fillRect(2+4*hour+2*Math.trunc(hour/6),10,4,2);
                   cCtx.fillRect(2+4*hour+2*Math.trunc(hour/6),14,4,4);
                   break;
+               case "U":
+               case "V":
                case "W":
+               case "X":
                   cCtx.fillStyle = "#A000A0";
                   cCtx.fillRect(2+4*hour+2*Math.trunc(hour/6),0,4,18);
                   break;
+               case "K":
+               case "L":
                case "M":
+               case "N":
                   cCtx.fillStyle = "#663300";
                   cCtx.fillRect(2+4*hour+2*Math.trunc(hour/6),0,4,18);
                   break;
@@ -1572,7 +1779,7 @@ function fillLegend() {
    cCtx.fillRect(0,12,6,6);
    cCtx = document.getElementById('cnvs_lgn_WaitingRoom').getContext('2d');
    cCtx.fillStyle = "#A000A0";
-   cCtx.fillRect(0,0,6,18);
+   cCtx.fillRect(0,4,6,14);
    cCtx = document.getElementById('cnvs_lgn_Warning').getContext('2d');
    cCtx.fillStyle = "#FFFF00";
    cCtx.fillRect(0,0,6,18);
@@ -1581,7 +1788,7 @@ function fillLegend() {
    cCtx.fillRect(0,0,6,18);
    cCtx = document.getElementById('cnvs_lgn_Morgue').getContext('2d');
    cCtx.fillStyle = "#663300";
-   cCtx.fillRect(0,0,6,18);
+   cCtx.fillRect(0,2,6,16);
    cCtx = document.getElementById('cnvs_lgn_Error').getContext('2d');
    cCtx.fillStyle = "#FF0000";
    cCtx.fillRect(0,0,6,18);
