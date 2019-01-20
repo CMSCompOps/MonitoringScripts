@@ -42,7 +42,7 @@ prodStatus_reasons_file = '/afs/cern.ch/user/c/cmssst/www/man_override/prodstatu
 prodStatus_log_file = '/afs/cern.ch/user/c/cmssst/www/man_override/prodstatus/manualProdStatus_log.txt'
 prodStatus_groups = ['SiteDB']
 prodStatus_states = ['enabled', 'disabled', 'drain', 'test', 'no_override']
-prod_adfs_groups = ['cms-comp-ops-site-support-team', 'cms-tier0-operations', 'cms-comp-ops-workflow-team']
+prod_adfs_groups = ['cms-comp-ops-site-support-team', 'cms-comp-ops-workflow-team']
 
 path = os.environ.get('PATH_INFO','')
 adfs_login = os.environ.get('ADFS_LOGIN','')

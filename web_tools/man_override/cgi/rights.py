@@ -21,12 +21,12 @@ class User(object):
 		user_roles = set()
 		self.managed_sites = set()
 		if team_member:
-			if "cms-tier0-operations" in self.adfs_groups and self.metric == 'prodstatus':
-				self.managed_sites.add('T0_CH_CERN')
-			else:
-				for site in self.cms_sites:
-					self.managed_sites.add(site[1])
-				#self.managed_sites = [site[1] for site in self.cms_sites]	
+			for site in self.cms_sites:
+				self.managed_sites.add(site[1])
+		elif "cms-tier0-operations" in self.adfs_groups and self.metric == 'prodstatus':
+			self.managed_sites.add('T0_CH_CERN')
+			self.managed_sites.add('T2_CH_CERN_HLT')
+			self.managed_sites.add('T2_CH_CERN')
 		#else:
 		for item in self.cms_site_admins:
 			if item[0] == self.adfs_login:	
