@@ -27,6 +27,7 @@ import http.client
 import urllib.request, urllib.error
 import xml.etree.ElementTree
 import json
+import gzip
 import pydoop.hdfs
 # ########################################################################### #
 
