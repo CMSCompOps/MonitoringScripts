@@ -19,7 +19,7 @@ import htcondor
 
 
 
-VOFD_VERSION = "v1.02.00p"
+VOFD_VERSION = "v1.02.01p"
 #VOFD_OUTPUT_FILE = "vofeed.xml"
 #VOFD_IN_USE_FILE = "in_use.txt"
 #VOFD_CACHE_DIR = "."
@@ -186,7 +186,7 @@ def vofd_cricsites():
         #
         # sanity check:
         if (( myData.count("T0_") < 2 ) or ( myData.count("T1_") < 10 ) or
-            ( myData.count("T2_") < 64 ) or ( myData.count("T3_") < 96 )):
+            ( myData.count("T2_") < 64 ) or ( myData.count("T3_") < 64 )):
             raise IOError("CRIC-sites data failed sanity check")
         #
         # update cache:
@@ -431,7 +431,7 @@ def vofd_sitedb():
         #
         # sanity check:
         if (( myData.count("T0_") < 2 ) or ( myData.count("T1_") < 10 ) or
-            ( myData.count("T2_") < 64 ) or ( myData.count("T3_") < 96 )):
+            ( myData.count("T2_") < 64 ) or ( myData.count("T3_") < 64 )):
             raise IOError("SiteDB data failed sanity check")
         #
         # update cache:
@@ -1002,7 +1002,7 @@ def vofd_write_xml():
     if renameFlag:
         # sanity check:
         if (( tierCnt['0'] >= 1 ) and ( tierCnt['1'] >= 5 ) and
-            ( tierCnt['2'] >= 32 ) and ( tierCnt['3'] >= 48 )):
+            ( tierCnt['2'] >= 32 ) and ( tierCnt['3'] >= 32 )):
             os.rename(VOFD_OUTPUT_FILE + "_new", VOFD_OUTPUT_FILE)
         else:
             print("Tier count sanity check failed, %d/%d/%d/%d" %
