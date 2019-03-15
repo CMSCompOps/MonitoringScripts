@@ -854,8 +854,15 @@ def vofd_glideinWMSfactory():
             if ((( host != "grid-arcce0.desy.de" ) and
                  ( host != "grid-arcce1.desy.de" )) or
                 (( queue != "grid" ) and ( queue != "gridsl6" ))):
-                glbTopology.addResource(classAd['GLIDEIN_CMSSite'], gridsite,
-                    host, ceType, factory['prd'], queue, batch, endpoint)
+                #-LML T1_FR_CCIN2P3 HTCondor-CE patch, start !!!!!!!!!!!!!!!!!!
+                if (( host == "cccondorce01.in2p3.fr" ) or
+                    ( host == "cccondorce02.in2p3.fr" )):
+                    glbTopology.addResource(classAd['GLIDEIN_CMSSite'],
+                        gridsite, host, ceType, False, queue, batch, endpoint)
+                else:
+                    #-LML T[12]_FR_CCIN2P3 HTCondor-CE patch, end !!!!!!!!!!!!!
+                    glbTopology.addResource(classAd['GLIDEIN_CMSSite'], gridsite,
+                        host, ceType, factory['prd'], queue, batch, endpoint)
             #-LML DESY SL 6 patch, end !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             if (( classAd['GLIDEIN_CMSSite'] == "T2_CH_CERN" ) and
                 ( factory['prd'] == True )):
