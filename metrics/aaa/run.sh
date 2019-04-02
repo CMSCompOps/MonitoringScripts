@@ -24,7 +24,8 @@ fi
 reportURL="https://cmssst.web.cern.ch/cmssst/aaa/%s_report.html"
 
 # federation source
-federations="http://vocms037.cern.ch/fedinfo/federations.json"
+#federations="http://vocms037.cern.ch/fedinfo/federations.json"
+federations="http://vocms039.cern.ch/aaa-fedinfo/federations.json"
 
 # you just need to put host name into this SAM url
 samURL="http://wlcg-sam-cms.cern.ch/dashboard/request.py/getTestResults?profile_name=CMS_CRITICAL&metrics=org.cms.WN-xrootd-access%20(/cms/Role_lcgadmin)&hostname={0}&flavours=CREAM-CE,OSG-CE,ARC-CE,SRM,GLOBUS,HTCONDOR-CE&time_range=last2Weeks"
