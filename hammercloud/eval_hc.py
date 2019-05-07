@@ -464,10 +464,10 @@ def evhc_monit_fetch(tbins15m, tbins1h, tbins6h, tbins1d):
     #
     if ( len(tbins15m) > 0 ):
         logging.log(15, "   15 min time bins %d (%s), ..., %d (%s)" %
-                        (tbins15m[0], time.strftime("%Y-%b-%d %H:%M:%S",
-                                           time.gmtime((tbins15m[0]*900)+450)),
-                         tbins15m[-1], time.strftime("%Y-%b-%d %H:%M:%S",
-                                         time.gmtime((tbins15m[-1]*900)+450))))
+                        (tbins15m[0], time.strftime("%Y-%b-%d %H:%M",
+                                                 time.gmtime(tbins15m[0]*900)),
+                         tbins15m[-1], time.strftime("%Y-%b-%d %H:%M",
+                                               time.gmtime(tbins15m[-1]*900))))
         for tbin in tbins15m:
             dirString = time.strftime("hc15min/%Y/%m/%d",
                                       time.gmtime( tbin * 900 ))
@@ -480,9 +480,9 @@ def evhc_monit_fetch(tbins15m, tbins1h, tbins6h, tbins1d):
     if ( len(tbins1h) > 0 ):
         logging.log(15, "   1 hour time bins %d (%s), ..., %d (%s)" %
                         (tbins1h[0], time.strftime("%Y-%b-%d %H:%M",
-                                          time.gmtime((tbins1h[0]*3600)+1800)),
+                                                 time.gmtime(tbins1h[0]*3600)),
                          tbins1h[-1], time.strftime("%Y-%b-%d %H:%M",
-                                        time.gmtime((tbins1h[-1]*3600)+1800))))
+                                               time.gmtime(tbins1h[-1]*3600))))
         for tbin in tbins1h:
             dirString = time.strftime("hc1hour/%Y/%m/%d",
                                       time.gmtime( tbin * 3600 ))
@@ -494,9 +494,9 @@ def evhc_monit_fetch(tbins15m, tbins1h, tbins6h, tbins1d):
     if ( len(tbins6h) > 0 ):
         logging.log(15, "   6 hour time bins %d (%s), ..., %d (%s)" %
                         (tbins6h[0], time.strftime("%Y-%b-%d %H:%M",
-                                        time.gmtime((tbins6h[0]*21600)+10800)),
+                                                time.gmtime(tbins6h[0]*21600)),
                          tbins6h[-1], time.strftime("%Y-%b-%d %H:%M",
-                                      time.gmtime((tbins6h[-1]*21600)+10800))))
+                                              time.gmtime(tbins6h[-1]*21600))))
         for tbin in tbins6h:
             dirString = time.strftime("hc6hour/%Y/%m/%d",
                                       time.gmtime( tbin * 21600 ))
@@ -508,9 +508,9 @@ def evhc_monit_fetch(tbins15m, tbins1h, tbins6h, tbins1d):
     if ( len(tbins1d) > 0 ):
         logging.log(15, "   1 day  time bins %d (%s), ..., %d (%s)" %
                         (tbins1d[0], time.strftime("%Y-%b-%d %H:%M",
-                                        time.gmtime((tbins1d[0]*86400)+43200)),
+                                                time.gmtime(tbins1d[0]*86400)),
                          tbins1d[-1], time.strftime("%Y-%b-%d %H:%M",
-                                      time.gmtime((tbins1d[-1]*86400)+43200))))
+                                              time.gmtime(tbins1d[-1]*86400))))
         for tbin in tbins1d:
             dirString = time.strftime("hc1day/%Y/%m/%d",
                                       time.gmtime( tbin * 86400 ))
@@ -972,7 +972,7 @@ def evhc_ssb_write(tuple, filename=None):
 
     if filename is None:
         filename = "%s/%s.txt" % (EVHC_SSB_DIR, tuple[0])
-    logging.info("Writing SSB metric to file %s" % filename)
+    logging.info("Writing SSB metric for %d to file %s" % (tuple[1], filename))
 
     # compose SSB metric string:
     # ==========================
@@ -1129,10 +1129,7 @@ if __name__ == '__main__':
 
     # last timebin for which we should evaluate HammerCloud status:
     # =============================================================
-    if argStruct.lastSpec is None:
-        logging.info("Evaluating HC status for time bin %s" %
-                  time.strftime("%Y-%m-%d %H:%M", time.gmtime(frst15m * 900)))
-    else:
+    if argStruct.lastSpec is not None:
         if ( argStruct.lastSpec.isdigit() ):
             # argument should be time in seconds of last 15 min time bin
             last15m = int( argStruct.timeSpec / 900 )
@@ -1148,6 +1145,11 @@ if __name__ == '__main__':
             limitTIS = max( limitTIS, ( int( last15m / 4 ) * 3600 ) + 3600 )
         else:
             limitTIS = max( limitTIS, ( last15m * 900 ) + 900 )
+
+    if ( frst15m == last15m ):
+        logging.info("Evaluating HC status for time bin %s" %
+                  time.strftime("%Y-%m-%d %H:%M", time.gmtime(frst15m * 900)))
+    else:
         logging.info(("Evaluating HC status for time bins from %s t" +
                       "o %s") %
                      (time.strftime("%Y-%m-%d %H:%M",
