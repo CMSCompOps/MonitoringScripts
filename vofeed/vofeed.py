@@ -722,7 +722,7 @@ def vofd_glideinWMSfactory():
        {'lbl': "UCSD",    'uri': "gfactory-1.t2.ucsd.edu",   'prd': True},
        {'lbl': "CERN",    'uri': "vocms0206.cern.ch",        'prd': True},
        {'lbl': "CERNint", 'uri': "vocms0204.cern.ch",        'prd': False},
-       {'lbl': "FNAL",    'uri': "cmsgwms-factory.fnal.gov", 'prd': True} ]
+       {'lbl': "FNAL",    'uri': "cmssi-factory01.fnal.gov", 'prd': True} ]
 
     # get list of CEs used by CMS from the glide-in WMS factories:
     # ============================================================
