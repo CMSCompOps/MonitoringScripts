@@ -719,7 +719,7 @@ def vofd_glideinWMSfactory():
     # fill vofdTopology object with CE information from glide-in WMS factory #
     # ###################################################################### #
     DICT_GLIDEIN_FACTORIES = [
-       {'lbl': "UCSD",    'uri': "gfactory-1.t2.ucsd.edu",   'prd': True},
+       {'lbl': "UCSD",    'uri': "gfactory-2.opensciencegrid.org", 'prd': True},
        {'lbl': "CERN",    'uri': "vocms0206.cern.ch",        'prd': True},
        {'lbl': "CERNint", 'uri': "vocms0204.cern.ch",        'prd': False},
        {'lbl': "FNAL",    'uri': "cmssi-factory01.fnal.gov", 'prd': True} ]
