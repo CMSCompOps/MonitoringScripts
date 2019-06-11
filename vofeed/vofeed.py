@@ -710,6 +710,9 @@ def vofd_phedex():
             ( phedex_host == "eoscmsftp.cern.ch" )):
             glbTopology.addResource("T0_CH_CERN", "", phedex_host, "SRM",
                                     phedex_prod, "", "", phedex_epnt)
+
+    glbTopology.addResource("T2_BE_IIHE", "", "dcache6-shadow.iihe.ac.be",
+                            "SRM", False, "", "", "")
 # ########################################################################### #
 
 
