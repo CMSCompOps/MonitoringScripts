@@ -582,6 +582,10 @@ def vofd_sitedb():
             endpoint = result[fqdnIndex]
             hostname, port = (endpoint.split(":",1) + ["1094"])[:2]
             hostname = hostname.lower()
+            #-LML start-patch
+            if ( hostname == "xrootd.accre.vanderbilt.edu" ):
+                hostname = "xrootd-vanderbilt.sites.opensciencegrid.org"
+            #-LML end-patch
             if ( result[prmyIndex][0].lower() == 'y' ):
                 glbTopology.addResource(myDict[sitedbname]['cmssite'], "",
                                         hostname, "XROOTD", True, "", "",
