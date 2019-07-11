@@ -157,13 +157,13 @@ fi
 WE_TIS=`/bin/date +'%s' -u -d "last Wednesday"`
 SLOT_STIS=`echo "${WE_TIS} - 172800" | /usr/bin/bc`
 SLOT_ETIS=`echo "${WE_TIS} + 432000" | /usr/bin/bc`
-SLOT_SITES="T1_DE_KIT T1_ES_PIC T1_IT_CNAF T1_FR_CCIN2P3 T1_UK_RAL T1_US_FNAL T1_RU_JINR T2_CH_CERN T2_AT_Vienna&var-site=T2_BE_IIHE&var-site=T2_BE_UCL&var-site=T2_BR_SPRACE&var-site=T2_BR_UERJ&var-site=T2_CH_CERN&var-site=T2_CH_CSCS&var-site=T2_CH_CSCS_HPC&var-site=T2_CN_Beijing&var-site=T2_DE_DESY&var-site=T2_DE_RWTH&var-site=T2_EE_Estonia&var-site=T2_ES_CIEMAT&var-site=T2_ES_IFCA&var-site=T2_FI_HIP&var-site=T2_FR_CCIN2P3&var-site=T2_FR_GRIF_IRFU&var-site=T2_FR_GRIF_LLR&var-site=T2_FR_IPHC&var-site=T2_GR_Ioannina&var-site=T2_HU_Budapest&var-site=T2_IN_TIFR&var-site=T2_IT_Bari&var-site=T2_IT_Legnaro&var-site=T2_IT_Pisa&var-site=T2_IT_Rome&var-site=T2_KR_KISTI&var-site=T2_PK_NCP&var-site=T2_PL_Swierk&var-site=T2_PL_Warsaw&var-site=T2_PT_NCG_Lisbon&var-site=T2_RU_IHEP&var-site=T2_RU_INR&var-site=T2_RU_ITEP&var-site=T2_RU_JINR&var-site=T2_TR_METU&var-site=T2_TW_NCHC&var-site=T2_UA_KIPT&var-site=T2_UK_London_Brunel&var-site=T2_UK_SGrid_Bristol&var-site=T2_UK_SGrid_RALPP&var-site=T2_US_Caltech&var-site=T2_US_Florida&var-site=T2_US_MIT&var-site=T2_US_Nebraska&var-site=T2_US_Purdue&var-site=T2_US_UCSD&var-site=T2_US_Vanderbilt&var-site=T2_US_Wisconsin"
+SLOT_SITES='T1_DE_KIT T1_ES_PIC T1_IT_CNAF T1_FR_CCIN2P3 T1_UK_RAL T1_US_FNAL T1_RU_JINR T2_CH_CERN T2_.*'
 SLOT_URL='https://monit-grafana.cern.ch/render/d-solo/YcGYFOVWz/requested-cpu?'
 SLOT_QRYR="orgId=11&from=${SLOT_STIS}000&to=${SLOT_ETIS}000&panelId=2&width=1024&height=768&var-site="
 SLOT_QRYP="orgId=11&from=${SLOT_STIS}000&to=${SLOT_ETIS}000&panelId=4&width=1024&height=768&var-site="
 #
 for QSITE in ${SLOT_SITES}; do
-   SITE=`echo "${QSITE}" | /usr/bin/awk -F\& '{print $1; exit}'`
+   SITE="${QSITE//.\*}"
    if [ ! -f ${PLOT_DIR}/${SITE}_running.png ]; then
       /usr/bin/wget -O ${PLOT_DIR}/${SITE}_running.png --header="Authorization: Bearer eyJrIjoiM0dOMXlRc3JXN3c3WUt4WE9INjMybWdBbXh6TElHdFUiLCJuIjoiY21zLXNpdGVzdXBwb3J0IiwiaWQiOjExfQ==" --header="Accept: image/png" ${SLOT_URL}?${SLOT_QRYR}${QSITE}
       if [ $? -ne 0 ]; then
@@ -211,19 +211,6 @@ for QSITE in ${SLOT_SITES}; do
       echo "${SITE}_pending.png exists, skipping"
    fi
 done
-#
-if [ ! -f ${PLOT_DIR}/T2_running.png ]; then
-   /bin/mv ${PLOT_DIR}/T2_AT_Vienna_running.png ${PLOT_DIR}/T2_running.png
-else
-   /bin/rm ${PLOT_DIR}/T2_AT_Vienna_running.png
-   echo "T2_running.png exists"
-fi
-if [ ! -f ${PLOT_DIR}/T2_pending.png ]; then
-   /bin/mv ${PLOT_DIR}/T2_AT_Vienna_pending.png ${PLOT_DIR}/T2_pending.png
-else
-   /bin/rm ${PLOT_DIR}/T2_AT_Vienna_pending.png
-   echo "T2_pending.png exists"
-fi
 # #############################################################################
 
 
