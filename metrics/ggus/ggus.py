@@ -16,9 +16,9 @@ tickets = ET.fromstring(tickets)
 parsed  = {}
 
 for ticket in tickets.findall('ticket'):
-    cmsSite = ticket.find('cms_site').text
-    subject = ticket.find('subject').text
-    id      = ticket.find('request_id').text
+    cmsSite = ticket.find('CMS_Site').text
+    subject = ticket.find('Subject').text
+    id      = ticket.find('Ticket-ID').text
     if not cmsSite: continue
     if not parsed.has_key(cmsSite):
         parsed[cmsSite] = {}
