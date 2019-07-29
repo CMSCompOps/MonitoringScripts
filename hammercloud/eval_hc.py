@@ -46,16 +46,9 @@ from email.mime.text import MIMEText
 import subprocess
 #
 # setup the Java/HDFS/PATH environment for pydoop to work properly:
-#EVHC_HDFS_HOME = "/cvmfs/sft.cern.ch/lcg/releases/"
-EVHC_HDFS_HOME = "/data/cmssst/packages/"
-EVHC_HDFS_HOME += "hadoop/2.7.5.1-1f419/x86_64-centos7-gcc62-opt"
-#EVHC_HDFS_CONF = "/cvmfs/sft.cern.ch/lcg/etc/hadoop-confext/"
-EVHC_HDFS_CONF = "/data/cmssst/packages/"
-EVHC_HDFS_CONF += "etc/hadoop.analytix/conf"
-os.environ["HADOOP_HOME"]     = EVHC_HDFS_HOME
-os.environ["HADOOP_CONF_DIR"] = EVHC_HDFS_CONF
+os.environ["HADOOP_CONF_DIR"] = "/opt/hadoop/conf/etc/analytix/hadoop.analytix"
 os.environ["JAVA_HOME"]       = "/etc/alternatives/jre"
-os.environ["PATH"]            = EVHC_HDFS_HOME + "/bin:" + os.environ["PATH"]
+os.environ["HADOOP_PREFIX"]   = "/usr/hdp/hadoop"
 import pydoop.hdfs
 # ########################################################################### #
 
@@ -258,10 +251,10 @@ def evhc_grafana_jobs(startTIS, limitTIS):
                    "cond\"}}}}},\"_source\":{\"includes\":[\"data.GlobalJobI" +
                    "d\",\"data.Site\",\"data.Status\",\"data.NumRestarts\"," +
                    "\"data.RemoveReason\",\"data.Chirp_CRAB3_Job_ExitCode\"," +
-                   "\"data.CRAB_Workflow\",\"data.CRAB_Id\",\"data.CRAB_Retr" +
-                   "y\",\"data.RecordTime\"]},\"size\":10000,\"search_after" +
-                   "\":[%%d],\"sort\":[{\"data.RecordTime\":\"asc\"}]}\n") % \
-                  (startTIS, limitTIS)
+                   "\"data.ExitCode\",\"data.CRAB_Workflow\",\"data.CRAB_Id" +
+                   "\",\"data.CRAB_Retry\",\"data.RecordTime\"]},\"size\":81" +
+                   "92,\"search_after\":[%%d],\"sort\":[{\"data.RecordTime\"" +
+                   ":\"asc\"}]}\n") % (startTIS, limitTIS)
 
     # prepare regular expression for HammerCloud CRAB workflow name match:
     # ====================================================================
@@ -357,9 +350,16 @@ def evhc_grafana_jobs(startTIS, limitTIS):
                                                   "ies") % nRestart
                                     else:
                                         status = "Failed, ExitCode %s" % eCode
+                                elif 'ExitCode' in hitData:
+                                    eCode = hitData['ExitCode']
+                                    if ( eCode == 0 ):
+                                        # stage-out or HTCondor Chirp failure
+                                        status = "Success, no Chirp ExitCode"
+                                    else:
+                                        status = "Failed, ExitCode %s" % eCode
                                 else:
                                     logging.error(("Job %s completed at %s w" +
-                                                   "ithout CRAB ExitCode") %
+                                                   "ithout ExitCode") %
                                                   (hitData['GlobalJobId'],
                                                    hitData['Site']))
                             elif ( hitData['Status'] == "Removed" ):
@@ -396,7 +396,17 @@ def evhc_grafana_jobs(startTIS, limitTIS):
                                     else:
                                         status = "Failed, ExitCode %s" % eCode
                                 except KeyError:
-                                    pass
+                                    try:
+                                        eCode = hitData['ExitCode']
+                                        if ( eCode == 0 ):
+                                            # stage-out/HTCondor Chirp failure
+                                            status = ("Success, no Chirp Exi" +
+                                                      "tCode")
+                                        else:
+                                            status = "Failed, ExitCode %s" % \
+                                                     eCode
+                                    except KeyError:
+                                        pass
                                 logging.warning(("Job %s for site %s with st" +
                                                  "atus %s") %
                                                 (hitData['GlobalJobId'],
@@ -689,6 +699,8 @@ def evhc_evaluate_sites(metric, timebin):
             hc_evals[ site ][ status ]['jobs'].append( jobRec['refid'] )
         except KeyError:
             pass
+        logging.log(9, "   counting job of %s at %d with %s" %
+                    (site, jobRec['time'], status))
 
     # loop over sites and evaluate status:
     # ====================================
@@ -717,6 +729,8 @@ def evhc_evaluate_sites(metric, timebin):
             value = None
             status = "unknown"
             counts[0] += 1
+            logging.debug("   site %s: %d jobs, value None, status %s" %
+                          (site, totalJobs, status))
         else:
             value = round(successJobs / totalJobs, 3)
             if ( value >= 0.900 ):
@@ -733,6 +747,8 @@ def evhc_evaluate_sites(metric, timebin):
                 else:
                     status = "warning"
                     counts[2] += 1
+            logging.log(15, "   site %s: %d / %d jobs, value %.3f, status %s" %
+                        (site, successJobs, totalJobs, value, status))
         if myKey not in evhc_glbl_evaluations:
             evhc_glbl_evaluations[ myKey ] = []
         evhc_glbl_evaluations[ myKey ].append( {'site': site,
@@ -922,10 +938,12 @@ def evhc_compose_ssb(tuple):
     #
     now = time.strftime("%Y-%b-%d %H:%M:%S UTC", time.gmtime())
     #
-    startUTC = time.strftime("%Y-%m-%d+%H:%M", time.gmtime(tuple[1] *interval))
-    endUTC   = time.strftime("%Y-%m-%d+%H:%M",
-                                        time.gmtime((tuple[1] + 1) * interval))
-    URL_JOB_DASHBOARD = "http://dashb-cms-job.cern.ch/dashboard/templates/web-job2/#user=&refresh=0&table=Jobs&p=1&records=25&activemenu=0&usr=&site=%%s&submissiontool=&application=&activity=hctest&status=&check=terminated&tier=&date1=%s&date2=%s&sortby=ce&scale=linear&bars=20&ce=&rb=&grid=&jobtype=&submissionui=&dataset=&submissiontype=&task=&subtoolver=&genactivity=&outputse=&appexitcode=&accesstype=" % (startUTC, endUTC)
+    #startUTC = time.strftime("%Y-%m-%d+%H:%M", time.gmtime(tuple[1] *interval))
+    #endUTC   = time.strftime("%Y-%m-%d+%H:%M",
+    #                                    time.gmtime((tuple[1] + 1) * interval))
+    #URL_JOB_DASHBOARD = "http://dashb-cms-job.cern.ch/dashboard/templates/web-job2/#user=&refresh=0&table=Jobs&p=1&records=25&activemenu=0&usr=&site=%%s&submissiontool=&application=&activity=hctest&status=&check=terminated&tier=&date1=%s&date2=%s&sortby=ce&scale=linear&bars=20&ce=&rb=&grid=&jobtype=&submissionui=&dataset=&submissiontype=&task=&subtoolver=&genactivity=&outputse=&appexitcode=&accesstype=" % (startUTC, endUTC)
+    #
+    URL_JOB_DASHBOARD = "https://monit-grafana.cern.ch/d/cmsTMGlobal/cms-tasks-monitoring-globalview?orgId=11&from=%d000&to=%d000&var-user=sciaba&var-site=All&var-task=.*-%%s-.*" % ((tuple[1] *interval), ((tuple[1] + 1) * interval))
 
 
     # convert list in global evaluation dictionary into an SSB metric string:
