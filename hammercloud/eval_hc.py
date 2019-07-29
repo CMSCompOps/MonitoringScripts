@@ -1150,11 +1150,11 @@ if __name__ == '__main__':
     if argStruct.lastSpec is not None:
         if ( argStruct.lastSpec.isdigit() ):
             # argument should be time in seconds of last 15 min time bin
-            last15m = int( argStruct.timeSpec / 900 )
+            last15m = int( argStruct.lastSpec / 900 )
         else:
             # argument should be the time in "YYYY-Mmm-dd HH:MM" format
             last15m = int( calendar.timegm( time.strptime("%s UTC" %
-                           argStruct.timeSpec, "%Y-%b-%d %H:%M %Z") ) / 900 )
+                           argStruct.lastSpec, "%Y-%b-%d %H:%M %Z") ) / 900 )
         if ( argStruct.day ):
             limitTIS = max( limitTIS, ( int( last15m / 96 ) * 86400 ) + 86400 )
         elif ( argStruct.qday ):
