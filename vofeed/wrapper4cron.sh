@@ -108,7 +108,7 @@ fi
 # check for expired caches and email alerts:
 # ==========================================
 NOW=`/bin/date '+%s'`
-for FILE in ${CACHE_DIR}/cache_*.*; do
+for FILE in ${CACHE_DIR}/*.*; do
    ALRT=`/usr/bin/stat -c %Y ${FILE} | awk -v n=${NOW} '{a=int((n-$1)/3600);if((a>24)&&(a%24==1)){print 1}else{print 0}}'`
    if [ ${ALRT} -ne 0 ]; then
        /bin/touch ${ERR_FILE}
@@ -128,7 +128,7 @@ fi
 
 # check for expired factory caches and email:
 # ===========================================
-for FILE in ${CACHE_DIR}/cache_*_factory.*; do
+for FILE in ${CACHE_DIR}/factory_*.*; do
    ALRT=`/usr/bin/stat -c %Y ${FILE} | awk -v n=${NOW} '{a=int((n-$1)/1800);if((a==12)||(a==24)){print 1}else{print 0}}'`
    if [ ${ALRT} -ne 0 ]; then
       /bin/touch ${ERR_FILE}
