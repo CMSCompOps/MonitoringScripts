@@ -31,6 +31,7 @@
 
 
 import os, sys
+import logging
 import time, calendar
 import urllib.request, urllib.error
 import json
@@ -239,10 +240,6 @@ class vofeed:
         tmpVersion = {}
         try:
             with pydoop.hdfs.hdfs() as myHDFS:
-                fileHndl = None
-                fileObj = None
-                fileName = None
-                fileNames = None
                 for subDir in dirList:
                     logging.debug("   checking HDFS subdirectory %s" % subDir)
                     if not myHDFS.exists( VOFEED_HDFS_PREFIX + subDir ):
@@ -256,12 +253,13 @@ class vofeed:
                     for fileName in fileNames:
                         logging.debug("   reading file %s" %
                                       os.path.basename(fileName))
+                        fileHndl = None
+                        fileObj = None
                         try:
                             if ( os.path.splitext(fileName)[-1] == ".gz" ):
                                 fileHndl = myHDFS.open_file(fileName)
                                 fileObj = gzip.GzipFile(fileobj=fileHndl)
                             else:
-                                fileHndl = None
                                 fileObj = myHDFS.open_file(fileName)
                             # read VO-feed documents in file:
                             for myLine in fileObj:
@@ -311,10 +309,6 @@ class vofeed:
                             if fileHndl is not None:
                                 fileHndl.close()
                                 fileHndl = None
-                del fileHndl
-                del fileObj
-                del fileName
-                del fileNames
         except Exception as excptn:
             logging.error("Failed to fetch documents from MonIT HDFS: %s" %
                           str(excptn))
@@ -397,6 +391,8 @@ class vofeed:
             except KeyError:
                 continue
             for myService in myDict:
+                if ( myService['production'] != True ):
+                    continue
                 if category is not None:
                     if ( category != myService['category'] ):
                         continue
@@ -761,7 +757,6 @@ class vofeed:
 if __name__ == '__main__':
     #
     import argparse
-    import logging
     import getpass
     import socket
     import shutil
