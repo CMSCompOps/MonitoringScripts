@@ -1,71 +1,101 @@
-#!/usr/bin/python
-
+#! /usr/bin/python3
+import gitlab
+import requests
 import json
-import subprocess
-import urllib2
-import httplib
-import os
-import ssl
-
-site_db_url = 'cmsweb.cern.ch'
-sites_admins_api = '/sitedb/data/prod/site-responsibilities'
-site_names_api = '/sitedb/data/prod/site-names'
-gitlab_token = "****************"
-admin_roles = ['Site Executive', 'Site Admin', 'Admin']
-group_url = 'https://gitlab.cern.ch/api/v4/groups/4099/projects?per_page=100&page=%s&private_token=%s'
-user_url = 'https://gitlab.cern.ch/api/v4/users?username=%s&private_token=%s'
-project_members_url = 'https://gitlab.cern.ch/api/v4/projects/%s/members?private_token=%s'
-headers = {"Accept": "application/json"}
+import re
+import logging
+from gitlab.exceptions import GitlabGetError
 
 
-def parse_data(url, api = None):
-	if api:  
-		data = parse_data_cert(url, api)
-	else:
-		data = urllib2.urlopen(url).read()
-	data = json.loads(data)
-	return data
+def raise_exception(msg):
+    logging.error(msg)
+    raise Exception(msg)
 
-def parse_data_cert(url, api):
-	conn = httplib.HTTPSConnection(
-		url,
-		cert_file = X509_USER_PROXY,
-		key_file = X509_USER_PROXY, 
-	)
-	r1 = conn.request("GET", api, None, headers)
-	r2 = conn.getresponse()
-	request = r2.read()
-	return request
 
-proxy_files = [filename for filename in os.listdir('/tmp/') if filename.startswith("x509up_u")]
-for proxy_file in proxy_files:
-	try:
-		X509_USER_PROXY = "/tmp/" + proxy_file
-		parse_data(site_db_url, sites_admins_api)
-	except ssl.SSLError:
-		print "Proxy problem, let's try other"
-	else:
-		print X509_USER_PROXY + " will be used"
+def get_facilities(url, cert, key):
+    facility_regex = re.compile(r"[A-Z]{2,2}_\w+")
 
-site_admins = parse_data(site_db_url, sites_admins_api)
-site_admins = [admin for admin in site_admins['result'] if admin[2] in admin_roles]
-site_names = parse_data(site_db_url, site_names_api)
-site_names = site_names['result']
+    logging.info("Requesting facilities from CRIC")
+    result = requests.get(url, cert=(cert, key), verify=False)
 
-admins = []
-for admin in site_admins:
-	gitlab_acc = parse_data(user_url %(admin[0], gitlab_token))
-	if gitlab_acc:
-		admin.append(str(gitlab_acc[0]["id"]))
-		for site in site_names:
-			if admin[1] == site[1]: admin[1] = site[2]
-		admins.append(admin)
+    if result.status_code == 200:
+        logging.info("CRIC request was successful")
+        doc = json.loads(result.text)
+        facilities = {}
 
-group_projects = parse_data(group_url %('1', gitlab_token)) + parse_data(group_url %('2',gitlab_token))
-for project in group_projects:
-	project_members = parse_data(project_members_url %(project['id'], gitlab_token))
-	project_members = [member['username'] for member in project_members]
-	for admin in admins:
-		if project['name'] == admin[1] and admin[0] not in project_members:
-			subprocess.call('curl --header "PRIVATE-TOKEN: %s" -X POST "https://gitlab.cern.ch/api/v4/projects/%s/members?user_id=%s&access_level=30"' 
-				%(gitlab_token, project['id'], admin[3]), shell=True)
+        for site in doc.keys():
+            facility = doc[site]["facility"].split()[0]
+            if facility_regex.match(facility):
+                facilities[site] = facility
+
+        if len(facilities) == 0:
+            raise_exception("Facilities list from CRIC is empty")
+
+        return facilities
+    else:
+        raise_exception("CRIC request failed with status code {}".format(result.status_code))
+
+
+def create_group(name, gl):
+    logging.info("Looking for {} group".format(name))
+    try:
+        group = gl.groups.get(name)
+        logging.info("{} group already exists".format(name))
+    except GitlabGetError:
+        logging.info("{} group does not exists, creating it".format(name))
+        group = gl.groups.create({"name": name, "path": name})
+        group.add_ldap_group_link(name, gitlab.DEVELOPER_ACCESS, "ldapmain")
+        group.ldap_sync()
+        group.save()
+    return group
+
+
+if __name__ == "__main__":
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s.%(msecs)03d %(levelname)s %(module)s - %(funcName)s: %(message)s',
+        datefmt='%Y-%m-%d %H:%M:%S',
+    )
+
+    cric_url = "https://cms-cric.cern.ch/api/cms/site/query/?json"
+
+    user_cert = "/tmp/x509up_u79522"
+    user_key = "/tmp/x509up_u79522"
+
+    gl_url = "https://gitlab.cern.ch"
+
+    logging.info("Looking for gitlab token file")
+    with open("./gitlabToken", "r") as f:
+    	gl_token = f.read().strip() 
+
+    logging.info("Connecting to {}".format(gl_url))
+    gl = gitlab.Gitlab(gl_url, private_token=gl_token)
+
+    logging.info("Getting SITECONF projects")
+    siteconf = gl.groups.get("SITECONF")
+    # Get all the projects inside the SITECONF group
+    projects = siteconf.projects.list(all=True)
+    # Get all the site's facilities from CRIC
+    facilities = get_facilities(cric_url, user_cert, user_key)
+
+    groups_regex = re.compile(r"cms\-[A-Z]{2,2}_\w+\-(exec|admin)")
+
+    for project in projects:
+        project = gl.projects.get(project.id)
+
+        site = project.attributes["name"]
+        groups = project.attributes["shared_with_groups"]
+
+        if site in facilities:
+            facility = facilities[site]
+            group_names = ["cms-" + facility + "-admin", "cms-" + facility + "-exec"]
+            for group_name in group_names:
+                if not any(group["group_name"] == group_name for group in groups):
+                    group = create_group(group_name, gl)
+                    logging.info("Sharing the {} SITECONF project with {}".format(site, group_name))
+                    project.share(group.get_id(), gitlab.DEVELOPER_ACCESS)
+                else:
+                    logging.info("The {} SITECONF project was already shared with {}".format(site, group_name))
+            project.save()
+        else:
+            logging.warning("The {} SITECONF project does not have a CRIC entry".format(site))
