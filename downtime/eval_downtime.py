@@ -15,6 +15,7 @@
 #      "detail":   "OSG:1005707" | "EGI:24466"
 # }
 # https://goc.egi.eu/portal/index.php?Page_Type=Downtime&id=24466
+# https://my.opensciencegrid.org/rgdowntime/xml?downtime_attrs_showpast=all
 
 
 
@@ -28,6 +29,11 @@ import urllib.request, urllib.error
 import xml.etree.ElementTree
 import json
 import gzip
+#
+# setup the Java/HDFS/PATH environment for pydoop to work properly:
+os.environ["HADOOP_CONF_DIR"] = "/opt/hadoop/conf/etc/analytix/hadoop.analytix"
+os.environ["JAVA_HOME"]       = "/etc/alternatives/jre"
+os.environ["HADOOP_PREFIX"]   = "/usr/hdp/hadoop"
 import pydoop.hdfs
 # ########################################################################### #
 
@@ -398,8 +404,8 @@ def evdt_osg_downtime(start15m, limit15m):
             if ( end < startTIS ):
                 continue
             #
-            severty = downtime.findtext('Severity', default="").lower()
-            if (( severty == 'outage' ) or ( severty == 'severe' )):
+            severity = downtime.findtext('Severity', default="").lower()
+            if (( severity == 'outage' ) or ( severity == 'severe' )):
                 schedld = downtime.findtext('Class', default="").upper()
                 timeStr = downtime.findtext('CreatedTime', default="")
                 if (( len(timeStr) != 25 ) or ( timeStr[6:10] != ", 20" )):
