@@ -48,9 +48,8 @@ import pydoop.hdfs
 
 
 
-VOFEED_VERSION = "v2.00.00"
+VOFEED_VERSION = "v2.00.01"
 VOFEED_URL = "http://cmssst.web.cern.ch/cmssst/vofeed/vofeed.xml"
-VOFEED_HDFS_PREFIX = "/project/monitoring/archive/cmssst/raw/ssbmetric/"
 # ########################################################################### #
 
 
@@ -93,9 +92,9 @@ class vofeed:
             'net.perfSONAR.Latency':          "perfSONAR",
             'Squid':                          ""
         }
-        if type in TYPE_FLAVOUR_DICT:
+        try:
             return TYPE_FLAVOUR_DICT[type]
-        else:
+        except KeyError:
             return ""
 
 
@@ -111,9 +110,9 @@ class vofeed:
             'XROOTD':        "XRD",
             'perfSONAR':     "perfSONAR"
         }
-        if flavour in FLAVOUR_CATEGORY_DICT:
+        try:
             return FLAVOUR_CATEGORY_DICT[flavour]
-        else:
+        except KeyError:
             return ""
 
 
@@ -207,6 +206,8 @@ class vofeed:
         # covering that time. In case timestamp is a tuple, retrieve the   #
         # VO-feed time entries covering the time period in the tuple       #
         # ################################################################ #
+        HDFS_PREFIX = "/project/monitoring/archive/cmssst/raw/ssbmetric/"
+        #
         if ( type(timestamp) == type(0) ):
             timeFrst = int( timestamp / 86400 ) * 86400
             timeLast = ( int( timestamp / 900 ) * 900 ) + 450
@@ -242,10 +243,10 @@ class vofeed:
             with pydoop.hdfs.hdfs() as myHDFS:
                 for subDir in dirList:
                     logging.debug("   checking HDFS subdirectory %s" % subDir)
-                    if not myHDFS.exists( VOFEED_HDFS_PREFIX + subDir ):
+                    if not myHDFS.exists( HDFS_PREFIX + subDir ):
                         continue
                     # get list of files in directory:
-                    myList = myHDFS.list_directory(VOFEED_HDFS_PREFIX + subDir)
+                    myList = myHDFS.list_directory( HDFS_PREFIX + subDir )
                     fileNames = [ d['name'] for d in myList
                                   if (( d['kind'] == "file" ) and
                                       ( d['size'] != 0 )) ]
@@ -253,8 +254,7 @@ class vofeed:
                     for fileName in fileNames:
                         logging.debug("   reading file %s" %
                                       os.path.basename(fileName))
-                        fileHndl = None
-                        fileObj = None
+                        fileHndl = fileObj = None
                         try:
                             if ( os.path.splitext(fileName)[-1] == ".gz" ):
                                 fileHndl = myHDFS.open_file(fileName)
@@ -1478,8 +1478,7 @@ if __name__ == '__main__':
         # ################################################################# #
         # upload VO-feed for a time entry as JSON metric documents to MonIT #
         # ################################################################# #
-        #MONIT_URL = "http://monit-metrics.cern.ch:10012/"
-        MONIT_URL = "http://fail.cern.ch:10012/"
+        MONIT_URL = "http://monit-metrics.cern.ch:10012/"
         MONIT_HDR = {'Content-Type': "application/json; charset=UTF-8"}
         #
         logging.info("Composing JSON array and uploading to MonIT")
@@ -1492,7 +1491,7 @@ if __name__ == '__main__':
             logging.warning("skipping upload of document-devoid JSON string")
             return False
 
-        #jsonString = jsonString.replace("ssbmetric", "metrictest")
+        jsonString = jsonString.replace("ssbmetric", "metrictest")
 
 
         # upload string with JSON document array to MonIT/HDFS:
