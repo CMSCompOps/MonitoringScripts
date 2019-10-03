@@ -48,8 +48,7 @@ import pydoop.hdfs
 
 
 
-VOFEED_VERSION = "v2.00.01"
-VOFEED_URL = "http://cmssst.web.cern.ch/cmssst/vofeed/vofeed.xml"
+VOFEED_VERSION = "v2.00.02"
 # ########################################################################### #
 
 
@@ -123,13 +122,23 @@ class vofeed:
 
 
     def load(self):
-        """function to load the current VO-feed information from the URL"""
+        """function to load the current VO-feed information from FILE/URL"""
+        # ############################################################ #
+        # load the current VO-feed information into the object, either #
+        # directly reading the vofeed.xml file from AFS or via http    #
+        # ############################################################ #
+        VOFEED_FILE = "/afs/cern.ch/user/c/cmssst/www/vofeed/vofeed.xml"
+        VOFEED_URL  = "http://cmssst.web.cern.ch/cmssst/vofeed/vofeed.xml"
 
-        with urllib.request.urlopen(VOFEED_URL) as urlHandle:
-            urlCharset = urlHandle.headers.get_content_charset()
-            if urlCharset is None:
-                urlCharset = "utf-8"
-            myData = urlHandle.read().decode( urlCharset )
+        try:
+            with open(VOFEED_FILE, 'r') as myFile:
+                myData = myFile.read()
+        except:
+            with urllib.request.urlopen(VOFEED_URL) as urlHandle:
+                urlCharset = urlHandle.headers.get_content_charset()
+                if urlCharset is None:
+                    urlCharset = "utf-8"
+                myData = urlHandle.read().decode( urlCharset )
 
         # decode XML:
         vofd = xml.etree.ElementTree.fromstring( myData )
