@@ -1417,7 +1417,6 @@ if __name__ == '__main__':
                 shutil.copyfile(VOFEED_FILE, VOFEED_COPY)
         except Exception as excptn:
             logging.critical("Failed to write VO-feed file, %s" % str(excptn))
-            raise
 
         return
     # ####################################################################### #
@@ -1476,7 +1475,6 @@ if __name__ == '__main__':
                 shutil.copyfile(INUSE_FILE, INUSE_COPY)
         except Exception as excptn:
             logging.critical("Failed to write in-use file, %s" % str(excptn))
-            raise
 
         return
     # ####################################################################### #
