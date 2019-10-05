@@ -48,7 +48,7 @@ import pydoop.hdfs
 
 
 
-VOFEED_VERSION = "v2.00.03"
+VOFEED_VERSION = "v2.00.04"
 # ########################################################################### #
 
 
@@ -89,7 +89,8 @@ class vofeed:
             'perfSONAR':                      "perfSONAR",
             'net.perfSONAR.Bandwidth':        "perfSONAR",
             'net.perfSONAR.Latency':          "perfSONAR",
-            'Squid':                          ""
+            'Squid':                          "",
+            'site':                           "site"
         }
         try:
             return TYPE_FLAVOUR_DICT[type]
@@ -107,7 +108,8 @@ class vofeed:
             'HTCONDOR-CE':   "CE",
             'SRM':           "SE",
             'XROOTD':        "XRD",
-            'perfSONAR':     "perfSONAR"
+            'perfSONAR':     "perfSONAR",
+            'site':          "site"
         }
         try:
             return FLAVOUR_CATEGORY_DICT[flavour]
