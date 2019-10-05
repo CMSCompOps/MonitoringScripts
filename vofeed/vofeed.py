@@ -48,7 +48,7 @@ import pydoop.hdfs
 
 
 
-VOFEED_VERSION = "v2.00.02"
+VOFEED_VERSION = "v2.00.03"
 # ########################################################################### #
 
 
@@ -357,7 +357,7 @@ class vofeed:
 
     def times(self):
         """function to return list of VO-feed times in object inventory"""
-        return list( self.topo.keys() )
+        return sorted( self.topo.keys() )
 
 
     def sites(self, timestamp=None):
@@ -368,11 +368,11 @@ class vofeed:
         # timestamp=0 selects the latest VO-feed time entry              #
         # ############################################################## #
         if timestamp is not None:
-            return list( self.topo[timestamp].keys() )
+            return sorted( self.topo[timestamp].keys() )
         elif ( len(self.topo) == 1 ):
-            return list( next(iter( self.topo.values() )).keys() )
+            return sorted( next(iter( self.topo.values() )).keys() )
         else:
-            return list( self.topo[0].keys() )
+            return sorted( self.topo[0].keys() )
 
 
     def services(self, timestamp=None, site=None, category=None):
@@ -1655,7 +1655,7 @@ if __name__ == '__main__':
     # check if new time entry is different from previous one:
     # =======================================================
     if (( not vofd.compare2times(timestamp, timePrevious) ) or
-        ( int(timePrevious / 96) != int(timestamp / 96) )):
+        ( int(timePrevious / 86400) != int(timestamp / 86400) )):
         # and upload metric docs to MonIT if requested:
         if ( argStruct.upload ):
             successFlag = monit_upload(vofd, timestamp)
