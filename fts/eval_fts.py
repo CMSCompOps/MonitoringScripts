@@ -62,14 +62,16 @@ import pydoop.hdfs
 
 
 EVFTS_HDFS_PREFIX = "/project/monitoring/archive/cmssst/raw/ssbmetric/"
-EVFTS_BACKUP_DIR = "./junk"
-#EVFTS_BACKUP_DIR = "/data/cmssst/MonitoringScripts/fts/failed"
+#EVFTS_BACKUP_DIR = "./junk"
+EVFTS_BACKUP_DIR = "/data/cmssst/MonitoringScripts/fts/failed"
 # ########################################################################### #
 
 
 
 class ftsmtrc:
     'CMS Site Support Team FTS metric class'
+
+    staticErrorList = []
 
     def __init__(self):
         self.mtrc = {}
@@ -141,13 +143,15 @@ class ftsmtrc:
             return "trn_ok"
         elif (( file_size >= 21474836480 ) or
               ( error_lower.find("certificate has expired") >= 0 ) or
-              ( error_lower.find("operation canceled by user") >= 0 )):
+              ( error_lower.find("operation canceled by user") >= 0 ) or
+              ( error_lower.find("path/url invalid") >= 0 )):
             return "trn_usr"
         elif (( error_scope == "TRANSFER" ) and
               (( error_lower.find("no route to host") >= 0 ) or
                ( error_lower.find("could not open connection to") >= 0 ) or
                ( error_lower.find("unable to connect") >= 0 ) or
-               ( error_lower.find("failed to connect") >= 0 ))):
+               ( error_lower.find("failed to connect") >= 0 ) or
+               ( error_lower.find("network is unreachable") >= 0 ))):
             return "trn_err"
         #
         #
@@ -238,7 +242,9 @@ class ftsmtrc:
             elif (( error_lower.find("credential") >= 0 ) or
                   ( error_lower.find("permission denied") >= 0 ) or
                   ( error_lower.find("insufficient user privileges") >= 0 ) or
-                  ( error_message.find("Authorization denied") >= 0 )):
+                  ( error_message.find("Authorization denied") >= 0 ) or
+                  ( error_lower.find("establishing access rights") >= 0 ) or
+                  ( error_lower.find("certificate issued for a diff") >= 0 )):
                 return "src_perm"
             elif (( error_lower.find("no such file or directory") >= 0 ) or
                   ( error_lower.find("file not found") >= 0 ) or
@@ -262,7 +268,9 @@ class ftsmtrc:
                 return "trn_tout"
             elif ( error_lower.find("file not found") >= 0 ):
                 return "src_miss"
-            elif ( error_message.find("File exists") >= 0 ):
+            elif (( error_message.find("File exists") >= 0 ) or
+                  ( error_lower.find("rm() fail") >= 0 ) or
+                  ( error_lower.find("impossible to unlink") >= 0 )):
                 return "dst_perm"
             elif ( error_lower.find("mkdir") >= 0 ):
                 return "dst_path"
@@ -271,8 +279,13 @@ class ftsmtrc:
                   ( error_lower.find("unable to reserve space") >= 0 ) or
                   ( error_message.find("NoFreeSpaceException") >= 0 ) or
                   ( error_lower.find("no write pools online") >= 0 ) or
-                  ( error_lower.find("no space left on device") >= 0 )):
+                  ( error_lower.find("no space left on device") >= 0 ) or
+                  ( error_lower.find("not enough space") >= 0 ) or
+                  ( error_lower.find("no free space") >= 0 ) or
+                  ( error_lower.find("unable to get quota space") >= 0 )):
                 return "dst_spce"
+            elif ( error_message.find("error in write into HDFS") >= 0 ):
+                return "dst_err"
             #
             if ( logging.getLogger().level > 25 ):
                 return classfcn
@@ -304,17 +317,22 @@ class ftsmtrc:
                   ( error_lower.find("authentication failed") >= 0 ) or
                   ( error_lower.find("system error in unlink") >= 0 ) or
                   ( error_lower.find("login incorrect") >= 0 ) or
-                  ( error_lower.find("certificate verify failed") >= 0 )):
+                  ( error_lower.find("certificate verify failed") >= 0 ) or
+                  ( error_lower.find("authentication negotiation") >= 0 ) or
+                  ( error_lower.find("commands denied") >= 0 )):
                 return "dst_perm"
             elif (( error_message.find("No such file or directory") >= 0 ) or
                   ( error_message.find("No such device") >= 0 ) or
                   ( error_message.find("Not a directory") >= 0 ) or
+                  ( error_message.find("MAKE_PARENT") >= 0 ) or
                   ( error_message.find("][Mkdir][") >= 0 )):
                 return "dst_path"
             elif (( error_message.find("File table overflow") >= 0 ) or
                   ( error_message.find("No space left on device") >= 0 ) or
                   ( error_lower.find("quota exceeded") >= 0 ) or
-                  ( error_lower.find("no free space") >= 0 )):
+                  ( error_lower.find("no free space") >= 0 ) or
+                  ( error_lower.find("unable to get quota space") >= 0 ) or
+                  ( error_lower.find("space management step") >= 0 )):
                 return "dst_spce"
             #
             if ( logging.getLogger().level > 25 ):
@@ -346,10 +364,20 @@ class ftsmtrc:
                 ( error_lower.find("internal server error") >= 0 ) or
                 ( error_message.find("Broken pipe") >= 0 ) or
                 ( error_message.find("Unable to build the TURL") >= 0 ) or
-                ( error_lower.find("operation canceled") >= 0 )):
+                ( error_message.find("TTL exceeded") >= 0 ) or
+                ( error_lower.find("operation canceled") >= 0 ) or
+                ( error_lower.find("input/output error") >= 0 ) or
+                ( error_lower.find("connection limit exceeded") >= 0 ) or
+                ( error_lower.find("local filesystem has problems") >= 0 ) or
+                ( error_lower.find("failed to pin file") >= 0 ) or
+                ( error_lower.find("stale file handle") >= 0 ) or
+                ( error_lower.find("failed to abort transfer") >= 0 ) or
+                ( error_lower.find("error in failed to open checksum") >= 0 ) or
+                ( error_lower.find("error in failed to read checksum") >= 0 )):
                 return classfcn
         elif ( classfcn == "trn_err" ):
             if (( error_lower.find("no such file or directory") >= 0 ) or
+                ( error_lower.find("unable to open file") >= 0 ) or
                 ( error_lower.find("login failed") >= 0 ) or
                 ( error_lower.find("login incorrect") >= 0 ) or
                 ( error_lower.find("transfer failed") >= 0 ) or
@@ -371,16 +399,23 @@ class ftsmtrc:
                 ( error_lower.find("an unknown error occurred") >= 0 ) or
                 ( error_lower.find("transfer was forcefully killed") >= 0 ) or
                 ( error_lower.find("stream ended before eod") >= 0 ) or
+                ( error_lower.find("file size mismatch") >= 0 ) or
                 ( error_lower.find("internal server error") >= 0 ) or
+                ( error_lower.find("operation not permitted") >= 0 ) or
                 ( error_message.find("Permission denied") >= 0 ) or
                 ( error_message.find("Broken pipe") >= 0 ) or
                 ( error_message.find("Invalid argument") >= 0 ) or
                 ( error_message.find("SSL handshake problem") >= 0 ) or
+                ( error_message.find("IPC failed") >= 0 ) or
+                ( error_message.find(" 501 Port number") >= 0 ) or
+                ( error_message.find(" 500 Authorization error") >= 0 ) or
                 ( error_message.find(" 500 End") >= 0 ) or
                 ( error_message.find(" 451 End") >= 0 ) or
                 ( error_message.find(" 451 Failed to deliver Pool") >= 0 ) or
                 ( error_message.find(" 451 FTP proxy did not shut") >= 0 ) or
                 ( error_message.find(" 451 General problem") >= 0 ) or
+                ( error_message.find(" 451 Post-processing failed") >= 0 ) or
+                ( error_message.find(" 431 Internal error") >= 0 ) or
                 ( error_lower.find("failed to deliver pnfs") >= 0 ) or
                 ( error_lower.find("block with unknown descriptor") >= 0 ) or
                 ( error_lower.find("certificate verify failed") >= 0 ) or
@@ -388,7 +423,19 @@ class ftsmtrc:
                 ( error_lower.find("transfer cancelled") >= 0 ) or
                 ( error_lower.find("handle not in the proper state") >= 0 ) or
                 ( error_lower.find("error closing xrootd file handle") >= 0 ) or
-                ( error_lower.find("stream was closed") >= 0 )):
+                ( error_lower.find("stream was closed") >= 0 ) or
+                ( error_lower.find("failed to open file") >= 0 ) or
+                ( error_lower.find("copy failed with mode 3rd p") >= 0 ) or
+                ( error_lower.find("connection limit exceeded") >= 0 ) or
+                ( error_lower.find("error while searching for end") >= 0 ) or
+                ( error_lower.find("stale file handle") >= 0 ) or
+                ( error_lower.find("could not verify credential") >= 0 ) or
+                ( error_lower.find("redirect limit has been reached") >= 0 ) or
+                ( error_lower.find("operation expired") >= 0 ) or
+                ( error_lower.find("invalid address") >= 0 ) or
+                ( error_lower.find("upload not yet completed") >= 0 ) or
+                ( error_lower.find("cannot allocate memory") >= 0 ) or
+                ( error_lower.find("does not exist") >= 0 )):
                 return classfcn
         elif ( classfcn == "dst_err" ):
             if (( error_lower.find("communication error") >= 0 ) or
@@ -401,14 +448,17 @@ class ftsmtrc:
                 ( error_lower.find("connection closed") >= 0 ) or
                 ( error_lower.find("timed out") >= 0 ) or
                 ( error_lower.find("timeout") >= 0 ) or
+                ( error_lower.find("operation canceled") >= 0 ) or
                 ( error_lower.find("problem while connected to") >= 0 ) or
                 ( error_lower.find("incompatible with current file") >= 0 ) or
                 ( error_message.find("internal HDFS error") >= 0 ) or
                 ( error_message.find("error in write into HDFS") >= 0 ) or
                 ( error_message.find("Failed to close file in HDFS") >= 0 ) or
+                ( error_message.find(" 500 End") >= 0 ) or
                 ( error_message.find(" 451 End") >= 0 ) or
                 ( error_message.find("ERROR: deadlock detected") >= 0 ) or
                 ( error_message.find(" 451 Failed to deliver Pool") >= 0 ) or
+                ( error_lower.find("unable to open file") >= 0 ) or
                 ( error_lower.find("no data available") >= 0 ) or
                 ( error_lower.find("file size mismatch") >= 0 ) or
                 ( error_lower.find("checksum mismatch") >= 0 ) or
@@ -417,6 +467,7 @@ class ftsmtrc:
                 ( error_message.find("][SRM_FILE_LIFETIME_EXPIRED]") >= 0 ) or
                 ( error_message.find("][SRM_INTERNAL_ERROR]") >= 0 ) or
                 ( error_message.find("][SRM_REQUEST_INPROGRESS]") >= 0 ) or
+                ( error_message.find("][SRM_ABORTED]") >= 0 ) or
                 ( error_message.find("Broken pipe") >= 0 ) or
                 ( error_lower.find("request aborted") >= 0 ) or
                 ( error_lower.find("operation was aborted") >= 0 ) or
@@ -424,9 +475,19 @@ class ftsmtrc:
                 ( error_lower.find("protocol(s) not supported") >= 0 ) or
                 ( error_lower.find("unknown error occurred") >= 0 ) or
                 ( error_lower.find("service unavailable") >= 0 ) or
-                ( error_message.find("Unable to build the TURL") >= 0 )):
+                ( error_message.find("Unable to build the TURL") >= 0 ) or
+                ( error_lower.find("input/output error") >= 0 ) or
+                ( error_lower.find("connection limit exceeded") >= 0 ) or
+                ( error_lower.find("unexpected server error") >= 0 ) or
+                ( error_lower.find("too many queued requests") >= 0 ) or
+                ( error_lower.find("upload not yet completed") >= 0 ) or
+                ( error_lower.find("no such request") >= 0 ) or
+                ( error_lower.find("failed to process") >= 0 )):
                 return classfcn
-        logging.log(25, "Unclassified %s error: %s [%d] %s" %
+        if error_message not in ftsmtrc.staticErrorList:
+            ftsmtrc.staticErrorList.append( error_message )
+            #
+            logging.log(25, "Unclassified %s error: %s [%d] %s" %
                         (classfcn[:3], error_scope, error_code, error_message))
         #
         return classfcn
@@ -520,8 +581,7 @@ class ftsmtrc:
         for dirDay in range(start1dArea, limitLocalTmpArea, oneDay):
             dirList.add( time.strftime("fts1day/%Y/%m/%d.tmp",
                                         time.gmtime( dirDay )) )
-        del dirDay
-
+        #
         dirList = sorted(dirList)
 
         # connect to HDFS, loop over directories and read FTs eval docs:
@@ -657,23 +717,43 @@ class ftsmtrc:
                                                    if ( e['type'] == "site" ) ]
 
 
-    def status(self, metric, name, type):
+    def status(self, metric, name, clss):
         """function to return the status of a link/source/destination/site"""
         # ################################################################# #
         # metric is a tuple of metric-name and time-bin: ("fts1day", 16954) #
         # name is a site (Tn_CC_*), source (*.*.*), destination (*.*.*), or #
         # link (*.*.*___*.*.*) name                                         #
-        # type is site, source, destination, or link                        #
-        # return value is the status dictionary {'status':, 'quality':,...  #
+        # clss is site, source, destination, or link                        #
+        # return value is the status of the evaluation or None              #
         # ###################################################################
         if (( metric is None ) and ( len(self.mtrc) == 1 )):
             metric = next(iter( self.mtrc.keys() ))
         #
         for entry in self.mtrc[metric]:
-            if (( entry['name'] == name ) and ( entry['type'] == type )):
+            if (( entry['name'] == name ) and ( entry['type'] == clss )):
                 return entry['status']
         #
-        return None
+        return "unknown"
+
+
+    def get1entry(self, metric, name, clss):
+        """return the entry of a link/source/destination/site evaluation"""
+        # ################################################################# #
+        # metric is a tuple of metric-name and time-bin: ("fts1day", 16954) #
+        # name is a site (Tn_CC_*), source (*.*.*), destination (*.*.*), or #
+        # link (*.*.*___*.*.*) name                                         #
+        # clss is site, source, destination, or link                        #
+        # return value is the evaluation dictionary {'name':,'status':,...} #
+        # ###################################################################
+        if (( metric is None ) and ( len(self.mtrc) == 1 )):
+            metric = next(iter( self.mtrc.keys() ))
+        #
+        for entry in self.mtrc[metric]:
+            if (( entry['name'] == name ) and ( entry['type'] == clss )):
+                return entry
+        #
+        raise KeyError("No such entry %s / %s in (%s,%d)" % (name, clss,
+                                                         metric[0], metric[1]))
 
 
     def add1metric(self, metric, data=None):
@@ -899,19 +979,21 @@ if __name__ == '__main__':
                         (time.strftime("%Y-%b-%d %H:%M", time.gmtime(minTIS)),
                          time.strftime("%Y-%b-%d %H:%M", time.gmtime(maxTIS))))
         #
-        dirSet = set()
+        dirList = set()
         for bin15m in bins15min:
-            dirSet.add( time.strftime("%Y/%m/%d", time.gmtime(bin15m * 900)) )
+            dirList.add( time.strftime("%Y/%m/%d", time.gmtime(bin15m * 900)) )
         #
         now = int( time.time() )
         dayTIS = 24*60*60
         for tis in range(now, now-(7*dayTIS), -dayTIS):
-            dirSet.add( time.strftime("%Y/%m/%d.tmp", time.localtime( tis )) )
+            dirList.add( time.strftime("%Y/%m/%d.tmp", time.localtime( tis )) )
+        #
+        dirList = sorted( dirList )
 
         linkInfo = {}
         try:
             with pydoop.hdfs.hdfs() as myHDFS:
-                for subDir in dirSet:
+                for subDir in dirList:
                     logging.debug("   checking HDFS subdirectory %s" % subDir)
                     if not myHDFS.exists( FTS_HDFS_PREFIX + subDir ):
                         continue
@@ -1765,7 +1847,8 @@ if __name__ == '__main__':
         # ############################################################# #
         # upload FTS evaluations as JSON metric documents to MonIT/HDFS #
         # ############################################################# #
-        MONIT_URL = "http://monit-metrics.cern.ch:10012/"
+        #MONIT_URL = "http://monit-metrics.cern.ch:10012/"
+        MONIT_URL = "http://fail.cern.ch:10012/"
         MONIT_HDR = {'Content-Type': "application/json; charset=UTF-8"}
         #
         logging.info("Composing JSON array and uploading to MonIT")
