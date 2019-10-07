@@ -61,7 +61,6 @@ import pydoop.hdfs
 
 
 
-EVFTS_HDFS_PREFIX = "/project/monitoring/archive/cmssst/raw/ssbmetric/"
 #EVFTS_BACKUP_DIR = "./junk"
 EVFTS_BACKUP_DIR = "/data/cmssst/MonitoringScripts/fts/failed"
 # ########################################################################### #
@@ -499,6 +498,7 @@ class ftsmtrc:
         # Retrieve all link/source/destination/site evaluations for the  #
         # (<metric-name>, <time-bin>) tuples in the provided metricList. #
         # ############################################################## #
+        HDFS_PREFIX = "/project/monitoring/archive/cmssst/raw/ssbmetric/"
         oneDay = 24*60*60
         now = int( time.time() )
         #
@@ -591,10 +591,10 @@ class ftsmtrc:
             with pydoop.hdfs.hdfs() as myHDFS:
                 for subDir in dirList:
                     logging.debug("   checking HDFS subdirectory %s" % subDir)
-                    if not myHDFS.exists( EVFTS_HDFS_PREFIX + subDir ):
+                    if not myHDFS.exists( HDFS_PREFIX + subDir ):
                         continue
                     # get list of files in directory:
-                    myList = myHDFS.list_directory(EVFTS_HDFS_PREFIX + subDir)
+                    myList = myHDFS.list_directory( HDFS_PREFIX + subDir )
                     fileNames = [ d['name'] for d in myList
                                   if (( d['kind'] == "file" ) and
                                       ( d['size'] != 0 )) ]
@@ -780,7 +780,7 @@ class ftsmtrc:
         #
         # check entry has mandatory keys:
         if (( 'name' not in entry ) or ( 'type' not in entry ) or
-            ( 'status' not in entry ) or ( 'quality' not in entry )):
+                                       ( 'status' not in entry )):
             raise ValueError("Mandatory keys missing in entry %s" %
                              str(service))
         #
@@ -802,6 +802,8 @@ class ftsmtrc:
             raise ValueError("Illegal type \"%s\" of name \"%s\"" % 
                              (entry['type'], entry['name']))
         #
+        if 'quality' not in entry:
+            entry['quality'] = None
         if 'detail' not in entry:
             entry['detail'] = None
         elif ( entry['detail'] == "" ):
@@ -1771,6 +1773,7 @@ if __name__ == '__main__':
                             if ( status != "error" ):
                                 status = "unknown"
                             dst_status = "unknown"
+                            quality = 0.000
                         for cls in dst_hosts[host]:
                             if ( cls == 'trn_ok' ):
                                 dst_classfcn[cls][0] += dst_hosts[host][cls][0]
@@ -1785,16 +1788,17 @@ if __name__ == '__main__':
                                     dst_classfcn[cls] = dst_hosts[host][cls][0]
                     if (( src_status is None ) and ( dst_status is None )):
                         continue
-                        if src_status is None:
-                            src_status = "unknown"
-                            if ( status != "error" ):
-                                status = "unknown"
-                        if dst_status is None:
-                            dst_status = "unknown"
-                            if ( status != "error" ):
-                                status = "unknown"
-                        hst_strng += "%s: %s/%s\n" % (host,
-                                                      src_status, dst_status)
+                    if src_status is None:
+                        src_status = "unknown"
+                        if ( status != "error" ):
+                            status = "unknown"
+                        quality = 0.000
+                    if dst_status is None:
+                        dst_status = "unknown"
+                        if ( status != "error" ):
+                            status = "unknown"
+                        quality = 0.000
+                    hst_strng += "%s: %s/%s\n" % (host, src_status, dst_status)
                 if status is None:
                     continue
                 detail = (("Transfer (from/to): %d/%d files, %.3f/%.3f TB ok" +
