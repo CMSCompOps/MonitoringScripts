@@ -36,24 +36,14 @@ from email.mime.text import MIMEText
 import subprocess
 #
 # setup the Java/HDFS/PATH environment for pydoop to work properly:
-#EVSAM_HDFS_HOME = "/cvmfs/sft.cern.ch/lcg/releases/"
-EVSAM_HDFS_HOME = "/data/cmssst/packages/"
-EVSAM_HDFS_HOME += "hadoop/2.7.5.1-1f419/x86_64-centos7-gcc62-opt"
-#EVSAM_HDFS_CONF = "/cvmfs/sft.cern.ch/lcg/etc/hadoop-confext/"
-EVSAM_HDFS_CONF = "/data/cmssst/packages/"
-#EVSAM_HDFS_CONF += "etc/hadoop.hadoop-qa/conf"
-EVSAM_HDFS_CONF += "etc/hadoop.analytix/conf"
-os.environ["HADOOP_HOME"]     = EVSAM_HDFS_HOME
-os.environ["HADOOP_CONF_DIR"] = EVSAM_HDFS_CONF
+os.environ["HADOOP_CONF_DIR"] = "/opt/hadoop/conf/etc/analytix/hadoop.analytix"
 os.environ["JAVA_HOME"]       = "/etc/alternatives/jre"
-os.environ["PATH"]            = EVSAM_HDFS_HOME + "/bin:" + os.environ["PATH"]
+os.environ["HADOOP_PREFIX"]   = "/usr/hdp/hadoop"
 import pydoop.hdfs
 # ########################################################################### #
 
 
 
-#EVSAM_MONIT_URL = "http://monit-metrics-dev.cern.ch:10012/"
-EVSAM_MONIT_URL = "http://monit-metrics.cern.ch:10012/"
 #EVSAM_BACKUP_DIR = "./junk"
 EVSAM_BACKUP_DIR = "/data/cmssst/MonitoringScripts/sam/failed"
 #
@@ -1230,13 +1220,15 @@ def evsam_evaluate(timebin):
         # check for downtime:
         downStatus, downDetail = evsam_check_site_downtime(site, timebin)
         if ( downStatus != "ok" ):
-            siteDetail = "%s: %s\n\n%s" % (downStatus, downDetail, siteDetail)
+            siteDetail = "%s: %s\n%s" % (downStatus, downDetail, siteDetail)
             if ( downStatus == "downtime" ):
                 if (( myStatus == "error" ) or ( myStatus == "unknown" )):
                     myStatus = "downtime"
                 myReliability = None
         #
         # add site evaluation to evsam_glbl_evaluations:
+        if ( siteDetail[-1:] == "\n" ):
+            siteDetail = siteDetail[:-1]
         if myStatus is not None:
             evsam_add_evaluation("sam15min", timebin, site, "site", myStatus,
                 myAvailability, myReliability, siteDetail)
@@ -1493,7 +1485,9 @@ def evsam_monit_upload():
     # ############################################################### #
     # upload evsam_glbl_evaluations as JSON metric documents to MonIT #
     # ############################################################### #
-    EVSAM_MONIT_HDR = {'Content-Type': "application/json; charset=UTF-8"}
+    #MONIT_URL = "http://monit-metrics.cern.ch:10012/"
+    MONIT_URL = "http://fail.cern.ch:10012/"
+    MONIT_HDR = {'Content-Type': "application/json; charset=UTF-8"}
     #
     logging.info("Composing JSON array and uploading to MonIT")
 
@@ -1508,6 +1502,8 @@ def evsam_monit_upload():
     cnt_1hour = jsonString.count("\"path\": \"sam1hour\"")
     cnt_6hour = jsonString.count("\"path\": \"sam6hour\"")
     cnt_1day  = jsonString.count("\"path\": \"sam1day\"")
+    #
+    jsonString = jsonString.replace("ssbmetric", "metrictest")
 
 
     # upload string with JSON document array to MonIT/HDFS:
@@ -1521,9 +1517,9 @@ def evsam_monit_upload():
         #
         try:
             # MonIT needs a document array and without newline characters:
-            requestObj = urllib.request.Request(EVSAM_MONIT_URL,
+            requestObj = urllib.request.Request(MONIT_URL,
                          data=dataString.encode("utf-8"),
-                         headers=EVSAM_MONIT_HDR, method="POST")
+                         headers=MONIT_HDR, method="POST")
             responseObj = urllib.request.urlopen( requestObj, timeout=90 )
             if ( responseObj.status != http.HTTPStatus.OK ):
                 logging.error(("Failed to upload JSON [%d:%d] string to MonI" +
@@ -1832,8 +1828,8 @@ if __name__ == '__main__':
     #
     # filter out metric/time-bin entries with identical entries in MonIT
     cnt_docs = 0
-    for tuple in evsam_glbl_evaluations:
-        if tuple in sorted(evsam_glbl_monitdocs.keys()):
+    for tuple in sorted(evsam_glbl_evaluations.keys()):
+        if tuple in evsam_glbl_monitdocs:
             for index in range(len(evsam_glbl_evaluations[tuple])-1,-1,-1):
                 result = evsam_glbl_evaluations[tuple][index]
                 if result in evsam_glbl_monitdocs[tuple]:
