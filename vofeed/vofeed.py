@@ -48,7 +48,7 @@ import pydoop.hdfs
 
 
 
-VOFEED_VERSION = "v2.00.04"
+VOFEED_VERSION = "v2.00.05"
 # ########################################################################### #
 
 
@@ -1278,6 +1278,9 @@ if __name__ == '__main__':
                 endpoint = phedex_pfn.split("://")[1].split("/")[0].lower()
             host = endpoint.split(":")[0]
             if ( host == "" ):
+                continue
+            if (( host == "cmseos-gridftp.fnal.gov" ) and
+                ( phedex_noname == "T1_US_FNAL" )):
                 continue
             service = { 'category': "SE", 'hostname': host, 'flavour': "SRM" }
             #
