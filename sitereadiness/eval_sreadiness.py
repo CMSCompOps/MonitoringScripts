@@ -43,8 +43,8 @@ import pydoop.hdfs
 
 
 
-#EVSR_BACKUP_DIR = "./junk"
-EVSR_BACKUP_DIR = "/data/cmssst/MonitoringScripts/sitereadiness/failed"
+EVSR_BACKUP_DIR = "./junk"
+#EVSR_BACKUP_DIR = "/data/cmssst/MonitoringScripts/site_readiness/failed"
 # ########################################################################### #
 
 
@@ -541,7 +541,8 @@ class SReadinessMetric:
 
         for metric in self.metrics():
             #
-            timestamp = SReadinessMetric.interval( metric[0] ) * metric[1]
+            interval = SReadinessMetric.interval( metric[0] )
+            timestamp = ( interval * metric[1] ) + int( interval / 2 )
             file.write("\nMetric \"%s\", %d (%s):\n" % (metric[0], metric[1],
                    time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime(timestamp))))
             file.write("---------------------------------------------------\n")
@@ -1892,7 +1893,7 @@ if __name__ == '__main__':
                [ ("fts1hour", e) for e in eval1hour ] + \
                [ ("fts6hour", e) for e in eval6hour ] + \
                [ ("fts1day", e)  for e in eval1day  ]
-    ftsDocs = eval_fts.ftsmtrc()
+    ftsDocs = eval_fts.FTSmetric()
     ftsDocs.fetch( mtrcList )
     #
     mtrcList = [ ("hc15min", e) for e in eval15min ] + \
