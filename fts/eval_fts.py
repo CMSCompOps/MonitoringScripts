@@ -1893,8 +1893,8 @@ if __name__ == '__main__':
         successFlag = True
         for myOffset in range(0, ndocs, 4096):
             if ( myOffset > 0 ):
-               # give importer time to process documents
-               time.sleep(1.500)
+                # give importer time to process documents
+                time.sleep(1.500)
             # MonIT upload channel can handle at most 10,000 docs at once
             dataString = json.dumps( docs[myOffset:min(ndocs,myOffset+4096)] )
             #
