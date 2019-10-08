@@ -419,6 +419,7 @@ class FTSmetric:
                 ( error_message.find(" 501 Port number") >= 0 ) or
                 ( error_message.find(" 500 Authorization error") >= 0 ) or
                 ( error_message.find(" 500 End") >= 0 ) or
+                ( error_message.find(" 530 Login denied") >= 0 ) or
                 ( error_message.find(" 451 End") >= 0 ) or
                 ( error_message.find(" 451 Failed to deliver Pool") >= 0 ) or
                 ( error_message.find(" 451 FTP proxy did not shut") >= 0 ) or
@@ -477,6 +478,7 @@ class FTSmetric:
                 ( error_message.find("][SRM_INTERNAL_ERROR]") >= 0 ) or
                 ( error_message.find("][SRM_REQUEST_INPROGRESS]") >= 0 ) or
                 ( error_message.find("][SRM_ABORTED]") >= 0 ) or
+                ( error_message.find("][SRM_REQUEST_TIMED_OUT]") >= 0 ) or
                 ( error_message.find("Broken pipe") >= 0 ) or
                 ( error_lower.find("request aborted") >= 0 ) or
                 ( error_lower.find("operation was aborted") >= 0 ) or
