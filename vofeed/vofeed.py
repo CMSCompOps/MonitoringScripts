@@ -1487,7 +1487,8 @@ if __name__ == '__main__':
         # ################################################################# #
         # upload VO-feed for a time entry as JSON metric documents to MonIT #
         # ################################################################# #
-        MONIT_URL = "http://monit-metrics.cern.ch:10012/"
+        #MONIT_URL = "http://monit-metrics.cern.ch:10012/"
+        MONIT_URL = "http://fail.cern.ch:10012/"
         MONIT_HDR = {'Content-Type': "application/json; charset=UTF-8"}
         #
         logging.info("Composing JSON array and uploading to MonIT")
@@ -1508,9 +1509,12 @@ if __name__ == '__main__':
         docs = json.loads(jsonString)
         ndocs = len(docs)
         successFlag = True
-        for myOffset in range(0, ndocs, 8192):
+        for myOffset in range(0, ndocs, 4096):
+            if ( myOffset > 0 ):
+                # give importer time to process documents
+                time.sleep(1.500)
             # MonIT upload channel can handle at most 10,000 docs at once
-            dataString = json.dumps( docs[myOffset:min(ndocs,myOffset+8192)] )
+            dataString = json.dumps( docs[myOffset:min(ndocs,myOffset+4096)] )
             #
             try:
                 # MonIT needs a document array and without newline characters:
@@ -1521,13 +1525,13 @@ if __name__ == '__main__':
                 if ( responseObj.status != http.HTTPStatus.OK ):
                     logging.error(("Failed to upload JSON [%d:%d] string to " +
                                    "MonIT, %d \"%s\"") %
-                                  (myOffset, min(ndocs,myOffset+8192),
+                                  (myOffset, min(ndocs,myOffset+4096),
                                    responseObj.status, responseObj.reason))
                     successFlag = False
                 responseObj.close()
             except urllib.error.URLError as excptn:
                 logging.error("Failed to upload JSON [%d:%d], %s" %
-                             (myOffset, min(ndocs,myOffset+8192), str(excptn)))
+                             (myOffset, min(ndocs,myOffset+4096), str(excptn)))
         del docs
 
         if ( successFlag ):
