@@ -325,7 +325,7 @@ class DowntimeMetric:
         if (( 'name' not in entry ) or ( 'type' not in entry ) or
             ( 'status' not in entry ) or ( 'duration' not in entry )):
             raise ValueError("Mandatory keys missing in entry %s" %
-                             str(service))
+                             str(entry))
         #
         entry = entry.copy()
         if ( entry['type'] == "site" ):

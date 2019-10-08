@@ -460,7 +460,7 @@ class SReadinessMetric:
         # check entry has mandatory keys:
         if (( 'name' not in entry ) or ( 'status' not in entry )):
             raise ValueError("Mandatory keys missing in entry %s" %
-                             str(service))
+                             str(entry))
         #
         if ( siteRegex.match( entry['name'] ) is None ):
              raise ValueError("Illegal site name %s" % entry['name'])
