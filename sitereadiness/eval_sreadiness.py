@@ -43,8 +43,8 @@ import pydoop.hdfs
 
 
 
-EVSR_BACKUP_DIR = "./junk"
-#EVSR_BACKUP_DIR = "/data/cmssst/MonitoringScripts/site_readiness/failed"
+#EVSR_BACKUP_DIR = "./junk"
+EVSR_BACKUP_DIR = "/data/cmssst/MonitoringScripts/site_readiness/failed"
 # ########################################################################### #
 
 
