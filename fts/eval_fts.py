@@ -67,7 +67,7 @@ EVFTS_BACKUP_DIR = "/data/cmssst/MonitoringScripts/fts/failed"
 
 
 
-class ftsmtrc:
+class FTSmetric:
     'CMS Site Support Team FTS metric class'
 
     staticErrorList = []
@@ -77,19 +77,29 @@ class ftsmtrc:
         return
 
 
-    @staticmethod
-    def metric_names():
-        return [ "fts15min", "fts1hour", "fts6hour", "fts1day" ]
-
-
-    @staticmethod
-    def metric2period(metric_name):
-        FTS_METRICS = {'fts15min': 900, 'fts1hour': 3600,
-                                        'fts6hour': 21600, 'fts1day': 86400}
+   @staticmethod
+    def interval(metric_name=None):
+        FTS_METRICS = {'fts15min':  900, 'fts1hour':  3600,
+                                         'fts6hour': 21600, 'fts1day':  86400 }
+        #
+        if metric_name is None:
+            return FTS_METRICS
+        #
         try:
             return FTS_METRICS[ metric_name ]
         except KeyError:
             return 0
+
+
+    @staticmethod
+    def metric_order(metric):
+        """function to determine the sort order of FTS metrics"""
+        SORT_ORDER = {'fts15min': 1, 'fts1hour': 2, 'fts6hour': 3, 'fts1day': 4}
+
+        try:
+            return [ SORT_ORDER[ metric[0] ], metric[1] ]
+        except KeyError:
+            return [ 0, metric[1] ]
 
 
     @staticmethod
@@ -172,7 +182,7 @@ class ftsmtrc:
             classfcn = "trn_err"
             #
             #
-            src_host, dst_host = ftsmtrc.link2hosts(link_name)
+            src_host, dst_host = FTSmetric.link2hosts(link_name)
             #
             try:
                 domain = src_host.split(".",1)[-1]
@@ -483,8 +493,8 @@ class ftsmtrc:
                 ( error_lower.find("no such request") >= 0 ) or
                 ( error_lower.find("failed to process") >= 0 )):
                 return classfcn
-        if error_message not in ftsmtrc.staticErrorList:
-            ftsmtrc.staticErrorList.append( error_message )
+        if error_message not in FTSmetric.staticErrorList:
+            FTSmetric.staticErrorList.append( error_message )
             #
             logging.log(25, "Unclassified %s error: %s [%d] %s" %
                         (classfcn[:3], error_scope, error_code, error_message))
@@ -614,11 +624,10 @@ class ftsmtrc:
                                 myJson = json.loads(myLine.decode('utf-8'))
                                 try:
                                     metric = myJson['metadata']['path']
-                                    if metric not in ftsmtrc.metric_names():
+                                    if metric not in FTSmetric.interval():
                                         continue
                                     tbin = int( myJson['metadata']['timestamp']
-                                              / ( ftsmtrc.metric2period(metric)
-                                                                      * 1000 ))
+                                       / ( FTSmetric.interval(metric) * 1000 ))
                                     mKey = (metric, tbin)
                                     if mKey not in metricList:
                                         continue
@@ -679,7 +688,12 @@ class ftsmtrc:
 
     def metrics(self):
         """function to return list of FTS metrics in the object inventory"""
-        return list( self.mtrc.keys() )
+        # ############################################################# #
+        # metrics are returned sorted by metric name (15m/1h/6h/1d) and #
+        # time-bin                                                      #
+        # ############################################################# #
+        return sorted( self.mtrc.keys(),
+                                      key=lambda m: FTSmetric.metric_order(m) )
 
 
     def evaluations(self, metric=None):
@@ -758,7 +772,7 @@ class ftsmtrc:
 
     def add1metric(self, metric, data=None):
         """function to add an additional FTS metric to the object inventory"""
-        if metric[0] not in ftsmtrc.metric_names():
+        if metric[0] not in FTSmetric.interval():
             raise ValueError("metric %s is not a valid FTS metric name" %
                              str(metric[0]))
         #
@@ -831,15 +845,14 @@ class ftsmtrc:
         # ############################################################ #
         # compose a JSON string from the FTS evaluations in the object #
         # ############################################################ #
-        SORT_ORDER = {"fts15min": 0, "fts1hour": 1, "fts6hour": 2, "fts1day": 3}
 
         jsonString = "["
         commaFlag = False
         #
-        for metric in sorted( self.mtrc.keys(),
-                              key=lambda k: [SORT_ORDER[k[0]],k[1]] ):
+        for metric in self.metrics():
             #
-            timestamp = ftsmtrc.metric2period( metric[0] ) * metric[1]
+            interval = FTSmetric.interval( metric[0] )
+            timestamp = ( interval * metric[1] ) + int( interval / 2 )
             hdrString = (",\n {\n   \"producer\": \"cmssst\",\n" +
                                 "   \"type\": \"ssbmetric\",\n" +
                                 "   \"path\": \"%s\",\n" +
@@ -884,7 +897,8 @@ class ftsmtrc:
         STATUS_CHAR = {'unknown': "?", 'ok': "o", 'warning': "w", 'error': "e"}
         #
         for metric in sorted( self.mtrc.keys() ):
-            timestamp = ftsmtrc.metric2period( metric[0] ) * metric[1]
+            interval = FTSmetric.interval( metric[0] )
+            timestamp = ( interval * metric[1] ) + int( interval / 2 )
             file.write("\nMetric \"%s\", %d (%s):\n" % (metric[0], metric[1],
                    time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime(timestamp))))
             #
@@ -898,7 +912,7 @@ class ftsmtrc:
                 lnkDict[ entry['name'] ] = entry
                 if ( entry['status'] == "unknown" ):
                     continue
-                src_host, dst_host = ftsmtrc.link2hosts(entry['name'])
+                src_host, dst_host = FTSmetric.link2hosts(entry['name'])
                 hostList.add(src_host)
                 hostList.add(dst_host)
             hostList = sorted(hostList)
@@ -1035,7 +1049,7 @@ if __name__ == '__main__':
                                     tuple = ("fts15min", bin15m)
                                     #
                                     # link name:
-                                    link = ftsmtrc.hosts2link(
+                                    link = FTSmetric.hosts2link(
                                         myJson['data']['src_hostname'],
                                         myJson['data']['dst_hostname'])
                                     if link is None:
@@ -1061,7 +1075,7 @@ if __name__ == '__main__':
                                         logfile = logfile.replace("/#/", "/#/job/")
                                     #
                                     # classify transfer result:
-                                    result = ftsmtrc.classify(
+                                    result = FTSmetric.classify(
                                         myJson['data']['tr_error_scope'],
                                         myJson['data']['t_error_code'],
                                         myJson['data']['t__error_message'],
@@ -1271,7 +1285,7 @@ if __name__ == '__main__':
             dst_hosts = {}
             #
             for link in linkDict[key]:
-                src_host, dst_host = ftsmtrc.link2hosts(link)
+                src_host, dst_host = FTSmetric.link2hosts(link)
                 if (( src_host is None ) or ( dst_host is None )):
                     continue
                 if ( src_host == dst_host ):
@@ -2161,13 +2175,13 @@ if __name__ == '__main__':
 
     # evaluate link and site status:
     # ==============================
-    evalDocs = ftsmtrc()
+    evalDocs = FTSmetric()
     eval_status( evalDocs, ftsDict, vofd )
 
 
     # fetch existing FTS metric documents from MonIT:
     # ===============================================
-    monitDocs = ftsmtrc()
+    monitDocs = FTSmetric()
     #
     monitList = evalDocs.metrics()
     #

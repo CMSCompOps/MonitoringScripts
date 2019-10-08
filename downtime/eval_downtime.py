@@ -1,4 +1,4 @@
-#!/usr/bin/python36
+#!/data/cmssst/packages/bin/python3.7
 # ########################################################################### #
 # python script to query the OSG and EGI downtime databases and upload a JSON
 #    document to MonIT with the downtimes of hosts relevant to CMS operations
