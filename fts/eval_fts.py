@@ -479,6 +479,7 @@ class FTSmetric:
                 ( error_message.find("][SRM_REQUEST_INPROGRESS]") >= 0 ) or
                 ( error_message.find("][SRM_ABORTED]") >= 0 ) or
                 ( error_message.find("][SRM_REQUEST_TIMED_OUT]") >= 0 ) or
+                ( error_message.find("][SRM_FAILURE]") >= 0 ) or
                 ( error_message.find("Broken pipe") >= 0 ) or
                 ( error_lower.find("request aborted") >= 0 ) or
                 ( error_lower.find("operation was aborted") >= 0 ) or
@@ -493,7 +494,8 @@ class FTSmetric:
                 ( error_lower.find("too many queued requests") >= 0 ) or
                 ( error_lower.find("upload not yet completed") >= 0 ) or
                 ( error_lower.find("no such request") >= 0 ) or
-                ( error_lower.find("failed to process") >= 0 )):
+                ( error_lower.find("failed to process") >= 0 ) or
+                ( error_lower.find("unable to write replica") >= 0 )):
                 return classfcn
         if error_message not in FTSmetric.staticErrorList:
             FTSmetric.staticErrorList.append( error_message )
