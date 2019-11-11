@@ -1,0 +1,11 @@
+AuthType shibboleth
+ShibRequireSession On
+ShibExportAssertion Off
+
+<RequireALL>
+Require valid-user
+Require shib-attr ADFS_GROUP cms-comp-ops-site-support-team cms-comp-ops cms-web-access cms-members
+</RequireALL>
+
+Options -FollowSymlinks
+Options +SymLinksIfOwnerMatch
