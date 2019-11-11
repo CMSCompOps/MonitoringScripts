@@ -2020,10 +2020,10 @@ if __name__ == '__main__':
         # ############################################################## #
         # write ProdStatus information as SSB metric file for production #
         # ############################################################## #
-        PRODSTS_FILE = "./junk/ProdStatus.json"
+        PRODSTS_FILE = "./junk/ProdStatus.txt"
         PRODSTS_COPY = None
-        #PRODSTS_FILE = "/afs/cern.ch/user/c/cmssst/www/prodstatus/ProdStatus.json"
-        #PRODSTS_COPY = "/eos/home-c/cmssst/www/ssb_metric/ProdStatus.json"
+        #PRODSTS_FILE = "/afs/cern.ch/user/c/cmssst/www/prodstatus/ProdStatus.txt"
+        #PRODSTS_COPY = "/eos/home-c/cmssst/www/ssb_metric/ProdStatus.txt"
 
         logging.info("Writing ProdStatus SSB JSON file")
 
