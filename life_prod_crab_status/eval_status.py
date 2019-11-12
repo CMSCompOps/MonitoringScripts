@@ -1158,7 +1158,7 @@ if __name__ == '__main__':
             for entry in stsObj.evaluations( mtrc ):
                 if ( entry['status'] != "waiting_room" ):
                     try:
-                        badList.delete( entry['name'] )
+                        badList.remove( entry['name'] )
                         if ( len(badList) == 0 ):
                             break
                     except KeyError:
