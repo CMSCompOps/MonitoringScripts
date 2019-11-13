@@ -9,7 +9,7 @@
 # ########################################################################### #
 # "data": {
 #      "name":     "T1_US_FNAL" | "cmsdcadisk01.fnal.gov",
-#      "type":     "site" | "CE" | "SRM" | XROOTD",
+#      "type":     "site" | "CE" | "SRM" | XRD",
 #      "status":   "ok" | "warning" | "error" | "downtime" | "unknown"
 #      "availability": 0.000 | null,
 #      "reliability":  1.000 | null,
@@ -63,7 +63,7 @@ EVSAM_SERVICE_PROBES = {
     'SRM':    [ "org.cms.SRM-GetPFNFromTFC-/cms/Role=production",
                 "org.cms.SRM-VOPut-/cms/Role=production",
                 "org.cms.SRM-VOGet-/cms/Role=production" ],
-    'XROOTD': [ "org.cms.SE-xrootd-connection",
+    'XRD':    [ "org.cms.SE-xrootd-connection",
                 "org.cms.SE-xrootd-version",
                 "org.cms.SE-xrootd-read",
                 "org.cms.SE-xrootd-contain" ]
@@ -87,11 +87,12 @@ evsam_glbl_types = { 'CE': "CE",
                      'SRMv1': "SRM",
                      'globus-GRIDFTP': "SRM",
                      'GridFtp': "SRM",
-                     'XROOTD': "XROOTD",
-                     'XRootD': "XROOTD",
-                     'XRootD.Redirector': "XROOTD",
-                     'XRootD origin server': "XROOTD",
-                     'XRootD component': "XROOTD",
+                     'XRD': "XRD",
+                     'XROOTD': "XRD",
+                     'XRootD': "XRD",
+                     'XRootD.Redirector': "XRD",
+                     'XRootD origin server': "XRD",
+                     'XRootD component': "XRD",
                      'org.squid-cache.Squid': "",
                      'webdav': "",
                      'perfSONAR': "perfSONAR",
@@ -1183,7 +1184,7 @@ def evsam_evaluate(timebin):
                         elif (( myStatus == "warning" ) and
                               ( srmStatus == "ok" )):
                             srmStatus = "warning"
-                    elif ( service['ctgry'] == "XROOTD" ):
+                    elif ( service['ctgry'] == "XRD" ):
                         # one xrootd-endpoint must be working:
                         if xrootdStatus is None:
                             xrootdStatus = myStatus
