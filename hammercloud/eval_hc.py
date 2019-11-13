@@ -943,7 +943,7 @@ def evhc_compose_ssb(tuple):
     #                                    time.gmtime((tuple[1] + 1) * interval))
     #URL_JOB_DASHBOARD = "http://dashb-cms-job.cern.ch/dashboard/templates/web-job2/#user=&refresh=0&table=Jobs&p=1&records=25&activemenu=0&usr=&site=%%s&submissiontool=&application=&activity=hctest&status=&check=terminated&tier=&date1=%s&date2=%s&sortby=ce&scale=linear&bars=20&ce=&rb=&grid=&jobtype=&submissionui=&dataset=&submissiontype=&task=&subtoolver=&genactivity=&outputse=&appexitcode=&accesstype=" % (startUTC, endUTC)
     #
-    URL_JOB_DASHBOARD = "https://monit-grafana.cern.ch/d/cmsTMGlobal/cms-tasks-monitoring-globalview?orgId=11&from=%d000&to=%d000&var-user=sciaba&var-site=All&var-task=.*-%%s-.*" % ((tuple[1] *interval), ((tuple[1] + 1) * interval))
+    URL_JOB_DASHBOARD = "https://monit-grafana.cern.ch/d/cmsTMGlobal/cms-tasks-monitoring-globalview?orgId=11&from=%d000&to=%d000&var-user=sciaba&var-site=All&var-task=All&var-Filters=data.CRAB_Workflow|=~|.*-%%s-.*" % ((tuple[1] *interval), ((tuple[1] + 1) * interval))
 
 
     # convert list in global evaluation dictionary into an SSB metric string:
