@@ -169,7 +169,7 @@ class DowntimeMetric:
                                     vrsn = myJson['metadata']['kafka_timestamp']
                                     #
                                     mKey = (metric, tbin)
-                                    dKey  = (name, clss)
+                                    dKey  = (name, clss, strt, end)
                                     value = (vrsn, myJson['data'])
                                     #
                                     if mKey not in tmpDict:
