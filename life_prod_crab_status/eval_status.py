@@ -17,6 +17,9 @@
 #      "status":      "enabled | waiting_room | morgue"
 #      "prod_status": "enabled | drain | disabled | test"
 #      "crab_status": "enabled | disabled"
+#      "manual_life": "enabled | waiting_room | morgue"
+#      "manual_prod": "enabled | drain | disabled | test"
+#      "manual_crab": "enabled | disabled"
 #      "detail":      "Life: approaching downtime\n
 #                     "Prod: LifeStatus change to Waiting Room\n
 #                     "CRAB: manual override"
@@ -146,6 +149,12 @@ class StatusMetric:
                                     if (( tis < timeFrst ) or
                                         ( tis > timeLast )):
                                         continue
+                                    if 'manual_life' not in myJson['data']:
+                                        myJson['data']['manual_life'] = None
+                                    if 'manual_prod' not in myJson['data']:
+                                        myJson['data']['manual_prod'] = None
+                                    if 'manual_crab' not in myJson['data']:
+                                        myJson['data']['manual_crab'] = None
                                     if 'detail' not in myJson['data']:
                                         myJson['data']['detail'] = None
                                     tbin = int( tis / 900 )
@@ -242,10 +251,24 @@ class StatusMetric:
         #
         for entry in self.mtrc[metric]:
             if ( entry['name'] == name ):
+                if entry['manual_life'] is not None:
+                    mLife = entry['manual_life']
+                else:
+                    mLife = "unknown"
+                if entry['manual_prod'] is not None:
+                    mProd = entry['manual_prod']
+                else:
+                    mProd = "unknown"
+                if entry['manual_crab'] is not None:
+                    mCrab = entry['manual_crab']
+                else:
+                    mCrab = "unknown"
                 return ( entry['status'], \
-                         entry['prod_status'], entry['crab_status'] )
+                         entry['prod_status'], entry['crab_status'], \
+                         mLife, mProd, mCrab )
         #
-        return ( "unknown", "unknown", "unknown" )
+        return ( "unknown", "unknown", "unknown", \
+                 "unknown", "unknown", "unknown" )
 
 
     def get1entry(self, metric, name):
@@ -296,6 +319,12 @@ class StatusMetric:
              raise ValueError("Illegal site name %s" % entry['name'])
         #
         entry = entry.copy()
+        if 'manual_life' not in entry:
+            entry['manual_life'] = None
+        if 'manual_prod' not in entry:
+            entry['manual_prod'] = None
+        if 'manual_crab' not in entry:
+            entry['manual_crab'] = None
         if 'detail' not in entry:
             entry['detail'] = None
         elif ( entry['detail'] == "" ):
@@ -325,6 +354,12 @@ class StatusMetric:
                 self.mtrc[metric].remove( oldEntry )
         #
         entry = entry.copy()
+        if 'manual_life' not in entry:
+            entry['manual_life'] = None
+        if 'manual_prod' not in entry:
+            entry['manual_prod'] = None
+        if 'manual_crab' not in entry:
+            entry['manual_crab'] = None
         if 'detail' not in entry:
             entry['detail'] = None
         elif ( entry['detail'] == "" ):
@@ -379,6 +414,15 @@ class StatusMetric:
                                 "      \"crab_status\": \"%s\",\n") %
                                (entry['name'], entry['status'],
                                    entry['prod_status'], entry['crab_status']))
+                if entry['manual_life'] is not None:
+                    jsonString += ("      \"manual_life\": \"%s\",\n" %
+                                                          entry['manual_life'])
+                if entry['manual_prod'] is not None:
+                    jsonString += ("      \"manual_prod\": \"%s\",\n" %
+                                                          entry['manual_prod'])
+                if entry['manual_crab'] is not None:
+                    jsonString += ("      \"manual_crab\": \"%s\",\n" %
+                                                          entry['manual_crab'])
                 if entry['detail'] is not None:
                     jsonString += ("      \"detail\": \"%s\"\n   }\n }" %
                                            entry['detail'].replace('\n','\\n'))
@@ -403,13 +447,26 @@ class StatusMetric:
             #
             for entry in self.evaluations( metric ):
                 #
+                if entry['manual_life'] is not None:
+                    mLife = entry['manual_life']
+                else:
+                    mLife = "unknown"
+                if entry['manual_prod'] is not None:
+                    mProd = entry['manual_prod']
+                else:
+                    mProd = "unknown"
+                if entry['manual_crab'] is not None:
+                    mCrab = entry['manual_crab']
+                else:
+                    mCrab = "unknown"
                 if entry['detail'] is not None:
                     detail = entry['detail'].replace('\n','\n           ')
                 else:
                     detail = "null"
-                file.write("%s: %s/%s/%s\n   detail: %s\n" %
+                file.write("%s: %s/%s/%s %s/%s/%s\n   detail: %s\n" %
                            (entry['name'], entry['status'],
-                           entry['prod_status'], entry['crab_status'], detail))
+                           entry['prod_status'], entry['crab_status'],
+                           mLife, mProd, mCrab, detail))
         file.write("=======================================================\n")
         file.write("\n")
         file.flush()
@@ -1179,8 +1236,8 @@ if __name__ == '__main__':
     def read_override(filename):
         """read in override file and return contents in dictionary"""
         # ################################################################ #
-        #LOCK_FILE = "/eos/home-c/cmssst/www/override/data/status.lock"
         LOCK_FILE = "./cache/status.lock"
+        #LOCK_FILE = "/eos/home-c/cmssst/www/override/data/status.lock"
 
         remainWait = 3.0
         while ( remainWait > 0.0 ):
@@ -1286,8 +1343,8 @@ if __name__ == '__main__':
         # "name" is mandatory, if status is None the existing entry will be #
         # removed from the file                                             #
         # ################################################################# #
-        #LOCK_FILE = "/eos/home-c/cmssst/www/override/data/status.lock"
         LOCK_FILE = "./cache/status.lock"
+        #LOCK_FILE = "/eos/home-c/cmssst/www/override/data/status.lock"
         siteRegex = re.compile(r"T\d_[A-Z]{2,2}_\w+")
         #
         if ( siteRegex.match( entry['name'] ) is None ):
@@ -1409,6 +1466,7 @@ if __name__ == '__main__':
             except KeyError:
                 pStatus = "unknown"
             nStatus = pStatus
+            oStatus = None
             detail = ""
 
             # process state changes:
@@ -1465,6 +1523,7 @@ if __name__ == '__main__':
                     raise KeyError("Cleared override")
                 if ( manOverride['status'] == "" ):
                     raise KeyError("Cleared override")
+                oStatus = manOverride['status']
                 if ( manOverride['mode'] == "oneday" ):
                     theDay = int( calendar.timegm( time.strptime("%s UTC" %
                            argStruct.timeSpec, "%Y-%b-%d %H:%M %Z") ) / 86400 )
@@ -1498,6 +1557,8 @@ if __name__ == '__main__':
             # update metric entry:
             # ====================
             entry['status'] = nStatus
+            if oStatus is not None:
+                entry['manual_life'] = oStatus
             if ( entry['detail'] != "" ):
                 entry['detail'] += ",\n"
             entry['detail'] += detail
@@ -1593,6 +1654,7 @@ if __name__ == '__main__':
             except KeyError:
                 pStatus = "unknown"
             nStatus = pStatus
+            oStatus = None
             detail = ""
 
             # process state changes:
@@ -1645,6 +1707,7 @@ if __name__ == '__main__':
                     raise KeyError("Cleared override")
                 if ( manOverride['status'] == "" ):
                     raise KeyError("Cleared override")
+                oStatus = manOverride['status']
                 if ( manOverride['mode'] == "oneday" ):
                     theDay = int( calendar.timegm( time.strptime("%s UTC" %
                            argStruct.timeSpec, "%Y-%b-%d %H:%M %Z") ) / 86400 )
@@ -1678,6 +1741,8 @@ if __name__ == '__main__':
             # update metric entry:
             # ====================
             entry['prod_status'] = nStatus
+            if oStatus is not None:
+                entry['manual_prod'] = oStatus
             if ( entry['detail'] != "" ):
                 entry['detail'] += ",\n"
             entry['detail'] += detail
@@ -1764,6 +1829,8 @@ if __name__ == '__main__':
             except KeyError:
                 pStatus = "unknown"
 
+            oStatus = None
+
             # check Hammer Cloud results:
             # ===========================
             try:
@@ -1790,6 +1857,7 @@ if __name__ == '__main__':
                     raise KeyError("Cleared override")
                 if ( manOverride['status'] == "" ):
                     raise KeyError("Cleared override")
+                oStatus = manOverride['status']
                 if ( manOverride['mode'] == "oneday" ):
                     theDay = int( calendar.timegm( time.strptime("%s UTC" %
                            argStruct.timeSpec, "%Y-%b-%d %H:%M %Z") ) / 86400 )
@@ -1823,6 +1891,8 @@ if __name__ == '__main__':
             # update metric entry:
             # ====================
             entry['crab_status'] = nStatus
+            if oStatus is not None:
+                entry['manual_crab'] = oStatus
             if ( entry['detail'] != "" ):
                 entry['detail'] += ",\n"
             entry['detail'] += detail
@@ -2254,7 +2324,10 @@ if __name__ == '__main__':
             cnt_docs += 1
         elif (( eval['status'] != prvDict[site]['status'] ) or
               ( eval['prod_status'] != prvDict[site]['prod_status'] ) or
-              ( eval['crab_status'] != prvDict[site]['crab_status'] )):
+              ( eval['crab_status'] != prvDict[site]['crab_status'] ) or
+              ( eval['manual_life'] != prvDict[site]['manual_life'] ) or
+              ( eval['manual_prod'] != prvDict[site]['manual_prod'] ) or
+              ( eval['manual_crab'] != prvDict[site]['manual_crab'] )):
             cnt_docs += 1
 
 
