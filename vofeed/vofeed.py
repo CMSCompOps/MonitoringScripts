@@ -48,7 +48,7 @@ import pydoop.hdfs
 
 
 
-VOFEED_VERSION = "v2.00.05"
+VOFEED_VERSION = "v2.00.06"
 # ########################################################################### #
 
 
@@ -1365,7 +1365,7 @@ if __name__ == '__main__':
                 service = { 'category': ctgry, 'hostname': host,
                             'flavour': flavour }
                 try:
-                    service['gridsite'] = host2grid[ (host, "SE") ]
+                    service['gridsite'] = host2grid[ (host, ctgry) ]
                 except KeyError:
                     pass
                 if ( host != endpoint['endpoint'] ):
