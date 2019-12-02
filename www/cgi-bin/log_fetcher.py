@@ -1920,6 +1920,45 @@ def lftch_maindvi_hc(cfg, docs):
 
 
 
+def lftch_url4fts(inputString):
+    """function to substitute fts references with hyperlinks in a string"""
+    # ################################################################### #
+    # replace brackets with a FTS reference with hyperlink to the job log #
+    # ################################################################### #
+    #
+    myHTML = ""
+
+    # handle new lines:
+    myStrng = inputString.replace("\n", "<BR>")
+
+    indx = 0
+    j = myStrng.find("[http")
+    while ( j >= 0 ):
+        k = myStrng[indx+j:].find("]")
+        if ( k > 0 ):
+            # copy over anything before the bracket:
+            myHTML += myStrng[indx:indx+j]
+            #
+            # parse job reference inside the bracket:
+            myURL = brRegex.match( myStrng[indx+j+1:indx+j+k] )
+            myHost = myURL.split("/")[2].split(":")[0]
+            myJob = myURL.split("#")[-1][1:]
+            myHTML += "[<A HREF=\"%s\">%s %s</A>]" % (myURL, myHost, myJob)
+            #
+            # advance parsing:
+            indx += j + k + 1
+        else:
+            break
+        #
+        j = myStrng[indx:].find("[")
+    #
+    # copy remainder of string:
+    myHTML += myStrng[indx:]
+
+    return myHTML
+
+
+
 def lftch_maindvi_fts(cfg, docs):
     """function to write CMS FTS documents as HTML table to a file"""
     # ################################################################ #
@@ -2019,7 +2058,7 @@ def lftch_maindvi_fts(cfg, docs):
                         if 'detail' in myDoc:
                             if (( myDoc['detail'] is not None ) and
                                 ( myDoc['detail'] != "" )):
-                                myStrng = myDoc['detail'].replace("\n", "<BR>")
+                                myStrng = lftch_url4fts( myDoc['detail'] )
                             else:
                                 myStrng = "\"\""
                             myFile.write(("      <TR>\n         <TD NOWRAP>D" +
