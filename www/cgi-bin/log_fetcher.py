@@ -1940,7 +1940,7 @@ def lftch_url4fts(inputString):
             myHTML += myStrng[indx:indx+j]
             #
             # parse job reference inside the bracket:
-            myURL = brRegex.match( myStrng[indx+j+1:indx+j+k] )
+            myURL = myStrng[indx+j+1:indx+j+k]
             myHost = myURL.split("/")[2].split(":")[0]
             myJob = myURL.split("#")[-1][1:]
             myHTML += "[<A HREF=\"%s\">%s %s</A>]" % (myURL, myHost, myJob)
