@@ -1468,7 +1468,11 @@ if __name__ == '__main__':
                             detail += ",\n"
                         detail += "SAM: %s" % sam_status
                 except KeyError:
-                    sam_status = "unknown"
+                    serviceList = vofdObj.services(vofdTime, site)
+                    if ( len(serviceList) == 0 ):
+                        sam_status = None
+                    else:
+                        sam_status = "unknown"
                 #
                 # get HammerCloud status:
                 # -----------------------
@@ -1488,7 +1492,11 @@ if __name__ == '__main__':
                             detail += ",\n"
                         detail += "HC: %s" % hc_status
                 except KeyError:
-                    hc_status = "unknown"
+                    serviceList = vofdObj.services(vofdTime, site, "CE")
+                    if ( len(serviceList) == 0 ):
+                        hc_status = None
+                    else:
+                        hc_status = "unknown"
                 #
                 # get FTS status:
                 # ---------------
@@ -1507,13 +1515,20 @@ if __name__ == '__main__':
                             detail += ",\n"
                         detail += "FTS: %s" % fts_status
                 except KeyError:
-                    fts_status = "unknown"
+                    serviceList = vofdObj.services(vofdTime, site, "SE")
+                    if ( len(serviceList) == 0 ):
+                        fts_status = None
+                    else:
+                        fts_status = "unknown"
                 logging.debug("      %s: SAM: %s, HC: %s, FTS: %s" % (site,
                                             sam_status, hc_status, fts_status))
                 #
                 #
                 # evaluate Site Readiness status:
                 # -------------------------------
+                if (( sam_status == None ) and ( hc_status == None ) and
+                    ( fts_status == None )):
+                    continue
                 for status in [ "downtime","error","unknown","warning","ok" ]:
                     if status in [ sam_status, hc_status, fts_status ]:
                         break
