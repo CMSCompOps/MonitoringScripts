@@ -2558,7 +2558,9 @@ if __name__ == '__main__':
             lftch_cfg.update( LFTCH_METRICS_DEFINED[ compList[1] ] )
             lftch_cfg['metric'] = compList[1]
         if( compList[2].isdigit() ):
-            if ( len(compList[2]) == 10 ):
+            if ( len(compList[2]) <= 8 ):
+                lftch_cfg['time'] = int( compList[2] ) * lftch_cfg['period']
+            elif ( len(compList[2]) == 10 ):
                 lftch_cfg['time'] = int( compList[2] )
             elif ( len(compList[2]) == 12 ):
                 lftch_cfg['time'] = calendar.timegm(
@@ -2630,7 +2632,10 @@ if __name__ == '__main__':
     #
     if argStruct.timebin is not None:
         if( argStruct.timebin.isdigit() ):
-            if ( len(argStruct.timebin) == 10 ):
+            if ( len(argStruct.timebin) <= 8 ):
+                lftch_cfg['time'] = int( argStruct.timebin ) * \
+                                                            lftch_cfg['period']
+            elif ( len(argStruct.timebin) == 10 ):
                 lftch_cfg['time'] = int( argStruct.timebin )
             elif ( len(argStruct.timebin) == 12 ):
                 lftch_cfg['time'] = calendar.timegm(
