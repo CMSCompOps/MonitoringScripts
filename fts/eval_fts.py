@@ -1595,12 +1595,10 @@ if __name__ == '__main__':
                 src_hosts[src_host]['status'] = status
                 #
                 if src_host in bad_src:
-                    detail = "excluded from destination endpoint evaluation"
+                    detail = "excluded from destination endpoint evaluation\n"
                 else:
                     detail = ""
                 if 'trn_ok' in src_hosts[src_host]:
-                    if ( detail != "" ):
-                        detail += "\n"
                     detail += ("Transfer: %d files, %.3f TB ok" %
                                (src_hosts[src_host]['trn_ok'][0],
                                 src_hosts[src_host]['trn_ok'][1]/1099511627776))
@@ -1686,12 +1684,10 @@ if __name__ == '__main__':
                 dst_hosts[dst_host]['status'] = status
                 #
                 if dst_host in bad_dst:
-                    detail = "excluded from source endpoint evaluation"
+                    detail = "excluded from source endpoint evaluation\n"
                 else:
                     detail = ""
                 if 'trn_ok' in dst_hosts[dst_host]:
-                    if ( detail != "" ):
-                        detail += "\n"
                     detail += ("Transfer: %d files, %.3f TB ok" %
                                (dst_hosts[dst_host]['trn_ok'][0],
                                 dst_hosts[dst_host]['trn_ok'][1]/1099511627776))
