@@ -27,15 +27,15 @@ import pydoop.hdfs
 
 
 
-SRHR_HTML_DIR = "./junk"
-SRHR_CACHE_DIR = "./cache"
-#SRHR_HTML_DIR = "/eos/home-c/cmssst/www/sitereadiness"
-#SRHR_CACHE_DIR = "/data/cmssst/MonitoringScripts/sitereadiness/report/cache"
+#SRHR_HTML_DIR = "./junk"
+#SRHR_CACHE_DIR = "./cache"
+SRHR_HTML_DIR = "/eos/home-c/cmssst/www/sitereadiness"
+SRHR_CACHE_DIR = "/data/cmssst/MonitoringScripts/sitereadiness/report/cache"
 
-SRHR_CERTIFICATE_CRT = '/afs/cern.ch/user/l/lammel/.globus/usercert.pem'
-SRHR_CERTIFICATE_KEY = '/afs/cern.ch/user/l/lammel/.globus/userkey.pem'
-#SRHR_CERTIFICATE_CRT = '/tmp/x509up_u79522'
-#SRHR_CERTIFICATE_KEY = '/tmp/x509up_u79522'
+#SRHR_CERTIFICATE_CRT = '/afs/cern.ch/user/l/lammel/.globus/usercert.pem'
+#SRHR_CERTIFICATE_KEY = '/afs/cern.ch/user/l/lammel/.globus/userkey.pem'
+SRHR_CERTIFICATE_CRT = '/tmp/x509up_u79522'
+SRHR_CERTIFICATE_KEY = '/tmp/x509up_u79522'
 # ########################################################################### #
 
 
@@ -798,7 +798,7 @@ def srhr_write_html(timestamp, statusDict):
     last1d  = int( now / 86400 )
     total1d = last1d - first1d + 1
 
-    timeStrng = time.strftime("%A", time.gmtime(timestamp))[:2] + ", " + \
+    timeStrng = time.strftime("%A", time.gmtime(now))[:2] + ", " + \
                        time.strftime("%Y-%b-%d %H:%M:%S UTC", time.gmtime(now))
 
     #try:
