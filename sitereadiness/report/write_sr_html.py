@@ -804,8 +804,8 @@ def srhr_write_html(timestamp, statusDict):
     #try:
     if True:
         with open(SRHR_HTML_DIR + "/report.html_new", 'w') as myFile:
-            myFile.write("<!DOCTYPE html>\n<HTML>\n\n<HEAD>\n   <TITLE> CMS " +
-                         "Site Readiness Report of %s</TITLE>\n\n" % \
+            myFile.write(("<!DOCTYPE html>\n<HTML>\n\n<HEAD>\n   <TITLE> CMS" +
+                          " Site Readiness Report of %s</TITLE>\n\n") % \
                          timeStrng[:15])
             myFile.write("   <STYLE TYPE=\"text/css\">\n      BODY {\n      " +
                          "   background-color: white;\n      }\n      TD A, " +
