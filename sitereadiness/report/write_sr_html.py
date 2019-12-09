@@ -787,8 +787,8 @@ def srhr_write_html(timestamp, statusDict):
                 "oring-globalview?orgId=11&from=%d000&to=%d000&var-user=scia" +
                 "ba&var-site=All&var-task=All&var-Filters=data.CRAB_Workflow" +
                 "|=~|.*-%s-.*")
-    FTSLR_URL = ("https://test-cmssst.web.cern.ch/cgi-bin/log/fts1day/%d/all" +
-                 "/any/0+0")
+    FTSLR_URL = ("https://test-cmssst.web.cern.ch/cgi-bin/log/links1day/%d/a" +
+                 "ll/any/0+0")
     # tickets:   0  1  2  3  4  5  6   7   8   9  10  11  12
     dbinSpace = [0, 2, 3, 5, 6, 7, 9, 10, 12, 13, 15, 16, 17]
     #
