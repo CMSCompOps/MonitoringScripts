@@ -227,17 +227,17 @@ def evsam_vofeed():
                     cmssite = group.attrib['name']
                     break
         if cmssite is None:
-            continue;
+            continue
         if cmssite not in evsam_glbl_topology:
             evsam_glbl_topology[ cmssite ] = []
         #
         for service in atpsite.findall('service'):
             if 'hostname' not in service.attrib:
-                continue;
+                continue
             host = service.attrib['hostname'].lower()
             #
             if 'flavour' not in service.attrib:
-                continue;
+                continue
             type = service.attrib['flavour']
             #
             if 'production_status' not in service.attrib:
