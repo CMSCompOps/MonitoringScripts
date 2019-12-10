@@ -29,6 +29,10 @@
 #    sr16hour
 #    sr1day
 #    sts15min    "Site Status, i.e. LifeStatus/ProdStatus/CrabStatus"
+#    links15min  "Easy view FTS transfers/links"
+#    links1hour
+#    links6hour
+#    links1day
 #
 # QUERY_STRING REMOTE_USER ADFS_LOGIN ADFS_FULLNAME ADFS_GROUP
 
@@ -168,7 +172,27 @@ LFTCH_METRICS_DEFINED = {
         'title': "SiteStatus 15 min", 
         'period': 900,
         'hdfs': "/project/monitoring/archive/cmssst/raw/ssbmetric/sts15min/",
-        'dfltwin': "day+0" }
+        'dfltwin': "day+0" },
+    'links15min': {
+        'title': "Links 15 min",
+        'period': 900,
+        'hdfs': "/project/monitoring/archive/cmssst/raw/ssbmetric/fts15min/",
+        'dfltwin': "1+1" },
+    'links1hour': {
+        'title': "Links 1 hour",
+        'period': 3600,
+        'hdfs': "/project/monitoring/archive/cmssst/raw/ssbmetric/fts1hour/",
+        'dfltwin': "0+0" },
+    'links6hour': {
+        'title': "Links 6 hours",
+        'period': 21600,
+        'hdfs': "/project/monitoring/archive/cmssst/raw/ssbmetric/fts6hour/",
+        'dfltwin': "0+0" },
+    'links1day': {
+        'title': "Links 1 day",
+        'period': 86400,
+        'hdfs': "/project/monitoring/archive/cmssst/raw/ssbmetric/fts1day/",
+        'dfltwin': "0+0" }
     }
 LFTCH_SERVICE_TYPES = { 'CE': "CE",
                         'GLOBUS': "CE",
@@ -205,6 +229,7 @@ def lftch_monit_fetch(cfg):
     # return dictionary with list of documents from MonIT for each timebin #
     # #################################################################### #
     #
+    timebin  = int( cfg['time'] / cfg['period'] )
     startTIS = cfg['time'] - ( cfg['period'] * cfg['before'] )
     limitTIS = cfg['time'] + ( cfg['period'] * ( cfg['after'] + 1 ) )
     #
@@ -477,6 +502,24 @@ def lftch_monit_fetch(cfg):
                                     if ( myName != cfg['name'] ):
                                         continue
                                 myType = "site"
+                                myStatus = myJson['data']['status']
+                            elif ( cfg['metric'][:5] == "links" ):
+                                # check document has required CMS-FTS keys:
+                                if (( 'path' not in myJson['metadata'] ) or
+                                    ( 'timestamp' not in myJson['metadata'] ) or
+                                    ( 'name' not in myJson['data'] ) or
+                                    ( 'type' not in myJson['data'] ) or
+                                    ( 'status' not in myJson['data'] )):
+                                    continue
+                                if ( myJson['metadata']['path'] !=
+                                     ("fts" + cfg['metric'][5:]) ):
+                                    continue
+                                tis = int(myJson['metadata']['timestamp']/1000)
+                                tbin = int( tis / cfg['period'] )
+                                if ( tbin != timebin ):
+                                    continue
+                                myName = myJson['data']['name']
+                                myType = myJson['data']['type']
                                 myStatus = myJson['data']['status']
                             else:
                                 continue
@@ -2437,6 +2480,514 @@ def lftch_maindvi_sts(cfg, docs):
     logging.log(25, "CMS STS docs as HTML table written to %s" %
                                                     cfg['html'].split("/")[-1])
     return 0
+
+
+
+def lftch_maindvi_links(cfg, docs):
+    """function to write CMS FTS documents as HTML table to a file"""
+    # ################################################################## #
+    # prepare mainDVI section with CMS Link evaluations according to cfg #
+    # ################################################################## #
+
+
+    # consider only the main time bin:
+    # ================================
+    tbin = int( cfg['time'] / cfg['period'] )
+    if tbin not in docs:
+        docs[tbin] = []
+    #
+    # discard superseded documents:
+    highestVersions = {}
+    for myDoc in docs[tbin]:
+        key = ( myDoc['name'], myDoc['type'] )
+        if key not in highestVersions:
+            highestVersions[key] = myDoc['***VERSION***']
+        elif ( myDoc['***VERSION***'] > highestVersions[key] ):
+            highestVersions[key] = myDoc['***VERSION***']
+    #
+    # organize documents by type:
+    lnkDocs = {}
+    srcDocs = {}
+    dstDocs = {}
+    siteDocs = {}
+    for myDoc in docs[tbin]:
+        key = ( myDoc['name'], myDoc['type'] )
+        if ( myDoc['***VERSION***'] < highestVersions[key] ):
+            continue
+        if ( myDoc['type'] == "link" ):
+            lnkDocs[ myDoc['name'] ] = myDoc
+        elif ( myDoc['type'] == "source" ):
+            srcDocs[ myDoc['name'] ] = myDoc
+        elif ( myDoc['type'] == "destination" ):
+            dstDocs[ myDoc['name'] ] = myDoc
+        elif ( myDoc['type'] == "site" ):
+            siteDocs[ myDoc['name'] ] = myDoc
+    #
+    # make site -- source/destination host list:
+    tplList = set()
+    lineRegex = re.compile(r"^((([a-z0-9\-]+)\.)+[a-z0-9\-]+): \w*/\w*\s*$")
+    for site in siteDocs:
+        try:
+            detail = siteDocs[site]['detail']
+        except KeyError:
+            continue
+        for myLine in detail.splitlines():
+            matchObj = lineRegex.match( myLine )
+            if matchObj is None:
+                continue
+            tplList.add( (siteDocs[site]['name'], matchObj[1]) )
+    hstList = [ tuple[1] for tuple in tplList ]
+    #
+    # make excluded source/destination host list:
+    exSrc = []
+    for source in srcDocs:
+        try:
+            detail = srcDocs[source]['detail']
+        except KeyError:
+            detail = ""
+        for myLine in detail.splitlines():
+            if ( myLine[:45] == "excluded from destination endpoint evaluation" ):
+                exSrc.append( srcDocs[source]['name'] )
+        if srcDocs[source]['name'] not in hstList:
+            tplList.add( ("T9_CC_Unknown", srcDocs[source]['name']) )
+            hstList.append( srcDocs[source]['name'] )
+    exDst = []
+    for dest in dstDocs:
+        try:
+            detail = dstDocs[dest]['detail']
+        except KeyError:
+            detail = ""
+        for myLine in detail.splitlines():
+            if ( myLine[:40] == "excluded from source endpoint evaluation" ):
+                exDst.append( dstDocs[dest]['name'] )
+        if dstDocs[dest]['name'] not in hstList:
+            tplList.add( ("T9_CC_Unknown", dstDocs[dest]['name']) )
+            hstList.append( dstDocs[dest]['name'] )
+    del hstList
+    tplList = sorted( tplList )
+    noHost = len( tplList )
+    #
+    timeStrng = time.strftime("%A", time.gmtime(cfg['time']))[:2] + ", " + \
+                  time.strftime("%Y-%b-%d %H:%M UTC", time.gmtime(cfg['time']))
+
+
+    # write mainDVI Links HTML section:
+    # =================================
+    myHTML = cfg['html'] + "_wrk"
+    #
+    try:
+        with open(myHTML, 'wt') as myFile:
+            myFile.write("   <STYLE TYPE=\"text/css\">\n      BODY {\n      " +
+                         "   background-color: white; color: black;\n      }" +
+                         "\n      TD A, TD A:LINK, TD A:VISITED {\n         " +
+                         "text-decoration: none; color: black;\n      }\n   " +
+                         "   TH.Label {\n         width: 256px; padding: 2px" +
+                         ";\n         background-color: white; color: black;" +
+                         "\n         text-decoration: none;\n         border" +
+                         "-right: 4px solid black;\n         font-size: larg" +
+                         "e; font-weight: bold;\n         white-space: nowra" +
+                         "p; vertical-align: bottom;\n      }\n" +
+                         "      TH.Destination {\n         width: 24px;\n   " +
+                         "      background-color: white; color: black;\n    " +
+                         "     text-decoration: none;\n         border-botto" +
+                         "m: 4px solid black;\n         font-size: medium; f" +
+                         "ont-weight: normal;\n         white-space: nowrap;" +
+                         " vertical-align: bottom; text-align: left;\n      " +
+                         "}\n      TH.Destination DIV {\n         width: 256" +
+                         "px;\n         transform: translate(-28px,-86px) ro" +
+                         "tate(315deg);\n         overflow: hidden;\n      }" +
+                         "\n      TH.Destination A, TH.Destination A:LINK, T" +
+                         "H.Destination A:VISITED {\n          text-decorati" +
+                         "on: none; color: black;\n      }\n" +
+                         "      TH.Source {\n         width: 256px; height: " +
+                         "24px; padding-right: 2px;\n         background-col" +
+                         "or: white; color: black;\n         text-decoration" +
+                         ": none;\n         border-right: 4px solid black;\n" +
+                         "         font-size: medium; font-weight: normal;\n" +
+                         "         white-space: nowrap; vertical-align: midd" +
+                         "le; text-align: right;\n         overflow: hidden;" +
+                         "\n      }\n      TH.Source A, TH.Source A:LINK, TH" +
+                         ".Source A:VISITED {\n          text-decoration: no" +
+                         "ne; color: black;\n      }\n      TD.Eval {\n     " +
+                         "     width: 24px; height: 24px;\n          backgro" +
+                         "und-color: white;\n      }\n      TD.EvalSelf {\n " +
+                         "         width: 24px; height: 24px;\n          bac" +
+                         "kground-color: black;\n      }\n      TD.EvalGood " +
+                         "{\n          width: 24px; height: 24px;\n         " +
+                         " background-color: #80FF80;\n      }\n      TD.Eva" +
+                         "lWarn {\n          width: 24px; height: 24px;\n   " +
+                         "       background-color: #FFFF00;\n      }\n      " +
+                         "TD.EvalBad {\n          width: 24px; height: 24px;" +
+                         "\n          background-color: #FF0000;\n      }\n " +
+                         "     .qualityTip {\n         display: block;\n    " +
+                         "     text-decoration: none; position: relative;\n " +
+                         "     }\n      .qualityTip SPAN {\n         display" +
+                         ": none;\n         border-radius: 4px;\n      }\n  " +
+                         "    .qualityTip:hover SPAN {\n         background-" +
+                         "color: white; color: black;\n         white-space:" +
+                         " nowrap;\n         display: block;\n         posit" +
+                         "ion: absolute;\n         top: 95%; left: 50%;\n   " +
+                         "      transform: translateX(-50%);\n         z-ind" +
+                         "ex: 1000;\n         width:auto; min-height:16px;\n" +
+                         "         border:1px solid black; padding:4px;\n   " +
+                         "   }\n" +
+                         "      TH.LinkHeader {\n         line-height: 1.5; " +
+                         "padding: 2px; padding-left: 10px;\n         backgr" +
+                         "ound-color: #6A6A7D; color: white;\n         text-" +
+                         "decoration: none;\n         font-size: x-large; fo" +
+                         "nt-weight: bold;\n         white-space: nowrap; te" +
+                         "xt-align: left;\n      }\n      TH.LinkHeader A, T" +
+                         "H.LinkHeader A:LINK, TH.LinkHeader A:VISITED {\n  " +
+                         "         text-decoration: none; color: white;\n   " +
+                         "    }\n      TH.Description {\n" +
+                         "         white-space: nowrap;\n         text-decor" +
+                         "ation: none; text-align: left;\n         font-size" +
+                         ": medium; font-weight: normal;\n         backgroun" +
+                         "d: white; color: black;\n      }\n      TD.Doc {\n" +
+                         "         white-space: nowrap;\n         text-decor" +
+                         "ation: none; text-align: left;\n         font-size" +
+                         ": medium; font-weight: normal;\n         backgroun" +
+                         "d: white; color: black;\n      }\n      TD.DocGood" +
+                         " {\n         white-space: nowrap;\n         text-d" +
+                         "ecoration: none; text-align: left;\n         font-" +
+                         "size: medium; font-weight: normal;\n         backg" +
+                         "round: #CDFFD4; color: black;\n      }\n      TD.D" +
+                         "ocWarn {\n         white-space: nowrap;\n         " +
+                         "text-decoration: none; text-align: left;\n        " +
+                         " font-size: medium; font-weight: normal;\n        " +
+                         " background: #FFFFCC; color: black;\n      }\n    " +
+                         "  TD.DocBad {\n         white-space: nowrap;\n    " +
+                         "     text-decoration: none; text-align: left;\n   " +
+                         "      font-size: medium; font-weight: normal;\n   " +
+                         "      background: #FFCCCC; color: black;\n      }" +
+                         "\n   </STYLE>\n\n")
+            #
+            # write link matrix table:
+            noPixel = 2 + 256 + (noHost * (24 + 2)) + 2
+            myFile.write(("<TABLE BORDER=\"0\" CELLPADDING=\"0\" CELLSPACING" +
+                          "=\"2\" STYLE=\"width: %dpx; table-layout: fixed;" +
+                          "\">\n<TR HEIGHT=\"128\">\n   <TH CLASS=\"Label\" " +
+                          "STYLE=\"text-align: right;\">Destination:\n") %
+                         noPixel)
+            for dstTpl in tplList:
+                if dstTpl[1] in exDst:
+                    myFile.write(("   <TH ROWSPAN=\"2\" CLASS=\"Destination" +
+                                  "\"><DIV STYLE=\"background-color: #D8D8D8" +
+                                  "\"><A HREF=\"#DST%s\">%s</A></DIV>\n") %
+                             (dstTpl[1], dstTpl[1]))
+                else:
+                    try:
+                        status = dstDocs[ dstTpl[1] ]['status']
+                    except KeyError:
+                        status = "unknown"
+                    if ( status == "ok" ):
+                        myFile.write(("   <TH ROWSPAN=\"2\" CLASS=\"Destinat" +
+                                      "ion\"><DIV STYLE=\"background-color: " +
+                                      "#CDFFD4\"><A HREF=\"#DST%s\">%s</A></" +
+                                      "DIV>\n") % (dstTpl[1], dstTpl[1]))
+                    elif ( status == "warning" ):
+                        myFile.write(("   <TH ROWSPAN=\"2\" CLASS=\"Destinat" +
+                                      "ion\"><DIV STYLE=\"background-color: " +
+                                      "#FFFFCC\"><A HREF=\"#DST%s\">%s</A></" +
+                                      "DIV>\n") % (dstTpl[1], dstTpl[1]))
+                    elif ( status == "error" ):
+                        myFile.write(("   <TH ROWSPAN=\"2\" CLASS=\"Destinat" +
+                                      "ion\"><DIV STYLE=\"background-color: " +
+                                      "#FFCCCC\"><A HREF=\"#DST%s\">%s</A></" +
+                                      "DIV>\n") % (dstTpl[1], dstTpl[1]))
+                    else:
+                        myFile.write(("   <TH ROWSPAN=\"2\" CLASS=\"Destinat" +
+                                      "ion\"><DIV><A HREF=\"#DST%s\">%s</A><" +
+                                      "/DIV>\n") % (dstTpl[1], dstTpl[1]))
+            myFile.write("<TR HEIGHT=\"64\">\n   <TH CLASS=\"Label\" STYLE=" +
+                         "\"border-bottom: 4px solid black; text-align: left" +
+                         ";\">Source:\n")
+            for srcTpl in tplList:
+                if srcTpl[1] in exSrc:
+                    myFile.write(("<TR>\n      <TH CLASS=\"Source\" STYLE=\"" +
+                                  "background-color: #D8D8D8\"><A HREF=\"#SR" +
+                                  "C%s\">%s</A>\n") % (srcTpl[1], srcTpl[1]))
+                else:
+                    try:
+                        status = srcDocs[ srcTpl[1] ]['status']
+                    except KeyError:
+                        status = "unknown"
+                    if ( status == "ok" ):
+                        myFile.write(("<TR>\n      <TH CLASS=\"Source\" STYL" +
+                                      "E=\"background-color: #CDFFD4\"><A HR" +
+                                      "EF=\"#SRC%s\">%s</A>\n") %
+                                     (srcTpl[1], srcTpl[1]))
+                    elif ( status == "warning" ):
+                        myFile.write(("<TR>\n      <TH CLASS=\"Source\" STYL" +
+                                      "E=\"background-color: #FFFFCC\"><A HR" +
+                                      "EF=\"#SRC%s\">%s</A>\n") %
+                                     (srcTpl[1], srcTpl[1]))
+                    elif ( status == "error" ):
+                        myFile.write(("<TR>\n      <TH CLASS=\"Source\" STYL" +
+                                      "E=\"background-color: #FFCCCC\"><A HR" +
+                                      "EF=\"#SRC%s\">%s</A>\n") %
+                                     (srcTpl[1], srcTpl[1]))
+                    else:
+                        myFile.write(("<TR>\n      <TH CLASS=\"Source\"><A H" +
+                                      "REF=\"#SRC%s\">%s</A>\n") %
+                                     (srcTpl[1], srcTpl[1]))
+                for dstTpl in tplList:
+                    lnkName = srcTpl[1] + "___" + dstTpl[1]
+                    try:
+                        status = lnkDocs[lnkName]['status']
+                    except KeyError:
+                        status = "unknown"
+                    try:
+                        q_strng = "<SPAN>Quality = %.3f</SPAN>" % \
+                                                    lnkDocs[lnkName]['quality']
+                    except KeyError:
+                        q_strng = ""
+                    if ( dstTpl[1] == srcTpl[1] ):
+                        myFile.write("   <TD CLASS=\"EvalSelf\">\n")
+                    elif lnkName not in lnkDocs:
+                        myFile.write("   <TD CLASS=\"Eval\">\n")
+                    elif ( lnkDocs[lnkName]['status'] == "ok" ):
+                        myFile.write(("   <TD CLASS=\"EvalGood\"><A CLASS=\"" +
+                                      "qualityTip\" HREF=\"#%s\">&nbsp;%s</A" +
+                                      ">\n") % (lnkName, q_strng))
+                    elif ( lnkDocs[lnkName]['status'] == "warning" ):
+                        myFile.write(("   <TD CLASS=\"EvalWarn\"><A CLASS=\"" +
+                                      "qualityTip\" HREF=\"#%s\">&nbsp;%s</A" +
+                                      ">\n") % (lnkName, q_strng))
+                    elif ( lnkDocs[lnkName]['status'] == "error" ):
+                        myFile.write(("   <TD CLASS=\"EvalBad\"><A CLASS=\"q" +
+                                      "ualityTip\" HREF=\"#%s\">&nbsp;%s</A>" +
+                                      "\n") % (lnkName, q_strng))
+                    else:
+                        myFile.write(("   <TD CLASS=\"Eval\"><A CLASS=\"qual" +
+                                      "ityTip\" HREF=\"#%s\">&nbsp;%s</A>\n") %
+                                     (lnkName, q_strng))
+            myFile.write("</TABLE>\n<P>\n<HR>\n\n")
+            #
+            # write site evaluation tables:
+            for site in sorted( siteDocs.keys() ):
+                try:
+                    status = siteDocs[site]['status']
+                except KeyError:
+                    status = "unknown"
+                if ( status == "ok" ):
+                    clss = "DocGood"
+                elif ( status == "warning" ):
+                    clss = "DocWarn"
+                elif ( status == "error" ):
+                    clss = "DocBad"
+                else:
+                    clss = "Doc"
+                try:
+                    q_strng = "%.3f" % siteDocs[site]['quality']
+                except KeyError:
+                    q_strng = "<I>not set</I>"
+                try:
+                    d_strng = siteDocs[site]['detail'].replace("\n","<BR>")
+                except KeyError:
+                    d_strng = "\"\""
+                myFile.write(("<P>\n&nbsp;\n<P>\n<TABLE CELLSPACING=\"0\" CE" +
+                              "LLPADDING=\"2\" BORDER=\"1\">\n<TR>\n   <TH C" +
+                              "OLSPAN=\"2\" CLASS=\"LinkHeader\"><A NAME=\"" +
+                              "%s\">%s</A> :\n<TR>\n   <TH CLASS=\"Descripti" +
+                              "on\">Site/Host/Link name\n   <TD CLASS=\"%s\"" +
+                              ">%s\n<TR>\n   <TH CLASS=\"Description\">Evalu" +
+                              "ation type\n   <TD CLASS=\"%s\">%s\n<TR>\n   " +
+                              "<TH CLASS=\"Description\">Quality\n   <TD CLA" +
+                              "SS=\"%s\">%s\n<TR>\n   <TH CLASS=\"Descriptio" +
+                              "n\">Detail\n   <TD CLASS=\"%s\">%s\n<TR>\n   " +
+                              "<TH CLASS=\"Description\">Status\n   <TD CLAS" +
+                              "S=\"%s\" STYLE=\"font-weight: bold;\">%s\n<TR" +
+                              ">\n   <TH CLASS=\"Description\">Version numbe" +
+                              "r<br>(= insert time)\n   <TD CLASS=\"%s\">%d." +
+                              "%3.3d (%s UTC)\n<TR>\n   <TH CLASS=\"Descript" +
+                              "ion\">Document id\n   <TD CLASS=\"%s\">%s\n</" +
+                              "TABLE>\n\n") %
+                             (site, site, clss, siteDocs[site]['name'],
+                              clss, siteDocs[site]['type'],
+                              clss, q_strng,
+                              clss, d_strng,
+                              clss, status,
+                              clss, int(siteDocs[site]['***VERSION***']/1000),
+                                    siteDocs[site]['***VERSION***']%1000,
+                                    time.strftime("%Y-%m-%d %H:%M:%S",
+                       time.gmtime(int(siteDocs[site]['***VERSION***']/1000))),
+                              clss, siteDocs[site]['***DOCID***']))
+            myFile.write("<P>\n<HR>\n\n")
+            #
+            # write source host evaluation tables:
+            for source in sorted( srcDocs.keys() ):
+                try:
+                    status = srcDocs[source]['status']
+                except KeyError:
+                    status = "unknown"
+                if ( status == "ok" ):
+                    clss = "DocGood"
+                elif ( status == "warning" ):
+                    clss = "DocWarn"
+                elif ( status == "error" ):
+                    clss = "DocBad"
+                else:
+                    clss = "Doc"
+                try:
+                    q_strng = "%.3f" % srcDocs[source]['quality']
+                except KeyError:
+                    q_strng = "<I>not set</I>"
+                try:
+                    d_strng = srcDocs[source]['detail'].replace("\n","<BR>")
+                except KeyError:
+                    d_strng = "\"\""
+                myFile.write(("<P>\n&nbsp;\n<P>\n<TABLE CELLSPACING=\"0\" CE" +
+                              "LLPADDING=\"2\" BORDER=\"1\">\n<TR>\n   <TH C" +
+                              "OLSPAN=\"2\" CLASS=\"LinkHeader\"><A NAME=\"" +
+                              "SRC%s\">%s &#10140;</A> :\n<TR>\n   <TH CLASS" +
+                              "=\"Description\">Site/Host/Link name\n   <TD " +
+                              "CLASS=\"%s\">%s\n<TR>\n   <TH CLASS=\"Descrip" +
+                              "tion\">Evaluation type\n   <TD CLASS=\"%s\">" +
+                              "%s\n<TR>\n   <TH CLASS=\"Description\">Qualit" +
+                              "y\n   <TD CLASS=\"%s\">%s\n<TR>\n   <TH CLASS" +
+                              "=\"Description\">Detail\n   <TD CLASS=\"%s\">" +
+                              "%s\n<TR>\n   <TH CLASS=\"Description\">Status" +
+                              "\n   <TD CLASS=\"%s\" STYLE=\"font-weight: bo" +
+                              "ld;\">%s\n<TR>\n   <TH CLASS=\"Description\">" +
+                              "Version number<br>(= insert time)\n   <TD CLA" +
+                              "SS=\"%s\">%d.%3.3d (%s UTC)\n<TR>\n   <TH CLA" +
+                              "SS=\"Description\">Document id\n   <TD CLASS=" +
+                              "\"%s\">%s\n</TABLE>\n\n") %
+                             (source, source, clss, srcDocs[source]['name'],
+                              clss, srcDocs[source]['type'],
+                              clss, q_strng,
+                              clss, d_strng,
+                              clss, status,
+                              clss, int(srcDocs[source]['***VERSION***']/1000),
+                                    srcDocs[source]['***VERSION***']%1000,
+                                    time.strftime("%Y-%m-%d %H:%M:%S",
+                      time.gmtime(int(srcDocs[source]['***VERSION***']/1000))),
+                              clss, srcDocs[source]['***DOCID***']))
+            myFile.write("<P>\n<HR>\n\n")
+            #
+            # write destination host evaluation tables:
+            for dest in sorted( dstDocs.keys() ):
+                try:
+                    status = dstDocs[dest]['status']
+                except KeyError:
+                    status = "unknown"
+                if ( status == "ok" ):
+                    clss = "DocGood"
+                elif ( status == "warning" ):
+                    clss = "DocWarn"
+                elif ( status == "error" ):
+                    clss = "DocBad"
+                else:
+                    clss = "Doc"
+                try:
+                    q_strng = "%.3f" % dstDocs[dest]['quality']
+                except KeyError:
+                    q_strng = "<I>not set</I>"
+                try:
+                    d_strng = dstDocs[dest]['detail'].replace("\n","<BR>")
+                except KeyError:
+                    d_strng = "\"\""
+                myFile.write(("<P>\n&nbsp;\n<P>\n<TABLE CELLSPACING=\"0\" CE" +
+                              "LLPADDING=\"2\" BORDER=\"1\">\n<TR>\n   <TH C" +
+                              "OLSPAN=\"2\" CLASS=\"LinkHeader\"><A NAME=\"" +
+                              "DST%s\">&#10140; %s</A> :\n<TR>\n   <TH CLASS" +
+                              "=\"Description\">Site/Host/Link name\n   <TD " +
+                              "CLASS=\"%s\">%s\n<TR>\n   <TH CLASS=\"Descrip" +
+                              "tion\">Evaluation type\n   <TD CLASS=\"%s\">" +
+                              "%s\n<TR>\n   <TH CLASS=\"Description\">Qualit" +
+                              "y\n   <TD CLASS=\"%s\">%s\n<TR>\n   <TH CLASS" +
+                              "=\"Description\">Detail\n   <TD CLASS=\"%s\">" +
+                              "%s\n<TR>\n   <TH CLASS=\"Description\">Status" +
+                              "\n   <TD CLASS=\"%s\" STYLE=\"font-weight: bo" +
+                              "ld;\">%s\n<TR>\n   <TH CLASS=\"Description\">" +
+                              "Version number<br>(= insert time)\n   <TD CLA" +
+                              "SS=\"%s\">%d.%3.3d (%s UTC)\n<TR>\n   <TH CLA" +
+                              "SS=\"Description\">Document id\n   <TD CLASS=" +
+                              "\"%s\">%s\n</TABLE>\n\n") %
+                             (dest, dest, clss, dstDocs[dest]['name'],
+                              clss, dstDocs[dest]['type'],
+                              clss, q_strng,
+                              clss, d_strng,
+                              clss, status,
+                              clss, int(dstDocs[dest]['***VERSION***']/1000),
+                                    dstDocs[dest]['***VERSION***']%1000,
+                                    time.strftime("%Y-%m-%d %H:%M:%S",
+                        time.gmtime(int(dstDocs[dest]['***VERSION***']/1000))),
+                              clss, dstDocs[dest]['***DOCID***']))
+            myFile.write("<P>\n<HR>\n\n")
+            #
+            # write link evaluation tables:
+            for link in sorted( lnkDocs.keys() ):
+                source, dest = link.split("___")[0:2]
+                try:
+                    status = lnkDocs[link]['status']
+                except KeyError:
+                    status = "unknown"
+                if ( status == "ok" ):
+                    clss = "DocGood"
+                elif ( status == "warning" ):
+                    clss = "DocWarn"
+                elif ( status == "error" ):
+                    clss = "DocBad"
+                else:
+                    clss = "Doc"
+                try:
+                    q_strng = "%.3f" % lnkDocs[link]['quality']
+                except KeyError:
+                    q_strng = "<I>not set</I>"
+                try:
+                    d_strng = lnkDocs[link]['detail'].replace("\n","<BR>")
+                except KeyError:
+                    d_strng = "\"\""
+                myFile.write(("<P>\n&nbsp;\n<P>\n<TABLE CELLSPACING=\"0\" CE" +
+                              "LLPADDING=\"2\" BORDER=\"1\">\n<TR>\n   <TH C" +
+                              "OLSPAN=\"2\" CLASS=\"LinkHeader\"><A NAME=\"" +
+                              "%s\">%s &#10140; %s</A> :\n<TR>\n   <TH CLASS" +
+                              "=\"Description\">Site/Host/Link name\n   <TD " +
+                              "CLASS=\"%s\">%s\n<TR>\n   <TH CLASS=\"Descrip" +
+                              "tion\">Evaluation type\n   <TD CLASS=\"%s\">" +
+                              "%s\n<TR>\n   <TH CLASS=\"Description\">Qualit" +
+                              "y\n   <TD CLASS=\"%s\">%s\n<TR>\n   <TH CLASS" +
+                              "=\"Description\">Detail\n   <TD CLASS=\"%s\">" +
+                              "%s\n<TR>\n   <TH CLASS=\"Description\">Status" +
+                              "\n   <TD CLASS=\"%s\" STYLE=\"font-weight: bo" +
+                              "ld;\">%s\n<TR>\n   <TH CLASS=\"Description\">" +
+                              "Version number<br>(= insert time)\n   <TD CLA" +
+                              "SS=\"%s\">%d.%3.3d (%s UTC)\n<TR>\n   <TH CLA" +
+                              "SS=\"Description\">Document id\n   <TD CLASS=" +
+                              "\"%s\">%s\n</TABLE>\n\n") %
+                             (link, source, dest, clss, lnkDocs[link]['name'],
+                              clss, lnkDocs[link]['type'],
+                              clss, q_strng,
+                              clss, d_strng,
+                              clss, status,
+                              clss, int(lnkDocs[link]['***VERSION***']/1000),
+                                    lnkDocs[link]['***VERSION***']%1000,
+                                    time.strftime("%Y-%m-%d %H:%M:%S",
+                        time.gmtime(int(lnkDocs[link]['***VERSION***']/1000))),
+                              clss, lnkDocs[link]['***DOCID***']))
+            myFile.write("<P>\n&nbsp;\n<P>\n")
+        #
+        try:
+            os.chmod(myHTML, 0o644)
+        except (IOError, OSError) as excptn:
+            logging.warning(("Failed to chmod CMS links mainDVI section file" +
+                                                         ", %s") % str(excptn))
+        os.rename(myHTML, cfg['html'])
+
+    except (IOError, OSError) as excptn:
+        logging.critical("Writing of CMS links mainDVI section failed, %s" %
+                                                                   str(excptn))
+        try:
+            os.unlink( myHTML )
+        except:
+            pass
+        return 1
+
+    logging.log(25, "CMS links doc as HTML table written to %s" %
+                                                    cfg['html'].split("/")[-1])
+    return 0
 # ########################################################################### #
 
 
@@ -2761,6 +3312,8 @@ if __name__ == '__main__':
             rc += lftch_maindvi_sr(lftch_cfg, lftch_monitdocs)
         elif ( lftch_cfg['metric'][:3] == "sts" ):
             rc += lftch_maindvi_sts(lftch_cfg, lftch_monitdocs)
+        elif ( lftch_cfg['metric'][:5] == "links" ):
+            rc += lftch_maindvi_links(lftch_cfg, lftch_monitdocs)
 
 
 

@@ -33,6 +33,10 @@ sr1hour:sr:3600:SiteReadiness 1 hour evaluation(s):
 sr6hour:sr:21600:SiteReadiness 6 hours evaluation(s):
 sr1day:sr:86400:SiteReadiness 1 day evaluation(s):
 sts15min:sts:900:SiteStatus 15 min evaluation(s):
+links15min:fts:900:Links 15 min evaluation(s):
+links1hour:fts:3600:Links 1 hour evaluation(s):
+links6hour:fts:21600:Links 6 hours evaluation(s):
+links1day:fts:86400:Links 1 day evaluation(s):
 METRIC_SUPPORT_EOF
 #
 LOGSECTION_URL="https://cmssst.web.cern.ch/cmssst/cache"
