@@ -109,13 +109,13 @@ fi
 echo -e "Content-type: text/html\n\n"
 
 if [ -n "${ERROR_MSG}" ];then
-   echo -e "<!--\n   <BASE HREF=\"https://cmssst.web.cern.ch/cmssst/\">\n-->\n<HTML lang=en>\n<HEAD>\n   <META charset=\"UTF-8\">\n   <TITLE>CMSSST Log Retrieval Error Report</TITLE>\n   <META NAME=\"robots\" CONTENT=\"noindex,nofollow\">\n   <META HTTP-EQUIV=\"content-type\" CONTENT=\"text/html;CHARSET=iso8859-1\">\n   </HEAD>\n\n<BODY BGCOLOR=\"#FFFFFF\" TEXT=\"#000000\">\n"
+   echo -e "<HTML lang=en>\n<HEAD>\n   <META charset=\"UTF-8\">\n   <TITLE>CMSSST Log Retrieval Error Report</TITLE>\n   <META NAME=\"robots\" CONTENT=\"noindex,nofollow\">\n   <META HTTP-EQUIV=\"content-type\" CONTENT=\"text/html;CHARSET=iso8859-1\">\n   </HEAD>\n\n<BODY BGCOLOR=\"#FFFFFF\" TEXT=\"#000000\">\n"
    echo -e "<H1>\n   <CENTER>CMS Log Retrieval</H1>\n\n<SPAN STYLE=\"color:#cc0000; font-weight:bold;\">ERROR: ${ERROR_MSG}</SPAN><BR>\n"
    echo -e "<HR>\n\n<SMALL>\n   <A HREF=\"http://cern.ch/copyright\">&copy; Copyright author, CMS, Fermilab, and others 2019</A>\n</SMALL>\n</BODY>\n</HTML>\n"
    exit 0
 fi
 
-echo -e "<HTML lang=en>\n<HEAD>\n   <BASE HREF=\"https://cmssst.web.cern.ch/cmssst/\">\n   <META charset=\"UTF-8\">\n   <TITLE>CMS Log Retrieval</TITLE>\n   <STYLE TYPE=\"text/css\">\n      BODY {\n         background-color: white\n      }\n      A, A:LINK, A:VISITED {\n         color:black; text-decoration:none\n      }\n      TD A, TD A:LINK, TD A:VISITED {\n         color:black; text-decoration:none\n      }\n   </STYLE>\n</HEAD>"
+echo -e "<HTML lang=en>\n<HEAD>\n   <META charset=\"UTF-8\">\n   <TITLE>CMS Log Retrieval</TITLE>\n   <STYLE TYPE=\"text/css\">\n      BODY {\n         background-color: white\n      }\n      A, A:LINK, A:VISITED {\n         color:black; text-decoration:none\n      }\n      TD A, TD A:LINK, TD A:VISITED {\n         color:black; text-decoration:none\n      }\n   </STYLE>\n</HEAD>"
 
 echo -e "<BODY ONLOAD=\"fillPage()\">\n<H1>\n   <CENTER>CMS Log Retrieval\n      <SPAN STYLE=\"white-space:nowrap; font-size:75%;\">${REQUEST_TITL}</SPAN>\n   </CENTER>\n</H1>\n\n<DIV ID=\"ContentDIV\"></DIV>\n<HR>\n\n<SMALL>\n   <A HREF=\"http://cern.ch/copyright\">&copy; Copyright author, CMS, Fermilab, and others 2019</A>\n</SMALL>"
 

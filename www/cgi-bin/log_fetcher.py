@@ -2937,7 +2937,7 @@ def lftch_maindvi_links(cfg, docs):
                 except KeyError:
                     q_strng = "<I>not set</I>"
                 try:
-                    d_strng = lnkDocs[link]['detail'].replace("\n","<BR>")
+                    d_strng = lftch_url4fts( lnkDocs[link]['detail'] )
                 except KeyError:
                     d_strng = "\"\""
                 myFile.write(("<P>\n&nbsp;\n<P>\n<TABLE CELLSPACING=\"0\" CE" +
