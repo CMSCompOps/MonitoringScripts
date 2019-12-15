@@ -1,16 +1,15 @@
 <!DOCTYPE html>
-<BASE HREF="http://cmssst.web.cern.ch/cmssst/siteStatus/">
 <HTML lang=en>
 <HEAD>
    <META charset="UTF-8">
    <TITLE>CMS Site Downtime Information</TITLE>
 
    <SCRIPT async type="text/javascript" language="javascript"
-           src="http://cmssst.web.cern.ch/cmssst/siteStatus/data/downtime.js">
+           src="//test-cmssst.web.cern.ch/siteStatus/data/downtime.js">
    </SCRIPT>
 
    <SCRIPT async type="text/javascript" language="javascript"
-           src="http://cmssst.web.cern.ch/cmssst/siteStatus/downtime_lib.js">
+           src="//test-cmssst.web.cern.ch/siteStatus/downtime_lib.js">
    </SCRIPT>
 
    <STYLE TYPE="text/css">
@@ -95,7 +94,6 @@
          margin-top:40px; margin-left:-548px;
          overflow:hidden;
       }
-      -->
    </STYLE>
 </HEAD>
 
@@ -130,18 +128,27 @@
          <TD><CANVAS ID="cnvs_lgn_FullDowntime" WIDTH="6" HEIGHT="18"></CANVAS>
          <TD STYLE="white-space:nowrap;">Site in full downtime
          <TD STYLE="width:24px; white-space: nowrap;">&nbsp; &nbsp;
+         <TD><CANVAS ID="cnvs_lgn_AtriskDowntime" WIDTH="6" HEIGHT="18"></CANVAS>
+         <TD STYLE="white-space:nowrap;">Site at risk of downtime
+         <TD STYLE="width:32px; white-space: nowrap;">&nbsp; &nbsp; &nbsp;
+         <TD STYLE="text-align:right; color:blue; font-weight:bold;
+            white-space:nowrap;">information as of
+      <TR>
          <TD><CANVAS ID="cnvs_lgn_PartDowntime" WIDTH="6" HEIGHT="18"></CANVAS>
          <TD STYLE="white-space:nowrap;">Site in partial downtime
          <TD STYLE="width:32px; white-space: nowrap;">&nbsp; &nbsp; &nbsp;
+         <TD><CANVAS ID='cnvs_lgn_Unknown' WIDTH="6" HEIGHT="18"></CANVAS>
+         <TD STYLE="white-space:nowrap;">No known downtime
+         <TD STYLE="width:32px; white-space: nowrap;">&nbsp; &nbsp; &nbsp;
          <TD STYLE="text-align:right; color:blue; font-weight:bold;
-            white-space:nowrap;">information as of <SPAN ID="legendSPAN"></SPAN>
+            white-space:nowrap;"><SPAN ID="legendSPAN"></SPAN>
       <TR>
          <TD><CANVAS ID="cnvs_lgn_AdhocDowntime" WIDTH="6" HEIGHT="18"></CANVAS>
          <TD STYLE="white-space:nowrap;">Site in unscheduled downtime
          <TD STYLE="width:24px; white-space: nowrap;">&nbsp; &nbsp;
-         <TD><CANVAS ID='cnvs_lgn_Unknown' WIDTH="6" HEIGHT="18"></CANVAS>
-         <TD STYLE="white-space:nowrap;">No known downtime
-         <TD STYLE="width:32px; white-space: nowrap;">&nbsp; &nbsp; &nbsp;
+         <TD>
+         <TD>
+         <TD>
          <TD STYLE="text-align:right; white-space:nowrap;">
             <A HREF="http://cern.ch/copyright">&copy; Copyright author, CMS,
             Fermilab, and others 2016</A>

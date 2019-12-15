@@ -336,24 +336,6 @@ function fillCanvases() {
             cCtxM.fillRect(hour*4+Math.trunc(hour/6)*2,18,2,18);
          }
          switch ( cData[ hour ] ) {
-            case "o":
-               cCtxS.fillStyle = "#80FF80";
-               cCtxS.fillRect(1+hour+Math.trunc(hour/6),0,1,18);
-               cCtxM.fillStyle = "#80FF80";
-               cCtxM.fillRect(2+hour*4+Math.trunc(hour/6)*2,0,4,36);
-               break;
-            case "w":
-               cCtxS.fillStyle = "#FFFF00";
-               cCtxS.fillRect(1+hour+Math.trunc(hour/6),0,1,18);
-               cCtxM.fillStyle = "#FFFF00";
-               cCtxM.fillRect(2+hour*4+Math.trunc(hour/6)*2,0,4,36);
-               break;
-            case "e":
-               cCtxS.fillStyle = "#FF0000";
-               cCtxS.fillRect(1+hour+Math.trunc(hour/6),0,1,18);
-               cCtxM.fillStyle = "#FF0000";
-               cCtxM.fillRect(2+hour*4+Math.trunc(hour/6)*2,0,4,36);
-               break;
             case "p":
                cCtxS.fillStyle = "#6080FF";
                cCtxS.fillRect(1+hour+Math.trunc(hour/6),0,1,6);
@@ -380,23 +362,11 @@ function fillCanvases() {
                cCtxM.fillRect(2+hour*4+Math.trunc(hour/6)*2,20,4,4);
                cCtxM.fillRect(2+hour*4+Math.trunc(hour/6)*2,28,4,8);
                break;
-            case "U":
-            case "V":
-            case "W":
-            case "X":
-               cCtxS.fillStyle = "#A000A0";
-               cCtxS.fillRect(1+hour+Math.trunc(hour/6),0,1,18);
-               cCtxM.fillStyle = "#A000A0";
-               cCtxM.fillRect(2+hour*4+Math.trunc(hour/6)*2,0,4,36);
-               break;
-            case "K":
-            case "L":
-            case "M":
-            case "N":
-               cCtxS.fillStyle = "#663300";
-               cCtxS.fillRect(1+hour+Math.trunc(hour/6),0,1,18);
-               cCtxM.fillStyle = "#663300";
-               cCtxM.fillRect(2+hour*4+Math.trunc(hour/6)*2,0,4,36);
+            case "r":
+               cCtxS.fillStyle = "#6080FF";
+               cCtxS.fillRect(1+hour+Math.trunc(hour/6),7,1,4);
+               cCtxM.fillStyle = "#6080FF";
+               cCtxM.fillRect(2+hour*4+Math.trunc(hour/6)*2,14,4,8);
                break;
             default:
                cCtxS.fillStyle = "#F4F4F4";
@@ -439,24 +409,6 @@ function fillCanvases() {
             cCtxM.fillRect(qhour*4+Math.trunc(qhour/4)*2,28,2,8);
          }
          switch ( cData[ qhour ] ) {
-            case "o":
-               cCtxS.fillStyle = "#80FF80";
-               cCtxS.fillRect(1+qhour*2+Math.trunc(qhour/4),0,2,18);
-               cCtxM.fillStyle = "#80FF80";
-               cCtxM.fillRect(2+qhour*4+Math.trunc(qhour/4)*2,0,4,36);
-               break;
-            case "w":
-               cCtxS.fillStyle = "#FFFF00";
-               cCtxS.fillRect(1+qhour*2+Math.trunc(qhour/4),0,2,18);
-               cCtxM.fillStyle = "#FFFF00";
-               cCtxM.fillRect(2+qhour*4+Math.trunc(qhour/4)*2,0,4,36);
-               break;
-            case "e":
-               cCtxS.fillStyle = "#FF0000";
-               cCtxS.fillRect(1+qhour*2+Math.trunc(qhour/4),0,2,18);
-               cCtxM.fillStyle = "#FF0000";
-               cCtxM.fillRect(2+qhour*4+Math.trunc(qhour/4)*2,0,4,36);
-               break;
             case "p":
                cCtxS.fillStyle = "#6080FF";
                cCtxS.fillRect(1+qhour*2+Math.trunc(qhour/4),0,2,6);
@@ -483,23 +435,11 @@ function fillCanvases() {
                cCtxM.fillRect(2+qhour*4+Math.trunc(qhour/4)*2,20,4,4);
                cCtxM.fillRect(2+qhour*4+Math.trunc(qhour/4)*2,28,4,8);
                break;
-            case "U":
-            case "V":
-            case "W":
-            case "X":
-               cCtxS.fillStyle = "#A000A0";
-               cCtxS.fillRect(1+qhour*2+Math.trunc(qhour/4),0,2,18);
-               cCtxM.fillStyle = "#A000A0";
-               cCtxM.fillRect(2+qhour*4+Math.trunc(qhour/4)*2,0,4,36);
-               break;
-            case "K":
-            case "L":
-            case "M":
-            case "N":
-               cCtxS.fillStyle = "#663300";
-               cCtxS.fillRect(1+qhour*2+Math.trunc(qhour/4),0,2,18);
-               cCtxM.fillStyle = "#663300";
-               cCtxM.fillRect(2+qhour*4+Math.trunc(qhour/4)*2,0,4,36);
+            case "r":
+               cCtxS.fillStyle = "#6080FF";
+               cCtxS.fillRect(1+qhour*2+Math.trunc(qhour/4),7,2,4);
+               cCtxM.fillStyle = "#6080FF";
+               cCtxM.fillRect(2+qhour*4+Math.trunc(qhour/4)*2,14,4,8);
                break;
             default:
                cCtxS.fillStyle = "#F4F4F4";
@@ -541,24 +481,6 @@ function fillCanvases() {
             cCtxM.fillRect(qhour*5+Math.trunc(qhour/4)*2,28,2,8);
          }
          switch ( cData[ qhour ] ) {
-            case "o":
-               cCtxS.fillStyle = "#80FF80";
-               cCtxS.fillRect(1+qhour*3+Math.trunc(qhour/4),0,3,18);
-               cCtxM.fillStyle = "#80FF80";
-               cCtxM.fillRect(2+qhour*5+Math.trunc(qhour/4)*2,0,5,36);
-               break;
-            case "w":
-               cCtxS.fillStyle = "#FFFF00";
-               cCtxS.fillRect(1+qhour*3+Math.trunc(qhour/4),0,3,18);
-               cCtxM.fillStyle = "#FFFF00";
-               cCtxM.fillRect(2+qhour*5+Math.trunc(qhour/4)*2,0,5,36);
-               break;
-            case "e":
-               cCtxS.fillStyle = "#FF0000";
-               cCtxS.fillRect(1+qhour*3+Math.trunc(qhour/4),0,3,18);
-               cCtxM.fillStyle = "#FF0000";
-               cCtxM.fillRect(2+qhour*5+Math.trunc(qhour/4)*2,0,5,36);
-               break;
             case "p":
                cCtxS.fillStyle = "#6080FF";
                cCtxS.fillRect(1+qhour*3+Math.trunc(qhour/4),0,3,6);
@@ -585,23 +507,11 @@ function fillCanvases() {
                cCtxM.fillRect(2+qhour*5+Math.trunc(qhour/4)*2,20,5,4);
                cCtxM.fillRect(2+qhour*5+Math.trunc(qhour/4)*2,28,5,8);
                break;
-            case "U":
-            case "V":
-            case "W":
-            case "X":
-               cCtxS.fillStyle = "#A000A0";
-               cCtxS.fillRect(1+qhour*3+Math.trunc(qhour/4),0,3,18);
-               cCtxM.fillStyle = "#A000A0";
-               cCtxM.fillRect(2+qhour*5+Math.trunc(qhour/4)*2,0,5,36);
-               break;
-            case "K":
-            case "L":
-            case "M":
-            case "N":
-               cCtxS.fillStyle = "#663300";
-               cCtxS.fillRect(1+qhour*3+Math.trunc(qhour/4),0,3,18);
-               cCtxM.fillStyle = "#663300";
-               cCtxM.fillRect(2+qhour*5+Math.trunc(qhour/4)*2,0,5,36);
+            case "r":
+               cCtxS.fillStyle = "#6080FF";
+               cCtxS.fillRect(1+qhour*3+Math.trunc(qhour/4),7,3,4);
+               cCtxM.fillStyle = "#6080FF";
+               cCtxM.fillRect(2+qhour*5+Math.trunc(qhour/4)*2,14,5,8);
                break;
             default:
                cCtxS.fillStyle = "#F4F4F4";
@@ -639,24 +549,6 @@ function fillCanvases() {
             cCtxM.fillRect(hour*4+Math.trunc(hour/6)*2,18,2,18);
          }
          switch ( cData[ hour ] ) {
-            case "o":
-               cCtxS.fillStyle = "#80FF80";
-               cCtxS.fillRect(1+hour+Math.trunc(hour/6),0,1,18);
-               cCtxM.fillStyle = "#80FF80";
-               cCtxM.fillRect(2+hour*4+Math.trunc(hour/6)*2,0,4,36);
-               break;
-            case "w":
-               cCtxS.fillStyle = "#FFFF00";
-               cCtxS.fillRect(1+hour+Math.trunc(hour/6),0,1,18);
-               cCtxM.fillStyle = "#FFFF00";
-               cCtxM.fillRect(2+hour*4+Math.trunc(hour/6)*2,0,4,36);
-               break;
-            case "e":
-               cCtxS.fillStyle = "#FF0000";
-               cCtxS.fillRect(1+hour+Math.trunc(hour/6),0,1,18);
-               cCtxM.fillStyle = "#FF0000";
-               cCtxM.fillRect(2+hour*4+Math.trunc(hour/6)*2,0,4,36);
-               break;
             case "p":
                cCtxS.fillStyle = "#6080FF";
                cCtxS.fillRect(1+hour+Math.trunc(hour/6),0,1,6);
@@ -683,23 +575,11 @@ function fillCanvases() {
                cCtxM.fillRect(2+hour*4+Math.trunc(hour/6)*2,20,4,4);
                cCtxM.fillRect(2+hour*4+Math.trunc(hour/6)*2,28,4,8);
                break;
-            case "U":
-            case "V":
-            case "W":
-            case "X":
-               cCtxS.fillStyle = "#A000A0";
-               cCtxS.fillRect(1+hour+Math.trunc(hour/6),0,1,18);
-               cCtxM.fillStyle = "#A000A0";
-               cCtxM.fillRect(2+hour*4+Math.trunc(hour/6)*2,0,4,36);
-               break;
-            case "K":
-            case "L":
-            case "M":
-            case "N":
-               cCtxS.fillStyle = "#663300";
-               cCtxS.fillRect(1+hour+Math.trunc(hour/6),0,1,18);
-               cCtxM.fillStyle = "#663300";
-               cCtxM.fillRect(2+hour*4+Math.trunc(hour/6)*2,0,4,36);
+            case "r":
+               cCtxS.fillStyle = "#6080FF";
+               cCtxS.fillRect(1+hour+Math.trunc(hour/6),7,1,4);
+               cCtxM.fillStyle = "#6080FF";
+               cCtxM.fillRect(2+hour*4+Math.trunc(hour/6)*2,14,4,8);
                break;
             default:
                cCtxS.fillStyle = "#F4F4F4";
@@ -745,18 +625,6 @@ function fillTodayCanvases() {
             cCtx.fillRect(6*qhour+2*Math.trunc(qhour/4),14,2,4);
          }
          switch ( cData[ qhour ] ) {
-            case "o":
-               cCtx.fillStyle = "#80FF80";
-               cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),0,6,18);
-               break;
-            case "w":
-               cCtx.fillStyle = "#FFFF00";
-               cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),0,6,18);
-               break;
-            case "e":
-               cCtx.fillStyle = "#FF0000";
-               cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),0,6,18);
-               break;
             case "p":
                cCtx.fillStyle = "#6080FF";
                cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),0,6,6);
@@ -773,16 +641,9 @@ function fillTodayCanvases() {
                cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),10,6,2);
                cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),14,6,4);
                break;
-            case "U":
-            case "V":
-            case "W":
-            case "X":
-               cCtx.fillStyle = "#A000A0";
-               cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),0,6,18);
-               break;
-            case "M":
-               cCtx.fillStyle = "#663300";
-               cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),0,6,18);
+            case "r":
+               cCtx.fillStyle = "#6080FF";
+               cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),7,6,4);
                break;
             default:
                cCtx.fillStyle = "#F4F4F4";
@@ -818,18 +679,6 @@ function fillTodayCanvases() {
                cCtx.fillRect(6*qhour+2*Math.trunc(qhour/4),14,2,4);
             }
             switch ( cData[ qhour ] ) {
-               case "o":
-                  cCtx.fillStyle = "#80FF80";
-                  cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),0,6,18);
-                  break;
-               case "w":
-                  cCtx.fillStyle = "#FFFF00";
-                  cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),0,6,18);
-                  break;
-               case "e":
-                  cCtx.fillStyle = "#FF0000";
-                  cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),0,6,18);
-                  break;
                case "p":
                   cCtx.fillStyle = "#6080FF";
                   cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),0,6,6);
@@ -846,13 +695,9 @@ function fillTodayCanvases() {
                   cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),10,6,2);
                   cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),14,6,4);
                   break;
-               case "W":
-                  cCtx.fillStyle = "#A000A0";
-                  cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),0,6,18);
-                  break;
-               case "M":
-                  cCtx.fillStyle = "#663300";
-                  cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),0,6,18);
+               case "r":
+                  cCtx.fillStyle = "#6080FF";
+                  cCtx.fillRect(2+6*qhour+2*Math.trunc(qhour/4),7,6,4);
                   break;
                default:
                   cCtx.fillStyle = "#F4F4F4";
@@ -878,6 +723,9 @@ function fillLegend() {
    cCtx.fillRect(0,6,6,2);
    cCtx.fillRect(0,10,6,2);
    cCtx.fillRect(0,14,6,4);
+   cCtx = document.getElementById('cnvs_lgn_AtriskDowntime').getContext('2d');
+   cCtx.fillStyle = "#6080FF";
+   cCtx.fillRect(0,7,6,4);
    cCtx = document.getElementById('cnvs_lgn_Unknown').getContext('2d');
    cCtx.fillStyle = "#F4F4F4";
    cCtx.fillRect(0,0,6,18);

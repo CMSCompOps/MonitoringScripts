@@ -1,16 +1,15 @@
 <!DOCTYPE html>
-<BASE HREF="http://cmssst.web.cern.ch/cmssst/siteStatus/">
 <HTML lang=en>
 <HEAD>
    <META charset="UTF-8">
    <TITLE>CMS Site Status Summary</TITLE>
 
    <SCRIPT async type="text/javascript" language="javascript"
-           src="http://cmssst.web.cern.ch/cmssst/siteStatus/data/summary.js">
+           src="//test-cmssst.web.cern.ch/siteStatus/data/summary.js">
    </SCRIPT>
 
    <SCRIPT async type="text/javascript" language="javascript"
-           src="http://cmssst.web.cern.ch/cmssst/siteStatus/summary_lib.js">
+           src="//test-cmssst.web.cern.ch/siteStatus/summary_lib.js">
    </SCRIPT>
 
    <STYLE TYPE="text/css">
@@ -113,7 +112,6 @@
          margin-top:40px; margin-left:-548px;
          overflow:hidden;
       }
-      -->
    </STYLE>
 </HEAD>
 
@@ -153,8 +151,7 @@
          <TD><CANVAS ID='cnvs_lgn_WaitingRoom' WIDTH="6" HEIGHT="18"></CANVAS>
          <TD STYLE="white-space:nowrap;">Site not in service (Waiting Room)
          <TD STYLE="width:32px; white-space: nowrap;">&nbsp; &nbsp; &nbsp;
-         <TD STYLE="text-align:right; color:blue; font-weight:bold;
-            white-space:nowrap;">information as of
+         <TD>
       <TR>
          <TD><CANVAS ID='cnvs_lgn_Warning' WIDTH="6" HEIGHT="18"></CANVAS>
          <TD STYLE="white-space:nowrap;">Site working with issues (warning)
@@ -166,7 +163,7 @@
          <TD STYLE="white-space:nowrap;">Site not in service (Morgue)
          <TD STYLE="width:32px; white-space: nowrap;">&nbsp; &nbsp; &nbsp;
          <TD STYLE="text-align:right; color:blue; font-weight:bold;
-            white-space:nowrap;"><SPAN ID="legendSPAN"></SPAN>
+            white-space:nowrap;">information as of
       <TR>
          <TD><CANVAS ID='cnvs_lgn_Error' WIDTH="6" HEIGHT="18"></CANVAS>
          <TD STYLE="white-space:nowrap;">Site with failed service (error)
@@ -177,6 +174,18 @@
          <TD><CANVAS ID='cnvs_lgn_Unknown' WIDTH="6" HEIGHT="18"></CANVAS>
          <TD STYLE="white-space:nowrap;">Site status unknown
          <TD STYLE="width:32px; white-space: nowrap;">&nbsp; &nbsp; &nbsp;
+         <TD STYLE="text-align:right; color:blue; font-weight:bold;
+            white-space:nowrap;"><SPAN ID="legendSPAN"></SPAN>
+      <TR>
+         <TD>
+         <TD>
+         <TD>
+         <TD><CANVAS ID="cnvs_lgn_AtriskDowntime" WIDTH="6" HEIGHT="18"></CANVAS>
+         <TD STYLE="white-space:nowrap;">Site at risk of downtime
+         <TD STYLE="width:24px; white-space: nowrap;">&nbsp; &nbsp;
+         <TD>
+         <TD>
+         <TD>
          <TD STYLE="text-align:right; white-space:nowrap;">
             <A HREF="http://cern.ch/copyright">&copy; Copyright author, CMS,
             Fermilab, and others 2016</A>

@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/data/cmssst/packages/bin/python3.7
 # ########################################################################### #
 # python script to write the data summary JSON for the site status web pages. #
 #                                                                             #
@@ -11,18 +11,30 @@ import os, sys
 import logging
 import threading
 import time, calendar
-import httplib, urllib2
+import ssl
+import http.client
+import urllib.request
+import gzip
 import json
 import xml.etree.ElementTree as ET
+import re
+#
+# setup the Java/HDFS/PATH environment for pydoop to work properly:
+os.environ["HADOOP_CONF_DIR"] = "/opt/hadoop/conf/etc/analytix/hadoop.analytix"
+os.environ["JAVA_HOME"]       = "/etc/alternatives/jre"
+os.environ["HADOOP_PREFIX"]   = "/usr/hdp/hadoop"
+import pydoop.hdfs
 # ########################################################################### #
 
 
 
-SSWP_DATA_DIR = "/afs/cern.ch/user/c/cmssst/www/siteStatus/data"
+#SSWP_DATA_DIR = "./data"
+#SSWP_CACHE_DIR = "./cache"
+SSWP_DATA_DIR = "/eos/home-c/cmssst/www/siteStatus/data"
 SSWP_CACHE_DIR = "/data/cmssst/MonitoringScripts/siteStatus/cache"
 
-#SSWP_CERTIFICATE_CRT = '/lml/user/lammel/.globus/usercert.pem'
-#SSWP_CERTIFICATE_KEY = '/lml/user/lammel/.globus/userkey.pem'
+#SSWP_CERTIFICATE_CRT = '/afs/cern.ch/user/l/lammel/.globus/usercert.pem'
+#SSWP_CERTIFICATE_KEY = '/afs/cern.ch/user/l/lammel/.globus/userkey.pem'
 SSWP_CERTIFICATE_CRT = '/tmp/x509up_u79522'
 SSWP_CERTIFICATE_KEY = '/tmp/x509up_u79522'
 # ########################################################################### #
@@ -40,18 +52,13 @@ sswp_other = {}    # non-data item dictionary, url, msg, alert, ...           #
 
 
 
-class HTTPSClientAuthHandler(urllib2.HTTPSHandler):
-    'Urllib2.HTTPSHandler class with certificate access'
+class HTTPSClientCertHandler(urllib.request.HTTPSHandler):
+    'urllib.request.HTTPSHandler class with certificate access'
 
     def __init__(self):
-        urllib2.HTTPSHandler.__init__(self)
-
-    def https_open(self, req):
-        return self.do_open(self.getConnection, req)
-
-    def getConnection(self, host, timeout=180):
-        return httplib.HTTPSConnection(host, key_file=SSWP_CERTIFICATE_KEY,
-                                             cert_file=SSWP_CERTIFICATE_CRT)
+        sslContext = ssl.create_default_context(purpose=ssl.Purpose.CLIENT_AUTH)
+        sslContext.load_cert_chain(SSWP_CERTIFICATE_CRT, SSWP_CERTIFICATE_KEY)
+        urllib.request.HTTPSHandler.__init__(self, context=sslContext)
 # ########################################################################### #
 
 
@@ -61,16 +68,8 @@ class sswpTopology:
 
     @staticmethod
     def TypeGroup(type):
-        if (( type == "CE" ) or ( type == "GLOBUS" )):
-            return "CE"
-        elif ( type.find("-CE") > 0 ):
-            return "CE"
-        elif ( type.find("SRM") >= 0 ):
-            return "SE"
-        elif ( type.find("XROOTD") >= 0 ):
-            return "XRD"
-        elif ( type.lower() == "glexec" ):
-            return "CE"
+        if ( type in glbFlavours ):
+           return glbFlavours[type]
         else:
             return None
 
@@ -82,15 +81,7 @@ class sswpTopology:
             self.map[cmssite] = {'elements': []}
 
     def addElement(self, cmssite, gridsite, host, type, prod=True):
-        if (( type == "CE" ) or ( type == "GLOBUS" )):
-            type = "GLOBUS-CE"
-        elif ( type.find("-CE") > 0 ):
-            pass
-        elif ( type.find("SRM") >= 0 ):
-            pass
-        elif ( type == "XROOTD" ):
-            type = "XRD"
-        else:
+        if ( type not in glbFlavours ):
             return
         host = host.lower()
         #
@@ -113,38 +104,27 @@ class sswpTopology:
         return sorted(self.map.keys())
 
     def verifyType(self, host, type):
-        if (( type == "CE" ) or ( type == "GLOBUS" )):
-            pass
-        elif ( type.find("-CE") > 0 ):
-            pass
-        elif ( type.find("SRM") >= 0 ):
-            type = "SRM"
-        elif ( type.lower() == "gridftp" ):
-            type = "SRM"
-        elif ( type.lower() == "globus-gridftp" ):
-            type = "SRM"
-        elif ( type.lower() == "gsiftp" ):
-            type = "SRM"
-        elif ( type == "XRD" ):
-            pass
-        elif ( type.lower() == "xrootd" ):
-            type = "XRD"
-        elif ( type.lower() == "glexec" ):
-            type = "CE"
-        else:
+        if ( type not in glbFlavours ):
             return None
         host = host.lower()
+        # pass one, exact match:
         for cmssite in self.sites():
             for element in self.map[cmssite]['elements']:
                 if ( element['host'] == host ):
-                    if ( element['type'].find(type) >= 0 ):
+                    if ( element['type'] == type ):
+                        return element['type']
+        # pass two, group match:
+        for cmssite in self.sites():
+            for element in self.map[cmssite]['elements']:
+                if ( element['host'] == host ):
+                    if ( glbFlavours[ element['type'] ] == glbFlavours[type] ):
                         return element['type']
         return None
 
     def countProdCEs(self, cmssite):
         count = 0
         for element in self.map[cmssite]['elements']:
-            if ( element['type'].find("CE") >= 0 ):
+            if ( glbFlavours[ element['type'] ] == "CE" ):
                 if ( element['prod'] == True ):
                     count += 1
         return count
@@ -183,7 +163,9 @@ class sswpVector:
     tis_fweek = 0
 
     @staticmethod
-    def SetTimestamp( timestamp ):
+    def SetTimestamps( timestamp ):
+        # calculate start time of first bin in each section:
+        # ==================================================
         #
         # month, first six-hour bin starts 00:00 a month+week+day earlier:
         ts = time.gmtime( timestamp - (30+7+1) * 24*60*60 )
@@ -204,6 +186,114 @@ class sswpVector:
         # fweek, first one-hour bin starts 00:00 tomorrow:
         ts = time.gmtime( timestamp + 24*60*60 )
         sswpVector.tis_fweek = calendar.timegm( ts[:3] + (0, 0, 0) + ts[6:] )
+        # 
+        # final, starts 00:00 a week+day after:
+        ts = time.gmtime( timestamp + (7+1) * 24*60*60 )
+        sswpVector.tis_final = calendar.timegm( ts[:3] + (0, 0, 0) + ts[6:] )
+
+    @staticmethod
+    def GetTimestamps():
+        return { 'month': sswpVector.tis_month,
+                 'pweek': sswpVector.tis_pweek,
+                 'yrday': sswpVector.tis_yrday,
+                 'today': sswpVector.tis_today,
+                 'fweek': sswpVector.tis_fweek,
+                 'final': sswpVector.tis_final }
+
+    @staticmethod
+    def WriteTimestamps(file=sys.stdout, offset=0):
+        off = "".ljust(offset)
+        #
+        file.write("%sPrevious Month starts at %d (%s)\n" %
+                   (off, sswpVector.tis_month,
+                    time.strftime("%Y-%m-%d %H:%M:%S",
+                                  time.gmtime(sswpVector.tis_month))))
+        file.write("%sPrevious Week  starts at %d (%s)\n" %
+                   (off, sswpVector.tis_pweek,
+                    time.strftime("%Y-%m-%d %H:%M:%S",
+                                  time.gmtime(sswpVector.tis_pweek))))
+        file.write("%sYesterday      starts at %d (%s)\n" %
+                   (off, sswpVector.tis_yrday,
+                    time.strftime("%Y-%m-%d %H:%M:%S",
+                                  time.gmtime(sswpVector.tis_yrday))))
+        file.write("%sToday          starts at %d (%s)\n" %
+                   (off, sswpVector.tis_today,
+                    time.strftime("%Y-%m-%d %H:%M:%S",
+                                  time.gmtime(sswpVector.tis_today))))
+        file.write("%sFollowing Week starts at %d (%s)\n" %
+                   (off, sswpVector.tis_fweek,
+                    time.strftime("%Y-%m-%d %H:%M:%S",
+                                  time.gmtime(sswpVector.tis_fweek))))
+        file.write("%sFollowing Week ends   at %d (%s)\n" %
+                   (off, sswpVector.tis_final,
+                    time.strftime("%Y-%m-%d %H:%M:%S",
+                                  time.gmtime(sswpVector.tis_final))))
+
+    @staticmethod
+    def FallsIntoBins(binType, binTime):
+        if ( binType == "6hour" ):
+            if (( binTime >= sswpVector.tis_month ) and
+                ( binTime <= sswpVector.tis_pweek )):
+                return True
+        elif ( binType == "1hour" ):
+            if (( binTime >= sswpVector.tis_pweek ) and
+                ( binTime <= sswpVector.tis_yrday )):
+                return True
+            if (( binTime >= sswpVector.tis_fweek ) and
+                ( binTime <= sswpVector.tis_final )):
+                return True
+        elif ( binType == "15min" ):
+            if (( binTime >= sswpVector.tis_yrday ) and
+                ( binTime <= sswpVector.tis_fweek )):
+                return True
+        return False
+
+    @staticmethod
+    def Bin2times(bin):
+        if ( bin < (30 * 4) ):
+            tis = sswpVector.tis_month + (bin * 21600)
+            return (tis, tis + 21599)
+        else:
+            bin -= (30 * 4)
+            if ( bin < (7 * 24) ):
+                tis = sswpVector.tis_pweek + (bin * 3600)
+                return (tis, tis + 3599)
+            else:
+                bin -= (7 * 24)
+                if ( bin < (24 * 4) ):
+                    tis = sswpVector.tis_yrday + (bin * 900)
+                    return (tis, tis + 899)
+                else:
+                    bin -= (24 * 4)
+                    if ( bin < (24 * 4) ):
+                        tis = sswpVector.tis_today + (bin * 900)
+                        return (tis, tis + 899)
+                    else:
+                        bin -= (24 * 4)
+                        if ( bin < (7 * 24) ):
+                            tis = sswpVector.tis_fweek + (bin * 3600)
+                            return (tis, tis + 3599)
+                        else:
+                            raise IndexError("Bin number out-of-range")
+
+    @staticmethod
+    def Time2bin(tis):
+        if ( tis < sswpVector.tis_month ):
+            bin = None
+        elif ( tis < sswpVector.tis_pweek ):
+            bin = int( (tis - sswpVector.tis_month) / 21600 )
+        elif ( tis < sswpVector.tis_yrday ):
+            bin = (30 * 4) + int( (tis - sswpVector.tis_pweek) / 3600 )
+        elif ( tis < sswpVector.tis_today ):
+            bin = 120 + (7 * 24) + int( (tis - sswpVector.tis_yrday) / 900 )
+        elif ( tis < sswpVector.tis_fweek ):
+            bin = 288 + (24 * 4) + int( (tis - sswpVector.tis_today) / 900 )
+        elif ( tis < sswpVector.tis_final ):
+            bin = 384 + (24 * 4) + int( (tis - sswpVector.tis_fweek) / 3600 )
+        else:
+            # 480 + (7 * 12) = 648 bins total
+            bin = None
+        return bin
 
     @staticmethod
     def getDefaultBins():
@@ -284,6 +374,25 @@ class sswpVector:
              del self.cnt_pweek
         if hasattr(self, 'cnt_fweek'):
              del self.cnt_fweek
+
+    def addVersions(self):
+        self.ver_month = [-1 for i in range(0, 30*4)]
+        self.ver_pweek = [-1 for i in range(0, 7*24)]
+        self.ver_yrday = [-1 for i in range(0, 24*4)]
+        self.ver_today = [-1 for i in range(0, 24*4)]
+        self.ver_fweek = [-1 for i in range(0, 7*24)]
+
+    def delVersions(self):
+        if hasattr(self, 'ver_month'):
+             del self.ver_month
+        if hasattr(self, 'ver_pweek'):
+             del self.ver_pweek
+        if hasattr(self, 'ver_yrday'):
+             del self.ver_yrday
+        if hasattr(self, 'ver_today'):
+             del self.ver_today
+        if hasattr(self, 'ver_fweek'):
+             del self.ver_fweek
 
     def getTotalBins(self):
         total = len(self.month) + len(self.pweek) + len(self.yrday) + \
@@ -578,6 +687,41 @@ class sswpVector:
             for indx in range(sIndx, eIndx):
                 if ( self.p15week[indx] == 'u' ):
                     self.p15week[indx] = code
+
+    def fillWithVersion(self, center, code, version):
+        #
+        # check if timebin center falls into Previous Month six-hour bins:
+        indx = round( (center - (sswpVector.tis_month + 10800)) / 21600 )
+        if (( indx >= 0 ) and ( indx < 30*4 )):
+            if ( version > self.ver_month[indx] ):
+                self.month[indx] = code
+                self.ver_month[indx] = version
+        else:
+            indx = round( (center - (sswpVector.tis_pweek + 1800)) / 3600 )
+            if (( indx >= 0 ) and ( indx < 7*24 )):
+                if ( version > self.ver_pweek[indx] ):
+                    self.pweek[indx] = code
+                    self.ver_pweek[indx] = version
+            else:
+                indx = round( (center - (sswpVector.tis_yrday + 450)) / 900 )
+                if (( indx >= 0 ) and ( indx < 24*4 )):
+                    if ( version > self.ver_yrday[indx] ):
+                        self.yrday[indx] = code
+                        self.ver_yrday[indx] = version
+                else:
+                    indx = round( (center - (sswpVector.tis_today + 450)) /
+                                                                          900 )
+                    if (( indx >= 0 ) and ( indx < 24*4 )):
+                        if ( version > self.ver_today[indx] ):
+                            self.today[indx] = code
+                            self.ver_today[indx] = version
+                    else:
+                        indx = round( (center - (sswpVector.tis_fweek + 1800))
+                                                                       / 3600 )
+                        if (( indx >= 0 ) and ( indx < 7*24 )):
+                            if ( version > self.ver_fweek[indx] ):
+                                self.fweek[indx] = code
+                                self.ver_fweek[indx] = version
 
     def setBin(self, bin, code):
         if ( bin < len(self.month) ):
@@ -1025,9 +1169,9 @@ class sswpVector:
         # previous month, 30*4 six-hour bins:
         for bin in range(0, 30*4):
             if (( len( self.cnt_month[bin] ) == 1 ) and
-                ( self.cnt_month[bin].values()[0] > 2160 )):
+                ( list(self.cnt_month[bin].values())[0] > 2160 )):
                # only one entry covering more than 10% of the time interval
-               self.month[bin] = self.cnt_month[bin].keys()[0]
+               self.month[bin] = list(self.cnt_month[bin].keys())[0]
                continue
             # count seconds for which we have information:
             tSec = 0
@@ -1178,6 +1322,17 @@ class sswpArray:
         #
         self.array[site][metric].fillCounters(start, end, code)
 
+    def fillWithVersion(self, metric, site, center, code, version):
+        if site not in self.array:
+            self.array[site] = {metric: sswpVector()}
+            self.array[site][metric].addVersions()
+        else:
+            if metric not in self.array[site]:
+                self.array[site][metric] = sswpVector()
+                self.array[site][metric].addVersions()
+        #
+        self.array[site][metric].fillWithVersion(center, code, version)
+
     def getTotalBins(self, metric, site):
         if site not in self.array:
             return sswpVector.getDefaultBins()
@@ -1299,6 +1454,11 @@ class sswpArray:
                 else:
                    self.array[site][metric].resolveCountersDownOkWarnErr(0.80)
                 self.array[site][metric].delCounters()
+
+    def dropVersions(self, metric):
+        for site in self.array.keys():
+            if metric in self.array[site]:
+                self.array[site][metric].delVersions()
 # ########################################################################### #
 
 
@@ -1356,6 +1516,28 @@ glbTopology = None
 glbTickets = None
 glbSites = None
 glbElements = None
+glbFlavours = {'CE': "CE",
+               'GLOBUS': "CE",
+               'gLite-CE': "CE",
+               'ARC-CE': "CE",
+               'CREAM-CE': "CE",
+               'org.opensciencegrid.htcondorce': "CE",
+               'HTCONDOR-CE': "CE",
+               'SE': "SE",
+               'SRM': "SE",
+               'SRMv2': "SE",
+               'SRMv1': "SE",
+               'globus-GRIDFTP': "SE",
+               'GridFtp': "SE",
+               'XRD': "XRD",
+               'XROOTD': "XRD",
+               'XRootD': "XRD",
+               'XRootD.Redirector': "XRD",
+               'XRootD origin server': "XRD",
+               'XRootD component': "XRD",
+               'perfSONAR': "perfSONAR",
+               'net.perfSONAR.Bandwidth': "perfSONAR",
+               'net.perfSONAR.Latency': "perfSONAR"}
 # ########################################################################### #
 
 
@@ -1368,18 +1550,13 @@ def sswp_init():
     global glbTickets
     global glbSites
     global glbElements
-    URL_SSWB_BASE = 'http://cmssst.web.cern.ch/cmssst/siteStatus/'
+    URL_SSWB_BASE = 'http://test-cmssst.web.cern.ch/siteStatus/'
     FILENAME_MSG = './message.txt'
 
     # configure the message logger:
     # =============================
     logging.basicConfig(format='%(threadName)-10s %(message)s',
                         level=logging.INFO)
-
-    # install URL opener that connects with a certificate and key:
-    # ============================================================
-    #url_opnr = urllib2.build_opener( HTTPSClientAuthHandler() )
-    #urllib2.install_opener( url_opnr )
 
     # fill timestamp dictionary:
     # ==========================
@@ -1398,92 +1575,11 @@ def sswp_init():
 
     # initialize global objects:
     # ==========================
-    sswpVector.SetTimestamp( glbInfo['timestamp'] )
+    sswpVector.SetTimestamps( glbInfo['timestamp'] )
     glbTopology = sswpTopology()
     glbTickets = sswpTickets()
     glbSites = sswpArray()
     glbElements = sswpArray()
-
-
-
-def sswp_sitedb():
-    # ############################################################# #
-    # fill global topology object with site information from SiteDB #
-    # ############################################################# #
-    URL_SITEDB_SITES = 'https://cmsweb.cern.ch:8443/sitedb/data/prod/site-names'
-
-    # get list of CMS sites from SiteDB:
-    # ==================================
-    logging.info("Querying SiteDB for site information")
-    urlHandle = None
-    try:
-        request = urllib2.Request(URL_SITEDB_SITES,
-                                  headers={'Accept':'application/json'})
-        urlOpener = urllib2.build_opener( HTTPSClientAuthHandler() )
-        urlHandle = urlOpener.open( request )
-        myData = urlHandle.read()
-        #
-        # update cache:
-        try:
-            myFile = open("%s/cache_SiteDB.json_new" % SSWP_CACHE_DIR, 'w')
-            try:
-                myFile.write(myData)
-                renameFlag = True
-            except:
-                renameFlag = False
-            finally:
-                myFile.close()
-                del myFile
-            if renameFlag:
-                os.rename("%s/cache_SiteDB.json_new" % SSWP_CACHE_DIR,
-                          "%s/cache_SiteDB.json" % SSWP_CACHE_DIR)
-                logging.info("   cache of SiteDB updated")
-            del renameFlag
-        except:
-            pass
-    except:
-        if 'stale' not in glbInfo:
-            glbInfo['stale'] = "No/stale information (SiteDB"
-        else:
-            glbInfo['stale'] += ", SiteDB"
-        logging.warning("   failed to fetch SiteDB data")
-        try:
-            myFile = open("%s/cache_SiteDB.json" % SSWP_CACHE_DIR, 'r')
-            try:
-                myData = myFile.read()
-                logging.info("   using cached SiteDB data")
-            except:
-                logging.error("   failed to access cached SiteDB data")
-                return
-            finally:
-                myFile.close()
-                del myFile
-        except:
-            logging.error("   no SiteDB cache available")
-            return
-    finally:
-        if urlHandle is not None:
-            urlHandle.close()
-    del urlHandle
-    del urlOpener
-    #
-    sitedb = json.loads( myData )
-
-    # find indices with information of interest:
-    columns = sitedb['desc']['columns']
-    typeIndex = columns.index('type')
-    siteIndex = columns.index('alias')
-
-    results = sitedb['result']
-    for result in results:
-        if result[typeIndex] == 'cms':
-            cmssite = result[siteIndex]
-            # filter out fake "*_Disk", "*_Buffer", and "*_MSS" sites
-            if ( cmssite.find('_Disk', 5) > 0 ): continue
-            if ( cmssite.find('_Buffer', 5) > 0 ): continue
-            if ( cmssite.find('_MSS', 5) > 0 ): continue
-            # add CMS site to topology map:
-            glbTopology.addSite(cmssite)
 
 
 
@@ -1496,10 +1592,14 @@ def sswp_vofeed():
     # get list of grid elements and grid sites from the VO-feed:
     # ==========================================================
     logging.info("Querying VO-feed for site information")
-    urlHandle = None
+    urlHndl = None
     try:
-        urlHandle = urllib2.urlopen(URL_VOFEED)
-        myData = urlHandle.read()
+        urlHndl = urllib.request.urlopen(URL_VOFEED)
+        myCharset = urlHndl.headers.get_content_charset()
+        if myCharset is None:
+            myCharset = "utf-8"
+        myData = urlHndl.read().decode( myCharset )
+        del(myCharset)
         #
         # update cache:
         try:
@@ -1540,9 +1640,9 @@ def sswp_vofeed():
             logging.error("   no VO-feed cache available")
             return
     finally:
-        if urlHandle is not None:
-            urlHandle.close()
-    del urlHandle
+        if urlHndl is not None:
+            urlHndl.close()
+    del urlHndl
     #
     # unpack XML data of the VO-feed:
     vofeed = ET.fromstring( myData )
@@ -1586,13 +1686,18 @@ def sswp_ggus():
     # get list of all tickets for VO CMS from GGUS:
     # =============================================
     logging.info("Querying GGUS for Ticket information")
-    urlHandle = None
+    urlOpener = None
+    urlHndl = None
     try:
-        request = urllib2.Request(URL_GGUS_TICKET,
-                                  headers={'Accept':'application/xml'})
-        urlOpener = urllib2.build_opener( HTTPSClientAuthHandler() )
-        urlHandle = urlOpener.open( request )
-        myData = urlHandle.read()
+        request = urllib.request.Request(URL_GGUS_TICKET,
+                                         headers={'Accept':'application/xml'})
+        urlOpener = urllib.request.build_opener( HTTPSClientCertHandler() )
+        urlHndl = urlOpener.open( request )
+        myCharset = urlHndl.headers.get_content_charset()
+        if myCharset is None:
+            myCharset = "utf-8"
+        myData = urlHndl.read().decode( myCharset )
+        del(myCharset)
         #
         # update cache:
         try:
@@ -1633,9 +1738,9 @@ def sswp_ggus():
             logging.error("   no GGUS ticket cache available")
             return
     finally:
-        if urlHandle is not None:
-            urlHandle.close()
-    del urlHandle
+        if urlHndl is not None:
+            urlHndl.close()
+    del urlHndl
     del urlOpener
 
     glbLock.acquire()
@@ -1646,11 +1751,11 @@ def sswp_ggus():
     #
     # loop over ticket elements:
     for ticket in tickets.findall('ticket'):
-        ticketid = ticket.find('request_id').text
-        cmssite = ticket.find('cms_site').text
+        ticketid = ticket.find('Ticket-ID').text
+        cmssite = ticket.find('CMS_Site').text
         if not cmssite:
            continue
-        created  = ticket.findtext('date_of_creation', '')     # time is in UTC
+        created  = ticket.findtext('Creation_Date', '')     # time is in UTC
         ts = time.strptime(created + ' UTC', "%Y-%m-%d %H:%M:%S %Z")
         tis = calendar.timegm(ts)
         #logging.debug("CMS site %s has ticket %s (%d)", cmssite, ticketid, tis)
@@ -1669,10 +1774,14 @@ def sswp_osg_downtime():
     # get list of all CMS impacting downtimes from OSG:
     # =================================================
     logging.info("Querying OSG for downtime information")
-    urlHandle = None
+    urlHndl = None
     try:
-        urlHandle = urllib2.urlopen(URL_OSG_DOWNTIME)
-        myData = urlHandle.read()
+        urlHndl = urllib.request.urlopen(URL_OSG_DOWNTIME)
+        myCharset = urlHndl.headers.get_content_charset()
+        if myCharset is None:
+            myCharset = "utf-8"
+        myData = urlHndl.read().decode( myCharset )
+        del(myCharset)
         #
         # update cache:
         try:
@@ -1713,9 +1822,9 @@ def sswp_osg_downtime():
             logging.error("   no OSG downtime cache available")
             return
     finally:
-        if urlHandle is not None:
-            urlHandle.close()
-    del urlHandle
+        if urlHndl is not None:
+            urlHndl.close()
+    del urlHndl
 
     glbLock.acquire()
 
@@ -1785,10 +1894,16 @@ def sswp_egi_downtime():
     # get list of all downtimes that could impact CMS from EGI:
     # =========================================================
     logging.info("Querying EGI for downtime information")
-    urlHandle = None
+    urlHndl = None
     try:
-        urlHandle = urllib2.urlopen(URL_EGI_DOWNTIME)
-        myData = urlHandle.read()
+        myContext = ssl._create_unverified_context()
+        urlHndl = urllib.request.urlopen(URL_EGI_DOWNTIME, context=myContext)
+        del(myContext)
+        myCharset = urlHndl.headers.get_content_charset()
+        if myCharset is None:
+            myCharset = "utf-8"
+        myData = urlHndl.read().decode( myCharset )
+        del(myCharset)
         #
         # update cache:
         try:
@@ -1829,9 +1944,9 @@ def sswp_egi_downtime():
             logging.error("   no EGI downtime cache available")
             return
     finally:
-        if urlHandle is not None:
-            urlHandle.close()
-    del urlHandle
+        if urlHndl is not None:
+            urlHndl.close()
+    del urlHndl
 
     glbLock.acquire()
 
@@ -1895,7 +2010,7 @@ def sswp_site_downtime():
                     ceTuple += (vector, )
                 elif ( type == "SE" ):
                     seTuple += (vector, )
-                elif ( type == "XRD" ):
+                elif ( type == "XROOTD" ):
                     xrdTuple += (vector, )
         #
         # evaluate site downtime status based on element downtime states:
@@ -1956,12 +2071,16 @@ def sswp_ssb_SiteReadiness():
     # get SiteReadiness data from the SSB dashboard:
     # ==============================================
     logging.info("Querying SSB for SiteReadiness information")
-    urlHandle = None
+    urlHndl = None
     try:
-        request = urllib2.Request(URL_SSB_SITEREADINESS,
-                                  headers={'Accept':'application/json'})
-        urlHandle = urllib2.urlopen( request )
-        myData = urlHandle.read()
+        request = urllib.request.Request(URL_SSB_SITEREADINESS,
+                                         headers={'Accept':'application/json'})
+        urlHndl = urllib.request.urlopen( request )
+        myCharset = urlHndl.headers.get_content_charset()
+        if myCharset is None:
+            myCharset = "utf-8"
+        myData = urlHndl.read().decode( myCharset )
+        del(myCharset)
         #
         # update cache:
         try:
@@ -2005,9 +2124,9 @@ def sswp_ssb_SiteReadiness():
             logging.error("   no SSB SiteReadiness cache available")
             return
     finally:
-        if urlHandle is not None:
-            urlHandle.close()
-    del urlHandle
+        if urlHndl is not None:
+            urlHndl.close()
+    del urlHndl
 
     glbLock.acquire()
 
@@ -2061,12 +2180,16 @@ def sswp_ssb_LifeStatus():
     # get LifeStatus data from the SSB dashboard:
     # ===========================================
     logging.info("Querying SSB for LifeStatus information")
-    urlHandle = None
+    urlHndl = None
     try:
-        request = urllib2.Request(URL_SSB_LIFESTATUS,
-                                  headers={'Accept':'application/json'})
-        urlHandle = urllib2.urlopen( request )
-        myData = urlHandle.read()
+        request = urllib.request.Request(URL_SSB_LIFESTATUS,
+                                         headers={'Accept':'application/json'})
+        urlHndl = urllib.request.urlopen( request )
+        myCharset = urlHndl.headers.get_content_charset()
+        if myCharset is None:
+            myCharset = "utf-8"
+        myData = urlHndl.read().decode( myCharset )
+        del(myCharset)
         #
         # update cache:
         try:
@@ -2109,9 +2232,9 @@ def sswp_ssb_LifeStatus():
             logging.warning("   no SSB LifeStatus cache available")
             return
     finally:
-        if urlHandle is not None:
-            urlHandle.close()
-    del urlHandle
+        if urlHndl is not None:
+            urlHndl.close()
+    del urlHndl
 
     glbLock.acquire()
 
@@ -2152,7 +2275,7 @@ def sswp_ssb_LifeStatus():
 
 
 
-def sswp_site_summary():
+def sswp_old_site_summary():
     # ##################################################################### #
     # evaluate summary vectors based on downtime, SiteReadiness, LifeStatus #
     # ##################################################################### #
@@ -2187,12 +2310,16 @@ def sswp_ssb_manLifeStatus():
     # get manual LifeStatus data from the SSB dashboard:
     # ==================================================
     logging.info("Querying SSB for manual LifeStatus information")
-    urlHandle = None
+    urlHndl = None
     try:
-        request = urllib2.Request(URL_SSB_MANLIFESTATUS,
-                                  headers={'Accept':'application/json'})
-        urlHandle = urllib2.urlopen( request )
-        myData = urlHandle.read()
+        request = urllib.request.Request(URL_SSB_MANLIFESTATUS,
+                                         headers={'Accept':'application/json'})
+        urlHndl = urllib.request.urlopen( request )
+        myCharset = urlHndl.headers.get_content_charset()
+        if myCharset is None:
+            myCharset = "utf-8"
+        myData = urlHndl.read().decode( myCharset )
+        del(myCharset)
         #
         # update cache:
         try:
@@ -2236,9 +2363,9 @@ def sswp_ssb_manLifeStatus():
             logging.error("   no SSB manual LifeStatus cache available")
             return
     finally:
-        if urlHandle is not None:
-            urlHandle.close()
-    del urlHandle
+        if urlHndl is not None:
+            urlHndl.close()
+    del urlHndl
 
     glbLock.acquire()
 
@@ -2284,12 +2411,16 @@ def sswp_ssb_ProdStatus():
     # get ProdStatus data from the SSB dashboard:
     # ===========================================
     logging.info("Querying SSB for ProdStatus information")
-    urlHandle = None
+    urlHndl = None
     try:
-        request = urllib2.Request(URL_SSB_PRODSTATUS,
-                                  headers={'Accept':'application/json'})
-        urlHandle = urllib2.urlopen( request )
-        myData = urlHandle.read()
+        request = urllib.request.Request(URL_SSB_PRODSTATUS,
+                                         headers={'Accept':'application/json'})
+        urlHndl = urllib.request.urlopen( request )
+        myCharset = urlHndl.headers.get_content_charset()
+        if myCharset is None:
+            myCharset = "utf-8"
+        myData = urlHndl.read().decode( myCharset )
+        del(myCharset)
         #
         # update cache:
         try:
@@ -2331,9 +2462,9 @@ def sswp_ssb_ProdStatus():
             logging.error("   no SSB ProdStatus cache available")
             return
     finally:
-        if urlHandle is not None:
-            urlHandle.close()
-    del urlHandle
+        if urlHndl is not None:
+            urlHndl.close()
+    del urlHndl
 
     glbLock.acquire()
 
@@ -2383,12 +2514,16 @@ def sswp_ssb_CrabStatus():
     # get CrabStatus data from the SSB dashboard:
     # ===========================================
     logging.info("Querying SSB for CrabStatus information")
-    urlHandle = None
+    urlHndl = None
     try:
-        request = urllib2.Request(URL_SSB_CRABSTATUS,
-                                  headers={'Accept':'application/json'})
-        urlHandle = urllib2.urlopen( request )
-        myData = urlHandle.read()
+        request = urllib.request.Request(URL_SSB_CRABSTATUS,
+                                         headers={'Accept':'application/json'})
+        urlHndl = urllib.request.urlopen( request )
+        myCharset = urlHndl.headers.get_content_charset()
+        if myCharset is None:
+            myCharset = "utf-8"
+        myData = urlHndl.read().decode( myCharset )
+        del(myCharset)
         #
         # update cache:
         try:
@@ -2430,9 +2565,9 @@ def sswp_ssb_CrabStatus():
             logging.error("   no SSB CrabStatus cache available")
             return
     finally:
-        if urlHandle is not None:
-            urlHandle.close()
-    del urlHandle
+        if urlHndl is not None:
+            urlHndl.close()
+    del urlHndl
 
     glbLock.acquire()
 
@@ -2480,12 +2615,16 @@ def sswp_ssb_manProdStatus():
     # get manual ProdStatus data from the SSB dashboard:
     # ==================================================
     logging.info("Querying SSB for manual ProdStatus information")
-    urlHandle = None
+    urlHndl = None
     try:
-        request = urllib2.Request(URL_SSB_MANPRODSTATUS,
-                                  headers={'Accept':'application/json'})
-        urlHandle = urllib2.urlopen( request )
-        myData = urlHandle.read()
+        request = urllib.request.Request(URL_SSB_MANPRODSTATUS,
+                                         headers={'Accept':'application/json'})
+        urlHndl = urllib.request.urlopen( request )
+        myCharset = urlHndl.headers.get_content_charset()
+        if myCharset is None:
+            myCharset = "utf-8"
+        myData = urlHndl.read().decode( myCharset )
+        del(myCharset)
         #
         # update cache:
         try:
@@ -2529,9 +2668,9 @@ def sswp_ssb_manProdStatus():
             logging.error("   no SSB manual ProdStatus cache available")
             return
     finally:
-        if urlHandle is not None:
-            urlHandle.close()
-    del urlHandle
+        if urlHndl is not None:
+            urlHndl.close()
+    del urlHndl
 
     glbLock.acquire()
 
@@ -2577,12 +2716,16 @@ def sswp_ssb_manCrabStatus():
     # get manual CrabStatus data from the SSB dashboard:
     # ==================================================
     logging.info("Querying SSB for manual CrabStatus information")
-    urlHandle = None
+    urlHndl = None
     try:
-        request = urllib2.Request(URL_SSB_MANCRABSTATUS,
-                                  headers={'Accept':'application/json'})
-        urlHandle = urllib2.urlopen( request )
-        myData = urlHandle.read()
+        request = urllib.request.Request(URL_SSB_MANCRABSTATUS,
+                                         headers={'Accept':'application/json'})
+        urlHndl = urllib.request.urlopen( request )
+        myCharset = urlHndl.headers.get_content_charset()
+        if myCharset is None:
+            myCharset = "utf-8"
+        myData = urlHndl.read().decode( myCharset )
+        del(myCharset)
         #
         # update cache:
         try:
@@ -2626,9 +2769,9 @@ def sswp_ssb_manCrabStatus():
             logging.error("   no SSB manual crabStatus cache available")
             return
     finally:
-        if urlHandle is not None:
-            urlHandle.close()
-    del urlHandle
+        if urlHndl is not None:
+            urlHndl.close()
+    del urlHndl
 
     glbLock.acquire()
 
@@ -2661,9 +2804,9 @@ def sswp_ssb_manCrabStatus():
 
 
 def sswp_wlcg_sam_downtime():
-    # #################################################################### #
-    # get SAM service status information from the WLCG monitorng dashboard #
-    # #################################################################### #
+    # ##################################################################### #
+    # get SAM service status information from the WLCG monitoring dashboard #
+    # ##################################################################### #
     ts1 = time.gmtime( glbInfo['timestamp'] - 39*24*60*60)
     ts2 = time.gmtime( glbInfo['timestamp'] + 8*24*60*60)
     #
@@ -2672,12 +2815,16 @@ def sswp_wlcg_sam_downtime():
     # get SAM downtime information from the WLCG monitorng dashboard:
     # ===============================================================
     logging.info("Querying WLCG for SAM downtime information")
-    urlHandle = None
+    urlHndl = None
     try:
-        request = urllib2.Request(URL_WLCG_SAM_DOWNTIME,
-                                  headers={'Accept':'application/json'})
-        urlHandle = urllib2.urlopen( request )
-        myData = urlHandle.read()
+        request = urllib.request.Request(URL_WLCG_SAM_DOWNTIME,
+                                         headers={'Accept':'application/json'})
+        urlHndl = urllib.request.urlopen( request )
+        myCharset = urlHndl.headers.get_content_charset()
+        if myCharset is None:
+            myCharset = "utf-8"
+        myData = urlHndl.read().decode( myCharset )
+        del(myCharset)
         #
         # update cache:
         try:
@@ -2719,9 +2866,9 @@ def sswp_wlcg_sam_downtime():
             logging.error("   no WLCG SAM downtime cache available")
             return
     finally:
-        if urlHandle is not None:
-            urlHandle.close()
-    del urlHandle
+        if urlHndl is not None:
+            urlHndl.close()
+    del urlHndl
 
     glbLock.acquire()
 
@@ -2839,12 +2986,16 @@ def sswp_wlcg_sam_services():
         # =====================================================================
         logging.info("Querying WLCG for service %s SAM status information",
                      metric['desc'])
-        urlHandle = None
+        urlHndl = None
         try:
-            request = urllib2.Request(URL_WLCG_SAM_SRV,
-                                      headers={'Accept':'application/json'})
-            urlHandle = urllib2.urlopen( request )
-            myData = urlHandle.read()
+            request = urllib.request.Request(URL_WLCG_SAM_SRV,
+                                         headers={'Accept':'application/json'})
+            urlHndl = urllib.request.urlopen( request )
+            myCharset = urlHndl.headers.get_content_charset()
+            if myCharset is None:
+                myCharset = "utf-8"
+            myData = urlHndl.read().decode( myCharset )
+            del(myCharset)
             #
             # update cache:
             try:
@@ -2896,9 +3047,9 @@ def sswp_wlcg_sam_services():
                                "able"), metric['desc'])
                 return
         finally:
-            if urlHandle is not None:
-                urlHandle.close()
-        del urlHandle
+            if urlHndl is not None:
+                urlHndl.close()
+        del urlHndl
 
         glbLock.acquire()
 
@@ -3012,12 +3163,16 @@ def sswp_wlcg_sam_site():
     # get site SAM status information from the WLCG monitorng dashboard:
     # ==================================================================
     logging.info("Querying WLCG for site SAM status information")
-    urlHandle = None
+    urlHndl = None
     try:
-        request = urllib2.Request(URL_WLCG_SAM_SITE,
-                                  headers={'Accept':'application/json'})
-        urlHandle = urllib2.urlopen( request )
-        myData = urlHandle.read()
+        request = urllib.request.Request(URL_WLCG_SAM_SITE,
+                                         headers={'Accept':'application/json'})
+        urlHndl = urllib.request.urlopen( request )
+        myCharset = urlHndl.headers.get_content_charset()
+        if myCharset is None:
+            myCharset = "utf-8"
+        myData = urlHndl.read().decode( myCharset )
+        del(myCharset)
         #
         # update cache:
         try:
@@ -3059,9 +3214,9 @@ def sswp_wlcg_sam_site():
             logging.error("   no WLCG site SAM status cache available")
             return
     finally:
-        if urlHandle is not None:
-            urlHandle.close()
-    del urlHandle
+        if urlHndl is not None:
+            urlHndl.close()
+    del urlHndl
 
     glbLock.acquire()
 
@@ -3170,12 +3325,16 @@ def sswp_ssb_HammerCloud15min():
     # get HammerCloud 15 min data from the SSB dashboard:
     # ===================================================
     logging.info("Querying SSB for HammerCloud 15 min information")
-    urlHandle = None
+    urlHndl = None
     try:
-        request = urllib2.Request(URL_SSB_HAMMERCLOUD15M,
-                                  headers={'Accept':'application/json'})
-        urlHandle = urllib2.urlopen( request )
-        myData = urlHandle.read()
+        request = urllib.request.Request(URL_SSB_HAMMERCLOUD15M,
+                                         headers={'Accept':'application/json'})
+        urlHndl = urllib.request.urlopen( request )
+        myCharset = urlHndl.headers.get_content_charset()
+        if myCharset is None:
+            myCharset = "utf-8"
+        myData = urlHndl.read().decode( myCharset )
+        del myCharset
         #
         # update cache:
         try:
@@ -3197,13 +3356,13 @@ def sswp_ssb_HammerCloud15min():
             del renameFlag
         except:
             pass
-    except BaseException as e:
+    except BaseException as err:
         if 'stale' not in glbInfo:
             glbInfo['stale'] = "No/stale information (SSB HammerCloud 15 min"
         else:
             glbInfo['stale'] += ", SSB HammerCloud 15 min"
-        logging.warning("   failed to fetch SSB HammerCloud 15 min data: %s" %
-                        str(e))
+        logging.warning("   failed to fetch SSB HammerCloud 15 min data")
+        logging.exception(err)
         try:
             myFile = open("%s/cache_ssbHammerCloud15m.json" % SSWP_CACHE_DIR,
                           'r')
@@ -3221,9 +3380,9 @@ def sswp_ssb_HammerCloud15min():
             logging.error("   no SSB HammerCloud 15 min cache available")
             return
     finally:
-        if urlHandle is not None:
-            urlHandle.close()
-    del urlHandle
+        if urlHndl is not None:
+            urlHndl.close()
+    del urlHndl
 
     glbLock.acquire()
 
@@ -3315,6 +3474,1085 @@ def sswp_ssb_HammerCloud15min():
 
 
 
+def ssdw_monit_SAM_HC_FTS_SR():
+    # ############################################################## #
+    # get SAM,HC,FTS,SR data from MonIT/HDFS and fill metric vectors #
+    # ############################################################## #
+    HDFS_PREFIX = "/project/monitoring/archive/cmssst/raw/ssbmetric"
+    #
+    tis_start = sswpVector.GetTimestamps()
+    #
+    oneDay = 86400
+    now = int( time.time() )
+    sixDaysAgo = calendar.timegm( time.gmtime(now - (6 * oneDay)) )
+    startLclTmpArea = calendar.timegm( time.localtime( sixDaysAgo ) )
+    #
+    midnight = ( int( now / 86400 ) * 86400 )
+    limitLclTmpArea = calendar.timegm( time.localtime( midnight + 86399 ) )
+
+
+    # prepare HDFS subdirectory list:
+    # ===============================
+    logging.info("Retrieving SAM,HC,FTS,SR docs from MonIT HDFS")
+    #
+    dirList = set()
+    # 1 day directories of metrics that go into SiteReadiness:
+    for dirDay in range(tis_start['month'], tis_start['fweek'], oneDay):
+        dirList.add( time.strftime("/sam1day/%Y/%m/%d", time.gmtime(dirDay)) )
+        dirList.add( time.strftime("/hc1day/%Y/%m/%d", time.gmtime(dirDay)) )
+        dirList.add( time.strftime("/fts1day/%Y/%m/%d", time.gmtime(dirDay)) )
+        dirList.add( time.strftime("/sr1day/%Y/%m/%d", time.gmtime(dirDay)) )
+    for dirDay in range(startLclTmpArea, limitLclTmpArea, oneDay):
+        dirList.add( time.strftime("/sam1day/%Y/%m/%d.tmp",
+                                                         time.gmtime(dirDay)) )
+        dirList.add( time.strftime("/hc1day/%Y/%m/%d.tmp",
+                                                         time.gmtime(dirDay)) )
+        dirList.add( time.strftime("/fts1day/%Y/%m/%d.tmp",
+                                                         time.gmtime(dirDay)) )
+        dirList.add( time.strftime("/sr1day/%Y/%m/%d.tmp",
+                                                         time.gmtime(dirDay)) )
+    # 6 hour bin directories of previous month:
+    for dirDay in range(tis_start['month'], tis_start['pweek'], oneDay):
+        dirList.add( time.strftime("/sam6hour/%Y/%m/%d",
+                                                       time.gmtime( dirDay )) )
+        dirList.add( time.strftime("/hc6hour/%Y/%m/%d",
+                                                       time.gmtime( dirDay )) )
+        dirList.add( time.strftime("/fts6hour/%Y/%m/%d",
+                                                       time.gmtime( dirDay )) )
+        dirList.add( time.strftime("/sr6hour/%Y/%m/%d",
+                                                       time.gmtime( dirDay )) )
+    for dirDay in range(startLclTmpArea, limitLclTmpArea, oneDay):
+        dirList.add( time.strftime("/sam6hour/%Y/%m/%d.tmp",
+                                                       time.gmtime( dirDay )) )
+        dirList.add( time.strftime("/hc6hour/%Y/%m/%d.tmp",
+                                                       time.gmtime( dirDay )) )
+        dirList.add( time.strftime("/fts6hour/%Y/%m/%d.tmp",
+                                                       time.gmtime( dirDay )) )
+        dirList.add( time.strftime("/sr6hour/%Y/%m/%d.tmp",
+                                                       time.gmtime( dirDay )) )
+    #
+    # 1 hour bin directories of previous week:
+    for dirDay in range(tis_start['pweek'], tis_start['yrday'], oneDay):
+        dirList.add( time.strftime("/sam1hour/%Y/%m/%d",
+                                                       time.gmtime( dirDay )) )
+        dirList.add( time.strftime("/hc1hour/%Y/%m/%d",
+                                                       time.gmtime( dirDay )) )
+        dirList.add( time.strftime("/fts1hour/%Y/%m/%d",
+                                                       time.gmtime( dirDay )) )
+        dirList.add( time.strftime("/sr1hour/%Y/%m/%d",
+                                                       time.gmtime( dirDay )) )
+    for dirDay in range(startLclTmpArea, limitLclTmpArea, oneDay):
+        dirList.add( time.strftime("/sam1hour/%Y/%m/%d.tmp",
+                                                       time.gmtime( dirDay )) )
+        dirList.add( time.strftime("/hc1hour/%Y/%m/%d.tmp",
+                                                       time.gmtime( dirDay )) )
+        dirList.add( time.strftime("/fts1hour/%Y/%m/%d.tmp",
+                                                       time.gmtime( dirDay )) )
+        dirList.add( time.strftime("/sr1hour/%Y/%m/%d.tmp",
+                                                       time.gmtime( dirDay )) )
+    #
+    # 15 min bin directory of yesterday and today:
+    dirList.add( time.strftime("/sam15min/%Y/%m/%d",
+                                           time.gmtime( tis_start['yrday'] )) )
+    dirList.add( time.strftime("/sam15min/%Y/%m/%d",
+                                           time.gmtime( tis_start['today'] )) )
+    dirList.add( time.strftime("/hc15min/%Y/%m/%d",
+                                           time.gmtime( tis_start['yrday'] )) )
+    dirList.add( time.strftime("/hc15min/%Y/%m/%d",
+                                           time.gmtime( tis_start['today'] )) )
+    dirList.add( time.strftime("/fts15min/%Y/%m/%d",
+                                           time.gmtime( tis_start['yrday'] )) )
+    dirList.add( time.strftime("/fts15min/%Y/%m/%d",
+                                           time.gmtime( tis_start['today'] )) )
+    dirList.add( time.strftime("/sr15min/%Y/%m/%d",
+                                           time.gmtime( tis_start['yrday'] )) )
+    dirList.add( time.strftime("/sr15min/%Y/%m/%d",
+                                           time.gmtime( tis_start['today'] )) )
+    for dirDay in range(startLclTmpArea, limitLclTmpArea, oneDay):
+        dirList.add( time.strftime("/sam15min/%Y/%m/%d.tmp",
+                                                       time.gmtime( dirDay )) )
+        dirList.add( time.strftime("/hc15min/%Y/%m/%d.tmp",
+                                                       time.gmtime( dirDay )) )
+        dirList.add( time.strftime("/fts15min/%Y/%m/%d.tmp",
+                                                       time.gmtime( dirDay )) )
+        dirList.add( time.strftime("/sr15min/%Y/%m/%d.tmp",
+                                                       time.gmtime( dirDay )) )
+    #
+    dirList = sorted( dirList )
+
+
+    jsonList = []
+    updateCache = True
+    try:
+        with pydoop.hdfs.hdfs() as myHDFS:
+            for subDir in dirList:
+                logging.debug("   checking HDFS subdirectory %s" % subDir)
+                if not myHDFS.exists( HDFS_PREFIX + subDir ):
+                    continue
+                # get list of files in directory:
+                myList = myHDFS.list_directory( HDFS_PREFIX + subDir )
+                fileNames = [ d['name'] for d in myList
+                          if (( d['kind'] == "file" ) and ( d['size'] != 0 )) ]
+                del myList
+                for fileName in fileNames:
+                    logging.debug("   reading file %s" %
+                                  os.path.basename(fileName))
+                    fileHndl = fileObj = None
+                    try:
+                        if ( os.path.splitext(fileName)[-1] == ".gz" ):
+                            fileHndl = myHDFS.open_file(fileName)
+                            fileObj = gzip.GzipFile(fileobj=fileHndl)
+                        else:
+                            fileObj = myHDFS.open_file(fileName)
+                        # read documents and add relevant records to list:
+                        for myLine in fileObj:
+                            myJson = json.loads(myLine.decode('utf-8'))
+                            try:
+                                metric = myJson['metadata']['path']
+                                if ( metric[-4:] == "1day" ):
+                                    if (( metric[:3] == "sam" ) and
+                                        ( myJson['data']['type'] == "site" )):
+                                        label = "SAM1day"
+                                        site = myJson['data']['name']
+                                    elif ( metric[:2] == "hc" ):
+                                        label = "HC1day"
+                                        site = myJson['data']['site']
+                                    elif (( metric[:3] == "fts" ) and
+                                          ( myJson['data']['type'] == "site" )):
+                                        label = "FTS1day"
+                                        site = myJson['data']['name']
+                                    elif ( metric[:2] == "sr" ):
+                                        label = "SR1day"
+                                        site = myJson['data']['name']
+                                    else:
+                                        continue
+                                    period = "1day"
+                                elif ( metric[:3] == "sam" ):
+                                    if ( myJson['data']['type'] == "site" ):
+                                        label = "SAMsite"
+                                        site = myJson['data']['name']
+                                    else:
+                                        label = "SAMservice"
+                                        host = myJson['data']['name']
+                                        flavour = glbTopology.verifyType(host,
+                                                        myJson['data']['type'])
+                                        if flavour is None:
+                                            continue
+                                        site = host + "/" + flavour
+                                    period = metric[3:]
+                                elif ( metric[:2] == "hc" ):
+                                    label = "HammerCloud"
+                                    site = myJson['data']['site']
+                                    period = metric[2:]
+                                elif ( metric[:3] == "fts" ):
+                                    if ( myJson['data']['type'] == "site" ):
+                                        label = "FTSsite"
+                                        site = myJson['data']['name']
+                                    elif ( myJson['data']['type'] == "source" ):
+                                        label = "FTSsource"
+                                        site = myJson['data']['name'] + "/SRM"
+                                    elif ( myJson['data']['type'] ==
+                                                               "destination" ):
+                                        label = "FTSdestination"
+                                        site = myJson['data']['name'] + "/SRM"
+                                    else:
+                                        continue
+                                    period = metric[3:]
+                                elif ( metric[:2] == "sr" ):
+                                    label = "SiteReadiness"
+                                    site = myJson['data']['name']
+                                    period = metric[2:]
+                                else:
+                                    continue
+                                tis = int( myJson['metadata']['timestamp']
+                                                                       / 1000 )
+                                # need center of time-bin for filling:
+                                if ( period == "1day" ):
+                                    tis = int( tis / 86400 )
+                                elif ( period == "6hour" ):
+                                    tis = (int( tis / 21600 ) * 21600 ) + 10800
+                                    if ( sswpVector.FallsIntoBins(period, tis)
+                                                                    == False ):
+                                        continue
+                                elif ( period == "1hour" ):
+                                    tis = (int( tis / 3600 ) * 3600 ) + 1800
+                                    if ( sswpVector.FallsIntoBins(period, tis)
+                                                                    == False ):
+                                        continue
+                                elif ( period == "15min" ):
+                                    tis = (int( tis / 900 ) * 900 ) + 450
+                                    if ( sswpVector.FallsIntoBins(period, tis)
+                                                                    == False ):
+                                        continue
+                                if ( myJson['data']['status'] == "ok" ):
+                                    code = "o"
+                                elif ( myJson['data']['status'] == "warning" ):
+                                    code = "w"
+                                elif ( myJson['data']['status'] == "error" ):
+                                    code = "e"
+                                elif ( myJson['data']['status'] == "downtime" ):
+                                    code = "d"
+                                else:
+                                    code = "u"
+                                version = myJson['metadata']['kafka_timestamp']
+                                jsonList.append( {'l': label,
+                                                  't': tis,
+                                                  's': site,
+                                                  'c': code,
+                                                  'v': version } )
+                            except KeyError:
+                                    continue
+                    except json.decoder.JSONDecodeError as excptn:
+                        logging.error("JSON decoding failure, file %s: %s"
+                                                     % (fileName, str(excptn)))
+                    except FileNotFoundError as excptn:
+                        logging.error("HDFS file not found, %s: %s" %
+                                                       (fileName, str(excptn)))
+                    except IOError as err:
+                        logging.error("IOError accessing HDFS file %s: %s"
+                                                     % (fileName, str(excptn)))
+                    finally:
+                        if fileObj is not None:
+                            fileObj.close()
+                        if fileHndl is not None:
+                            fileHndl.close()
+    except Exception as excptn:
+        logging.error("Failed to fetch SAM,HC,FTS,SR docs from MonIT HDFS: %s"
+                      % str(excptn))
+        updateCache = False
+
+
+    if updateCache:
+        try:
+            myFile = open("%s/monit_samhcftssr.json_new" % SSWP_CACHE_DIR, "w")
+            try:
+                for myJson in jsonList:
+                    json.dump(myJson, myFile, separators=(",", ":"), indent=None)
+                    myFile.write("\n")
+                renameFlag = True
+            except:
+                logging.warning("   failed to write MonIT SAM,HC,FTS,SR cache")
+                renameFlag = False
+            finally:
+                myFile.close()
+
+            if renameFlag:
+                os.rename("%s/monit_samhcftssr.json_new" % SSWP_CACHE_DIR,
+                          "%s/monit_samhcftssr.json" % SSWP_CACHE_DIR)
+                logging.info("   cache of MonIT SAM,HC,FTS,SR updated")
+            del renameFlag
+        except:
+            logging.warning("   failed to update MonIT SAM,HC,FTS,SR cache")
+    else:
+        if 'stale' not in glbInfo:
+            glbInfo['stale'] = "No/stale information (MonIT SAM,HC,FTS,SR"
+        else:
+            glbInfo['stale'] += ", MonIT SAM,HC,FTS,SR"
+        try:
+            with open("%s/monit_samhcftssr.json" % SSWP_CACHE_DIR, "r") as myFile:
+                for myLine in myFile:
+                    myJson = json.loads(myLine.decode('utf-8'))
+                    if ( myJson['l'][-4:] == "1day" ):
+                        jsonList.append( myJson )
+                    elif sswpVector.FallsIntoBins(myJson['p'],  myJson['t']):
+                        jsonList.append( myJson )
+        except:
+            logging.warning("   failed to access MonIT SAM,HC,FTS,SR cache")
+    del updateCache
+
+
+    glbLock.acquire()
+
+    for myJson in jsonList:
+        if ( myJson['l'][-4:] == "1day" ):
+            start = myJson['t'] * 86400
+            end = start + 86399
+            glbSites.fill(myJson['l'], myJson['s'], start, end, myJson['c'] )
+        else:
+            if "/" in myJson['s']:
+                glbElements.fillWithVersion(myJson['l'], myJson['s'],
+                                         myJson['t'], myJson['c'], myJson['v'])
+            else:
+                glbSites.fillWithVersion(myJson['l'], myJson['s'], myJson['t'],
+                                                      myJson['c'], myJson['v'])
+    glbSites.dropVersions("SAMsite")
+    glbElements.dropVersions("SAMservice")
+    glbSites.dropVersions("HammerCloud")
+    glbSites.dropVersions("FTSsite")
+    glbElements.dropVersions("FTSsource")
+    glbElements.dropVersions("FTSdestination")
+    glbSites.dropVersions("SiteReadiness")
+
+    glbLock.release()
+    del jsonList
+    #
+    return
+
+
+
+def ssdw_monit_down_STS():
+    # ################################################################### #
+    # get down15min,sts15min data from MonIT/HDFS and fill metric vectors #
+    # ################################################################### #
+    HDFS_PREFIX = "/project/monitoring/archive/cmssst/raw/ssbmetric"
+    #
+    oneDay = 86400
+    tis_start = sswpVector.GetTimestamps()
+    timeFrst = tis_start['month'] - oneDay
+    timeLast = tis_start['fweek'] - 1
+    #
+    now = int( time.time() )
+    sixDaysAgo = calendar.timegm( time.gmtime(now - (6 * oneDay)) )
+    startLclTmpArea = calendar.timegm( time.localtime( sixDaysAgo ) )
+    #
+    midnight = ( int( now / 86400 ) * 86400 )
+    limitLclTmpArea = calendar.timegm( time.localtime( midnight + 86399 ) )
+
+
+    # prepare HDFS subdirectory list:
+    # ===============================
+    logging.info("Retrieving down,sts15min docs from MonIT HDFS")
+    #
+    dirList = set()
+    #
+    for dirDay in range(timeFrst, timeLast + 1, oneDay):
+        dirList.add( time.strftime("/down15min/%Y/%m/%d",
+                                                       time.gmtime( dirDay )) )
+    for dirDay in range(startLclTmpArea, limitLclTmpArea, oneDay):
+        dirList.add( time.strftime("/down15min/%Y/%m/%d.tmp",
+                                                       time.gmtime( dirDay )) )
+    #
+    for dirDay in range(timeFrst, timeLast + 1, oneDay):
+        dirList.add( time.strftime("/sts15min/%Y/%m/%d",
+                                                       time.gmtime( dirDay )) )
+    for dirDay in range(startLclTmpArea, limitLclTmpArea, oneDay):
+        dirList.add( time.strftime("/sts15min/%Y/%m/%d.tmp",
+                                                       time.gmtime( dirDay )) )
+    #
+    dirList = sorted( dirList )
+
+
+    jsonList = []
+    tmpDict = {}
+    updateCache = True
+    try:
+        with pydoop.hdfs.hdfs() as myHDFS:
+            for subDir in dirList:
+                logging.debug("   checking HDFS subdirectory %s" % subDir)
+                if not myHDFS.exists( HDFS_PREFIX + subDir ):
+                    continue
+                # get list of files in directory:
+                myList = myHDFS.list_directory( HDFS_PREFIX + subDir )
+                fileNames = [ d['name'] for d in myList
+                          if (( d['kind'] == "file" ) and ( d['size'] != 0 )) ]
+                del myList
+                for fileName in fileNames:
+                    logging.debug("   reading file %s" %
+                                  os.path.basename(fileName))
+                    fileHndl = fileObj = None
+                    try:
+                        if ( os.path.splitext(fileName)[-1] == ".gz" ):
+                            fileHndl = myHDFS.open_file(fileName)
+                            fileObj = gzip.GzipFile(fileobj=fileHndl)
+                        else:
+                            fileObj = myHDFS.open_file(fileName)
+                        # read documents and add relevant records to list:
+                        for myLine in fileObj:
+                            myJson = json.loads(myLine.decode('utf-8'))
+                            try:
+                                tis = int( myJson['metadata']['timestamp']
+                                                                       / 1000 )
+                                if (( tis < timeFrst ) or ( tis > timeLast )):
+                                    continue
+                                metric = myJson['metadata']['path']
+                                if ( metric == "down15min" ):
+                                    name = myJson['data']['name']
+                                    clss = myJson['data']['type']
+                                    # convert duration back to integer:
+                                    strt = int( myJson['data']['duration'][0] )
+                                    end  = int( myJson['data']['duration'][1] )
+                                    eKey = (name, clss, strt, end)
+                                    #
+                                    status = myJson['data']['status']
+                                    if ( status == "ok" ):
+                                        code = "o"
+                                    elif ( status == "downtime" ):
+                                        code = "d"
+                                    elif ( status == "partial" ):
+                                        code = "p"
+                                    elif ( status == "adhoc" ):
+                                        code = "a"
+                                    elif ( status == "atrisk" ):
+                                        code = "r"
+                                    else:
+                                        continue
+                                    vrsn = myJson['metadata']['kafka_timestamp']
+                                    value = ( vrsn, code, strt, end )
+                                elif ( metric == "sts15min" ):
+                                    eKey = (myJson['data']['name'], "site")
+                                    status = myJson['data']['status']
+                                    if ( status == "enabled" ):
+                                        life = "o"
+                                    elif ( status == "waiting_room" ):
+                                        life = "W"
+                                    elif ( status == "morgue" ):
+                                        life = "M"
+                                    else:
+                                        life = "u"
+                                    status = myJson['data']['prod_status']
+                                    if ( status == "enabled" ):
+                                        prod = "o"
+                                    elif (( status == "drain" ) or
+                                          ( status == "test" )):
+                                        prod = "w"
+                                    elif ( status == "disabled" ):
+                                        prod = "e"
+                                    else:
+                                        prod = "u"
+                                    status = myJson['data']['crab_status']
+                                    if ( status == "enabled" ):
+                                        crab = "o"
+                                    elif ( status == "disabled" ):
+                                        crab = "e"
+                                    else:
+                                        crab = "u"
+                                    if "manual_life" not in myJson['data']:
+                                        myJson['data']['manual_life'] = None
+                                    if myJson['data']['manual_life'] is None:
+                                        mLife = "u"
+                                    else:
+                                        status = myJson['data']['manual_life']
+                                        if ( status == "enabled" ):
+                                            mLife = "o"
+                                        elif ( status == "waiting_room" ):
+                                            mLife = "W"
+                                        elif ( status == "morgue" ):
+                                            mLife = "M"
+                                        else:
+                                            mLife = "u"
+                                    if "manual_prod" not in myJson['data']:
+                                        myJson['data']['manual_prod'] = None
+                                    if myJson['data']['manual_prod'] is None:
+                                        mProd = "u"
+                                    else:
+                                        status = myJson['data']['manual_prod']
+                                        if ( status == "enabled" ):
+                                            mProd = "o"
+                                        elif (( status == "drain" ) or
+                                              ( status == "test" )):
+                                            mProd = "w"
+                                        elif ( status == "disabled" ):
+                                            mProd = "e"
+                                        else:
+                                            mProd = "u"
+                                    if "manual_crab" not in myJson['data']:
+                                        myJson['data']['manual_crab'] = None
+                                    if myJson['data']['manual_crab'] is None:
+                                        mCrab = "u"
+                                    else:
+                                        status = myJson['data']['manual_crab']
+                                        if ( status == "enabled" ):
+                                            mCrab = "o"
+                                        elif ( status == "disabled" ):
+                                            mCrab = "e"
+                                        else:
+                                            mCrab = "u"
+                                    vrsn = myJson['metadata']['kafka_timestamp']
+                                    value = ( vrsn, life, prod, crab,
+                                                    mLife, mProd, mCrab )
+                                else:
+                                    continue
+                                tbin = int( tis / 900 )
+                                #
+                                mKey = (metric, tbin)
+                                #
+                                if mKey not in tmpDict:
+                                    tmpDict[mKey] = {}
+                                if eKey in tmpDict[mKey]:
+                                    if ( vrsn <= tmpDict[mKey][eKey][0] ):
+                                        continue
+                                tmpDict[mKey][eKey] = value
+                            except KeyError:
+                                    continue
+                    except json.decoder.JSONDecodeError as excptn:
+                        logging.error("JSON decoding failure, file %s: %s"
+                                                     % (fileName, str(excptn)))
+                    except FileNotFoundError as excptn:
+                        logging.error("HDFS file not found, %s: %s" %
+                                                       (fileName, str(excptn)))
+                    except IOError as err:
+                        logging.error("IOError accessing HDFS file %s: %s"
+                                                     % (fileName, str(excptn)))
+                    finally:
+                        if fileObj is not None:
+                            fileObj.close()
+                        if fileHndl is not None:
+                            fileHndl.close()
+    except Exception as excptn:
+        logging.error("Failed to fetch down,sts15min docs from MonIT HDFS: %s"
+                      % str(excptn))
+        updateCache = False
+
+
+    if updateCache:
+        try:
+            myFile = open("%s/monit_downsts15m.json_new" % SSWP_CACHE_DIR, "w")
+            try:
+                for mtrcKey in tmpDict:
+                    for evalKey in tmpDict[mtrcKey]:
+                        myJson = {'m': mtrcKey,
+                                  'e': evalKey,
+                                  'v': tmpDict[mtrcKey][evalKey] }
+                        json.dump(myJson, myFile, separators=(",", ":"),
+                                                                   indent=None)
+                        myFile.write("\n")
+                renameFlag = True
+            except:
+                logging.warning("   failed to write MonIT down,sts15min cache")
+                renameFlag = False
+            finally:
+                myFile.close()
+
+            if renameFlag:
+                os.rename("%s/monit_downsts15m.json_new" % SSWP_CACHE_DIR,
+                          "%s/monit_downsts15m.json" % SSWP_CACHE_DIR)
+                logging.info("   cache of MonIT down,sts15min updated")
+            del renameFlag
+        except:
+            logging.warning("   failed to update MonIT down,sts15min cache")
+    else:
+        if 'stale' not in glbInfo:
+            glbInfo['stale'] = "No/stale information (MonIT down,sts15min"
+        else:
+            glbInfo['stale'] += ", MonIT down,sts15min"
+        try:
+            with open("%s/monit_downsts15m.json" % SSWP_CACHE_DIR, "r") as myFile:
+                for myLine in myFile:
+                    myJson = json.loads(myLine.decode('utf-8'))
+                    try:
+                        tis = ( myJson['t'] * 900 ) + 450
+                        if (( tis < timeFrst ) or ( tis > timeLast )):
+                            continue
+                        mKey = tuple( myJson['m'] )
+                        eKey = tuple( myJson['e'] )
+                        #
+                        if mKey not in tmpDict:
+                            tmpDict[mKey] = {}
+                        if eKey in tmpDict[mKey]:
+                            if ( myJson['v'][0] <= tmpDict[mKey][eKey][0] ):
+                                continue
+                        tmpDict[mKey][eKey] = tuple( myJson['v'] )
+                    except KeyError:
+                        continue
+        except:
+            logging.warning("   failed to access MonIT down,sts15min cache")
+    del updateCache
+
+
+    glbLock.acquire()
+
+    # need first time-bin before previous month:
+    myList = sorted( [ m[1] for m in tmpDict.keys()
+                       if ( m[0] == "down15min" ) ], reverse=True )
+    keepFlag = True
+    for tbin in myList:
+        if ( keepFlag ):
+            if ( (tbin * 900) <= tis_start['month'] ):
+                keepFlag = False
+        else:
+            del tmpDict[("down15min", tbin)]
+    #
+    downDict = {}
+    endBIN = tis_start['final']
+    for mtrcKey in sorted( [ m for m in tmpDict.keys()
+                             if ( m[0] == "down15min" ) ], reverse=True ):
+        # documents in a metric time-bin are uploaded together but are
+        # imported with a couple seconds time jitter, allow 90 seconds
+        vrsn_thrshld = 0
+        # find highest version number:
+        for evalKey in tmpDict[mtrcKey]:
+            if ( tmpDict[mtrcKey][evalKey][0] > vrsn_thrshld ):
+                vrsn_thrshld = tmpDict[mtrcKey][evalKey][0]
+        vrsn_thrshld -= 90000
+        #
+        startBIN = mtrcKey[1] * 900
+        for evalKey in tmpDict[mtrcKey]:
+            # filter out docs not from the last upload (cancelled downtimes)
+            if ( tmpDict[mtrcKey][evalKey][0] < vrsn_thrshld ):
+                continue
+            # filter out downtime overrides via "ok" state:
+            if ( tmpDict[mtrcKey][evalKey][1] == "o" ):
+                continue
+            startTIS = max( startBIN, tmpDict[mtrcKey][evalKey][2] )
+            endTIS   = min( endBIN,   tmpDict[mtrcKey][evalKey][3] )
+            if ( endTIS <= startTIS ):
+                continue
+            name = evalKey[0]
+            clss = evalKey[1]
+            if ( clss != "site" ):
+                name = name.lower()
+                flavour = glbTopology.verifyType(name, clss)
+                if flavour is None:
+                    continue
+                name = name + "/" + flavour
+            if name not in downDict:
+                downDict[name] = (30+7+1+1+7)*24*4*['u']
+            sIndx = max(0, int( (startTIS - tis_start['month']) / 900 ))
+            eIndx = min(4416, int( (endTIS - tis_start['month'] + 900) / 900 ))
+            for indx in range(sIndx, eIndx):
+                downDict[name][indx] = tmpDict[mtrcKey][evalKey][1]
+        endBIN = startBIN
+    #
+    for name in downDict:
+        for bin in range( sswpVector.getDefaultBins() ):
+            startTIS, endTIS = sswpVector.Bin2times(bin)
+            counters = [0, 0, 0, 0, 0]
+            for bTIS in range(startTIS, endTIS, 900):
+                indx = int( (bTIS - tis_start['month']) / 900)
+                code = downDict[name][indx]
+                if ( code == "d" ):
+                   counters[1] += 1
+                elif ( code == "p" ):
+                   counters[2] += 1
+                elif ( code == "a" ):
+                   counters[3] += 1
+                elif ( code == "r" ):
+                   counters[4] += 1
+                else:
+                   counters[0] += 1
+            mx = max(counters)
+            if ( counters[1] == mx ):
+               code = "d"
+            elif ( counters[2] == mx ):
+               code = "p"
+            elif ( counters[3] == mx ):
+               code = "a"
+            elif ( counters[4] == mx ):
+               code = "r"
+            else:
+               code = "u"
+            if "/" in name:
+                glbElements.setBin("Downtime", name, bin, code)
+            else:
+                glbSites.setBin("Downtime", name, bin, code)
+    del downDict
+
+
+    myList = sorted( [ m[1] for m in tmpDict.keys()
+                       if ( m[0] == "sts15min" ) ], reverse=True )
+    keepFlag = True
+    for tbin in myList:
+        if ( keepFlag ):
+            if ( (tbin * 900) <= tis_start['month'] ):
+                keepFlag = False
+        else:
+            del tmpDict[("sts15min", tbin)]
+    #
+    lifeDict = {}
+    prodDict = {}
+    crabDict = {}
+    manLifeDict = {}
+    manProdDict = {}
+    manCrabDict = {}
+    endTIS = tis_start['fweek']
+    for mtrcKey in sorted( [ m for m in tmpDict.keys()
+                             if ( m[0] == "sts15min" ) ], reverse=True ):
+        startTIS = mtrcKey[1] * 900
+        for evalKey in tmpDict[mtrcKey]:
+            name = evalKey[0]
+            if name not in lifeDict:
+                lifeDict[name] = (30+7+1+1+7)*24*4*['u']
+                prodDict[name] = (30+7+1+1+7)*24*4*['u']
+                crabDict[name] = (30+7+1+1+7)*24*4*['u']
+                manLifeDict[name] = (30+7+1+1+7)*24*4*['u']
+                manProdDict[name] = (30+7+1+1+7)*24*4*['u']
+                manCrabDict[name] = (30+7+1+1+7)*24*4*['u']
+            sIndx = max(0, int( (startTIS - tis_start['month']) / 900 ))
+            eIndx = min(4416, int( (endTIS - tis_start['month'] + 900) / 900 ))
+            for indx in range(sIndx, eIndx):
+                lifeDict[name][indx] = tmpDict[mtrcKey][evalKey][1]
+                prodDict[name][indx] = tmpDict[mtrcKey][evalKey][2]
+                crabDict[name][indx] = tmpDict[mtrcKey][evalKey][3]
+                manLifeDict[name][indx] = tmpDict[mtrcKey][evalKey][4]
+                manProdDict[name][indx] = tmpDict[mtrcKey][evalKey][5]
+                manCrabDict[name][indx] = tmpDict[mtrcKey][evalKey][6]
+        endTIS = startTIS
+    #
+    for name in lifeDict:
+        for bin in range( sswpVector.getDefaultBins() ):
+            startTIS, endTIS = sswpVector.Bin2times(bin)
+            life_cnt = [0, 0, 0, 0]
+            prod_cnt = [0, 0, 0, 0]
+            crab_cnt = [0, 0, 0, 0]
+            manLife_cnt = [0, 0, 0]
+            manProd_cnt = [0, 0, 0]
+            manCrab_cnt = [0, 0, 0]
+            for bTIS in range(startTIS, endTIS, 900):
+                indx = int( (bTIS - tis_start['month']) / 900)
+                code = lifeDict[name][indx]
+                if ( code == "o" ):
+                   life_cnt[1] += 1
+                elif ( code == "W" ):
+                   life_cnt[2] += 1
+                elif ( code == "M" ):
+                   life_cnt[3] += 1
+                else:
+                   life_cnt[0] += 1
+                #
+                code = prodDict[name][indx]
+                if ( code == "o" ):
+                   prod_cnt[1] += 1
+                elif ( code == "w" ):
+                   prod_cnt[2] += 1
+                elif ( code == "e" ):
+                   prod_cnt[3] += 1
+                else:
+                   prod_cnt[0] += 1
+                #
+                code = crabDict[name][indx]
+                if ( code == "o" ):
+                   crab_cnt[1] += 1
+                elif ( code == "w" ):
+                   crab_cnt[2] += 1
+                elif ( code == "e" ):
+                   crab_cnt[3] += 1
+                else:
+                   crab_cnt[0] += 1
+                #
+                code = manLifeDict[name][indx]
+                if ( code == "o" ):
+                   manLife_cnt[0] += 1
+                elif ( code == "W" ):
+                   manLife_cnt[1] += 1
+                elif ( code == "M" ):
+                   manLife_cnt[2] += 1
+                #
+                code = manProdDict[name][indx]
+                if ( code == "o" ):
+                   manProd_cnt[0] += 1
+                elif ( code == "w" ):
+                   manProd_cnt[1] += 1
+                elif ( code == "e" ):
+                   manProd_cnt[2] += 1
+                #
+                code = manCrabDict[name][indx]
+                if ( code == "o" ):
+                   manCrab_cnt[0] += 1
+                elif ( code == "w" ):
+                   manCrab_cnt[1] += 1
+                elif ( code == "e" ):
+                   manCrab_cnt[2] += 1
+            mx = max(life_cnt)
+            if ( life_cnt[3] == mx ):
+               code = "M"
+            elif ( life_cnt[2] == mx ):
+               code = "W"
+            elif ( life_cnt[1] == mx ):
+               code = "o"
+            else:
+               code = "u"
+            glbSites.setBin("LifeStatus", name, bin, code)
+            #
+            mx = max(prod_cnt)
+            if ( prod_cnt[3] == mx ):
+               code = "e"
+            elif ( prod_cnt[2] == mx ):
+               code = "w"
+            elif ( prod_cnt[1] == mx ):
+               code = "o"
+            else:
+               code = "u"
+            glbSites.setBin("ProdStatus", name, bin, code)
+            #
+            mx = max(crab_cnt)
+            if ( crab_cnt[3] == mx ):
+               code = "e"
+            elif ( crab_cnt[2] == mx ):
+               code = "w"
+            elif ( crab_cnt[1] == mx ):
+               code = "o"
+            else:
+               code = "u"
+            glbSites.setBin("CrabStatus", name, bin, code)
+            #
+            mx = max(manLife_cnt)
+            if ( mx == 0 ):
+               code = "u"
+            elif ( manLife_cnt[2] == mx ):
+               code = "M"
+            elif ( manLife_cnt[1] == mx ):
+               code = "W"
+            else:
+               code = "o"
+            glbSites.setBin("manLifeStatus", name, bin, code)
+            #
+            mx = max(manProd_cnt)
+            if ( mx == 0 ):
+               code = "u"
+            elif ( manProd_cnt[2] == mx ):
+               code = "e"
+            elif ( manProd_cnt[1] == mx ):
+               code = "w"
+            else:
+               code = "o"
+            glbSites.setBin("manProdStatus", name, bin, code)
+            #
+            mx = max(manCrab_cnt)
+            if ( mx == 0 ):
+               code = "u"
+            elif ( manCrab_cnt[2] == mx ):
+               code = "e"
+            elif ( manCrab_cnt[1] == mx ):
+               code = "w"
+            else:
+               code = "o"
+            glbSites.setBin("manCrabStatus", name, bin, code)
+    del manCrabDict
+    del manProdDict
+    del manLifeDict
+    del crabDict
+    del prodDict
+    del lifeDict
+
+    del tmpDict
+
+    glbLock.release()
+    #
+    return
+
+
+
+def ssdw_monit_etf():
+    # ########################################################### #
+    # get SAM ETF results from MonIT/HDFS and fill metric vectors #
+    # ########################################################### #
+    HDFS_PREFIX = "/project/monitoring/archive/sam3/raw/metric/"
+    #
+    oneDay = 86400
+    tis_start = sswpVector.GetTimestamps()
+    # limit retrieval/display, for the time being:
+    #timeFrst = tis_start['month'] - oneDay
+    timeFrst = tis_start['pweek']
+    timeLast = tis_start['fweek'] - 1
+    #
+    now = int( time.time() )
+    sixDaysAgo = calendar.timegm( time.gmtime(now - (6 * oneDay)) )
+    startLclTmpArea = calendar.timegm( time.localtime( sixDaysAgo ) )
+    #
+    midnight = ( int( now / 86400 ) * 86400 )
+    limitLclTmpArea = calendar.timegm( time.localtime( midnight + 86399 ) )
+
+
+    # prepare service host/flavour list/set:
+    # ======================================
+    hostflavourSet = set()
+    for cmssite in glbTopology.sites():
+        for service in glbTopology.getElements(cmssite):
+            hostflavourSet.add( service )
+
+
+    # prepare HDFS subdirectory list:
+    # ===============================
+    logging.info("Retrieving SAM ETF result docs from MonIT HDFS")
+    #
+    dirList = set()
+    #
+    for dirDay in range(timeFrst, timeLast + 1, oneDay):
+        dirList.add( time.strftime("%Y/%m/%d", time.gmtime( dirDay )) )
+    for dirDay in range(startLclTmpArea, limitLclTmpArea, oneDay):
+        dirList.add( time.strftime("%Y/%m/%d.tmp", time.gmtime( dirDay )) )
+    #
+    dirList = sorted( dirList )
+
+
+    tmpDict = {}
+    try:
+        with pydoop.hdfs.hdfs() as myHDFS:
+            for subDir in dirList:
+                logging.debug("   checking HDFS subdirectory %s" % subDir)
+                if not myHDFS.exists( HDFS_PREFIX + subDir ):
+                    continue
+                # get list of files in directory:
+                myList = myHDFS.list_directory( HDFS_PREFIX + subDir )
+                fileNames = [ d['name'] for d in myList
+                          if (( d['kind'] == "file" ) and ( d['size'] != 0 )) ]
+                del myList
+                for fileName in fileNames:
+                    logging.debug("   reading file %s" %
+                                  os.path.basename(fileName))
+                    fileHndl = fileObj = None
+                    try:
+                        if ( os.path.splitext(fileName)[-1] == ".gz" ):
+                            fileHndl = myHDFS.open_file(fileName)
+                            fileObj = gzip.GzipFile(fileobj=fileHndl)
+                        else:
+                            fileObj = myHDFS.open_file(fileName)
+                        # read documents and add relevant records to list:
+                        for myLine in fileObj:
+                            myJson = json.loads(myLine.decode('utf-8'))
+                            try:
+                                if ( myJson['metadata']['topic'] !=
+                                                           "sam3_raw_metric" ):
+                                    continue
+                                if ( myJson['data']['vo'] != "cms" ):
+                                    continue
+                                tis = int( myJson['metadata']['timestamp']
+                                                                       / 1000 )
+                                if (( tis < timeFrst ) or ( tis > timeLast )):
+                                    continue
+                                hostname = myJson['data']['dst_hostname']
+                                flavour = myJson['data']['service_flavour']
+                                service = hostname + "/" + flavour
+                                if service not in hostflavourSet:
+                                    continue
+                                probe = myJson['data']['metric_name'][8:].split("-/cms/Role=",1)[0]
+                                status = myJson['data']['status']
+                                if ( status == "OK" ):
+                                    code = "o"
+                                elif ( status == "WARNING" ):
+                                    code = "w"
+                                elif ( status == "CRITICAL" ):
+                                    code = "e"
+                                else:
+                                    continue
+                                tbin = sswpVector.Time2bin( tis )
+                                if tbin is None:
+                                    continue
+                                #
+                                if service not in tmpDict:
+                                    tmpDict[service] = {}
+                                if probe not in tmpDict[service]:
+                                    tmpDict[service][probe] = {}
+                                if tbin not in tmpDict[service][probe]:
+                                    tmpDict[service][probe][tbin] = []
+                                tmpDict[service][probe][tbin].append( code )
+                            except KeyError:
+                                    continue
+                    except json.decoder.JSONDecodeError as excptn:
+                        logging.error("JSON decoding failure, file %s: %s"
+                                                     % (fileName, str(excptn)))
+                    except FileNotFoundError as excptn:
+                        logging.error("HDFS file not found, %s: %s" %
+                                                       (fileName, str(excptn)))
+                    except IOError as err:
+                        logging.error("IOError accessing HDFS file %s: %s"
+                                                     % (fileName, str(excptn)))
+                    finally:
+                        if fileObj is not None:
+                            fileObj.close()
+                        if fileHndl is not None:
+                            fileHndl.close()
+    except Exception as excptn:
+        logging.error("Failed to fetch down,sts15min docs from MonIT HDFS: %s"
+                      % str(excptn))
+        if 'stale' not in glbInfo:
+            glbInfo['stale'] = "No/incomplete information (MonIT SAM-ETF"
+        else:
+            glbInfo['stale'] += ", SAM-ETF"
+
+
+    glbLock.acquire()
+
+    for service in tmpDict:
+        for probe in tmpDict[service]:
+            for tbin in tmpDict[service][probe]:
+                counters = [0, 0, 0]
+                for code in tmpDict[service][probe][tbin]:
+                    if ( code == "o" ):
+                        counters[0] += 1
+                    elif ( code == "w" ):
+                        counters[1] += 1
+                    elif ( code == "e" ):
+                        counters[2] += 1
+                mx = max(counters)
+                if ( counters[2] == mx ):
+                   code = "e"
+                elif ( counters[1] == mx ):
+                   code = "w"
+                else:
+                    code = "o"
+                glbElements.setBin("ETF_" + probe, service, tbin, code)
+
+
+    del tmpDict
+
+    glbLock.release()
+    #
+    return
+
+
+
+def ssdw_site_summary():
+    # ############################################################## #
+    # fill site Summary vector based on LifeStatus and SiteReadiness #
+    # ############################################################## #
+
+    glbLock.acquire()
+
+    logging.info("Composing site summary information")
+    for cmssite in sorted(glbTopology.sites()):
+        # locate SiteReadiness:
+        SRvector = glbSites.getVector("SiteReadiness", cmssite)
+
+        # locate LifeStatus:
+        LSvector = glbSites.getVector("LifeStatus", cmssite)
+
+        # locate Downtime:
+        DTvector = glbSites.getVector("Downtime", cmssite)
+
+        # evaluate site summary based on LifeStatus and Site Readiness:
+        for bin in range( sswpVector.getDefaultBins() ):
+            SRcode = "u"
+            if SRvector is not None:
+                SRcode = SRvector.getBin(bin)
+            #
+            LScode = "u"
+            if LSvector is not None:
+                LScode = LSvector.getBin(bin)
+            #
+            if ( LScode == "o" ):
+                code = SRcode
+            elif ( LScode == "W" ):
+                if ( SRcode == "o" ):
+                    code = "R"
+                elif ( SRcode == "w" ):
+                    code = "S"
+                elif ( SRcode == "e" ):
+                    code = "T"
+                elif ( SRcode == "d" ):
+                    code = "U"
+                else:
+                    code = "V"
+            elif ( LScode == "M" ):
+                if ( SRcode == "o" ):
+                    code = "H"
+                elif ( SRcode == "w" ):
+                    code = "I"
+                elif ( SRcode == "e" ):
+                    code = "J"
+                elif ( SRcode == "d" ):
+                    code = "K"
+                else:
+                    code = "L"
+            elif ( SRcode != "u" ):
+                code = SRcode
+            else:
+                code = "u"
+            #
+            DTcode = "u"
+            if DTvector is not None:
+                DTcode = DTvector.getBin(bin)
+            if ( code == "u" ):
+                code = DTcode
+            elif (( code == "e" ) and ( DTcode == "d" )):
+                code = DTcode
+
+            glbSites.setBin('Summary', cmssite, bin, code)
+
+    glbLock.release()
+
+
+
 def sswp_ssb_PhEDExLinks():
     # ################################################################### #
     # get PhEDEx Link data from the SSB-Dashboard and fill metric vectors #
@@ -3327,12 +4565,16 @@ def sswp_ssb_PhEDExLinks():
     # get PhEDEx Links data from the SSB dashboard:
     # =============================================
     logging.info("Querying SSB for PhEDEx Links information")
-    urlHandle = None
+    urlHndl = None
     try:
-        request = urllib2.Request(URL_SSB_PHEDEXLINKS,
-                                  headers={'Accept':'application/json'})
-        urlHandle = urllib2.urlopen( request )
-        myData = urlHandle.read()
+        request = urllib.request.Request(URL_SSB_PHEDEXLINKS,
+                                         headers={'Accept':'application/json'})
+        urlHndl = urllib.request.urlopen( request )
+        myCharset = urlHndl.headers.get_content_charset()
+        if myCharset is None:
+            myCharset = "utf-8"
+        myData = urlHndl.read().decode( myCharset )
+        del(myCharset)
         #
         # update cache:
         try:
@@ -3375,9 +4617,9 @@ def sswp_ssb_PhEDExLinks():
             logging.warning("   no SSB PhEDEx Links cache available")
             return
     finally:
-        if urlHandle is not None:
-            urlHandle.close()
-    del urlHandle
+        if urlHndl is not None:
+            urlHndl.close()
+    del urlHndl
 
     glbLock.acquire()
 
@@ -3424,12 +4666,16 @@ def sswp_ssb_Links2hours():
     # get PhEDEx Links 2 hours data from the SSB dashboard:
     # =====================================================
     logging.info("Querying SSB for PhEDEx Links 2 hours information")
-    urlHandle = None
+    urlHndl = None
     try:
-        request = urllib2.Request(URL_SSB_LINKS2HOURS,
-                                  headers={'Accept':'application/json'})
-        urlHandle = urllib2.urlopen( request )
-        myData = urlHandle.read()
+        request = urllib.request.Request(URL_SSB_LINKS2HOURS,
+                                         headers={'Accept':'application/json'})
+        urlHndl = urllib.request.urlopen( request )
+        myCharset = urlHndl.headers.get_content_charset()
+        if myCharset is None:
+            myCharset = "utf-8"
+        myData = urlHndl.read().decode( myCharset )
+        del(myCharset)
         #
         # update cache:
         try:
@@ -3473,9 +4719,9 @@ def sswp_ssb_Links2hours():
             logging.warning("   no SSB PhEDEx Links 2 hours cache available")
             return
     finally:
-        if urlHandle is not None:
-            urlHandle.close()
-    del urlHandle
+        if urlHndl is not None:
+            urlHndl.close()
+    del urlHndl
 
     glbLock.acquire()
 
@@ -3567,7 +4813,7 @@ def sswp_write_summary_js():
         myfile.write("var siteStatusData = [")
         mypreceding = False
         for cmssite in sorted(glbTopology.sites()):
-            vector = glbSites.getVector('summary', cmssite)
+            vector = glbSites.getVector('Summary', cmssite)
             ticket = glbTickets.getSummary(cmssite, glbInfo['timestamp'])
             if (( vector is None ) and ( ticket[0] == 0 )):
                 continue
@@ -3622,12 +4868,12 @@ def sswp_write_downtime_js():
         myfile.write("var siteStatusData = [")
         mypreceding = False
         for cmssite in sorted(glbTopology.sites()):
-            vector = glbSites.getVector('summary', cmssite)
+            vector = glbSites.getVector('Summary', cmssite)
             ticket = glbTickets.getSummary(cmssite, glbInfo['timestamp'])
             if (( vector is None ) and ( ticket[0] == 0 )):
                 continue
 
-            vector = glbSites.getVector('downtime', cmssite)
+            vector = glbSites.getVector('Downtime', cmssite)
 
             if mypreceding:
                 myfile.write(",\n   { site: \"%s\",\n" % cmssite)
@@ -3728,6 +4974,10 @@ def sswp_write_detail_json():
                 my2preceding = False
                 for metric in eMetrics:
                     vector = glbElements.getVector(metric, element)
+                    if (( vector is None ) and
+                        (( metric != "downtime" ) and
+                         ( metric != "Downtime" ))):
+                        continue
                     #
                     if my2preceding:
                         myfile.write(",\n    \"%s\": {\n" %
@@ -3866,15 +5116,14 @@ def sswp_dump():
 
 def sswp_work1():
     tis = time.time()
-    cpt = time.clock()
-    sswp_ggus()
+    cpt = time.process_time()
     sswp_osg_downtime()
     sswp_egi_downtime()
     sswp_site_downtime()                               # updates summary metric
     sswp_ssb_SiteReadiness()                           # updates summary metric
     sswp_ssb_LifeStatus()                              # updates summary metric
-    sswp_site_summary()                                 # drops 15 min downtime
-    ncpu = time.clock() -cpt
+    sswp_old_site_summary()                             # drops 15 min downtime
+    ncpu = time.process_time() - cpt
     nsec = time.time() - tis
     logging.info("sswp_work1 took %8.3f / %d seconds", ncpu, nsec)
     # 3.880 / 6 seconds
@@ -3884,9 +5133,9 @@ def sswp_work1():
 
 def sswp_work2():
     tis = time.time()
-    cpt = time.clock()
+    cpt = time.process_time()
     sswp_ssb_HammerCloud15min()
-    ncpu = time.clock() -cpt
+    ncpu = time.process_time() - cpt
     nsec = time.time() - tis
     logging.info("sswp_work2 took %8.3f / %d seconds", ncpu, nsec)
     # 17.040 / 25 seconds
@@ -3896,7 +5145,7 @@ def sswp_work2():
 
 def sswp_work3():
     tis = time.time()
-    cpt = time.clock()
+    cpt = time.process_time()
     sswp_ssb_ProdStatus()
     sswp_ssb_CrabStatus()
     sswp_ssb_manLifeStatus()
@@ -3904,7 +5153,7 @@ def sswp_work3():
     sswp_ssb_manCrabStatus()
     sswp_ssb_PhEDExLinks()
     sswp_ssb_Links2hours()
-    ncpu = time.clock() -cpt
+    ncpu = time.process_time() - cpt
     nsec = time.time() - tis
     logging.info("sswp_work3 took %8.3f / %d seconds", ncpu, nsec)
     # 3.810 / 6 seconds
@@ -3914,11 +5163,11 @@ def sswp_work3():
 
 def sswp_work4():
     tis = time.time()
-    cpt = time.clock()
+    cpt = time.process_time()
     sswp_wlcg_sam_site()
     sswp_wlcg_sam_downtime()
     sswp_wlcg_sam_services()
-    ncpu = time.clock() -cpt
+    ncpu = time.process_time() - cpt
     nsec = time.time() - tis
     logging.info("sswp_work4 took %8.3f / %d seconds", ncpu, nsec)
     # 20.510 / 30 seconds
@@ -3929,24 +5178,36 @@ def sswp_work4():
 if __name__ == '__main__':
     sswp_init()
 
-    sswp_sitedb()
     sswp_vofeed()
+    sswp_ggus()
 
-    t1 = threading.Thread(name='Wrk1Thread', target=sswp_work1)
-    t1.start()
-    t2 = threading.Thread(name='Wrk2Thread', target=sswp_work2)
-    t2.start()
-    t3 = threading.Thread(name='Wrk3Thread', target=sswp_work3)
-    t3.start()
-    t4 = threading.Thread(name='Wrk4Thread', target=sswp_work4)
-    t4.start()
+    #t1 = threading.Thread(name='Wrk1Thread', target=sswp_work1)
+    #t1.start()
+    #t2 = threading.Thread(name='Wrk2Thread', target=sswp_work2)
+    #t2.start()
+    #t3 = threading.Thread(name='Wrk3Thread', target=sswp_work3)
+    #t3.start()
+    #t4 = threading.Thread(name='Wrk4Thread', target=sswp_work4)
+    #t4.start()
     #
-    t1.join()
-    t3.join()
-    t4.join()
-    t2.join()
+    #t1.join()
+    #t3.join()
+    #t4.join()
+    #t2.join()
+    #
+    #sswp_site_readiness()                              # updates summary metric
 
-    sswp_site_readiness()                              # updates summary metric
+    tis = time.time()
+    cpt = time.process_time()
+    ssdw_monit_SAM_HC_FTS_SR()                 # pydoop/OpenJDK not thread safe
+    ssdw_monit_down_STS()
+    ssdw_site_summary()
+    #
+    ssdw_monit_etf()
+    ncpu = time.process_time() - cpt
+    nsec = time.time() - tis
+    logging.info("MonIT fetching took %8.3f / %d seconds", ncpu, nsec)
+
     sswp_write_summary_js()
     sswp_write_downtime_js()
     sswp_write_detail_json()
