@@ -203,21 +203,25 @@ function canvas_clicked(id, event) {
          '&start_time=' + dateString3(myStart) + '&end_time=' +
          dateString3(myEnd) + '&time=manual&view=Test History';
    } else if ( myMetric == "SAM1day" ) {
-      myStart = myOffset + ( (myTarget - 1) * myPeriod );
+      myStart = myOffset + (myTarget * myPeriod) + (myPeriod/2);
+      myEnd = Math.trunc( myStart / 86400 ) * 86400;
       id.href = 'https://test-cmssst.web.cern.ch/cgi-bin' +
-         '/log/sam1day/' + myStart + '/all/any/0+0';
+         '/log/sam1day/' + myEnd + '/all/any/0+0';
    } else if ( myMetric == "HC1day" ) {
-      myStart = myOffset + ( (myTarget - 1) * myPeriod );
+      myStart = myOffset + (myTarget * myPeriod) + (myPeriod/2);
+      myEnd = Math.trunc( myStart / 86400 ) * 86400;
       id.href = 'https://test-cmssst.web.cern.ch/cgi-bin' +
-         '/log/hc1day/' + myStart + '/all/any/0+0';
+         '/log/hc1day/' + myEnd + '/all/any/0+0';
    } else if ( myMetric == "FTS1day" ) {
-      myStart = myOffset + ( (myTarget - 1) * myPeriod );
+      myStart = myOffset + (myTarget * myPeriod) + (myPeriod/2);
+      myEnd = Math.trunc( myStart / 86400 ) * 86400;
       id.href = 'https://test-cmssst.web.cern.ch/cgi-bin' +
-         '/log/links1day/' + myStart + '/all/any/0+0';
+         '/log/links1day/' + myEnd + '/all/any/0+0';
    } else if ( myMetric == "SR1day" ) {
-      myStart = myOffset + ( (myTarget - 1) * myPeriod );
+      myStart = myOffset + (myTarget * myPeriod) + (myPeriod/2);
+      myEnd = Math.trunc( myStart / 86400 ) * 86400;
       id.href = 'https://test-cmssst.web.cern.ch/cgi-bin' +
-         '/log/sr1day/' + myStart + '/all/any/0+0';
+         '/log/sr1day/' + myEnd + '/all/any/0+0';
    } else if ( myMetric == "xHammerCloud" ) {
       var myType;
       if ( mySecton == "pmonth" ) {
