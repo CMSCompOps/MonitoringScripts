@@ -257,6 +257,48 @@ fi
 
 
 
+# get new Site Readiness Report web page as PNG file:
+# ---------------------------------------------------
+/usr/bin/xvfb-run --server-args="-screen 0, 1600x1200x24" /usr/bin/CutyCapt --url=http://test-cmssst.web.cern.ch/sitereadiness/report.html --out=${TMP_FILE}
+if [ $? -ne 0 ]; then
+   /bin/sleep 3
+   /bin/rm -f ${TMP_FILE} 1>/dev/null 2>&1
+   echo "failed to get site readiness report web page as png" >> ${ERR_FILE}
+   /usr/bin/xvfb-run --server-args="-screen 0, 1600x1200x24" /usr/bin/CutyCapt --url=http://test-cmssst.web.cern.ch/sitereadiness/report.html --out=${TMP_FILE} 1> ${ERR_FILE} 2>&1
+   RCX=$?
+   if [ ${RCX} -ne 0 ]; then
+      echo "CutyCapt retry failed too, rc=${RCX}" >> ${ERR_FILE}
+      echo "" >> ${ERR_FILE}
+      if [ ${RC} -eq 0 ]; then
+         RC=${RCX}
+      fi
+      /bin/rm -f ${TMP_FILE} 1>/dev/null 2>&1
+   else
+      echo "succeeded on second attempt" >> ${ERR_FILE}
+      echo "" >> ${ERR_FILE}
+   fi
+fi
+#
+# now cut out Tier-1 and Tier-2 CERN images:
+if [ -f ${TMP_FILE} ]; then
+   if [ ! -f ${PLOT_DIR}/t2_ch_cern.png ]; then
+      /usr/bin/convert -crop 1070x442+7+1186 ${TMP_FILE} ${PLOT_DIR}/t1_de_kit.png
+      /usr/bin/convert -crop 1070x442+7+1716 ${TMP_FILE} ${PLOT_DIR}/t1_es_pic.png
+      /usr/bin/convert -crop 1070x442+7+2246 ${TMP_FILE} ${PLOT_DIR}/t1_fr_ccin2p3.png
+      /usr/bin/convert -crop 1070x442+7+2776 ${TMP_FILE} ${PLOT_DIR}/t1_it_cnaf.png
+      /usr/bin/convert -crop 1070x442+7+3306 ${TMP_FILE} ${PLOT_DIR}/t1_ru_jinr.png
+      /usr/bin/convert -crop 1070x442+7+3836 ${TMP_FILE} ${PLOT_DIR}/t1_uk_ral.png
+      /usr/bin/convert -crop 1070x442+7+4366 ${TMP_FILE} ${PLOT_DIR}/t1_us_fnal.png
+      /usr/bin/convert -crop 1070x442+7+9+7546 ${TMP_FILE} ${PLOT_DIR}/t2_ch_cern.png
+   else
+      echo "t1_de_kit/pic/ccin2p3/cnaf/jinr/ral/fnal/cern.png exist, skipping"
+   fi
+   /bin/rm ${TMP_FILE}
+fi
+# #############################################################################
+
+
+
 # get T1 SAM Site Availability for CMS_CRITICAL_FULL:
 # ----------------------------------------------------
 ${HOME}/bin/phantomjs/phantomjs ${HOME}/bin/phantomjs/screenshot.js 'http://wlcg-sam-cms.cern.ch/templates/ember/#/historicalsmry/heatMap?group=Tier1s%20%2B%20Tier0&hosts=&profile=CMS_CRITICAL_FULL&time=Last%202%20Weeks' ${TMP_FILE}
