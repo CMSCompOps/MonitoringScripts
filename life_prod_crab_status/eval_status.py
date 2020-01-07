@@ -1525,9 +1525,9 @@ if __name__ == '__main__':
                     raise KeyError("Cleared override")
                 oStatus = manOverride['status']
                 if ( manOverride['mode'] == "oneday" ):
-                    theDay = int( calendar.timegm( time.strptime("%s UTC" %
-                           argStruct.timeSpec, "%Y-%b-%d %H:%M %Z") ) / 86400 )
-                    if ( theDay == mtrc[1] ):
+                    theDay = int( calendar.timegm( time.strptime(
+                          manOverride['when'], "%Y-%b-%d %H:%M:%S") ) / 86400 )
+                    if ( theDay >= mtrc[1] ):
                         nStatus = manOverride['status']
                         detail = "Life: manual override by %s (%s)" % \
                                        (manOverride['who'], manOverride['why'])
@@ -1709,9 +1709,9 @@ if __name__ == '__main__':
                     raise KeyError("Cleared override")
                 oStatus = manOverride['status']
                 if ( manOverride['mode'] == "oneday" ):
-                    theDay = int( calendar.timegm( time.strptime("%s UTC" %
-                           argStruct.timeSpec, "%Y-%b-%d %H:%M %Z") ) / 86400 )
-                    if ( theDay == mtrc[1] ):
+                    theDay = int( calendar.timegm( time.strptime(
+                          manOverride['when'], "%Y-%b-%d %H:%M:%S") ) / 86400 )
+                    if ( theDay >= mtrc[1] ):
                         nStatus = manOverride['status']
                         detail = "Prod: manual override by %s (%s)" % \
                                        (manOverride['who'], manOverride['why'])
@@ -1859,9 +1859,9 @@ if __name__ == '__main__':
                     raise KeyError("Cleared override")
                 oStatus = manOverride['status']
                 if ( manOverride['mode'] == "oneday" ):
-                    theDay = int( calendar.timegm( time.strptime("%s UTC" %
-                           argStruct.timeSpec, "%Y-%b-%d %H:%M %Z") ) / 86400 )
-                    if ( theDay == mtrc[1] ):
+                    theDay = int( calendar.timegm( time.strptime(
+                          manOverride['when'], "%Y-%b-%d %H:%M:%S") ) / 86400 )
+                    if ( theDay >= mtrc[1] ):
                         nStatus = manOverride['status']
                         detail = "Crab: manual override by %s (%s)" % \
                                        (manOverride['who'], manOverride['why'])
