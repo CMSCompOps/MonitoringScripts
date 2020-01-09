@@ -511,9 +511,9 @@ if __name__ == '__main__':
         # time-bin is "0", the latest entries for the metric-name are     #
         # retrieved, with increasing range up to 5 days.                  #
         # return a dictionary of lists of HC evaluation results, i.e.     #
-        # { ('hc15min', 16954): [ {'site':, 'status':, 'value':, ...},    #
+        # { ('hc15min', 16954): [ {'name':, 'status':, 'value':, ...},    #
         #                         {...}, ... ],                           #
-        #   ('hc1hour', 1695):  [ {'site':, 'status':, 'value':, ...},    #
+        #   ('hc1hour', 1695):  [ {'name':, 'status':, 'value':, ...},    #
         #                         {...}, ... ] }                          #
         # ############################################################### #
         HDFS_PREFIX = "/project/monitoring/archive/cmssst/raw/ssbmetric/"
@@ -764,7 +764,11 @@ if __name__ == '__main__':
                                         myJson['data']['value'] = None
                                     if 'detail' not in myJson['data']:
                                         myJson['data']['detail'] = None
-                                    site = myJson['data']['site']
+                                    if 'name' in myJson['data']:
+                                        site = myJson['data']['name']
+                                    else:
+                                        site = myJson['data']['site']
+                                        myJson['data']['name'] = site
                                     vrsn = myJson['metadata']['kafka_timestamp']
                                     #
                                     value = (vrsn, myJson['data'])
@@ -826,7 +830,7 @@ if __name__ == '__main__':
             metric = next(iter( metricDict.keys() ))
         #
         for entry in metricDict[metric]:
-            if ( entry['site'] == site ):
+            if ( entry['name'] == site ):
                 return entry
         #
         raise KeyError("No such entry %s in (%s,%d)" % (site,
@@ -935,7 +939,7 @@ if __name__ == '__main__':
                 continue
             #
             for entry in hcDict[mtrc]:
-                site = entry['site']
+                site = entry['name']
                 if site not in goodDict:
                     goodDict[ site ] = 0
                 if (( entry['status'] == "ok" ) or
@@ -1713,7 +1717,7 @@ if __name__ == '__main__':
                     raise KeyError("Cleared override")
                 if ( manOverride['status'] == "" ):
                     raise KeyError("Cleared override")
-                logging.log(15, "   manual override = %s (%s)" % 
+                logging.log(15, "   manual override = %s (%s)" %
                                   (manOverride['status'], manOverride['mode']))
                 oStatus = manOverride['status']
                 if ( manOverride['mode'] == "oneday" ):
