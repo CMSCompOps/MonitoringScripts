@@ -77,7 +77,7 @@ class FTSmetric:
         return
 
 
-   @staticmethod
+    @staticmethod
     def interval(metric_name=None):
         FTS_METRICS = {'fts15min':  900, 'fts1hour':  3600,
                                          'fts6hour': 21600, 'fts1day':  86400 }
@@ -2045,18 +2045,20 @@ if __name__ == '__main__':
         # no time specified, evaluate time bin that started 30 min ago:
         eval15min.add( now15m - 2 )
         #
-        # verify time bin that started 75 min/ended 1 hour ago:
+        # verify time bins that ended 15 min, 1h, 2h, and 3 hour ago:
         eval15min.add( now15m - 5 )
+        eval15min.add( now15m - 9 )
+        eval15min.add( now15m - 13 )
         #
         # evaluate the time bin as requested/needed:
-        if (( argStruct.hour ) and ( now15m % 4 == 1 )):
-            bin15m = now15m - 9
+        if (( argStruct.hour ) and ( now15m % 4 == 0 )):
+            bin15m = now15m - 16
             eval1hour.add( int(bin15m / 4) )
-        if (( argStruct.qday ) and ( now15m % 24 == 5 )):
-            bin15m = now15m - 29
+        if (( argStruct.qday ) and ( now15m % 24 == 12 )):
+            bin15m = now15m - 36
             eval6hour.add( int(bin15m / 24) )
-        if (( argStruct.day ) and ( now15m % 96 == 5 )):
-            bin15m = now15m - 101
+        if (( argStruct.day ) and ( now15m % 96 == 12 )):
+            bin15m = now15m - 108
             eval1day.add( int(bin15m / 96) )
         #
         logging.log(15, "No time specified: 15 min bin starting %s" %

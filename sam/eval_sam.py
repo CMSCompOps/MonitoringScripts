@@ -1661,23 +1661,23 @@ if __name__ == '__main__':
     now15m = int( time.time() / 900 )
     if argStruct.timeSpec is None:
         #
-        # evaluate SAM for time bins that started 30 min and 1 hour ago:
-        frst15etf = now15m - 5
+        # evaluate SAM for time bins that ended 15 min, 1h, 2h, and 3 hour ago:
+        frst15etf = now15m - 13
         last15etf = now15m - 2
         #
         # calculate SAM (from 15 min metric) as needed:
-        if (( argStruct.day ) and ( now15m % 96 == 4 )):
-            frst15cms = now15m - 100
-            last15cms = now15m - 5
-        elif (( argStruct.qday ) and ( now15m % 24 == 4 )):
-            frst15cms = now15m - 28
-            last15cms = now15m - 5
+        if (( argStruct.day ) and ( now15m % 96 == 12 )):
+            frst15cms = now15m - 108
+            last15cms = now15m - 13
+        elif (( argStruct.qday ) and ( now15m % 24 == 12 )):
+            frst15cms = now15m - 36
+            last15cms = now15m - 13
         elif (( argStruct.hour ) and ( now15m % 4 == 0 )):
-            frst15cms = now15m - 8
-            last15cms = now15m - 5
+            frst15cms = now15m - 16
+            last15cms = now15m - 13
         else:
-            frst15cms = now15m - 5
-            last15cms = frst15cms
+            frst15cms = now15m - 13
+            last15cms = now15m - 5
     else:
         if ( argStruct.timeSpec.isdigit() ):
             # argument should be time in seconds of first 15 min time bin
@@ -1762,9 +1762,10 @@ if __name__ == '__main__':
             # evaluate SAM status for time bin that started 30 min ago
             tbin = now15m - 2
             evsam_evaluate(tbin)
-            # check/update SAM status for time bin that ended 1 hours ago
-            tbin = now15m - 5
-            evsam_evaluate(tbin)
+            # check/update SAM status for time bins that ended 1h,2h,3h ago
+            evsam_evaluate( now15m - 5 )
+            evsam_evaluate( now15m - 9 )
+            evsam_evaluate( now15m - 13 )
         else:
             for tbin in range(frst15etf, last15etf + 1):
                 # check/update SAM service/site status for time bins
@@ -1773,8 +1774,8 @@ if __name__ == '__main__':
     if ( argStruct.hour ):
         if argStruct.timeSpec is None:
             if ( now15m % 4 == 0 ):
-                # calculate SAM status for time bin that ended 1 hours ago
-                tbin = int( (now15m - 8) / 4 )
+                # calculate SAM status for time bin that ended 3 hours ago
+                tbin = int( (now15m - 16) / 4 )
                 evsam_calculate("sam1hour", tbin)
         else:
             for tbin in range( int(frst15etf/4), int(last15etf/4)+1):
@@ -1783,9 +1784,9 @@ if __name__ == '__main__':
     #
     if ( argStruct.qday ):
         if argStruct.timeSpec is None:
-            if ( now15m % 24 == 4 ):
-                # calculate SAM status for time bin that ended 1 hours ago
-                tbin = int( (now15m - 28) / 24 )
+            if ( now15m % 24 == 12 ):
+                # calculate SAM status for time bin that ended 3 hours ago
+                tbin = int( (now15m - 36) / 24 )
                 evsam_calculate("sam6hour", tbin)
         else:
             for tbin in range( int(frst15etf/24), int(last15etf/24)+1):
@@ -1794,9 +1795,9 @@ if __name__ == '__main__':
     #
     if ( argStruct.day ):
         if argStruct.timeSpec is None:
-            if ( now15m % 96 == 4 ):
-                # calculate SAM status for time bin that ended 1 hours ago
-                tbin = int( (now15m - 100) / 96 )
+            if ( now15m % 96 == 12 ):
+                # calculate SAM status for time bin that ended 3 hours ago
+                tbin = int( (now15m - 108) / 96 )
                 evsam_calculate("sam1day", tbin)
         else:
             for tbin in range( int(frst15etf/96), int(last15etf/96)+1):

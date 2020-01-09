@@ -9,7 +9,7 @@
 # 2018-Dec-19   Stephan Lammel
 # ########################################################################### #
 # 'data': {
-#      'site':     "T1_US_FNAL",
+#      'name':     "T1_US_FNAL",
 #      'status':   "ok | warning | error | unknown",
 #      'value':    0.984,
 #      'detail':   "4 Success [...] [...] [...] [...]\n
@@ -54,12 +54,12 @@ import pydoop.hdfs
 
 
 
-#EVHC_SSB_DIR = "./junk"
-EVHC_SSB_DIR = "/afs/cern.ch/user/c/cmssst/www/hammercloud"
-#EVHC_MONIT_URL = "http://monit-metrics-dev.cern.ch:10012/"
-EVHC_MONIT_URL = "http://monit-metrics.cern.ch:10012/"
-#EVHC_BACKUP_DIR = "./junk"
-EVHC_BACKUP_DIR = "/data/cmssst/MonitoringScripts/hammercloud/failed"
+EVHC_SSB_DIR = "./junk"
+#EVHC_SSB_DIR = "/afs/cern.ch/user/c/cmssst/www/hammercloud"
+EVHC_MONIT_URL = "http://fail.cern.ch:10012/"
+#EVHC_MONIT_URL = "http://monit-metrics.cern.ch:10012/"
+EVHC_BACKUP_DIR = "./junk"
+#EVHC_BACKUP_DIR = "/data/cmssst/MonitoringScripts/hammercloud/failed"
 #
 EVHC_TEMPLATE_IDS = [93, 94, 95, 96, 97, 98, 99, 100, 101]
 # ########################################################################### #
@@ -71,9 +71,9 @@ evhc_glbl_cmssites = []
 evhc_glbl_jobcondor = []
     # list of dictionaries { 'time', 'site', 'status'}
 evhc_glbl_monitdocs = {}
-    # dictionary: (path,timebin): [{'site', 'status', 'value', 'detail'}, ... ]
+    # dictionary: (path,timebin): [{'name', 'status', 'value', 'detail'}, ... ]
 evhc_glbl_evaluations = {}
-    # dictionary: (path,timebin): [{'site', 'status', 'value', 'detail'}, ... ]
+    # dictionary: (path,timebin): [{'name', 'status', 'value', 'detail'}, ... ]
 # ########################################################################### #
 
 
@@ -568,7 +568,8 @@ def evhc_monit_fetch(tbins15m, tbins1h, tbins6h, tbins1d):
                             if (( 'timestamp' not in myJson['metadata'] ) or
                                 ( 'kafka_timestamp' not in myJson['metadata'] ) or
                                 ( 'path' not in myJson['metadata'] ) or
-                                ( 'site' not in myJson['data'] ) or
+                                (( 'name' not in myJson['data'] ) and
+                                 ( 'site' not in myJson['data'] ))or
                                 ( 'status' not in myJson['data'] )):
                                 continue
                             tis = int(myJson['metadata']['timestamp']/1000)
@@ -591,6 +592,8 @@ def evhc_monit_fetch(tbins15m, tbins1h, tbins6h, tbins1d):
                             else:
                                     continue
                             #
+                            if 'name' not in myJson['data']:
+                                myJson['data']['name'] = myJson['data']['site']
                             if 'value' not in myJson['data']:
                                 myJson['data']['value'] = None
                             if 'detail' not in myJson['data']:
@@ -600,7 +603,7 @@ def evhc_monit_fetch(tbins15m, tbins1h, tbins6h, tbins1d):
                             #
                             key = ( myJson['metadata']['path'],
                                     tbin,
-                                    myJson['data']['site'] )
+                                    myJson['data']['name'] )
                             val = { 'v': version,
                                     'd': myJson['data'] }
                             if key in tmpDict:
@@ -751,7 +754,7 @@ def evhc_evaluate_sites(metric, timebin):
                         (site, successJobs, totalJobs, value, status))
         if myKey not in evhc_glbl_evaluations:
             evhc_glbl_evaluations[ myKey ] = []
-        evhc_glbl_evaluations[ myKey ].append( {'site': site,
+        evhc_glbl_evaluations[ myKey ].append( {'name': site,
                                                 'status': status,
                                                 'value': value,
                                                 'detail': detail} )
@@ -800,16 +803,17 @@ def evhc_compose_json():
                          (metric, ((timebin*interval) + (interval/2)) * 1000))
             #
             for result in sorted(evhc_glbl_evaluations[ key ],
-                                 key=lambda k: k['site']):
-                #logging.log(9, "      %s status: %s" % (result['site'],
+                                 key=lambda k: k['name']):
+                #logging.log(9, "      %s status: %s" % (result['name'],
                 #                                            result['status']))
                 if commaFlag:
                     jsonString += hdrString
                 else:
                     jsonString += hdrString[1:]
-                jsonString += (("      \"site\": \"%s\",\n" +
+                jsonString += (("      \"name\": \"%s\",\n" +
+                                "      \"site\": \"%s\",\n" +
                                 "      \"status\": \"%s\",\n") %
-                               (result['site'], result['status']))
+                            (result['name'], result['name'], result['status']))
                 if result['value'] is not None:
                     jsonString += ("      \"value\": %.3f,\n" %
                                    result['value'])
@@ -847,6 +851,8 @@ def evhc_monit_upload():
     cnt_1hour = jsonString.count("\"path\": \"hc1hour\"")
     cnt_6hour = jsonString.count("\"path\": \"hc6hour\"")
     cnt_1day  = jsonString.count("\"path\": \"hc1day\"")
+    #
+    jsonString = jsonString.replace("ssbmetric", "metrictest")
 
 
     # upload string with JSON document array to MonIT/HDFS:
@@ -960,7 +966,7 @@ def evhc_compose_ssb(tuple):
                                                time.gmtime(tuple[1] *interval))
     #
     for result in sorted(evhc_glbl_evaluations[ tuple ],
-                         key=lambda k: k['site']):
+                         key=lambda k: k['name']):
         if result['value'] is not None:
             value = result['value'] * 100.0
         else:
@@ -973,9 +979,9 @@ def evhc_compose_ssb(tuple):
             colour = "red"
         else:
             colour = "white"
-        url = URL_JOB_DASHBOARD % result['site']
+        url = URL_JOB_DASHBOARD % result['name']
         #
-        ssbString += "%s\t%s\t%.1f\t%s\t%s\n" % (timeStrng, result['site'],
+        ssbString += "%s\t%s\t%.1f\t%s\t%s\n" % (timeStrng, result['name'],
                                                             value, colour, url)
 
     return ssbString
@@ -1099,22 +1105,22 @@ if __name__ == '__main__':
     # =================================================================
     now15m = int( time.time() / 900 )
     if argStruct.timeSpec is None:
-        # evaluate HC for time bins that started 30 min and 2 hours ago:
-        frst15m = now15m - 9
+        # evaluate HC for time bins that ended 15 min, 1h, 2h, and 3 hour ago:
+        frst15m = now15m - 13
         last15m = now15m - 2
         #
-        if (( argStruct.day ) and ( now15m % 96 == 8 )):
+        if (( argStruct.day ) and ( now15m % 96 == 12 )):
             # need HC job records from 24+2 hours ago:
-            startTIS = ( now15m - 104 ) * 900
-        elif (( argStruct.qday ) and ( now15m % 24 == 8 )):
+            startTIS = ( now15m - 108 ) * 900
+        elif (( argStruct.qday ) and ( now15m % 24 == 12 )):
             # need HC job records from 6+2 hours ago:
-            startTIS = ( now15m - 32 ) * 900
+            startTIS = ( now15m - 36 ) * 900
         elif (( argStruct.hour ) and ( now15m % 4 == 0 )):
             # need HC job records from 1+2 hours ago:
-            startTIS = ( now15m - 12 ) * 900
+            startTIS = ( now15m - 16 ) * 900
         else:
-            # need HC job records from 15 min + 2 hours ago:
-            startTIS = ( now15m - 9 ) * 900
+            # need HC job records from 15 min + 3 hours ago:
+            startTIS = ( now15m - 13 ) * 900
         # evaluate HC 15min results for time bin that started 30 min ago
         limitTIS = ( last15m + 1 ) * 900
     else:
@@ -1195,9 +1201,10 @@ if __name__ == '__main__':
             # evaluate HC site status for time bin that started 30 min ago
             tbin = now15m - 2
             evhc_evaluate_sites("hc15min", tbin)
-            # check/update HC site status for time bin that ended 2 hours ago
-            tbin = now15m - 9
-            evhc_evaluate_sites("hc15min", tbin)
+            # check/update HC site status for time bin that ended 1h,2h,3h ago
+            evhc_evaluate_sites("hc15min", now15m - 5 )
+            evhc_evaluate_sites("hc15min", now15m - 9 )
+            evhc_evaluate_sites("hc15min", now15m - 13 )
         else:
             for tbin in range(frst15m, last15m + 1):
                 # check/update HC site status for time bins
@@ -1206,8 +1213,8 @@ if __name__ == '__main__':
     if ( argStruct.hour ):
         if argStruct.timeSpec is None:
             if ( now15m % 4 == 0 ):
-                # evaluate HC 1 hour status for time bin that ended 2 hours ago
-                tbin = int( ( now15m - 12 ) / 4 )
+                # evaluate HC 1 hour status for time bin that ended 3 hours ago
+                tbin = int( ( now15m - 16 ) / 4 )
                 evhc_evaluate_sites("hc1hour", tbin)
         else:
             for tbin in range( int(frst15m/4), int(last15m/4) + 1):
@@ -1216,9 +1223,9 @@ if __name__ == '__main__':
     #
     if ( argStruct.qday ):
         if argStruct.timeSpec is None:
-            if ( now15m % 24 == 8 ):
-                # evaluate HC 6 hour status for time bin that ended 2 hours ago
-                tbin = int( ( now15m - 32 ) / 24 )
+            if ( now15m % 24 == 12 ):
+                # evaluate HC 6 hour status for time bin that ended 3 hours ago
+                tbin = int( ( now15m - 36 ) / 24 )
                 evhc_evaluate_sites("hc6hour", tbin)
         else:
             for tbin in range( int(frst15m/24), int(last15m/24) + 1):
@@ -1227,9 +1234,9 @@ if __name__ == '__main__':
     #
     if ( argStruct.day ):
         if argStruct.timeSpec is None:
-            if ( now15m % 96 == 8 ):
-                # evaluate HC 1 day status for time bin that ended 2 hours ago
-                tbin = int( ( now15m - 104 ) / 96 )
+            if ( now15m % 96 == 12 ):
+                # evaluate HC 1 day status for time bin that ended 3 hours ago
+                tbin = int( ( now15m - 108 ) / 96 )
                 evhc_evaluate_sites("hc1day", tbin)
         else:
             for tbin in range( int(frst15m/96), int(last15m/96) + 1):
@@ -1268,7 +1275,7 @@ if __name__ == '__main__':
                 if result in evhc_glbl_monitdocs[tuple]:
                     logging.debug(("filtering out %s (%d) %s as identical en" +
                                    "try exists in MonIT") % (tuple[0],
-                                   tuple[1], result['site']))
+                                   tuple[1], result['name']))
                     del evhc_glbl_evaluations[tuple][index]
                 else:
                     cnt_docs += 1
@@ -1296,8 +1303,8 @@ if __name__ == '__main__':
         if ("hc15min", tbin) in evhc_glbl_evaluations:
             evhc_ssb_write( ("hc15min", tbin) )
     if (( argStruct.day ) and ( argStruct.timeSpec is None )):
-        if ( now15m % 96 == 8 ):
-            tbin = int( ( now15m - 104 ) / 96 )
+        if ( now15m % 96 == 12 ):
+            tbin = int( ( now15m - 108 ) / 96 )
             if ("hc1day", tbin) in evhc_glbl_evaluations:
                 evhc_ssb_write( ("hc1day", tbin) )
 

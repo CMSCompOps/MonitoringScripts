@@ -1689,7 +1689,7 @@ if __name__ == '__main__':
 
     parserObj = argparse.ArgumentParser(description="Script to evaluate Site" +
         " Readiness status for the 15 minute (1 hour, 6 hours, and 1 day) bi" +
-        "n that started 60 minutes ago. FTS status for a specific time bi" +
+        "n that started 60 minutes ago. SiteReadiness for a specific time bi" +
         "n or time interval are evaluated in case of of one or two arguments.")
     parserObj.add_argument("-q", dest="qhour", action="store_true",
                                  help="restrict evaluation to 15 min results")
@@ -1770,21 +1770,19 @@ if __name__ == '__main__':
         if ( argStruct.qhour ):
             # no time specified, evaluate/check recent time-bins:
             eval15min.add( now15m - 3 )
-            eval15min.add( now15m - 4 )
             eval15min.add( now15m - 6 )
-            eval15min.add( now15m - 7 )
-            eval15min.add( now15m - 11 )
-            eval15min.add( now15m - 12 )
+            eval15min.add( now15m - 10 )
+            eval15min.add( now15m - 15 )
         #
-        # evaluate the time bin as requested/needed (2.5 hours after):
+        # evaluate the time bin as requested/needed (3.5 hours after):
         if (( argStruct.hour ) and ( now15m % 4 == 2 )):
-            bin15m = now15m - 14
+            bin15m = now15m - 18
             eval1hour.add( int(bin15m / 4) )
-        if (( argStruct.qday ) and ( now15m % 24 == 10 )):
-            bin15m = now15m - 34
+        if (( argStruct.qday ) and ( now15m % 24 == 14 )):
+            bin15m = now15m - 38
             eval6hour.add( int(bin15m / 24) )
-        if (( argStruct.day ) and ( now15m % 96 == 10 )):
-            bin15m = now15m - 106
+        if (( argStruct.day ) and ( now15m % 96 == 14 )):
+            bin15m = now15m - 110
             eval1day.add( int(bin15m / 96) )
         #
         logging.log(15, "No time specified: 15 min bin starting %s" %
