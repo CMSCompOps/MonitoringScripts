@@ -1653,6 +1653,7 @@ if __name__ == '__main__':
                 pStatus = prevDict[site]['prod_status']
             except KeyError:
                 pStatus = "unknown"
+            logging.log(15, "%s previous ProdStatus = %s" % (site, pStatus))
             nStatus = pStatus
             oStatus = None
             detail = ""
@@ -1663,6 +1664,7 @@ if __name__ == '__main__':
                 # check for 2nd error states in 3 days:
                 try:
                     cnt = sr3badDict[site]
+                    logging.log(15, "   3-day bad SiteReadiness = %d" % cnt)
                     if ( cnt >= 2 ):
                         nStatus = "drain"
                         detail = "Prod: 2nd Site Readiness error in 3 days"
@@ -1674,6 +1676,7 @@ if __name__ == '__main__':
                 # check for 2nd ok states in a row:
                 try:
                     cnt = sr7goodDict[site]
+                    logging.log(15, "   good SiteReadiness iaR = %d" % cnt)
                     if ( cnt >= 2 ):
                         nStatus = "enabled"
                         detail = "Prod: 2nd Site Readiness ok in a row"
@@ -1684,6 +1687,7 @@ if __name__ == '__main__':
                 # check for 24 hour downtime within next 48 hours:
                 try:
                     downStrng = str(down48hDict[site]).replace("'","")
+                    logging.log(15, "   emerging downtime = %s" % downStrng)
                     nStatus = "drain"
                     detail = "Prod: Emerging downtime, %s" % downStrng
                 except KeyError:
@@ -1691,11 +1695,13 @@ if __name__ == '__main__':
             #
             if (( pStatus != "test" ) and
                 ( lStatus == "waiting_room" )):
+                logging.log(15, "   Waiting Room state")
                 nStatus = "drain"
                 detail = "Prod: site in Waiting Room state"
             #
             if (( pStatus != "test" ) and
                 ( lStatus == "morgue" )):
+                logging.log(15, "   Morgue state")
                 nStatus = "disabled"
                 detail = "Prod: site in Morgue state"
             #
@@ -1707,6 +1713,8 @@ if __name__ == '__main__':
                     raise KeyError("Cleared override")
                 if ( manOverride['status'] == "" ):
                     raise KeyError("Cleared override")
+                logging.log(15, "   manual override = %s (%s)" % 
+                                  (manOverride['status'], manOverride['mode']))
                 oStatus = manOverride['status']
                 if ( manOverride['mode'] == "oneday" ):
                     theDay = int( calendar.timegm( time.strptime(

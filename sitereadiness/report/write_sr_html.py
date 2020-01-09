@@ -674,6 +674,7 @@ def srhr_monit_down_STS(timestamp, siteDict):
                     myTuple = ( status, "P", detail )
                 elif (( status == "adhoc" ) and ( oldStatus == "none" )):
                     myTuple = ( status, "U", detail )
+                siteDict[site][metric][ibin] = myTuple
         end15m = mKey[1]
     del downDict
 
