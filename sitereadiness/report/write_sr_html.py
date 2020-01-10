@@ -753,9 +753,9 @@ def srhr_monit_down_STS(timestamp, siteDict):
             if ( counts[0] == mxCnt ):
                 siteDict[site]['life1day'][ibin] = ("enabled", "", "")
             elif ( counts[1] == mxCnt ):
-                siteDict[site]['life1day'][ibin] = ("waiting_room", "", "")
+                siteDict[site]['life1day'][ibin] = ("waiting_room", "WR", "")
             elif ( counts[2] == mxCnt ):
-                siteDict[site]['life1day'][ibin] = ("morgue", "", "")
+                siteDict[site]['life1day'][ibin] = ("morgue", "M", "")
             mxCnt = max( counts[3], counts[4], counts[5] )
             if ( counts[3] == mxCnt ):
                 siteDict[site]['prod1day'][ibin] = ("enabled", "", "")
@@ -802,8 +802,7 @@ def srhr_write_html(timestamp, statusDict):
     timeStrng = time.strftime("%A", time.gmtime(now))[:2] + ", " + \
                        time.strftime("%Y-%b-%d %H:%M:%S UTC", time.gmtime(now))
 
-    #try:
-    if True:
+    try:
         with open(SRHR_HTML_DIR + "/report.html_new", 'w') as myFile:
             myFile.write(("<!DOCTYPE html>\n<HTML>\n\n<HEAD>\n   <TITLE> CMS" +
                           " Site Readiness Report of %s</TITLE>\n\n") % \
@@ -835,48 +834,50 @@ def srhr_write_html(timestamp, statusDict):
                          "     white-space: nowrap; text-align: center;\n   " +
                          "   }\n      .tdCell2 {\n         min-width: 48px; " +
                          "padding: 2px;\n         color: black; text-decorat" +
-                         "ion: none;\n         font-size: 16px; font-weight:" +
-                         " bold;\n         white-space: nowrap; text-align: " +
-                         "center;\n      }\n      .tdDate {\n         min-wi" +
-                         "dth: 48px; padding: 2px;\n         color: black;\n" +
-                         "         font-size: 14px; font-weight: bold;\n    " +
-                         "     white-space: nowrap; text-align: center;\n   " +
-                         "   }\n      .tdLegend {\n         min-width: 42px;" +
-                         "\n         color: black; text-decoration: none;\n " +
-                         "        font-size: 14px; font-weight: bold;\n     " +
-                         "    white-space: nowrap; text-align: left;\n      " +
-                         "}\n      .toolTip1 {\n         text-decoration: no" +
-                         "ne; position: relative;\n      }\n" +
+                         "ion: none;\n         font-size: 14px; font-weight:" +
+                         " normal;\n         white-space: nowrap; text-align" +
+                         ": center;\n      }\n      .tdDate {\n         min-" +
+                         "width: 48px; padding: 2px;\n         color: black;" +
+                         "\n         font-size: 14px; font-weight: bold;\n  " +
+                         "       white-space: nowrap; text-align: center;\n " +
+                         "     }\n      .tdLegend {\n         min-width: 42p" +
+                         "x;\n         color: black; text-decoration: none;" +
+                         "\n         font-size: 14px; font-weight: bold;\n  " +
+                         "       white-space: nowrap; text-align: left;\n   " +
+                         "   }\n      .toolTip1 {\n         text-decoration:" +
+                         " none; position: relative;\n      }\n" +
                          "      .toolTip1 span {\n         display: none;\n " +
                          "        border-radius: 4px;\n         color: black" +
                          "; background: white;\n      }\n      .toolTip1:hov" +
-                         "er span {\n         white-space: normal;\n        " +
-                         " display: block;\n         position: absolute;\n  " +
-                         "       top: 90%; left: 90%;\n         z-index: 100" +
-                         "0;\n         width: auto; max-width: 480px; min-he" +
-                         "ight: 16px;\n         border: 1px solid black; pad" +
-                         "ding: 4px;\n      }\n      .toolTip2 {\n         t" +
-                         "ext-decoration: none; position: relative;\n      }" +
-                         "\n      .toolTip2 span {\n         display: none;" +
+                         "er span {\n         font-weight: bold;\n         w" +
+                         "hite-space: normal;\n         display: block;\n   " +
+                         "      position: absolute;\n         top: 90%; left" +
+                         ": 90%;\n         z-index: 1000;\n         width: a" +
+                         "uto; max-width: 480px; min-height: 16px;\n        " +
+                         " border: 1px solid black; padding: 4px;\n      }\n" +
+                         "      .toolTip2 {\n         text-decoration: none;" +
+                         " position: relative;\n      }\n      .toolTip2 spa" +
+                         "n {\n         display: none;\n         border-radi" +
+                         "us: 4px;\n         color: black; background: white" +
+                         ";\n      }\n      .toolTip2:hover span {\n        " +
+                         " font-weight: bold;\n         white-space: normal;" +
+                         "\n         display: block;\n         position: abs" +
+                         "olute;\n         top: 98%; left: 50%;\n         tr" +
+                         "ansform: translateX(-50%);\n         z-index: 1000" +
+                         ";\n         width: auto; max-width: 480px; min-hei" +
+                         "ght: 16px;\n         border: 1px solid black; padd" +
+                         "ing: 4px;\n      }\n      .toolTip3 {\n         te" +
+                         "xt-decoration: none; position: relative;\n      }" +
+                         "\n      .toolTip3 span {\n         display: none;" +
                          "\n         border-radius: 4px;\n         color: bl" +
-                         "ack; background: white;\n      }\n      .toolTip2:" +
-                         "hover span {\n         white-space: normal;\n     " +
-                         "    display: block;\n         position: absolute;" +
-                         "\n         top: 98%; left: 50%;\n         transfor" +
-                         "m: translateX(-50%);\n         z-index: 1000;\n   " +
-                         "      width: auto; max-width: 480px; min-height: 1" +
-                         "6px;\n         border: 1px solid black; padding: 4" +
-                         "px;\n      }\n      .toolTip3 {\n         text-dec" +
-                         "oration: none; position: relative;\n      }\n     " +
-                         " .toolTip3 span {\n         display: none;\n      " +
-                         "   border-radius: 4px;\n         color: black; bac" +
-                         "kground: white;\n      }\n      .toolTip3:hover sp" +
-                         "an {\n         white-space: normal;\n         disp" +
-                         "lay: block;\n         position: absolute;\n       " +
-                         "  top: 90%; right: 90%;\n         z-index: 1000;\n" +
-                         "         width: auto; max-width: 480px; min-height" +
-                         ": 16px;\n         border: 1px solid black; padding" +
-                         ": 4px;\n      }\n   </STYLE>\n")
+                         "ack; background: white;\n      }\n      .toolTip3:" +
+                         "hover span {\n         font-weight: bold;\n       " +
+                         "  white-space: normal;\n         display: block;\n" +
+                         "         position: absolute;\n         top: 90%; r" +
+                         "ight: 90%;\n         z-index: 1000;\n         widt" +
+                         "h: auto; max-width: 480px; min-height: 16px;\n    " +
+                         "     border: 1px solid black; padding: 4px;\n     " +
+                         " }\n   </STYLE>\n")
             myFile.write(("</HEAD>\n\n<BODY>\n<H1>\n   <CENTER>      CMS Sit" +
                           "e Readiness Report of %s</H1>\n   </CENTER>\n<P>" +
                           "\n&nbsp;\n<P>\n&nbsp;\n<P>\n\n") % timeStrng[:15])
@@ -1178,13 +1179,13 @@ def srhr_write_html(timestamp, statusDict):
                         else:
                             rgb_strng = "#F4F4F4"
                         if ( entry[0] != "none" ):
-                            myFile.write(("   <TD CLASS=\"tdCell1\" STYLE=\"" +
+                            myFile.write(("   <TD CLASS=\"tdCell2\" STYLE=\"" +
                                           "background-color: %s\"><DIV CLASS" +
                                           "=\"%s\">%s<SPAN>%s</SPAN></DIV>\n")
                                          % (rgb_strng, ttip_strng, entry[1],
                                                                      entry[2]))
                         else:
-                            myFile.write("   <TD CLASS=\"tdCell1\">\n")
+                            myFile.write("   <TD CLASS=\"tdCell2\">\n")
                     myFile.write(("<TR HEIGHT=\"12\">\n   <TD>\n   <TD COLSP" +
                                   "AN=\"%d\" STYLE=\"border-top: 4px solid b" +
                                   "lack; border-bottom: 4px solid black;\">" +
@@ -1406,8 +1407,370 @@ def srhr_write_html(timestamp, statusDict):
         logging.info("   Site Readiness report written, %s" %
                                                 SRHR_HTML_DIR + "/report.html")
 
-    #except Exception as excptn:
-    #    logging.error("Failed to write report.html file, %s" % str(excptn))
+    except Exception as excptn:
+        logging.error("Failed to write report.html file, %s" % str(excptn))
+
+    return
+
+
+
+def srhr_write_summary(timestamp, statusDict):
+    # ################################################################## #
+    # write Site Readiness HTML summary report with relevant information #
+    # ################################################################## #
+    #
+    now = int( time.time() )
+    #
+    first1d = int( timestamp / 86400 )
+    last1d  = int( now / 86400 )
+    total1d = last1d - first1d + 1
+
+    timeStrng = time.strftime("%A", time.gmtime(now))[:2] + ", " + \
+                          time.strftime("%Y-%b-%d %H:%M UTC", time.gmtime(now))
+
+    try:
+        with open(SRHR_HTML_DIR + "/sum_report.html_new", 'w') as myFile:
+            myFile.write(("<!DOCTYPE html>\n<HTML>\n\n<HEAD>\n   <TITLE> CMS" +
+                          " Site Readiness Summary Report %s</TITLE>\n\n") % \
+                         timeStrng[:15])
+            myFile.write("   <STYLE TYPE=\"text/css\">\n      BODY {\n      " +
+                         "   background-color: white;\n      }\n      TD A, " +
+                         "TD A:LINK, TD A:VISITED {\n         color: black; " +
+                         "text-decoration: none\n      }\n" +
+                         "      .tdLabel1 {\n         padding: 1px;\n       " +
+                         "  color: black; text-decoration: none;\n         f" +
+                         "ont-size: 18px; font-weight: bold;\n         white" +
+                         "-space: nowrap; text-align: right;\n      }\n" +
+                         "      .tdCell1 {\n         min-width: 48px; paddin" +
+                         "g: 2px;\n         color: black; text-decoration: n" +
+                         "one;\n         font-size: 14px; font-weight: bold;" +
+                         "\n         white-space: nowrap; text-align: center" +
+                         ";\n      }\n" +
+                         "      .tdDate {\n         min-width: 48px; padding" +
+                         ": 2px;\n         color: black;\n         font-size" +
+                         ": 14px; font-weight: bold;\n         white-space: " +
+                         "nowrap; text-align: center;\n      }\n" +
+                         "      .tdLegend {\n         min-width: 42px;\n    " +
+                         "     color: black; text-decoration: none;\n       " +
+                         "  font-size: 14px; font-weight: bold;\n         wh" +
+                         "ite-space: nowrap; text-align: left;\n      }\n" +
+                         "      .toolTip1 {\n         text-decoration: none;" +
+                         " position: relative;\n      }\n      .toolTip1 spa" +
+                         "n {\n         display: none;\n         border-radi" +
+                         "us: 4px;\n         color: black; background: white" +
+                         ";\n      }\n      .toolTip1:hover span {\n        " +
+                         " white-space: nowrap;\n         display: block;\n " +
+                         "        text-align: left;\n         position: abso" +
+                         "lute;\n         top: 90%; left: 90%;\n         z-i" +
+                         "ndex: 1000;\n         width: auto; min-height: 16p" +
+                         "x;\n         border: 1px solid black; padding: 4px" +
+                         ";\n      }\n" +
+                         "      .toolTip2 {\n         text-decoration: none;" +
+                         " position: relative;\n      }\n      .toolTip2 spa" +
+                         "n {\n         display: none;\n         border-radi" +
+                         "us: 4px;\n         color: black; background: white" +
+                         ";\n      }\n      .toolTip2:hover span {\n        " +
+                         " white-space: nowrap;\n         display: block;\n " +
+                         "        text-align: left;\n         position: abso" +
+                         "lute;\n         top: 98%; left: 50%;\n         tra" +
+                         "nsform: translateX(-50%);\n         z-index: 1000;" +
+                         "\n         width: auto; min-height: 16px;\n       " +
+                         "  border: 1px solid black; padding: 4px;\n      }" +
+                         "\n" +
+                         "      .toolTip3 {\n         text-decoration: none;" +
+                         " position: relative;\n      }\n      .toolTip3 spa" +
+                         "n {\n         display: none;\n         border-radi" +
+                         "us: 4px;\n         color: black; background: white" +
+                         ";\n      }\n      .toolTip3:hover span {\n        " +
+                         " white-space: nowrap;\n         display: block;\n " +
+                         "        text-align: left;\n         position: abso" +
+                         "lute;\n         top: 90%; right: 90%;\n         z-" +
+                         "index: 1000;\n         width: auto; min-height: 16" +
+                         "px;\n         border: 1px solid black; padding: 4p" +
+                         "x;\n      }\n   </STYLE>\n")
+            myFile.write(("</HEAD>\n\n<BODY>\n<H1>\n   <CENTER>      CMS Sit" +
+                          "e Readiness Summary Report %s</H1>\n   </CENTER>" +
+                          "\n<P>\n&nbsp;\n<P>\n&nbsp;\n<P>\n\n<TABLE BORDER=" +
+                          "\"0\" CELLPADDING=\"0\" CELLSPACING=\"1\">\n") % \
+                         timeStrng[:15])
+            #
+            myFile.write(("<TR HEIGHT=\"4\">\n   <TD>\n   <TD COLSPAN=\"%d\"" +
+                          " STYLE=\"background-color: black\">\n") % total1d)
+            myTier = "T0_"
+            for site in sorted( statusDict.keys() ):
+                logging.debug("    site %s:" % site)
+                #
+                #
+                if (( site[:3] != myTier ) and ( myTier == "T0_" )):
+                    myFile.write(("<TR HEIGHT=\"4\">\n   <TD>\n   <TD COLSPA" +
+                                  "N=\"%d\" STYLE=\"background-color: black" +
+                                  "\">\n<TR>\n   <TD>\n") % total1d)
+                    myTier = site[:3]
+                if ( site[:3] != myTier ):
+                    # write a date entry to separate new tier block a bit:
+                    myFile.write(("<TR HEIGHT=\"4\">\n   <TD>\n   <TD COLSPA" +
+                                  "N=\"%d\" STYLE=\"background-color: black" +
+                                  "\">\n<TR>\n   <TD>\n") % total1d)
+                    month_frst = time.strftime("%b", time.gmtime(first1d*86400))
+                    month_cnt = 0
+                    for ibin in range(total1d):
+                        tis = ( first1d + ibin ) * 86400
+                        day_in_month = int(time.strftime("%d",time.gmtime(tis)))
+                        day_in_week = ( int( tis / 86400 ) + 4 ) % 7
+                        if (( day_in_week == 0 ) or ( day_in_week == 6 )):
+                            myFile.write(("   <TD CLASS=\"tdDate\" STYLE=\"b" +
+                                          "ackground-color: #D3D3D3\">%d\n") %
+                                                                  day_in_month)
+                        else:
+                            myFile.write("   <TD CLASS=\"tdDate\">%d\n" %
+                                                                  day_in_month)
+                        #
+                        month_strng = time.strftime("%b", time.gmtime(tis))
+                        if ( month_strng == month_frst ):
+                            month_cnt += 1
+                    month_last = time.strftime("%b", time.gmtime(last1d*86400))
+                    if ( month_frst == month_last ):
+                        myFile.write(("<TR>\n   <TD>\n   <TD COLSPAN=\"%d\" " +
+                                      "CLASS=\"tdDate\" STYLE=\"border-top: " +
+                                      "2px solid black;\">%s\n") %
+                                                         (total1d, month_frst))
+                    else:
+                        myFile.write(("<TR>\n   <TD>\n   <TD COLSPAN=\"%d\" " +
+                                      "CLASS=\"tdDate\" STYLE=\"border-right" +
+                                      ": 2px solid black; border-top: 2px so" +
+                                      "lid black;\">%s\n   <TD COLSPAN=\"%d" +
+                                      "\" CLASS=\"tdDate\" STYLE=\"border-le" +
+                                      "ft: 2px solid black; border-top: 2px " +
+                                      "solid black;\">%s\n") % (month_cnt,
+                                month_frst, (total1d - month_cnt), month_last))
+                    myFile.write(("<TR HEIGHT=\"4\">\n   <TD>\n   <TD COLSPA" +
+                                  "N=\"%d\" STYLE=\"background-color: black" +
+                                  "\">\n") % total1d)
+                    #
+                    myTier = site[:3]
+                #
+                #
+                # GGUS Tickets:
+                if 'ggus' in statusDict[site]:
+                    #
+                    if 'ggus1day' not in siteDict[site]:
+                        siteDict[site]['ggus1day'] = [ ("none", "0", "")
+                                                      for i in range(total1d) ]
+                    #
+                    # sort tickets from old to recent:
+                    statusDict[site]['ggus'].sort( key=lambda t: t[1] )
+                    #
+                    # assign tickets to day-bins:
+                    for tckt in statusDict[site]['ggus']:
+                        ibin = min( max(0, tckt[1] - first1d), total1d - 1)
+                        shrt = int( siteDict[site]['ggus1day'][ ibin ][1] ) + 1
+                        if ( siteDict[site]['ggus1day'][ ibin ][2] == "" ):
+                            cmnt = "%s" % tckt[0]
+                        else:
+                            cmnt = siteDict[site]['ggus1day'][ ibin ][2] + \
+                                                               ", %s" % tckt[0]
+                        siteDict[site]['ggus1day'][ ibin ] = ("ticket(s)",
+                                                             "%d" % shrt, cmnt)
+                    #
+                    logging.debug("      ggus1day: %s" %
+                                               str(siteDict[site]['ggus1day']))
+                #
+                #
+                myFile.write("<TR>\n   <TD CLASS=\"tdLabel1\">%s\n" % site)
+                #
+                for ibin in range( len( statusDict[site]['sr1day'] ) ):
+                    detail = ""
+                    #
+                    if 'ggus1day' in siteDict[site]:
+                        myTuple = siteDict[site]['ggus1day'][ibin]
+                        if ( myTuple[0] != "none" ):
+                            detail += "GGUS Tickets: %s" % myTuple[2]
+                    #
+                    if 'down1day' in statusDict[site]:
+                        myTuple = siteDict[site]['down1day'][ibin]
+                        if ( myTuple[0] != "none" ):
+                            if ( detail != "" ):
+                                detail += "<BR>"
+                            if ( myTuple[0] == "downtime" ):
+                                detail += "Scheduled Downtime"
+                            elif ( myTuple[0] == "partial" ):
+                                detail += "Partial Downtime"
+                            elif ( myTuple[0] == "adhoc" ):
+                                detail += "Ad Hoc Downtime"
+                            else:
+                                detail += "Unknown Downtime"
+                    #
+                    if 'sam1day' in statusDict[site]:
+                        myTuple = statusDict[site]['sam1day'][ibin]
+                        if ( myTuple[0] != "none" ):
+                            if ( detail != "" ):
+                                detail += "<BR>"
+                            if ( myTuple[0] == "ok" ):
+                                detail += "SAM: ok, %s" % myTuple[1]
+                            elif ( myTuple[0] == "warning" ):
+                                detail += "SAM: warning, %s" % myTuple[1]
+                            elif ( myTuple[0] == "error" ):
+                                detail += "SAM: error, %s" % myTuple[1]
+                            elif ( myTuple[0] == "downtime" ):
+                                detail += "SAM: downtime, %s" % myTuple[1]
+                            else:
+                                detail += "SAM: unknown"
+                    #
+                    if 'hc1day' in statusDict[site]:
+                        myTuple = statusDict[site]['hc1day'][ibin]
+                        if ( myTuple[0] != "none" ):
+                            if ( detail != "" ):
+                                detail += "<BR>"
+                            if ( myTuple[0] == "ok" ):
+                                detail += "HC: ok, %s" % myTuple[1]
+                            elif ( myTuple[0] == "warning" ):
+                                detail += "HC: warning, %s" % myTuple[1]
+                            elif ( myTuple[0] == "error" ):
+                                detail += "HC: error, %s" % myTuple[1]
+                            else:
+                                detail += "HC: unknown"
+                    if 'fts1day' in statusDict[site]:
+                        myTuple = statusDict[site]['fts1day'][ibin]
+                        if ( myTuple[0] != "none" ):
+                            if ( detail != "" ):
+                                detail += "<BR>"
+                            if ( myTuple[0] == "ok" ):
+                                detail += "FTS: ok, %s" % myTuple[1]
+                            elif ( myTuple[0] == "warning" ):
+                                detail += "FTS: warning, %s" % myTuple[1]
+                            elif ( myTuple[0] == "error" ):
+                                detail += "FTS: error, %s" % myTuple[1]
+                            else:
+                                detail += "FTS: unknown"
+                    label = ""
+                    if 'life1day' in statusDict[site]:
+                        label = statusDict[site]['life1day'][ibin][1]
+                    if ( label == "" ):
+                        label = "&nbsp"
+                    #
+                    if ( ibin <= 4 ):
+                        ttip_strng = "toolTip1"
+                    elif ( ibin > 10 ):
+                        ttip_strng = "toolTip3"
+                    else:
+                        ttip_strng = "toolTip2"
+                    #
+                    if 'sr1day' in statusDict[site]:
+                        myTuple = statusDict[site]['sr1day'][ibin]
+                        if ( myTuple[0] == "ok" ):
+                            rgb_strng = "#80FF80"
+                        elif ( myTuple[0] == "warning" ):
+                            rgb_strng = "#FFFF00"
+                        elif ( myTuple[0] == "error" ):
+                            rgb_strng = "#FF0000"
+                        elif ( myTuple[0] == "downtime" ):
+                            rgb_strng = "#6080FF"
+                        else:
+                            rgb_strng = "#F4F4F4"
+                        if ( myTuple[0] != "none" ):
+                            myFile.write(("   <TD CLASS=\"tdCell1\" STYLE=\"" +
+                                          "background-color: %s\"><DIV CLASS" +
+                                          "=\"%s\">%s<SPAN>%s</SPAN></DIV>\n")
+                                         % (rgb_strng, ttip_strng, label,
+                                                                       detail))
+                        else:
+                            myFile.write(("   <TD CLASS=\"tdCell1\"><DIV CLA" +
+                                          "SS=\"%s\">%s<SPAN>%s</SPAN></DIV>" +
+                                          "\n") % (ttip_strng, label, detail))
+                    else:
+                        myFile.write(("   <TD CLASS=\"tdCell1\"><DIV CLASS=" +
+                                      "\"%s\">%s<SPAN>%s</SPAN></DIV>\n") %
+                                     (ttip_strng, label, detail))
+            #
+            # Date Information:
+            myFile.write(("<TR HEIGHT=\"4\">\n   <TD>\n   <TD COLSPAN=\"%d\"" +
+                          " STYLE=\"background-color: black\">\n<TR>\n   <TD" +
+                          " CLASS=\"tdLabel1\">\n") % total1d)
+            month_frst = time.strftime("%b", time.gmtime(first1d * 86400))
+            month_cnt = 0
+            for ibin in range(total1d):
+                tis = ( first1d + ibin ) * 86400
+                day_in_month = int( time.strftime("%d", time.gmtime(tis)) )
+                day_in_week = ( int( tis / 86400 ) + 4 ) % 7
+                if (( day_in_week == 0 ) or ( day_in_week == 6 )):
+                    myFile.write(("   <TD CLASS=\"tdDate\" STYLE=\"backgroun" +
+                                  "d-color: #D3D3D3\">%d\n") % day_in_month)
+                else:
+                    myFile.write("   <TD CLASS=\"tdDate\">%d\n" % day_in_month)
+                #
+                month_strng = time.strftime("%b", time.gmtime(tis))
+                if ( month_strng == month_frst ):
+                    month_cnt += 1
+            month_last = time.strftime("%b", time.gmtime(last1d * 86400))
+            myFile.write("<TR>\n   <TD CLASS=\"tdLabel1\">\n")
+            if ( month_frst == month_last ):
+                myFile.write(("   <TD COLSPAN=\"%d\" CLASS=\"tdDate\" STYLE=" +
+                              "\"border-top: 2px solid black;\">%s\n") %
+                                                         (total1d, month_frst))
+            else:
+                myFile.write(("   <TD COLSPAN=\"%d\" CLASS=\"tdDate\" STYLE=" +
+                              "\"border-right: 2px solid black; border-top: " +
+                              "2px solid black;\">%s\n   <TD COLSPAN=\"%d\" " +
+                              "CLASS=\"tdDate\" STYLE=\"border-left: 2px sol" +
+                              "id black; border-top: 2px solid black;\">%s\n")
+                  % (month_cnt, month_frst, (total1d - month_cnt), month_last))
+            myFile.write(("<TR HEIGHT=\"4\">\n   <TD>\n   <TD COLSPAN=\"%d\"" +
+                          " STYLE=\"background-color: black\">\n</TABLE>\n<B" +
+                          "R>\n\n") % total1d)
+            #
+            # write legend:
+            myFile.write("<SPAN STYLE=\"font-size: 16px; font-weight: bold;" +
+                         "\">Page shows Site Readiness of sites for the past" +
+                         " 16 days (colour) and LifeStatus is not enabled (t" +
+                         "ext).</SPAN>\n<BR>\n")
+            myFile.write(("<TABLE BORDER=\"0\" CELLPADDING=\"1\" CELLSPACING" +
+                          "=\"3\" WIDTH=\"100%%\">\n<TR>\n   <TD CLASS=\"tdL" +
+                          "egend\" STYLE=\"background-color: #80FF80;\">   <" +
+                          "TD CLASS=\"tdLegend\"> = ok\n   <TD CLASS=\"tdLeg" +
+                          "end\">&nbsp;\n   <TD CLASS=\"tdLegend\" STYLE=\"b" +
+                          "ackground-color: #FFFF00;\">\n   <TD CLASS=\"tdLe" +
+                          "gend\"> = warning\n   <TD CLASS=\"tdLegend\">&nbs" +
+                          "p;\n   <TD CLASS=\"tdLegend\" STYLE=\"text-align:" +
+                          " center;\">WR\n   <TD CLASS=\"tdLegend\"> = Waiti" +
+                          "ng Room\n   <TD CLASS=\"tdLegend\">&nbsp;\n   <TD" +
+                          " CLASS=\"tdLegend\" STYLE=\"background-color: #F4" +
+                          "F4F4;\">\n   <TD CLASS=\"tdLegend\"> = unknown / " +
+                          "not set\n   <TD CLASS=\"tdLegend\">&nbsp;\n   <TD" +
+                          " CLASS=\"tdLegend\" STYLE=\"text-align: right;\">" +
+                          "information as of\n" +
+                          "<TR>\n   <TD CLASS=\"tdLegend\" STYLE=\"backgroun" +
+                          "d-color: #FF0000;\">\n   <TD CLASS=\"tdLegend\"> " +
+                          "= error\n   <TD CLASS=\"tdLegend\">&nbsp;\n   <TD" +
+                          " CLASS=\"tdLegend\" STYLE=\"background-color: #60" +
+                          "80FF;\">\n   <TD CLASS=\"tdLegend\"> = downtime\n" +
+                          "   <TD CLASS=\"tdLegend\">&nbsp;\n   <TD CLASS=" +
+                          "\"tdLegend\" STYLE=\"text-align: center;\">M\n   " +
+                          "<TD CLASS=\"tdLegend\"> = Morgue state\n   <TD CL" +
+                          "ASS=\"tdLegend\">&nbsp;\n   <TD CLASS=\"tdLegend\"" +
+                          ">\n   <TD CLASS=\"tdLegend\">" +
+                          "\n   <TD CLASS=\"tdLegend\">&nbsp;\n   <TD CLASS=" +
+                          "\"tdLegend\" STYLE=\"text-align: right;\">%s\n</T" +
+                          "ABLE>\n<P>\n&nbsp;\n<P>\n&nbsp;\n<P>\n\n\n") %
+                                                                 timeStrng[4:])
+            #
+            # write page trailer:
+            myFile.write("\n<HR>\n<TABLE BORDER=\"0\" CELLPADDING=\"2\" CELL" +
+                         "SPACING=\"0\" WIDTH=\"100%\">\n<TR>\n   <TD STYLE=" +
+                         "\"text-align: right; font-size: smaller; white-spa" +
+                         "ce: nowrap;\">\n      &copy; Copyright author, CMS" +
+                         ", Fermilab, and others 2019</A>\n</TABLE>\n\n</BOD" +
+                         "Y>\n\n</HTML>\n")
+        #
+        #
+        # report file written, move into place
+        os.rename(SRHR_HTML_DIR + "/sum_report.html_new",
+                  SRHR_HTML_DIR + "/sum_report.html")
+        #
+        logging.info("   Site Readiness summary report written, %s" %
+                                            SRHR_HTML_DIR + "/sum_report.html")
+
+    except Exception as excptn:
+        logging.error("Failed to write sum_report.html file, %s" % str(excptn))
 
     return
 # ########################################################################### #
@@ -1434,5 +1797,7 @@ if __name__ == '__main__':
     srhr_monit_down_STS( timestamp, siteDict )
 
     srhr_write_html( timestamp, siteDict )
+
+    srhr_write_summary( timestamp, siteDict )
 
     #import pdb; pdb.set_trace()

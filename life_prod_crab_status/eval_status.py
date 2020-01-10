@@ -1469,6 +1469,7 @@ if __name__ == '__main__':
                 pStatus = prevDict[site]['status']
             except KeyError:
                 pStatus = "unknown"
+            logging.log(15, "%s previous LifeStatus = %s" % (site, pStatus))
             nStatus = pStatus
             oStatus = None
             detail = ""
@@ -1479,7 +1480,9 @@ if __name__ == '__main__':
                 # check for 5th error states in 2 weeks:
                 try:
                     cnt = sr14badDict[site]
+                    logging.log(15, "   2-week bad SiteReadiness = %d" % cnt)
                     if ( cnt >= 5 ):
+                        logging.info("   five or more bad SiteReadiness in 2w")
                         nStatus = "waiting_room"
                         detail = "Life: 5th Site Readiness error in 2 weeks"
                 except KeyError:
@@ -1489,7 +1492,9 @@ if __name__ == '__main__':
                 # check for 3rd ok states in a row:
                 try:
                     cnt = sr7goodDict[site]
+                    logging.log(15, "   good SiteReadiness iaR = %d" % cnt)
                     if ( cnt >= 3 ):
+                        logging.info("   three or more good SiteReadiness iaR")
                         nStatus = "enabled"
                         detail = "Life: 3rd Site Readiness ok in a row"
                 except KeyError:
@@ -1498,6 +1503,7 @@ if __name__ == '__main__':
             if ( pStatus == "waiting_room" ):
                 # check is 45 days in Waiting Room state:
                 if site in ls45wrList:
+                    logging.info("   45 days in Waiting Room state")
                     nStatus = "morgue"
                     detail = "Life: 45 days in Waiting Room state"
             #
@@ -1506,6 +1512,7 @@ if __name__ == '__main__':
                 try: 
                     cnt = sr7goodDict[site]
                     if ( cnt >= 5 ):
+                        logging.info("   five or more good SiteReadiness iaR")
                         nStatus = "waiting_room"
                         detail = "Life: 5th Site Readiness ok in a row"
                         #
@@ -1527,6 +1534,8 @@ if __name__ == '__main__':
                     raise KeyError("Cleared override")
                 if ( manOverride['status'] == "" ):
                     raise KeyError("Cleared override")
+                logging.log(15, "   manual override = %s (%s)" %
+                                  (manOverride['status'], manOverride['mode']))
                 oStatus = manOverride['status']
                 if ( manOverride['mode'] == "oneday" ):
                     theDay = int( calendar.timegm( time.strptime(

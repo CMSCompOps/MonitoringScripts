@@ -281,17 +281,47 @@ fi
 #
 # now cut out Tier-1 and Tier-2 CERN images:
 if [ -f ${TMP_FILE} ]; then
-   if [ ! -f ${PLOT_DIR}/t2_ch_cern.png ]; then
-      /usr/bin/convert -crop 1070x442+7+1186 ${TMP_FILE} ${PLOT_DIR}/t1_de_kit.png
-      /usr/bin/convert -crop 1070x442+7+1716 ${TMP_FILE} ${PLOT_DIR}/t1_es_pic.png
-      /usr/bin/convert -crop 1070x442+7+2246 ${TMP_FILE} ${PLOT_DIR}/t1_fr_ccin2p3.png
-      /usr/bin/convert -crop 1070x442+7+2776 ${TMP_FILE} ${PLOT_DIR}/t1_it_cnaf.png
-      /usr/bin/convert -crop 1070x442+7+3306 ${TMP_FILE} ${PLOT_DIR}/t1_ru_jinr.png
-      /usr/bin/convert -crop 1070x442+7+3836 ${TMP_FILE} ${PLOT_DIR}/t1_uk_ral.png
-      /usr/bin/convert -crop 1070x442+7+4366 ${TMP_FILE} ${PLOT_DIR}/t1_us_fnal.png
-      /usr/bin/convert -crop 1070x442+7+9+7546 ${TMP_FILE} ${PLOT_DIR}/t2_ch_cern.png
+   if [ ! -f ${PLOT_DIR}/T2_CH_CERN_sr.png ]; then
+      /usr/bin/convert -crop 1070x474+7+1262 ${TMP_FILE} ${PLOT_DIR}/T1_DE_KIT_sr.png
+      /usr/bin/convert -crop 1070x474+7+1827 ${TMP_FILE} ${PLOT_DIR}/T1_ES_PIC_sr.png
+      /usr/bin/convert -crop 1070x474+7+2392 ${TMP_FILE} ${PLOT_DIR}/T1_FR_CCIN2P3_sr.png
+      /usr/bin/convert -crop 1070x474+7+2957 ${TMP_FILE} ${PLOT_DIR}/T1_IT_CNAF_sr.png
+      /usr/bin/convert -crop 1070x474+7+3522 ${TMP_FILE} ${PLOT_DIR}/T1_RU_JINR_sr.png
+      /usr/bin/convert -crop 1070x474+7+4087 ${TMP_FILE} ${PLOT_DIR}/T1_UK_RAL_sr.png
+      /usr/bin/convert -crop 1070x474+7+4652 ${TMP_FILE} ${PLOT_DIR}/T1_US_FNAL_sr.png
+      /usr/bin/convert -crop 1070x474+7+8042 ${TMP_FILE} ${PLOT_DIR}/T2_CH_CERN_sr.png
    else
       echo "t1_de_kit/pic/ccin2p3/cnaf/jinr/ral/fnal/cern.png exist, skipping"
+   fi
+   /bin/rm ${TMP_FILE}
+fi
+
+/usr/bin/xvfb-run --server-args="-screen 0, 1600x1200x24" /usr/bin/CutyCapt --url=http://test-cmssst.web.cern.ch/sitereadiness/sum_report.html --out=${TMP_FILE}
+if [ $? -ne 0 ]; then
+   /bin/sleep 3
+   /bin/rm -f ${TMP_FILE} 1>/dev/null 2>&1
+   echo "failed to get site readiness summary report page as png" >> ${ERR_FILE}
+   /usr/bin/xvfb-run --server-args="-screen 0, 1600x1200x24" /usr/bin/CutyCapt --url=http://test-cmssst.web.cern.ch/sitereadiness/sum_report.html --out=${TMP_FILE} 1> ${ERR_FILE} 2>&1
+   RCX=$?
+   if [ ${RCX} -ne 0 ]; then
+      echo "CutyCapt retry failed too, rc=${RCX}" >> ${ERR_FILE}
+      echo "" >> ${ERR_FILE}
+      if [ ${RC} -eq 0 ]; then
+         RC=${RCX}
+      fi
+      /bin/rm -f ${TMP_FILE} 1>/dev/null 2>&1
+   else
+      echo "succeeded on second attempt" >> ${ERR_FILE}
+      echo "" >> ${ERR_FILE}
+   fi
+fi
+#
+# now cut out Tier-2 image:
+if [ -f ${TMP_FILE} ]; then
+   if [ ! -f ${PLOT_DIR}/T2_sr.png ]; then
+      /usr/bin/convert -crop 1114x1458+7+418 ${TMP_FILE} ${PLOT_DIR}/T2_sr.png
+   else
+      echo "T2_sr.png exist, skipping"
    fi
    /bin/rm ${TMP_FILE}
 fi
