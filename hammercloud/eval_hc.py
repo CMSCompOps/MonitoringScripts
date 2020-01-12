@@ -569,7 +569,7 @@ def evhc_monit_fetch(tbins15m, tbins1h, tbins6h, tbins1d):
                                 ( 'kafka_timestamp' not in myJson['metadata'] ) or
                                 ( 'path' not in myJson['metadata'] ) or
                                 (( 'name' not in myJson['data'] ) and
-                                 ( 'site' not in myJson['data'] ))or
+                                 ( 'site' not in myJson['data'] )) or
                                 ( 'status' not in myJson['data'] )):
                                 continue
                             tis = int(myJson['metadata']['timestamp']/1000)

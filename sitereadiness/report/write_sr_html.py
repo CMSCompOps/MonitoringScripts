@@ -370,7 +370,9 @@ def srhr_monit_SAM_HC_FTS_SR(timestamp, siteDict):
                                         label = "%d%%" % \
                                       int(100 * myJson['data']['availability'])
                                 elif ( metric == "hc1day" ):
-                                    site = myJson['data']['site']
+                                    if 'name' not in myJson['data']:
+                                        myJson['data']['name'] = myJson['data']['site']
+                                    site = myJson['data']['name']
                                     if 'value' not in myJson['data']:
                                         if ( status == "unknown" ):
                                             label = "?"

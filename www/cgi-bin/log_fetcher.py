@@ -417,7 +417,8 @@ def lftch_monit_fetch(cfg):
                                 # check document has required CMS-HC keys:
                                 if (( 'path' not in myJson['metadata'] ) or
                                     ( 'timestamp' not in myJson['metadata'] ) or
-                                    ( 'site' not in myJson['data'] ) or
+                                    (( 'name' not in myJson['data'] ) and
+                                     ( 'site' not in myJson['data'] )) or
                                     ( 'status' not in myJson['data'] )):
                                     continue
                                 if ( myJson['metadata']['path'] !=
@@ -428,7 +429,9 @@ def lftch_monit_fetch(cfg):
                                     continue
                                 if ( tis >= limitTIS ):
                                     continue
-                                myName = myJson['data']['site']
+                                if 'name' not in myJson['data']:
+                                    myJson['data']['name'] = myJson['data']['site']
+                                myName = myJson['data']['name']
                                 if ( cfg['name'] != "*" ):
                                     if ( myName != cfg['name'] ):
                                         continue
@@ -873,16 +876,16 @@ def lftch_compose_hc(cfg, docs):
         # identify superseded documents:
         highestVersions = {}
         for myDoc in docs[tbin]:
-            if myDoc['site'] not in highestVersions:
-                highestVersions[ myDoc['site'] ] = myDoc['***VERSION***']
-            elif ( myDoc['***VERSION***'] > highestVersions[ myDoc['site'] ] ):
-                highestVersions[ myDoc['site'] ] = myDoc['***VERSION***']
+            if myDoc['name'] not in highestVersions:
+                highestVersions[ myDoc['name'] ] = myDoc['***VERSION***']
+            elif ( myDoc['***VERSION***'] > highestVersions[ myDoc['name'] ] ):
+                highestVersions[ myDoc['name'] ] = myDoc['***VERSION***']
         # order documents in timebin:
         for myDoc in docs[tbin]:
-            myDoc['***ORDER***'] = highestVersions[myDoc['site']] - \
+            myDoc['***ORDER***'] = highestVersions[myDoc['name']] - \
                                                          myDoc['***VERSION***']
         myDocs[tbin] = sorted(docs[tbin],
-                                   key=lambda k: [k['site'], k['***ORDER***']])
+                                   key=lambda k: [k['name'], k['***ORDER***']])
 
 
     # convert document dictionary into annotated JSON array string:
@@ -923,7 +926,7 @@ def lftch_compose_hc(cfg, docs):
             #
             jsonString += (("      \"site\": \"%s\",\n" +
                             "      \"status\": \"%s\",\n") %
-                           (myDoc['site'], myDoc['status']))
+                           (myDoc['name'], myDoc['status']))
             if 'value' in MyDoc:
                 if myDoc['value'] is not None:
                     jsonString += ("      \"value\": %.3f,\n" %
@@ -1846,16 +1849,16 @@ def lftch_maindvi_hc(cfg, docs):
         # identify superseded documents:
         highestVersions = {}
         for myDoc in docs[tbin]:
-            if myDoc['site'] not in highestVersions:
-                highestVersions[ myDoc['site'] ] = myDoc['***VERSION***']
-            elif ( myDoc['***VERSION***'] > highestVersions[ myDoc['site'] ] ):
-                highestVersions[ myDoc['site'] ] = myDoc['***VERSION***']
+            if myDoc['name'] not in highestVersions:
+                highestVersions[ myDoc['name'] ] = myDoc['***VERSION***']
+            elif ( myDoc['***VERSION***'] > highestVersions[ myDoc['name'] ] ):
+                highestVersions[ myDoc['name'] ] = myDoc['***VERSION***']
         # order documents in timebin:
         for myDoc in docs[tbin]:
-            myDoc['***ORDER***'] = highestVersions[myDoc['site']] - \
+            myDoc['***ORDER***'] = highestVersions[myDoc['name']] - \
                                                          myDoc['***VERSION***']
         myDocs[tbin] = sorted(docs[tbin],
-                                   key=lambda k: [k['site'], k['***ORDER***']])
+                                   key=lambda k: [k['name'], k['***ORDER***']])
 
 
     # write mainDVI HC HTML section:
@@ -1899,7 +1902,7 @@ def lftch_maindvi_hc(cfg, docs):
                             myColour = "#FFFFFF"
                         myFile.write(("      <TR>\n         <TD NOWRAP>Site " +
                                       "name\n         <TD BGCOLOR=\"%s\" NOW" +
-                                      "RAP>%s\n") % (myColour, myDoc['site']))
+                                      "RAP>%s\n") % (myColour, myDoc['name']))
                         if 'value' in myDoc:
                             if myDoc['value'] is not None:
                                 myStrng = "%.3f" % myDoc['value']

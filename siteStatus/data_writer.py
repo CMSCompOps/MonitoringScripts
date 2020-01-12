@@ -3616,7 +3616,9 @@ def ssdw_monit_SAM_HC_FTS_SR():
                                         site = myJson['data']['name']
                                     elif ( metric[:2] == "hc" ):
                                         label = "HC1day"
-                                        site = myJson['data']['site']
+                                        if 'name' not in myJson['data']:
+                                            myJson['data']['name'] = myJson['data']['site']
+                                        site = myJson['data']['name']
                                     elif (( metric[:3] == "fts" ) and
                                           ( myJson['data']['type'] == "site" )):
                                         label = "FTS1day"
@@ -3642,7 +3644,9 @@ def ssdw_monit_SAM_HC_FTS_SR():
                                     period = metric[3:]
                                 elif ( metric[:2] == "hc" ):
                                     label = "HammerCloud"
-                                    site = myJson['data']['site']
+                                    if 'name' not in myJson['data']:
+                                        myJson['data']['name'] = myJson['data']['site']
+                                    site = myJson['data']['name']
                                     period = metric[2:]
                                 elif ( metric[:3] == "fts" ):
                                     if ( myJson['data']['type'] == "site" ):
