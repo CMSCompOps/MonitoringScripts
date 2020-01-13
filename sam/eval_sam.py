@@ -908,7 +908,8 @@ def evsam_evaluate_service_status(etfResults, service):
                     max_time = result['time']
         else:
             pStat = "unknown"
-        #-LML patch for xrootd overload of PIC, 2019-Jan-19 to Feb-10
+
+        #-LML patch for xrootd overload of PIC
         if (( service['host'].find(".pic.es") > 0 ) and
             (( probe == "org.cms.SE-xrootd-connection" ) or
              ( probe == "org.cms.SE-xrootd-version" ) or
@@ -917,88 +918,8 @@ def evsam_evaluate_service_status(etfResults, service):
              ( probe == "org.cms.WN-xrootd-access-/cms/Role=lcgadmin" ) or
              ( probe == "org.cms.WN-xrootd-fallback-/cms/Role=lcgadmin" )) and
             (( pStat == "error" ) or ( pStat == "unknown" ))):
-            if ( noInside >= 1 ):
-                tis = etfResults['inside'][srvKey][probe][0]['time']
-            elif ( noBefore >= 1 ):
-                tis = etfResults['before'][srvKey][probe][0]['time']
-            else:
-                tis = 0
-            if (( tis >= 1547856000 ) and ( tis <= 1549843140 )):
-                pStat = "ok"
-            if (( tis >= 1551888000 ) and ( tis <= 1551915900 )):
-                pStat = "ok"
-            if (( tis >= 1552477500 ) and ( tis <= 1552555800 )):
-                pStat = "ok"
-            if (( tis >= 1552640400 ) and ( tis <= 1552833000 )):
-                pStat = "ok"
-            if (( tis >= 1555372800 ) and ( tis <= 1555977600 )):
-                pStat = "ok"
-        #-LML patch for xrootd overload of PIC, 2019-Jan-19 to Feb-10
-
-        #-LML patch for WN-xrootf-fallback hitting timeout 2019-Feb-01 to 13
-        #                                              and 2019-Feb-25 - Mar-04
-        if (( probe == "org.cms.WN-xrootd-fallback-/cms/Role=lcgadmin" ) and
-            ( pStat == "error" )):
-            if ( noInside >= 1 ):
-                tis = etfResults['inside'][srvKey][probe][0]['time']
-            elif ( noBefore >= 1 ):
-                tis = etfResults['before'][srvKey][probe][0]['time']
-            else:
-                tis = 0
-            if ((( tis >= 1548979200 ) and ( tis <= 1550077000 )) or
-                (( tis >= 1551085200 ) and ( tis <= 1551716550 ))):
-                pStat = "warning"
-        #-LML patch for WN-xrootf-fallback hitting timeout 2019-Feb-01 to 13
-
-        #-LML patch for xrootd daylight-savings bug, 2019-Mar-10 02:00 to 04:30
-        if ((( probe == "org.cms.WN-analysis-/cms/Role=lcgadmin" ) or
-             ( probe == "org.cms.WN-xrootd-access-/cms/Role=lcgadmin" ) or
-             ( probe == "org.cms.SE-xrootd-version" ) or
-             ( probe == "org.cms.SE-xrootd-read" ) or
-             ( probe == "org.cms.SE-xrootd-contain" )) and
-            (( service['host'].find(".ultralight.org") > 0 ) or
-             ( service['host'].find(".ufl.edu") > 0 ) or
-             ( service['host'].find(".mit.edu") > 0 ) or
-             ( service['host'].find(".unl.edu") > 0 ) or
-             ( service['host'].find(".purdue.edu") > 0 ) or
-             ( service['host'].find(".ucsd.edu") > 0 ) or
-             ( service['host'].find(".wisc.edu") > 0 )) and
-            (( pStat == "error" ) or ( pStat == "unknown" ))):
-            if ( noInside >= 1 ):
-                tis = etfResults['inside'][srvKey][probe][0]['time']
-            elif ( noBefore >= 1 ):
-                tis = etfResults['before'][srvKey][probe][0]['time']
-            else:
-                tis = 0
-            if (( tis >= 1552183200 ) and ( tis <= 1552192200 )):
-                pStat = "warning"
-        if ((( probe == "org.cms.SE-xrootd-version" ) or
-             ( probe == "org.cms.SE-xrootd-read" ) or
-             ( probe == "org.cms.SE-xrootd-contain" )) and
-            (( service['host'].find(".vanderbilt.edu") > 0 )) and
-            (( pStat == "error" ) or ( pStat == "unknown" ))):
-            if ( noInside >= 1 ):
-                tis = etfResults['inside'][srvKey][probe][0]['time']
-            elif ( noBefore >= 1 ):
-                tis = etfResults['before'][srvKey][probe][0]['time']
-            else:
-                tis = 0
-            if (( tis >= 1552183200 ) and ( tis <= 1552192200 )):
-                pStat = "warning"
-        #-LML patch for xrootd daylight-savings bug, 2019-Mar-10 02:00 to 04:30
-
-        #-LML patch for WN-squid being broken, Apr-08 09:00 to Mar-18 00:00
-        if (( probe == "org.cms.WN-squid-/cms/Role=lcgadmin" ) and
-            ( pStat == "error" )):
-            if ( noInside >= 1 ):
-                tis = etfResults['inside'][srvKey][probe][0]['time']
-            elif ( noBefore >= 1 ):
-                tis = etfResults['before'][srvKey][probe][0]['time']
-            else:
-                tis = 0
-            if (( tis >= 1554706800 ) and ( tis <= 1555545600 )):
-                pStat = "warning"
-        #-LML patch for WN-squid being broken, Apr-08 09:00 to Mar-18 00:00
+            pStat = "warning"
+        #-LML patch for xrootd overload of PIC
 
         logging.log(9, "       probe status: %s" % pStat)
         #
