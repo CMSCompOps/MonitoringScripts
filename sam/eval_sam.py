@@ -506,10 +506,6 @@ def evsam_monit_downtime(startTIS, limitTIS):
                             if ( tis >= limitTIS ):
                                 continue
                             #
-                            # for SAM we are interested in only site downtimes
-                            if ( myJson['data']['type'] != "site" ):
-                                continue
-                            #
                             t15bin = int( tis / 900 )
                             if t15bin not in tmpDict:
                                 tmpDict[ t15bin ] = []
@@ -866,37 +862,29 @@ def evsam_evaluate_service_status(etfResults, service):
         pStat = None
         if ( noInside == 1 ):
             pStat = etfResults['inside'][srvKey][probe][0]['status']
-        elif ( noInside == 2 ):
-            # consider first non-unknown result
-            if ((( etfResults['inside'][srvKey][probe][0]['time'] <=
-                   etfResults['inside'][srvKey][probe][1]['time'] ) and
-                 ( etfResults['inside'][srvKey][probe][0]['status'] !=
-                  "unknown" )) or
-                ( etfResults['inside'][srvKey][probe][1]['status'] ==
-                  "unknown" )):
-                pStat = etfResults['inside'][srvKey][probe][0]['status']
-            else:
-                pStat = etfResults['inside'][srvKey][probe][1]['status']
-        elif ( noInside > 2 ):
-            # averaged result, except if majority is unknown
-            cnt_know = 0.
-            cnt_unkn = 0
+        elif ( noInside >= 2 ):
+            # moderate between known statuses
+            cnt_ok = cnt_warn = cnt_err = 0
             for result in etfResults['inside'][srvKey][probe]:
                 if ( result['status'] == "ok" ):
-                    cnt_know += 1.
+                    cnt_ok += 1
                 elif ( result['status'] == "warning" ):
-                    cnt_know += 0.75
+                    cnt_warn += 1
                 elif ( result['status'] != "error" ):
-                    cnt_unkn += 1
-            if ( cnt_unkn < ( noInside - cnt_unkn ) ):
-                if ( ( cnt_know / noInside ) >  0.75 ):
+                    cnt_err += 1
+            if ( (cnt_ok + cnt_warn + cnt_err) == 0 ):
+                pStat = "unknown"
+            elif ( cnt_err == 0 ):
+                if ( cnt_ok >= cnt_warn ):
                     pStat = "ok"
-                elif ( ( cnt_know / noInside ) < 0.5 ):
-                    pStat = "error"
                 else:
                     pStat = "warning"
+            elif ( (cnt_ok + cnt_warn) == 0 ):
+                pStat = "error"
+            elif ( (cnt_ok + cnt_warn) >= cnt_err ):
+                pStat = "warning"
             else:
-                pStat = "unknown"
+                pStat = "error"
         elif ( noBefore == 1 ):
             pStat = etfResults['before'][srvKey][probe][0]['status']
         elif ( noBefore >= 2 ):
@@ -950,6 +938,37 @@ def evsam_evaluate_service_status(etfResults, service):
 
 
 
+def evsam_check_service_downtime(service, time15bin):
+    """function to check if a service is in a scheduled downtime"""
+    # ##################################################################### #
+    # check global downtime information if service is in scheduled downtime #
+    # ##################################################################### #
+    startTIS = time15bin * 900
+    limitTIS = startTIS + 900
+
+    # reverse loop over downtime boundaries:
+    for tbin in sorted( evsam_glbl_downtimes.keys(), reverse=True ):
+        # relevant downtimes are in boundary at or before timebin:
+        if ( tbin <= time15bin ):
+            for downInfo in evsam_glbl_downtimes[tbin]:
+                # check service match:
+                if ( downInfo['name'] != service['host'] ):
+                    continue
+                if ( downInfo['ctgry'] != service['ctgry'] ):
+                    continue
+                if ( downInfo['status'] == "ok" ):
+                    continue
+                if ( limitTIS <= downInfo['duration'][0] ):
+                    continue
+                if ( startTIS >= downInfo['duration'][1] ):
+                    continue
+                return downInfo['status']
+            break
+
+    return "ok"
+
+
+
 def evsam_check_site_downtime(site, time15bin):
     """function to check if a site is in a scheduled downtime"""
     # ################################################################## #
@@ -966,8 +985,8 @@ def evsam_check_site_downtime(site, time15bin):
                 # check service match:
                 if ( downInfo['name'] != site ):
                     continue
-                #if ( downInfo['type'] != "site" ):
-                #    continue
+                if ( downInfo['type'] != "site" ):
+                    continue
                 if ( downInfo['status'] == "ok" ):
                     continue
                 if ( limitTIS <= downInfo['duration'][0] ):
@@ -978,6 +997,46 @@ def evsam_check_site_downtime(site, time15bin):
             break
 
     return "ok", "no known downtime"
+
+
+
+def evsam_check_site_downtime_range(site, start15bin, limit15bin):
+    """function to check if a site is in a scheduled downtime"""
+    # ################################################################## #
+    # check global downtime information if site is in scheduled downtime #
+    # ################################################################## #
+    downCount = 0
+
+    time15bin = limit15bin - 1
+
+    # reverse loop over downtime boundaries:
+    for tbin in sorted( evsam_glbl_downtimes.keys(), reverse=True ):
+        while (( tbin <= time15bin ) and ( time15bin >= start15bin )):
+            startTIS = time15bin * 900
+            limitTIS = startTIS + 900
+            # relevant downtimes are in boundary at or before timebin:
+            for downInfo in evsam_glbl_downtimes[tbin]:
+                # check service match:
+                if ( downInfo['name'] != site ):
+                    continue
+                if ( downInfo['type'] != "site" ):
+                    continue
+                if ( downInfo['status'] != "downtime" ):
+                    continue
+                if ( limitTIS <= downInfo['duration'][0] ):
+                    continue
+                if ( startTIS >= downInfo['duration'][1] ):
+                    continue
+                downCount += 1
+                break
+            time15bin -= 1
+        if ( time15bin < start15bin ):
+            break
+
+    if ( downCount >= ((limit15bin - start15bin) / 2) ):
+        return "downtime", "%dh%dm" % (int(downCount/4), 15*(downCount%4))
+
+    return "ok", "0h0m"
 
 
 
@@ -1068,21 +1127,23 @@ def evsam_evaluate(timebin):
                     service['host'], service['ctgry'], myStatus,
                     None, None, myDetail)
                 #
+                downStatus = evsam_check_service_downtime(service, timebin)
+                #
                 if service['prod']:
-                    siteDetail += "%s/%s (%s)\n" % (service['host'],
+                    if (( downStatus == "downtime" ) and
+                        (( myStatus == "error" ) or ( myStatus == "unknown" ))):
+                        siteDetail += "%s/%s (%s)\n" % (service['host'],
+                                                  service['ctgry'], downStatus)
+                    else:
+                        siteDetail += "%s/%s (%s)\n" % (service['host'],
                                                     service['ctgry'], myStatus)
                     if ( service['ctgry'] == "CE" ):
-                        #-LML patch for ETF stuck on CEs 2019-Feb-08 to 12
-                        if (( service['type'] == "ARC-CE" ) and
-                            (( myStatus == "unknown" ) or
-                             ( myStatus == "error" )) and
-                            (( (startTIS+450) >= 1549620000 ) and
-                             ( (startTIS+450) <= 1549936800 ))):
-                            continue
-                        #-LML patch for ETF stuck on CEs 2019-Feb-08 to 12
-
                         # one CE needs to be working:
-                        if ceStatus is None:
+                        if (( downStatus == "downtime" ) and
+                            (( myStatus == "error" ) or
+                             ( myStatus == "unknown" ))):
+                            pass
+                        elif ceStatus is None:
                             ceStatus = myStatus
                         elif ( myStatus == "ok" ):
                             ceStatus = "ok"
@@ -1094,7 +1155,11 @@ def evsam_evaluate(timebin):
                             ceStatus = "error"
                     elif ( service['ctgry'] == "SRM" ):
                         # all SRM endpoints must be working:
-                        if srmStatus is None:
+                        if (( downStatus == "downtime" ) and
+                            (( myStatus == "error" ) or
+                             ( myStatus == "unknown" ))):
+                            pass
+                        elif srmStatus is None:
                             srmStatus = myStatus
                         elif ( myStatus == "error" ):
                             srmStatus = "error"
@@ -1107,7 +1172,11 @@ def evsam_evaluate(timebin):
                             srmStatus = "warning"
                     elif ( service['ctgry'] == "XRD" ):
                         # one xrootd-endpoint must be working:
-                        if xrootdStatus is None:
+                        if (( downStatus == "downtime" ) and
+                            (( myStatus == "error" ) or
+                             ( myStatus == "unknown" ))):
+                            pass
+                        elif xrootdStatus is None:
                             xrootdStatus = myStatus
                         elif ( myStatus == "ok" ):
                             xrootdStatus = "ok"
@@ -1188,9 +1257,7 @@ def evsam_calculate(metric, timebin):
                               key=lambda k: [k['ctgry'], k['host'], k['type']]):
             #
             # calculate service status:
-            cnt_ok = 0
-            cnt_warn = 0
-            cnt_error = 0
+            cnt_ok = cnt_warn = cnt_err = 0
             cnt_unknown = 0
             for t15bin in range(start15m, limit15m):
                 t15status = None
@@ -1215,26 +1282,27 @@ def evsam_calculate(metric, timebin):
                     elif ( t15status == "warning" ):
                         cnt_warn += 1
                     elif ( t15status == "error" ):
-                        cnt_error += 1
+                        cnt_err += 1
                     elif ( t15status == "unknown" ):
                         cnt_unknown += 1
-            myStatus = None
-            if ( (cnt_ok + cnt_warn + cnt_error) > 0 ):
+            if ( (cnt_ok + cnt_warn + cnt_err + cnt_unknown) == 0 ):
+                myStatus = None
+            elif ( (cnt_ok + cnt_warn + cnt_err) == 0 ):
+                myStatus = "unknown"
+                myAvailability = None
+            else:
                 myAvailability = round( (cnt_ok + cnt_warn) /
-                                        (cnt_ok + cnt_warn + cnt_error), 3)
-                if ( myAvailability >= 0.900 ):
+                                        (cnt_ok + cnt_warn + cnt_err), 3)
+                if ( cnt_unknown > (cnt_ok + cnt_warn + cnt_err) ):
+                    myStatus = "unknown"
+                elif ( myAvailability >= 0.900 ):
                     myStatus = "ok"
                 elif ( myAvailability < 0.800 ):
                     myStatus = "error"
                 else:
                     myStatus = "warning"
-            else:
-                myAvailability = None
-            if (( cnt_unknown > 0 ) and
-                ( cnt_unknown > (cnt_ok + cnt_warn + cnt_error) )):
-                myStatus = "unknown"
             myDetail = ("15min evaluations: %d ok, %d warning, %d error, %d " +
-                        "unknown") % (cnt_ok, cnt_warn, cnt_error, cnt_unknown)
+                        "unknown") % (cnt_ok, cnt_warn, cnt_err, cnt_unknown)
             # add service calculation to evsam_glbl_evaluations:
             if myStatus is not None:
                 evsam_add_evaluation(metric, timebin,
@@ -1246,9 +1314,7 @@ def evsam_calculate(metric, timebin):
         sum_reliability = 0.000
         cnt_availability = 0
         cnt_reliability = 0
-        cnt_ok = 0
-        cnt_warn = 0
-        cnt_error = 0
+        cnt_ok = cnt_warn = cnt_err = 0
         cnt_unknown = 0
         cnt_downtime = 0
         for t15bin in range(start15m, limit15m):
@@ -1290,16 +1356,25 @@ def evsam_calculate(metric, timebin):
                 elif ( t15status == "warning" ):
                     cnt_warn += 1
                 elif ( t15status == "error" ):
-                    cnt_error += 1
+                    cnt_err += 1
                 elif ( t15status == "unknown" ):
                     cnt_unknown += 1
                 elif ( t15status == "downtime" ):
                     cnt_downtime += 1
         #
-        myStatus = None
-        if ( cnt_availability > 0 ):
+        if ( (cnt_ok + cnt_warn + cnt_err + cnt_unknown + cnt_downtime) == 0 ):
+            myStatus = None
+            myAvailability = None
+            myReliability = None
+        elif ( cnt_availability == 0 ):
+            myStatus = "unknown"
+            myAvailability = None
+            myReliability = None
+        else:
             myAvailability = round(sum_availability / cnt_availability, 3)
-            if ( myAvailability >= 0.900 ):
+            if ( cnt_unknown > (cnt_ok + cnt_warn + cnt_err + cnt_downtime) ):
+                myStatus = "unknown"
+            elif ( myAvailability >= 0.900 ):
                 myStatus = "ok"
             elif ( myAvailability < 0.800 ):
                 myStatus = "error"
@@ -1307,24 +1382,22 @@ def evsam_calculate(metric, timebin):
                 myStatus = "error"
             else:
                 myStatus = "warning"
-        else:
-            myAvailability = None
+            #
+            if ( cnt_reliability == 0 ):
+                myReliability = None
+            else:
+                myReliability = round(sum_reliability / cnt_reliability, 3)
+        downStatus, downDetail = evsam_check_site_downtime_range(site,
+                                                            start15m, limit15m)
         #
-        if ( cnt_reliability > 0 ):
-            myReliability = round(sum_reliability / cnt_reliability, 3)
-        else:
-            myReliability = None
-        #
-        if (( cnt_unknown > 0 ) and
-            ( cnt_unknown > (cnt_ok + cnt_warn + cnt_error + cnt_downtime) )):
-            myStatus = "unknown"
-        if ( cnt_downtime >= (no15min / 2) ):
-            if (( myStatus == "error" ) or ( myStatus == "unknown" )):
+        if ( downStatus == "downtime" ):
+            if (( myStatus is None ) or
+                ( myStatus == "error" ) or ( myStatus == "unknown" )):
                 myStatus = "downtime"
         #
         myDetail = ("15min evaluations: %d ok, %d warning, %d error, %d unkn" +
-                    "own, %d downtime") % (cnt_ok, cnt_warn, cnt_error,
-                                           cnt_unknown, cnt_downtime)
+                    "own, %d downtime (%s)") % (cnt_ok, cnt_warn, cnt_err,
+                                         cnt_unknown, cnt_downtime, downDetail)
         # add site calculation to evsam_glbl_evaluations:
         if myStatus is not None:
             evsam_add_evaluation(metric, timebin, site, "site", myStatus,
@@ -1453,6 +1526,7 @@ def evsam_monit_upload():
         except urllib.error.URLError as excptn:
             logging.error("Failed to upload JSON [%d:%d], %s" %
                              (myOffset, min(ndocs,myOffset+8192), str(excptn)))
+            successFlag = False
     del docs
 
     if ( successFlag ):
