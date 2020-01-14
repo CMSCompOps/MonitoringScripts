@@ -672,11 +672,13 @@ def srhr_monit_down_STS(timestamp, siteDict):
                 oldStatus = siteDict[site][metric][ibin][0]
                 if ( status == "downtime" ):
                     myTuple = ( status, "D", detail )
+                    siteDict[site][metric][ibin] = myTuple
                 elif (( status == "partial" ) and ( oldStatus != "downtime" )):
                     myTuple = ( status, "P", detail )
+                    siteDict[site][metric][ibin] = myTuple
                 elif (( status == "adhoc" ) and ( oldStatus == "none" )):
                     myTuple = ( status, "U", detail )
-                siteDict[site][metric][ibin] = myTuple
+                    siteDict[site][metric][ibin] = myTuple
         end15m = mKey[1]
     del downDict
 
