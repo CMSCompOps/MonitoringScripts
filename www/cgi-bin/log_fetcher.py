@@ -1403,7 +1403,7 @@ def lftch_maindvi_etf(cfg, docs):
                                       time.strftime("%Y-%m-%d %H:%M:%S",
                                    time.gmtime(int(myDoc['timestamp']/1000)))))
                         if 'details' in myDoc:
-                            myStrng = myDoc['details'].replace("\n", "<BR>")
+                            myStrng = myDoc['details'].replace("\\n", "<BR>")
                             myFile.write(("      <TR>\n         <TD NOWRAP>D" +
                                           "etails\n         <TD STYLE=\"word" +
                                           "-wrap: break-word;\" BGCOLOR=\"%s" +
