@@ -1370,23 +1370,25 @@ def evsam_calculate(metric, timebin):
             myStatus = "unknown"
             myAvailability = None
             myReliability = None
+        elif ( cnt_reliability == 0 ):
+            myStatus = "unknown"
+            myAvailability = round(sum_availability / cnt_availability, 3)
+            myReliability = None
         else:
             myAvailability = round(sum_availability / cnt_availability, 3)
-            if ( cnt_unknown > (cnt_ok + cnt_warn + cnt_err + cnt_downtime) ):
+            #
+            myReliability = round(sum_reliability / cnt_reliability, 3)
+            #
+            if ( cnt_unknown > (cnt_ok + cnt_warn + cnt_err) ):
                 myStatus = "unknown"
-            elif ( myAvailability >= 0.900 ):
+            elif ( myReliability >= 0.900 ):
                 myStatus = "ok"
-            elif ( myAvailability < 0.800 ):
+            elif ( myReliability < 0.800 ):
                 myStatus = "error"
             elif (( site[0:3] == "T0_" ) or ( site[0:3] == "T1_" )):
                 myStatus = "error"
             else:
                 myStatus = "warning"
-            #
-            if ( cnt_reliability == 0 ):
-                myReliability = None
-            else:
-                myReliability = round(sum_reliability / cnt_reliability, 3)
         downStatus, downDetail = evsam_check_site_downtime_range(site,
                                                             start15m, limit15m)
         #

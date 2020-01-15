@@ -356,19 +356,19 @@ def srhr_monit_SAM_HC_FTS_SR(timestamp, siteDict):
                                     if ( myJson['data']['type'] != "site" ):
                                         continue
                                     site = myJson['data']['name']
-                                    if 'availability' not in myJson['data']:
+                                    if 'reliability' not in myJson['data']:
                                         if ( status == "unknown" ):
                                             label = "?"
                                         else:
                                            label = "n/a"
-                                    elif myJson['data']['availability'] is None:
+                                    elif myJson['data']['reliability'] is None:
                                         if ( status == "unknown" ):
                                             label = "?"
                                         else:
                                            label = "n/a"
                                     else:
                                         label = "%d%%" % \
-                                      int(100 * myJson['data']['availability'])
+                                      int(100 * myJson['data']['reliability'])
                                 elif ( metric == "hc1day" ):
                                     if 'name' not in myJson['data']:
                                         myJson['data']['name'] = myJson['data']['site']

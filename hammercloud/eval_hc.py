@@ -811,9 +811,8 @@ def evhc_compose_json():
                 else:
                     jsonString += hdrString[1:]
                 jsonString += (("      \"name\": \"%s\",\n" +
-                                "      \"site\": \"%s\",\n" +
                                 "      \"status\": \"%s\",\n") %
-                            (result['name'], result['name'], result['status']))
+                               (result['name'], result['status']))
                 if result['value'] is not None:
                     jsonString += ("      \"value\": %.3f,\n" %
                                    result['value'])
