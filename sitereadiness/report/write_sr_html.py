@@ -883,7 +883,7 @@ def srhr_write_html(timestamp, statusDict):
                          "     border: 1px solid black; padding: 4px;\n     " +
                          " }\n   </STYLE>\n")
             myFile.write(("</HEAD>\n\n<BODY>\n<H1>\n   <CENTER>      CMS Sit" +
-                          "e Readiness Report of %s</H1>\n   </CENTER>\n<P>" +
+                          "e Readiness Report of %s</CENTER>\n   </H1>\n<P>" +
                           "\n&nbsp;\n<P>\n&nbsp;\n<P>\n\n") % timeStrng[:15])
             for site in sorted( statusDict.keys() ):
                 logging.debug("    site %s:" % site)
@@ -1493,7 +1493,7 @@ def srhr_write_summary(timestamp, statusDict):
                          "px;\n         border: 1px solid black; padding: 4p" +
                          "x;\n      }\n   </STYLE>\n")
             myFile.write(("</HEAD>\n\n<BODY>\n<H1>\n   <CENTER>      CMS Sit" +
-                          "e Readiness Summary Report %s</H1>\n   </CENTER>" +
+                          "e Readiness Summary Report %s</CENTER>\n   </H1>" +
                           "\n<P>\n&nbsp;\n<P>\n&nbsp;\n<P>\n\n<TABLE BORDER=" +
                           "\"0\" CELLPADDING=\"0\" CELLSPACING=\"1\">\n") % \
                          timeStrng[:15])
