@@ -1059,7 +1059,7 @@ if __name__ == '__main__':
                 'prd': True
             },
             {   'lbl': "CERNint",
-                'uri': "vocms0204.cern.ch",
+                'uri': "vocms0205.cern.ch",
                 'prd': False
             },
             {   'lbl': "FNAL",
