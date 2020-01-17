@@ -1,0 +1,44 @@
+#!/bin/sh
+# ########################################################################### #
+# Bourne shell script wrapper to manually override LifeStatus, ProdStatus, or #
+#    CarbStatus of sites.                                                     #
+#                                                                             #
+# 2019-Dec-23   Stephan Lammel                                                #
+# ########################################################################### #
+
+
+
+# ########################################################################### #
+
+
+
+# parse arguments:
+# ================
+SET_RQST=`/usr/bin/awk 'BEGIN{split(ENVIRON["PATH_INFO"],a,"/");if(a[1]!=""){print a[1]}else{print a[2]}}'`
+# ########################################################################### #
+
+
+
+
+if [ "${SET_RQST}" = "LifeStatus" -o "${SET_RQST}" = "ProdStatus" -o \
+     "${SET_RQST}" = "CrabStatus" ]; then
+   #
+   /usr/bin/timeout 180 /eos/user/c/cmssst/www/cgi-bin/man_override.py
+   exec 1>&- 2>&-
+else
+   echo "Content-type: text/html"
+   echo ""
+   echo "<HTML lang=en>"
+   echo "<HEAD>"
+   echo "   <META charset=\"UTF-8\">"
+   echo "   <TITLE>Request not implemented</TITLE>"
+   echo "</HEAD>"
+   echo "<BODY>"
+   echo "<H1><CENTER>Request not implemented</CENTER></H1>"
+   echo "<SPAN STYLE=\"font-size: large; color: red;\"><B>set</B> request <B>\"${SET_RQST}\"</B> not implemented</SPAN>"
+   echo "<P>"
+   echo "<HR>"
+   echo "<A HREF=\"http://cern.ch/copyright\">&copy; Copyright author, CMS, Fermilab, and others 2016</A>"
+   echo "</BODY>"
+   echo "</HTML>"
+fi
