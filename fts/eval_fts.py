@@ -1041,7 +1041,8 @@ if __name__ == '__main__':
                                     #
                                     if (( myJson['metadata']['topic'] !=
                                                         "fts_raw_complete" ) or
-                                        ( myJson['data']['vo'] != "cms" )):
+                                        (( myJson['data']['vo'] != "cms" ) and
+                                         ( myJson['data']['vo'][:4] != "cms/" ))):
                                         continue
                                     #
                                     bin15m = int(myJson['data']\
