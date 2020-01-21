@@ -1241,7 +1241,7 @@ if __name__ == '__main__':
         """read in override file and return contents in dictionary"""
         # ################################################################ #
         LOCK_FILE = "./cache/status.lock"
-        #LOCK_FILE = "/eos/home-c/cmssst/www/override/data/status.lock"
+        #LOCK_FILE = "/eos/home-c/cmssst/www/override/status.lock"
 
         remainWait = 3.0
         while ( remainWait > 0.0 ):
@@ -1348,7 +1348,7 @@ if __name__ == '__main__':
         # removed from the file                                             #
         # ################################################################# #
         LOCK_FILE = "./cache/status.lock"
-        #LOCK_FILE = "/eos/home-c/cmssst/www/override/data/status.lock"
+        #LOCK_FILE = "/eos/home-c/cmssst/www/override/status.lock"
         siteRegex = re.compile(r"T\d_[A-Z]{2,2}_\w+")
         #
         if ( siteRegex.match( entry['name'] ) is None ):
@@ -1405,7 +1405,7 @@ if __name__ == '__main__':
     def eval_lifestatus(evalObj, stsObj, srObj):
         """function to evaluate Life Status of sites"""
         # ################################################################### #
-        LIFE_FILE = "/eos/home-c/cmssst/www/override/data/LifeStatus.json"
+        LIFE_FILE = "/eos/home-c/cmssst/www/override/LifeStatus.json"
         #
         metric = evalObj.metrics()[0]
         timestamp = metric[1] * 900
@@ -1589,7 +1589,7 @@ if __name__ == '__main__':
     def eval_prodstatus(evalObj, stsObj, srObj, downObj):
         """function to evaluate Prod Status of sites"""
         # ################################################################### #
-        PROD_FILE = "/eos/home-c/cmssst/www/override/data/ProdStatus.json"
+        PROD_FILE = "/eos/home-c/cmssst/www/override/ProdStatus.json"
         #
         metric = evalObj.metrics()[0]
         timestamp = metric[1] * 900
@@ -1781,7 +1781,7 @@ if __name__ == '__main__':
     def eval_crabstatus(evalObj, stsObj, srObj, hcDict):
         """function to evaluate Prod Status of sites"""
         # ################################################################### #
-        CRAB_FILE = "/eos/home-c/cmssst/www/override/data/CrabStatus.json"
+        CRAB_FILE = "/eos/home-c/cmssst/www/override/CrabStatus.json"
         #
         metric = evalObj.metrics()[0]
         timestamp = metric[1] * 900

@@ -17,7 +17,7 @@
 # ADFS_FULLNAME = John Doe
 # ADFS_GROUP = cms-comp-ops-site-support-team;cms-zh;cms-members;cms-web-access;cms-authorized-users;cms-US_Fermilab-admin;
 #
-# /eos/home-c/cmssst/www/override/data/CrabStatus.json:
+# /eos/home-c/cmssst/www/override/CrabStatus.json:
 # [
 #   { "name": "T9_US_Fermilab",
 #     "status": "enabled",
@@ -86,21 +86,16 @@ OVRD_MODE_NAME = {
     'CrabStatus': [ "latched", "oneday", "toggle" ]
 }
 OVRD_FILE_PATH = {
-    'LifeStatus': "/eos/home-c/cmssst/www/override/data/LifeStatus.json",
-    'ProdStatus': "/eos/home-c/cmssst/www/override/data/ProdStatus.json",
-    'CrabStatus': "/eos/home-c/cmssst/www/override/data/CrabStatus.json"
-}
-OVRD_LOG_PATH = {
-    'LifeStatus': "/eos/home-c/cmssst/www/override/log/LifeStatus.log",
-    'ProdStatus': "/eos/home-c/cmssst/www/override/log/ProdStatus.log",
-    'CrabStatus': "/eos/home-c/cmssst/www/override/log/CrabStatus.log"
+    'LifeStatus': "/eos/home-c/cmssst/www/override/LifeStatus.json",
+    'ProdStatus': "/eos/home-c/cmssst/www/override/ProdStatus.json",
+    'CrabStatus': "/eos/home-c/cmssst/www/override/CrabStatus.json"
 }
 OVRD_CGIURL = "https://test-cmssst.web.cern.ch/cgi-bin/set"
 #
 OVRD_CACHE = "/eos/user/c/cmssst/www/cache"
 #
 #OVRD_LOCK = "./cache/status.lock"
-OVRD_LOCK = "/eos/home-c/cmssst/www/override/data/status.lock"
+OVRD_LOCK = "/eos/home-c/cmssst/www/override/status.lock"
 # ########################################################################### #
 
 
@@ -371,10 +366,13 @@ def ovrd_append_log(cgiMTRC, entry):
     # ##################################################################### #
     siteRegex = re.compile(r"T\d_[A-Z]{2,2}_\w+")
 
-    if cgiMTRC not in OVRD_LOG_PATH:
+    if cgiMTRC not in OVRD_FILE_PATH:
         logging.error("Unsupported metric \"%s\"" % cgiMTRC)
         return
-    filename = OVRD_LOG_PATH[cgiMTRC]
+    if ( OVRD_FILE_PATH[cgiMTRC][-5:] != ".json" ):
+        logging.critical("Bad OVRD_FILE_PATH[\"%s\"] configuration" % cgiMTRC)
+        return
+    filename = OVRD_FILE_PATH[cgiMTRC][:-4] + "log"
     #
     if (( 'name' not in entry ) or ( 'status' not in entry ) or
         ( 'mode' not in entry )):
