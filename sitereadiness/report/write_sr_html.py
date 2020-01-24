@@ -1399,9 +1399,9 @@ def srhr_write_html(timestamp, statusDict):
             myFile.write("\n<HR>\n<TABLE BORDER=\"0\" CELLPADDING=\"2\" CELL" +
                          "SPACING=\"0\" WIDTH=\"100%\">\n<TR>\n   <TD STYLE=" +
                          "\"text-align: right; font-size: smaller; white-spa" +
-                         "ce: nowrap;\">\n      A HREF=\"http://cern.ch/copy" +
-                         "right\">&copy; Copyright author, CMS, Fermilab, an" +
-                         "d others 2019</A>\n</TABLE>\n\n</BODY>\n\n</HTML>\n")
+                         "ce: nowrap;\">\n      <A HREF=\"http://cern.ch/cop" +
+                         "yright\">&copy; Copyright author, CMS, Fermilab, a" +
+                         "nd others 2019</A>\n</TABLE>\n\n</BODY>\n\n</HTML>\n")
         #
         #
         # report file written, move into place
@@ -1761,9 +1761,9 @@ def srhr_write_summary(timestamp, statusDict):
             myFile.write("\n<HR>\n<TABLE BORDER=\"0\" CELLPADDING=\"2\" CELL" +
                          "SPACING=\"0\" WIDTH=\"100%\">\n<TR>\n   <TD STYLE=" +
                          "\"text-align: right; font-size: smaller; white-spa" +
-                         "ce: nowrap;\">\n      A HREF=\"http://cern.ch/copy" +
-                         "right\">&copy; Copyright author, CMS, Fermilab, an" +
-                         "d others 2019</A>\n</TABLE>\n\n</BODY>\n\n</HTML>\n")
+                         "ce: nowrap;\">\n      <A HREF=\"http://cern.ch/cop" +
+                         "yright\">&copy; Copyright author, CMS, Fermilab, a" +
+                         "nd others 2019</A>\n</TABLE>\n\n</BODY>\n\n</HTML>\n")
         #
         #
         # report file written, move into place
