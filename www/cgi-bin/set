@@ -21,7 +21,7 @@ SET_RQST=`/usr/bin/awk 'BEGIN{split(ENVIRON["PATH_INFO"],a,"/");if(a[1]!=""){pri
 
 
 if [ "${SET_RQST}" = "LifeStatus" -o "${SET_RQST}" = "ProdStatus" -o \
-     "${SET_RQST}" = "CrabStatus" ]; then
+     "${SET_RQST}" = "CrabStatus" -o "${SET_RQST}" = "SiteCapacity" ]; then
    #
    /usr/bin/timeout 180 /eos/user/c/cmssst/www/cgi-bin/man_override.py
    exec 1>&- 2>&-
