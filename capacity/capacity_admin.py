@@ -1,0 +1,986 @@
+#!/eos/user/c/cmssst/packages/bin/python3.7
+# ########################################################################### #
+# python CGI script to fetch and update Rebus pledge information, glide-in    #
+#    WMS monitor core usage information, to fetch, and to upload SiteCapacity #
+#    information from/into CERN MonIT.                                        #
+#                                                                             #
+# 2020-Jan-30   Stephan Lammel                                                #
+# ########################################################################### #
+#
+# [
+#  {
+#   "name": "T0_CH_CERN",
+#    "wlcg_federation_name": "CH-CERN",      # by site admin/exec
+#    "wlcg_federation_fraction": 1.000,      # by site admin/exec
+#    "hs06_pledge": 423000,                  # by Rebus
+#    "hs06_per_core": 10.000,                # default or site admin/exec
+#    "core_usable": 31700,
+#    "core_max_used": 12100,                 # by gwmsmon, SSB#136/Real [cores]
+#    "core_production": 12100,               # auto or site admin/exec
+#    "core_cpu_intensive": 22467,            # by site admin/exec, SSB#160
+#    "core_io_intensive": 1350,              # by site admin/exec, SSB#161
+#    "disk_pledge": 26100.0,                 # by Rebus
+#    "disk_usable": 26100.0,
+#    "disk_experiment_use": 0.0,
+#    "tape_pledge": 99000.0,
+#    "tape_usable": 99000.0,
+#    "when": "2019-Jan-17 22:12:00",
+#    "who": "lammel"
+#  }, ...
+# ]
+
+
+
+import os, sys
+import fcntl
+import argparse
+import logging
+import time, calendar
+import math
+import socket
+import urllib.request, urllib.error
+import http
+import json
+import re
+import gzip
+#
+# setup the Java/HDFS/PATH environment for pydoop to work properly:
+os.environ["HADOOP_CONF_DIR"] = "/opt/hadoop/conf/etc/analytix/hadoop.analytix"
+os.environ["JAVA_HOME"]       = "/etc/alternatives/jre"
+os.environ["HADOOP_PREFIX"]   = "/usr/hdp/hadoop"
+import pydoop.hdfs
+# ########################################################################### #
+
+
+
+CAPA_LOCK_PATH = "/eos/home-c/cmssst/www/capacity/update.lock"
+CAPA_FILE_PATH = "/eos/home-c/cmssst/www/capacity/SiteCapacity.json"
+CAPA_CACHE_DIR = "/data/cmssst/MonitoringScripts/capacity/cache"
+CAPA_BCKUP_DIR = "/data/cmssst/MonitoringScripts/capacity/failed"
+# ########################################################################### #
+
+
+
+def capa_cric_cmssites():
+    # ##################################### #
+    # return list with valid CMS site names #
+    # ##################################### #
+    URL_CRIC_SITES = "https://cms-cric.cern.ch/api/cms/site/query/?json"
+    #
+    siteRegex = re.compile(r"T\d_[A-Z]{2,2}_\w+")
+
+    logging.info("Fetching CMS site list from CRIC")
+    try:
+        with urllib.request.urlopen(URL_CRIC_SITES) as urlHandle:
+            urlCharset = urlHandle.headers.get_content_charset()
+            if urlCharset is None:
+                urlCharset = "utf-8"
+            myData = urlHandle.read().decode( urlCharset )
+        #
+        # sanity check:
+        if ( len(myData) < 65536 ):
+            raise ValueError("CRIC site query result failed sanity check")
+        #
+        # decode JSON:
+        myDict = json.loads( myData )
+        del myData
+        #
+        # loop over entries and add site with facility name:
+        siteList = set()
+        for myKey in myDict:
+            site = myDict[myKey]['name']
+            if ( siteRegex.match( site ) is None ):
+                continue
+            #
+            if (( site[-5:] == "_Disk" ) or ( site[-7:] == "_Buffer" ) or
+                ( site[-7:] == "_Export" ) or ( site[-4:] == "_MSS" )):
+                continue
+            #
+            siteList.add( site )
+        del myDict
+        siteList = sorted( siteList )
+        #
+        #
+        # compose JSON string:
+        jsonString = "["
+        commaFlag = False
+        for site in siteList:
+            if commaFlag:
+                jsonString += ",\n   \"%s\"" % site
+            else:
+                jsonString += "\n   \"%s\"" % site
+            commaFlag = True
+        jsonString += "\n]\n"
+        #
+        # update cache:
+        cacheFile = CAPA_CACHE_DIR + "/cric_cmssites.json"
+        try:
+            with open(cacheFile + "_new", 'w') as myFile:
+                myFile.write( jsonString )
+            os.rename(cacheFile + "_new", cacheFile)
+        except:
+            pass
+        del jsonString
+        #
+        logging.log(25, "CMS site list cache updated")
+    except Exception as excptn:
+        logging.error("Failed to fetch CMS site list from CRIC: %s" %
+                                                                   str(excptn))
+        #
+        cacheFile = CAPA_CACHE_DIR + "/cric_cmssites.json"
+        try:
+            with open(cacheFile, 'rt') as myFile:
+                myData = myFile.read()
+            #
+            # decode JSON:
+            siteList = json.loads( myData )
+            del myData
+        except:
+            logging.critical("Failed to read CMS site list cache")
+            return []
+        #
+    return siteList
+# ########################################################################### #
+
+
+
+def capa_cric_pledges():
+    # ####################################### #
+    # return dictionary of federation pledges #
+    # ####################################### #
+    URL_CRIC_PLDG = "https://wlcg-cric.cern.ch/api/core/federation/query/?json"
+    #
+    now = int( time.time() )
+    yearStrng = time.strftime("%Y", time.gmtime(now))
+    month = time.gmtime(now)[1]
+    if (( month >= 1 ) and ( month <= 3 )):
+        monthStrng = "Q1"
+    elif (( month >= 4 ) and ( month <= 6 )):
+        monthStrng = "Q2"
+    elif (( month >= 7 ) and ( month <= 9 )):
+        monthStrng = "Q3"
+    else:
+        monthStrng = "Q4"
+    del month
+
+    logging.info("Fetching WLCG federation pledges from CRIC")
+    try:
+        with urllib.request.urlopen(URL_CRIC_PLDG) as urlHandle:
+            urlCharset = urlHandle.headers.get_content_charset()
+            if urlCharset is None:
+                urlCharset = "utf-8"
+            myData = urlHandle.read().decode( urlCharset )
+        #
+        # sanity check:
+        if ( len(myData) < 16384 ):
+            raise ValueError("WLCG federation pledges data failed sanity check")
+        #
+        # decode JSON:
+        myDict = json.loads( myData )
+        del myData
+        #
+        # loop over entries and add WLCG federation pledges to dictionary:
+        pledgesDict = {}
+        for myKey in myDict:
+            try:
+                federation = myDict[ myKey ]['name']
+                pledges = myDict[ myKey ]['pledges'][yearStrng][monthStrng]
+                if 'CPU' in pledges['cms']:
+                    pldg_hs06 = round( float( pledges['cms']['CPU'] ), 3)
+                else:
+                    pldg_hs06 = 0
+                if 'Disk' in pledges['cms']:
+                    pldg_disk = round( float( pledges['cms']['Disk'] ), 3)
+                else:
+                    pldg_disk = 0.0
+                if 'Tape' in pledges['cms']:
+                    pldg_tape = round( float( pledges['cms']['Tape'] ), 3)
+                else:
+                    pldg_tape = 0.0
+            except KeyError:
+                continue
+            if (( federation is None ) or ( federation == "" )):
+                continue
+            logging.debug("Pledge for \"%s\": %.1f / %.1f / %.1f" %
+                                 (federation, pldg_hs06, pldg_disk, pldg_tape))
+            pledgesDict[federation] = { 'hs06': pldg_hs06, 'disk': pldg_disk,
+                                                           'tape': pldg_tape }
+        del myDict
+    except Exception as excptn:
+        logging.error("Failed to fetch WLCG federation pledges from CRIC: %s" %
+                                                                   str(excptn))
+        return {}
+    #
+    return pledgesDict
+# ########################################################################### #
+
+
+
+def capa_gwmsmon_usage():
+    # ##################################################### #
+    # return dictionary of max cores used during last month #
+    # ##################################################### #
+    URL_GWMS_USAGE = "http://cms-gwmsmon.cern.ch/totalview/json/maxused"
+    #
+    siteRegex = re.compile(r"T\d_[A-Z]{2,2}_\w+")
+
+    logging.info("Fetching max core usage information from gWMSmon")
+    try:
+        with urllib.request.urlopen(URL_GWMS_USAGE) as urlHandle:
+            urlCharset = urlHandle.headers.get_content_charset()
+            if urlCharset is None:
+                urlCharset = "utf-8"
+            myData = urlHandle.read().decode( urlCharset )
+        #
+        # sanity check:
+        if ( len(myData) < 32768 ):
+            raise ValueError("gWMSmon max core usage data failed sanity check")
+        #
+        # decode JSON:
+        myDict = json.loads( myData )
+        del myData
+        #
+        # loop over entries and add max one month usage to dictionary:
+        usageDict = {}
+        for mySite in myDict:
+            if ( siteRegex.match( mySite ) is None ):
+                continue
+            try:
+                usage = int( myDict[mySite]['onemonth'] )
+            except KeyError:
+                continue
+            logging.debug("Core Usage for \"%s\": %d" % (mySite, usage))
+            usageDict[ mySite ] = usage
+        del myDict
+    except Exception as excptn:
+        logging.error("Failed to fetch max core usage from gWMSmon: %s" %
+                                                                   str(excptn))
+        return {}
+    #
+    return usageDict
+# ########################################################################### #
+
+
+
+def capa_read_jsonfile():
+    """read SiteCapacity and return contents as dictionary of dictionaries"""
+    # ####################################################################### #
+
+    logging.info("Reading SiteCapacity file, %s" % CAPA_FILE_PATH)
+    # acquire lock to read JSON file:
+    remainWait = 5.0
+    while ( remainWait > 0.0 ):
+        with open(CAPA_LOCK_PATH, 'w') as lckFile:
+            try:
+                fcntl.lockf(lckFile, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            except BlockingIOError:
+                logging.log(25, "Lock busy, retry in 250 msec")
+                sleep(0.250)
+                remainWait -= 0.250
+                continue
+            #
+            with open(CAPA_FILE_PATH, 'rt') as myFile:
+                jsonString = myFile.read()
+            #
+            fcntl.lockf(lckFile, fcntl.LOCK_UN)
+            break
+    if ( remainWait <= 0.0 ):
+        raise TimeoutError("Failed to acquire lock, %s" % CAPA_LOCK_PATH)
+    #
+    # decode JSON:
+    capacityList = json.loads( jsonString )
+    del jsonString
+    #
+    # check SiteCapacity entries:
+    for myEntry in capacityList:
+        if ( 'name' not in myEntry ):
+            logging.error("Missing key(s) in capacity entry \"%s\" of %s" %
+                                                (str(myEntry), CAPA_FILE_PATH))
+            continue
+        if 'wlcg_federation_name' not in myEntry:
+            myEntry['wlcg_federation_name'] = None
+        if 'wlcg_federation_fraction' not in myEntry:
+            myEntry['wlcg_federation_fraction'] = 1.000
+        if 'hs06_pledge' not in myEntry:
+            myEntry['hs06_pledge'] = 0
+        if 'hs06_per_core' not in myEntry:
+            myEntry['hs06_per_core'] = 10.000
+        if 'core_usable' not in myEntry:
+            myEntry['core_usable'] = 0
+        if 'core_max_used' not in myEntry:
+            myEntry['core_max_used'] = 0
+        if 'core_production' not in myEntry:
+            myEntry['core_production'] = 0
+        if 'core_cpu_intensive' not in myEntry:
+            myEntry['core_cpu_intensive'] = 0
+        if 'core_io_intensive' not in myEntry:
+            myEntry['core_io_intensive'] = 0
+        if 'disk_pledge' not in myEntry:
+            myEntry['disk_pledge'] = 0.0
+        if 'disk_usable' not in myEntry:
+            myEntry['disk_usable'] = 0.0
+        if 'disk_experiment_use' not in myEntry:
+            myEntry['disk_experiment_use'] = 0.0
+        if 'tape_pledge' not in myEntry:
+            myEntry['tape_pledge'] = 0.0
+        if 'tape_usable' not in myEntry:
+            myEntry['tape_usable'] = 0.0
+        if 'when' not in myEntry:
+            myEntry['when'] = None
+        if 'who' not in myEntry:
+            myEntry['who'] = None
+
+    return capacityList
+# ########################################################################### #
+
+
+
+def capa_compose_json(capacityList, time15bin):
+    """function to compose a JSON string from the list of site capacities"""
+    # ##################################################################### #
+    # compose a JSON string from the list of capacity dictionaries provided #
+    # ##################################################################### #
+
+    jsonString = "["
+    commaFlag = False
+    #
+    if  time15bin is not None:
+        timestamp = ( time15bin * 900 ) + 450
+        hdrString = ((",\n {\n   \"producer\": \"cmssst\",\n" +
+                             "   \"type\": \"ssbmetric\",\n" +
+                             "   \"path\": \"scap15min\",\n" +
+                             "   \"timestamp\": %d000,\n" +
+                             "   \"type_prefix\": \"raw\",\n" +
+                             "   \"data\": {\n") % timestamp)
+        spcStrng = "      "
+    else:
+        spcStrng = "   "
+    tmpDict = { e['name']:e for e in capacityList }
+    #
+    for myName in sorted( tmpDict.keys() ):
+        if (( time15bin is not None ) and commaFlag ):
+            jsonString += hdrString
+        elif time15bin is not None:
+            jsonString += hdrString[1:]
+        elif ( commaFlag ):
+            jsonString += ",\n {\n"
+        else:
+            jsonString += "\n {\n"
+        #
+        jsonString += ("%s\"name\": \"%s\",\n" % (spcStrng,
+                                                      tmpDict[myName]['name']))
+        if (( 'wlcg_federation_name' in tmpDict[myName] ) and
+            ( tmpDict[myName]['wlcg_federation_name'] is not None )):
+            jsonString += ("%s\"wlcg_federation_name\": \"%s\",\n" %
+                           (spcStrng, tmpDict[myName]['wlcg_federation_name']))
+        else:
+            jsonString += "%s\"wlcg_federation_name\": null,\n" % spcStrng
+        if (( 'wlcg_federation_fraction' in tmpDict[myName] ) and
+            ( tmpDict[myName]['wlcg_federation_fraction'] is not None )):
+            jsonString += ("%s\"wlcg_federation_fraction\": %.3f,\n" %
+                       (spcStrng, tmpDict[myName]['wlcg_federation_fraction']))
+        else:
+            jsonString += "%s\"wlcg_federation_fraction\": 1.000,\n" % spcStrng
+        if (( 'hs06_pledge' in tmpDict[myName] ) and
+            ( tmpDict[myName]['hs06_pledge'] is not None )):
+            jsonString += ("%s\"hs06_pledge\": %d,\n" %
+                                    (spcStrng, tmpDict[myName]['hs06_pledge']))
+        else:
+            jsonString += "%s\"hs06_pledge\": 0,\n" % spcStrng
+        if (( 'hs06_per_core' in tmpDict[myName] ) and
+            ( tmpDict[myName]['hs06_per_core'] is not None )):
+            jsonString += ("%s\"hs06_per_core\": %.3f,\n" %
+                                  (spcStrng, tmpDict[myName]['hs06_per_core']))
+        else:
+           jsonString += "%s\"hs06_per_core\": 10.000,\n" % spcStrng
+        for cpctyKey in ['core_usable', 'core_max_used', 'core_production', \
+                         'core_cpu_intensive', 'core_io_intensive' ]:
+            if (( cpctyKey in tmpDict[myName] ) and
+                ( tmpDict[myName][cpctyKey] is not None )):
+                jsonString += ("%s\"%s\": %d,\n" %
+                               (spcStrng, cpctyKey, tmpDict[myName][cpctyKey]))
+            else:
+                jsonString += "%s\"%s\": 0,\n" % (spcStrng, cpctyKey)
+        for cpctyKey in ['disk_pledge', 'disk_usable', 'disk_experiment_use', \
+                         'tape_pledge', 'tape_usable' ]:
+            if (( cpctyKey in tmpDict[myName] ) and
+                ( tmpDict[myName][cpctyKey] is not None )):
+                jsonString += ("%s\"%s\": %.1f,\n" %
+                               (spcStrng, cpctyKey, tmpDict[myName][cpctyKey]))
+            else:
+                jsonString += "%s\"%s\": 0.0,\n" % (spcStrng, cpctyKey)
+        
+        if (( 'when' in tmpDict[myName] ) and
+            ( tmpDict[myName]['when'] is not None )):
+            jsonString += ("%s\"when\": \"%s\",\n" %
+                                           (spcStrng, tmpDict[myName]['when']))
+        else:
+            jsonString += "%s\"when\": null,\n" % spcStrng
+        if (( 'who' in tmpDict[myName] ) and
+            ( tmpDict[myName]['who'] is not None )):
+            jsonString += ("%s\"who\": \"%s\"\n" %
+                                            (spcStrng, tmpDict[myName]['who']))
+        else:
+            jsonString += "%s\"who\": null\n" % spcStrng
+        if time15bin is not None:
+            jsonString += "   }\n }"
+        else:
+            jsonString += " }"
+        commaFlag = True
+    jsonString += "\n]\n"
+    #
+    return jsonString
+# ########################################################################### #
+
+
+
+def capa_update_jsonfile(siteList, pledgesDict, usageDict):
+    """update the site capacity file with pledges and/or usage"""
+    # ##################################################################### #
+    # read the SiteCapacity JSON file, update the information for valid CMS #
+    # sites with pledge and/or usage data, write out the new/updated site   #
+    # site capacity information, and return in a site capacity dictionary.  #
+    # ##################################################################### #
+
+    if (( pledgesDict is not None ) and ( usageDict is not None )):
+        logging.info("Updating pledges and usages in SiteCapacity file, %s" %
+                                                                CAPA_FILE_PATH)
+    elif ( pledgesDict is not None ):
+        usageDict = {}
+        logging.info("Updating pledges in SiteCapacity file, %s" %
+                                                                CAPA_FILE_PATH)
+    elif ( usageDict is not None ):
+        pledgesDict = {}
+        logging.info("Updating usages in SiteCapacity file, %s" % 
+                                                                CAPA_FILE_PATH)
+    else:
+        return capa_read_jsonfile()
+    if (( usageDict is not None ) and ( siteList is None)):
+        logging.warning("Core usage update limited to existing site entries!")
+    if pledgesDict is None:
+        pledgesDict = {}
+    if usageDict is None:
+        usageDict = {}
+    #
+    # acquire lock and read capacity file:
+    remainWait = 5.0
+    while ( remainWait > 0.0 ):
+        with open(CAPA_LOCK_PATH, 'w') as lckFile:
+            try:
+                fcntl.lockf(lckFile, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            except BlockingIOError:
+                logging.log(25, "Lock busy, retry in 250 msec")
+                sleep(0.250)
+                remainWait -= 0.250
+                continue
+            #
+            #
+            try:
+                with open(CAPA_FILE_PATH, 'r+t') as myFile:
+                    #
+                    jsonString = myFile.read()
+                    #
+                    capacityList = json.loads( jsonString )
+                    #
+                    #
+                    tmpSet = set( e['wlcg_federation_name']
+                                  for e in capacityList
+                                  if (('wlcg_federation_name' in e) and
+                                      (e['wlcg_federation_name'] is not None)) )
+                    for myKey in pledgesDict:
+                        if myKey in tmpSet:
+                            for myEntry in capacityList:
+                                if (( 'wlcg_federation_name' in myEntry ) and
+                                    ( myEntry['wlcg_federation_name'] ==
+                                                                      myKey )):
+                                    try:
+                                       fractn = \
+                                            myEntry['wlcg_federation_fraction']
+                                    except KeyError:
+                                       fractn = 1.000
+                                    myEntry['hs06_pledge'] = int( (fractn *
+                                            pledgesDict[myKey]['hs06']) + 0.5 )
+                                    myEntry['disk_pledge'] = int(2.0 * (fractn
+                                           * pledgesDict[myKey]['disk'])) / 2.0
+                                    myEntry['tape_pledge'] = int(2.0 * (fractn
+                                           * pledgesDict[myKey]['tape'])) / 2.0
+                                    logging.log(15, ("Pledge for %s updated:" +
+                                        " %.1f, %.1f, %.1f") % myEntry['name'],
+                                                        myEntry['hs06_pledge'],
+                                                        myEntry['disk_pledge'],
+                                                        myEntry['tape_pledge'])
+                    del tmpSet
+                    #
+                    #
+                    if siteList is None:
+                        siteList = [ e['name'] for e in capacityList ]
+                    tmpDict = { e['name']:e for e in capacityList }
+                    for myKey in usageDict:
+                        if myKey not in siteList:
+                            continue
+                        if ( myKey == "T0_CH_CERN" ):
+                            continue
+                        if myKey in tmpDict:
+                            tmpDict[myKey]['core_max_used'] = usageDict[myKey]
+                            logging.log(15, "Core usage for %s updated: %d" %
+                                                     (myKey, usageDict[myKey]))
+                        elif ( usageDict[myKey] != 0 ):
+                            capacityList.append( {
+                                'name':                     myKey,
+                                'wlcg_federation_name':     None,
+                                'wlcg_federation_fraction': 1.000,
+                                'hs06_pledge':              0,
+                                'hs06_per_core':            10.000,
+                                'core_usable':              0,
+                                'core_max_used':            usageDict[myKey],
+                                'core_production':          0,
+                                'core_cpu_intensive':       0,
+                                'core_io_intensive':        0,
+                                'disk_pledge':              0.0,
+                                'disk_usable':              0.0,
+                                'disk_experiment_use':      0.0,
+                                'tape_pledge':              0.0,
+                                'tape_usable':              0.0,
+                                'when':                     None,
+                                'who':                      None } )
+                            logging.log(15, "Core usage for %s set to: %d" %
+                                                     (myKey, usageDict[myKey]))
+                    del tmpDict
+                    #
+                    #
+                    jsonString = capa_compose_json(capacityList, None)
+                    #
+                    myFile.seek(0)
+                    myFile.write(jsonString)
+                    myFile.truncate()
+                    #
+                logging.info("Successfully updated SiteCapacity file, %s" %
+                                                                CAPA_FILE_PATH)
+            except Exception as excptn:
+                logging.error("Failed to update SiteCapacity file %s, %s" %
+                                                 (CAPA_FILE_PATH, str(excptn)))
+                return
+            #
+            fcntl.lockf(lckFile, fcntl.LOCK_UN)
+            break
+    if ( remainWait <= 0.0 ):
+        logging.error("Timeout acquiring lock %s" % CAPA_LOCK_PATH)
+
+    return capacityList
+# ########################################################################### #
+
+
+
+def capa__monit_fetch(time15bin=None):
+    """function to fetch SiteCapacity docs from MonIT/HDFS"""
+    # ################################################################## #
+    # fetch SiteCapacity document from MonIT covering bin15min or latest #
+    # ################################################################## #
+    HDFS_PREFIX = "/project/monitoring/archive/cmssst/raw/ssbmetric/"
+    #
+    now = int( time.time() )
+    sixDaysAgo = calendar.timegm( time.gmtime(now - (6 * 86400)) )
+    #
+    # metric covering 15min timesbin could be at midnight, fetch 1 extra day:
+    if time15bin is None:
+        time15bin = int( now / 900 ) + 1
+    timeFrst = ( int( time15bin / 96 ) - 1) * 86400
+    timeLast = ( time15bin * 900 ) + 899
+
+
+    # prepare HDFS subdirectory list:
+    # ===============================
+    logging.info("Retrieving SiteCapacity docs from MonIT HDFS")
+    logging.log(15, "   from %s to %s" %
+                       (time.strftime("%Y-%m-%d %H:%M", time.gmtime(timeFrst)),
+                    time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime(timeLast))))
+    #
+    dirList = set()
+    for dirDay in range(timeFrst, timeLast + 1, 86400):
+        dirList.add( time.strftime("scap15min/%Y/%m/%d", time.gmtime(dirDay)) )
+    #
+    startLclTmpArea = max( calendar.timegm( time.localtime( sixDaysAgo ) ),
+                           calendar.timegm( time.localtime( timeFrst ) ) )
+    midnight = ( int( now / 86400 ) * 86400 )
+    limitLclTmpArea = calendar.timegm( time.localtime( midnight + 86399 ) )
+    for dirDay in range( startLclTmpArea, limitLclTmpArea, 86400):
+        dirList.add( time.strftime("scap15min/%Y/%m/%d.tmp",
+                                                         time.gmtime(dirDay)) )
+    #
+    dirList = sorted( dirList )
+
+
+    # connect to HDFS, loop over directories and read status docs:
+    # ============================================================
+    tmpDict = {}
+    try:
+        with pydoop.hdfs.hdfs() as myHDFS:
+            for subDir in dirList:
+                logging.debug("   checking HDFS subdirectory %s" % subDir)
+                if not myHDFS.exists( HDFS_PREFIX + subDir ):
+                    continue
+                # get list of files in directory:
+                myList = myHDFS.list_directory( HDFS_PREFIX + subDir )
+                fileNames = [ d['name'] for d in myList
+                              if (( d['kind'] == "file" ) and
+                                  ( d['size'] != 0 )) ]
+                del myList
+                for fileName in fileNames:
+                    logging.debug("   reading file %s" %
+                                  os.path.basename(fileName))
+                    fileHndl = fileObj = None
+                    try:
+                        if ( os.path.splitext(fileName)[-1] == ".gz" ):
+                            fileHndl = myHDFS.open_file(fileName)
+                            fileObj = gzip.GzipFile(fileobj=fileHndl)
+                        else:
+                            fileObj = myHDFS.open_file(fileName)
+                        # read SiteCapacity documents in file:
+                        for myLine in fileObj:
+                            myJson = json.loads(myLine.decode('utf-8'))
+                            try:
+                                if ( myJson['metadata']['path'] !=
+                                                                 "scap15min" ):
+                                    continue
+                                tis = int( myJson['metadata']['timestamp']
+                                                                       / 1000 )
+                                if (( tis < timeFrst ) or ( tis > timeLast )):
+                                    continue
+                                myData = myJson['data']
+                                if (( 'hs06_pledge' not in myData ) or
+                                    ( 'hs06_per_core' not in myData ) or
+                                    ( 'core_usable' not in myData ) or
+                                    ( 'core_max_used' not in myData ) or
+                                    ( 'core_production' not in myData ) or
+                                    ( 'core_cpu_intensive' not in myData ) or
+                                    ( 'core_io_intensive' not in myData ) or
+                                    ( 'disk_pledge' not in myData ) or
+                                    ( 'disk_usable' not in myData ) or
+                                    ( 'disk_experiment_use' not in myData )):
+                                    continue
+                                if 'wlcg_federation_name' not in myData:
+                                    myData['wlcg_federation_name'] = None
+                                if 'wlcg_federation_fraction' not in myData:
+                                    myData['wlcg_federation_fraction'] = None
+                                if 'tape_pledge' not in myData:
+                                    myData['tape_pledge'] = 0.0
+                                if 'tape_usable' not in myData:
+                                    myData['tape_usable'] = 0.0
+                                if 'when' not in myData:
+                                    myData['when'] = None
+                                if 'who' not in myData:
+                                    myData['who'] = None
+                                #
+                                tbin = int( tis / 900 )
+                                name = myData['name']
+                                vrsn = myJson['metadata']['kafka_timestamp']
+                                #
+                                value = (vrsn, myData)
+                                #
+                                if tbin not in tmpDict:
+                                    tmpDict[tbin] = {}
+                                if name in tmpDict[tbin]:
+                                    if ( vrsn <= tmpDict[tbin][name][0] ):
+                                        continue
+                                tmpDict[tbin][name] = value
+                            except KeyError:
+                                continue
+                    except json.decoder.JSONDecodeError as excptn:
+                        logging.error("JSON decoding failure, file %s: %s"
+                                                     % (fileName, str(excptn)))
+                    except FileNotFoundError as excptn:
+                        logging.error("HDFS file not found, %s: %s" %
+                                                       (fileName, str(excptn)))
+                    except IOError as err:
+                        logging.error("IOError accessing HDFS file %s: %s"
+                                                     % (fileName, str(excptn)))
+                    finally:
+                        if fileObj is not None:
+                            fileObj.close()
+                        if fileHndl is not None:
+                            fileHndl.close()
+    except Exception as excptn:
+        logging.error("Failed to fetch SiteCapacity docs from MonIT HDFS: %s" %
+                                                                   str(excptn))
+
+
+    # select proper timebin and load SiteCapacity into a metric dictionary:
+    # =====================================================================
+    if ( len(tmpDict) == 0 ):
+        logging.error("No SiteCapacity documents found in MonIT")
+        return { 0: [] }
+    myList = sorted( tmpDict.keys(), reverse=True )
+    for tbin in myList:
+        if ( tbin <= time15bin ):
+            break
+    if ( tbin > time15bin ):
+        logging.error("No SiteCapacity documents covering timebin %d found" %
+                                                                     time15bin)
+        return { 0: [] }
+    #
+    metricDict = {}
+    metricDict[ tbin ] = []
+    for myName in sorted( tmpDict[ tbin ] ):
+        metricDict[ tbin ].append( tmpDict[ tbin ][myName][1] )
+    del tmpDict
+
+    logging.info("   found %d relevant SiteCapacity docs in timebin %d" %
+                                               (len(metricDict[ tbin ]), tbin))
+    #
+    return metricDict
+# ########################################################################### #
+
+
+
+def capa_monit_upload(metricDict):
+    """function to upload SiteCapacity metric(s) to MonIT/HDFS"""
+    # ################################################################# #
+    # upload SiteCapacity information as JSON metric documents to MonIT #
+    # ################################################################# #
+    #MONIT_URL = "http://monit-metrics.cern.ch:10012/"
+    MONIT_URL = "http://fail.cern.ch:10001/"
+    MONIT_HDR = {'Content-Type': "application/json; charset=UTF-8"}
+    #
+    logging.info("Composing SiteCapacity JSON array and uploading to MonIT")
+
+
+    # compose JSON array string:
+    # ==========================
+    jsonString = "["
+    commaFlag = False
+    for t15bin in sorted( metricDict.keys() ):
+        mtrcString = capa_compose_json(metricDict[t15bin], t15bin)
+        if ( commaFlag ):
+            jsonString = ","
+        jsonString += mtrcString[1:-3]
+        commaFlag = True
+    jsonString += "\n]\n"
+    #
+    if ( jsonString == "[\n]\n" ):
+        logging.warning("skipping upload of document-devoid JSON string")
+        return False
+    cnt_docs = jsonString.count("\"producer\": \"cmssst\"")
+    #
+    jsonString = jsonString.replace("ssbmetric", "metrictest")
+
+
+    # upload string with JSON document array to MonIT/HDFS:
+    # =====================================================
+    docs = json.loads(jsonString)
+    ndocs = len(docs)
+    successFlag = True
+    for myOffset in range(0, ndocs, 4096):
+        if ( myOffset > 0 ):
+            # give importer time to process documents
+            time.sleep(1.500)
+        # MonIT upload channel can handle at most 10,000 docs at once
+        dataString = json.dumps( docs[myOffset:min(ndocs,myOffset+4096)] )
+        #
+        try:
+            # MonIT needs a document array and without newline characters:
+            requestObj = urllib.request.Request(MONIT_URL,
+                         data=dataString.encode("utf-8"),
+                         headers=MONIT_HDR, method="POST")
+            responseObj = urllib.request.urlopen( requestObj, timeout=90 )
+            if ( responseObj.status != http.HTTPStatus.OK ):
+                logging.error(("Failed to upload JSON [%d:%d] string to MonI" +
+                               "T, %d \"%s\"") %
+                              (myOffset, min(ndocs,myOffset+4096),
+                               responseObj.status, responseObj.reason))
+                successFlag = False
+            responseObj.close()
+        except urllib.error.URLError as excptn:
+            logging.error("Failed to upload JSON [%d:%d], %s" %
+                             (myOffset, min(ndocs,myOffset+4096), str(excptn)))
+            successFlag = False
+    del docs
+
+    if ( successFlag ):
+        logging.log(25, "JSON array with %d docs uploaded to MonIT" % cnt_docs)
+    return successFlag
+# ########################################################################### #
+
+
+
+def capa_monit_write(metricDict, filename=None):
+    """function to write SiteCapacity metric(s) to a file"""
+    # ################################################################# #
+    # write SiteCapacity information as JSON metric documents to a file #
+    # ################################################################# #
+
+    if filename is None:
+        filename = "%s/eval_scap_%s.json" % (CAPA_BCKUP_DIR,
+                                    time.strftime("%Y%m%d%H%M", time.gmtime()))
+    logging.info("Writing SiteCapacity JSON array to file %s" % filename)
+
+
+    # compose JSON array string:
+    # ==========================
+    jsonString = "["
+    commaFlag = False
+    for t15bin in sorted( metricDict.keys() ):
+        #mtrcString = capa_compose_json(metricDict[t15bin], None)
+        mtrcString = capa_compose_json(metricDict[t15bin], t15bin)
+        if ( commaFlag ):
+            jsonString = ","
+        jsonString += mtrcString[1:-3]
+        commaFlag = True
+    jsonString += "\n]\n"
+    #
+    if ( jsonString == "[\n]\n" ):
+        logging.warning("skipping upload of document-devoid JSON string")
+        return False
+    #cnt_docs = jsonString.count("   \"name\": \"T")
+    cnt_docs = jsonString.count("\"producer\": \"cmssst\"")
+
+
+    # write string to file:
+    # =====================
+    try:
+        with open(filename, 'w') as myFile:
+            myFile.write( jsonString )
+        logging.log(25, "JSON array with %d docs written to file" % cnt_docs)
+    except OSError as excptn:
+        logging.error("Failed to write JSON array, %s" % str(excptn))
+
+    return
+# ########################################################################### #
+
+
+
+def capa_compare_metrics(metricDict, capacityList):
+    """compare a SiteCapacity dictionary with last list in a metrics dict"""
+    # #################################################################### #
+    # check if the SiteCapacity entries in the capacityList match with the #
+    # last SiteCapacity list in the provided metric dictionary             #
+    # #################################################################### #
+
+    if (( len(metricDict) == 0 ) and ( len(capacityList) == 0 )):
+        logging.warning("Empty metric and capacity list compared")
+        return True
+    #
+    # get latest timebin in metricDict:
+    t15bin = sorted( metricDict.keys(), reverse=True )[0]
+    #
+    # convert SiteCapacity list to dictionary:
+    tmp1Dict = { e['name']:e for e in capacityList }
+    #
+    # convert SiteCapacity list in metric to dictionary:
+    tmp2Dict = { e['name']:e for e in metricDict[t15bin] }
+    #
+    # compare the two dictionaries:
+    compFlag = ( tmp1Dict == tmp2Dict )
+
+    return compFlag
+# ########################################################################### #
+
+
+
+if __name__ == '__main__':
+    #
+    os.umask(0o022)
+    #
+    parserObj = argparse.ArgumentParser(description="Script to update/fetch/" +
+        "upload site capacity information in the JSON file/CERN MonIT.")
+    parserObj.add_argument("-p", dest="pledge", default=False,
+                                 action="store_true",
+                                 help="fetch/update pledges from ReBus/CRIC")
+    parserObj.add_argument("-g", dest="usage", default=False,
+                                 action="store_true",
+                                 help="fetch/update max core usage from gWMS" +
+                                 "mon/Grafana")
+    parserObj.add_argument("-f", dest="file", default=None, const="",
+                                 action="store", nargs="?",
+                                 metavar="filepath",
+                                 help="write SiteCapacity data to file")
+    parserObj.add_argument("-U", dest="upload", default=True,
+                                 action="store_false",
+                                 help="do not upload SiteCapacity to MonIT")
+    parserObj.add_argument("-v", action="count", default=0,
+                                 help="increase logging verbosity")
+    argStruct = parserObj.parse_args()
+    #
+    # configure message logging:
+    logging.addLevelName(25, "NOTICE")
+    logging.addLevelName(15, "debug")
+    logging.addLevelName(9, "XDEBUG")
+    #
+    if ( argStruct.v >= 5 ):
+        logLevel = 9
+        logFormat = "%(asctime)s [%(levelname).1s] %(message)s"
+    elif ( argStruct.v == 4 ):
+        logLevel = logging.DEBUG
+        logFormat = "%(asctime)s [%(levelname).1s] %(message)s"
+    elif ( argStruct.v == 3 ):
+        logLevel = 15
+        logFormat = "%(asctime)s [%(levelname).1s] %(message)s"
+    elif ( argStruct.v == 2 ):
+        logLevel = logging.INFO
+        logFormat = "[%(levelname).1s] %(message)s"
+    elif ( argStruct.v == 1 ):
+        logLevel = 25
+        logFormat = "[%(levelname).1s] %(message)s"
+    else:
+        logLevel = logging.WARNING
+        logFormat = "[%(levelname).1s] %(message)s"
+    #
+    logging.basicConfig(datefmt="%Y-%b-%d %H:%M:%S", format=logFormat,
+                                                                level=logLevel)
+
+
+    now15m = int( time.time() / 900 )
+    #
+    # fetch list of valid CMS site names as needed:
+    siteList = None
+    if ( argStruct.pledge or argStruct.usage ):
+        siteList = capa_cric_cmssites()
+    #
+    #
+    # fetch federation pledge information from ReBUS/CRIC if requested:
+    pledgeDict = None
+    if ( argStruct.pledge ):
+        pledgeDict = capa_cric_pledges()
+    #
+    #
+    # fetch maximum number of cores provided by sites if requested:
+    usageDict = None
+    if ( argStruct.usage ):
+        usageDict = capa_gwmsmon_usage()
+
+
+
+    # update SiteCapacity JSON file as needed:
+    if ( argStruct.pledge or argStruct.usage ):
+        capacityList = capa_update_jsonfile(siteList, pledgeDict, usageDict)
+    else:
+        capacityList = capa_read_jsonfile()
+
+
+
+    # upload SiteCapacity data to MonIT HDFS as needed/requested:
+    if ( argStruct.upload ):
+        #
+        # fetch latest SiteCapacity docs from MonIT
+        metricDict = capa__monit_fetch()
+        #
+        dayLatest = int( (sorted( metricDict.keys(), reverse=True )[0]) / 96 )
+        dayCurrent = int( now15m / 96 )
+        if ( dayLatest == dayCurrent ):
+            skipFlag = capa_compare_metrics(metricDict, capacityList)
+        else:
+            skipFlag = False
+        #
+        # upload SiteCapacity data as needed:
+        if ( skipFlag == False ):
+            capa_monit_upload( { now15m: capacityList } )
+    #
+    #
+    # write SiteCapacity data to file as requested:
+    if argStruct.file is not None:
+        if ( argStruct.file == "" ):
+            capa_monit_write( { now15m: capacityList } )
+        else:
+            capa_monit_write( { now15m: capacityList }, argStruct.file )
+
+
+    #import pdb; pdb.set_trace()
