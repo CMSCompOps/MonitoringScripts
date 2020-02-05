@@ -151,16 +151,20 @@ def capa_cric_pledges():
     URL_CRIC_PLDG = "https://wlcg-cric.cern.ch/api/core/federation/query/?json"
     #
     now = int( time.time() )
-    yearStrng = time.strftime("%Y", time.gmtime(now))
+    # a WLCG pledge year starts April 1st, so quarters are shifted by one
     month = time.gmtime(now)[1]
     if (( month >= 1 ) and ( month <= 3 )):
-        monthStrng = "Q1"
-    elif (( month >= 4 ) and ( month <= 6 )):
-        monthStrng = "Q2"
-    elif (( month >= 7 ) and ( month <= 9 )):
-        monthStrng = "Q3"
-    else:
         monthStrng = "Q4"
+        yearStrng = "%d" % (time.gmtime(now)[0] - 1)
+    elif (( month >= 4 ) and ( month <= 6 )):
+        monthStrng = "Q1"
+        yearStrng = "%d" % time.gmtime(now)[0]
+    elif (( month >= 7 ) and ( month <= 9 )):
+        monthStrng = "Q2"
+        yearStrng = "%d" % time.gmtime(now)[0]
+    else:
+        monthStrng = "Q3"
+        yearStrng = "%d" % time.gmtime(now)[0]
     del month
 
     logging.info("Fetching WLCG federation pledges from CRIC")
