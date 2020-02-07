@@ -4400,8 +4400,7 @@ def ssdw_monit_etf():
                                     continue
                                 if ( myJson['data']['vo'] != "cms" ):
                                     continue
-                                tis = int( myJson['metadata']['timestamp']
-                                                                       / 1000 )
+                                tis = int( myJson['data']['timestamp'] / 1000 )
                                 if (( tis < timeFrst ) or ( tis > timeLast )):
                                     continue
                                 hostname = myJson['data']['dst_hostname']
