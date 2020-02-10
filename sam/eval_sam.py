@@ -1048,6 +1048,8 @@ def evsam_evaluate(timebin):
     startTIS = timebin * 900
     limitTIS = startTIS + 900
     beforeTIS = startTIS - ( 900 + 450 )
+    #
+    kwnCnt = 0
 
     logging.info("Evaluating SAM service/site status for %s" %
                  time.strftime("%Y-%b-%d %H:%M:%S", time.gmtime(startTIS)))
@@ -1223,7 +1225,16 @@ def evsam_evaluate(timebin):
         if myStatus is not None:
             evsam_add_evaluation("sam15min", timebin, site, "site", myStatus,
                 myAvailability, myReliability, siteDetail)
+            if ( myStatus != "unknown" ):
+                kwnCnt += 1
 
+    if ( kwnCnt == 0 ):
+        logging.warning("SAM status evaluated to all unknown for %s (%s)" %
+            (startTIS, time.strftime("%Y-%b-%d %H:%M", time.gmtime(startTIS))))
+    else:
+        logging.log(25, "SAM status evaluated for %s (%s)" % (startTIS,
+                       time.strftime("%Y-%b-%d %H:%M", time.gmtime(startTIS))))
+    #
     return
 # ########################################################################### #
 
