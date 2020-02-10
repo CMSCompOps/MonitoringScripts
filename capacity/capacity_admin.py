@@ -266,6 +266,49 @@ def capa_gwmsmon_usage():
 
 
 
+def capa_dynamo_quota():
+    # ##################################################################### #
+    # return dictionary of current experiment disk quota settings in Dynamo #
+    # ##################################################################### #
+    URL_DDM_QUOTA = "http://t3serv001.mit.edu/~cmsprod/IntelROCCS/Detox/SitesInfo.csv"
+    #
+    siteRegex = re.compile(r"T\d_[A-Z]{2,2}_\w+")
+
+    logging.info("Fetching experiment disk quota settings from Dynamo")
+    try:
+        with urllib.request.urlopen(URL_DDM_QUOTA) as urlHandle:
+            urlCharset = urlHandle.headers.get_content_charset()
+            if urlCharset is None:
+                urlCharset = "utf-8"
+            myData = urlHandle.read().decode( urlCharset )
+        #
+        # sanity check:
+        if ( len(myData) < 256 ):
+            raise ValueError("Dynamo experiment disk quota failed sanity check")
+        #
+        # loop over lines and add experiment disk quota to dictionary:
+        quotaDict = {}
+        for myLine in myData.splitlines():
+            myEntries = myLine.split(",")
+            mySite = myEntries[-1]
+            if ( siteRegex.match( mySite ) is None ):
+                continue
+            try:
+                myQuota = int( 2.0 * float(myEntries[2]) ) / 2.0
+            except KeyError:
+                continue
+            logging.debug("Experiment quota for \"%s\": %d" % (mySite, myQuota))
+            quotaDict[ mySite ] = myQuota
+    except Exception as excptn:
+        logging.error("Failed to fetch experiment disk quota from Dynamo: %s" %
+                                                                   str(excptn))
+        return {}
+    #
+    return quotaDict
+# ########################################################################### #
+
+
+
 def capa_read_jsonfile():
     """read SiteCapacity and return contents as dictionary of dictionaries"""
     # ####################################################################### #
@@ -438,7 +481,7 @@ def capa_compose_json(capacityList, time15bin):
 
 
 
-def capa_update_jsonfile(siteList, pledgesDict, usageDict):
+def capa_update_jsonfile(siteList, pledgesDict, quotaDict, usageDict):
     """update the site capacity file with pledges and/or usage"""
     # ##################################################################### #
     # read the SiteCapacity JSON file, update the information for valid CMS #
@@ -446,23 +489,20 @@ def capa_update_jsonfile(siteList, pledgesDict, usageDict):
     # site capacity information, and return in a site capacity dictionary.  #
     # ##################################################################### #
 
-    if (( pledgesDict is not None ) and ( usageDict is not None )):
-        logging.info("Updating pledges and usages in SiteCapacity file, %s" %
-                                                                CAPA_FILE_PATH)
-    elif ( pledgesDict is not None ):
-        usageDict = {}
-        logging.info("Updating pledges in SiteCapacity file, %s" %
-                                                                CAPA_FILE_PATH)
-    elif ( usageDict is not None ):
-        pledgesDict = {}
-        logging.info("Updating usages in SiteCapacity file, %s" % 
+    if (( pledgesDict is not None ) or ( quotaDict is not None ) or
+                                       ( usageDict is not None )):
+        logging.info("Updating pledge/quota/usage in SiteCapacity file, %s" %
                                                                 CAPA_FILE_PATH)
     else:
         return capa_read_jsonfile()
-    if (( usageDict is not None ) and ( siteList is None)):
-        logging.warning("Core usage update limited to existing site entries!")
+    if ((( usageDict is not None ) or ( quotaDict is not None )) and
+                                             ( siteList is None)):
+        logging.warning("Core usage/Experiment quota update limited to exist" +
+                        "ing site entries!")
     if pledgesDict is None:
         pledgesDict = {}
+    if quotaDict is None:
+        quotaDict = {}
     if usageDict is None:
         usageDict = {}
     #
@@ -519,6 +559,43 @@ def capa_update_jsonfile(siteList, pledgesDict, usageDict):
                     if siteList is None:
                         siteList = [ e['name'] for e in capacityList ]
                     tmpDict = { e['name']:e for e in capacityList }
+                    for myKey in quotaDict:
+                        if myKey not in siteList:
+                            continue
+                        if myKey in tmpDict:
+                            tmpDict[myKey]['disk_experiment_use'] = \
+                                                               quotaDict[myKey]
+                            logging.log(15, ("Experiment disk quota for %s u" +
+                                             "pdated to %.1f") % (myKey,
+                                                             quotaDict[myKey]))
+                        elif ( quotaDict[myKey] <= 0.0 ):
+                            capacityList.append( {
+                                'name':                     myKey,
+                                'wlcg_federation_name':     None,
+                                'wlcg_federation_fraction': 1.000,
+                                'hs06_pledge':              0,
+                                'hs06_per_core':            10.000,
+                                'core_usable':              0,
+                                'core_max_used':            0,
+                                'core_production':          0,
+                                'core_cpu_intensive':       0,
+                                'core_io_intensive':        0,
+                                'disk_pledge':              0.0,
+                                'disk_usable':              0.0,
+                                'disk_experiment_use':      quotaDict[myKey],
+                                'tape_pledge':              0.0,
+                                'tape_usable':              0.0,
+                                'when':                     None,
+                                'who':                      None } )
+                            logging.log(15, ("Experiment disk quota for %s s" +
+                                             "et to: %.1f") % (myKey,
+                                                             quotaDict[myKey]))
+                    del tmpDict
+                    #
+                    #
+                    if siteList is None:
+                        siteList = [ e['name'] for e in capacityList ]
+                    tmpDict = { e['name']:e for e in capacityList }
                     for myKey in usageDict:
                         if myKey not in siteList:
                             continue
@@ -526,7 +603,7 @@ def capa_update_jsonfile(siteList, pledgesDict, usageDict):
                             continue
                         if myKey in tmpDict:
                             tmpDict[myKey]['core_max_used'] = usageDict[myKey]
-                            logging.log(15, "Core usage for %s updated: %d" %
+                            logging.log(15, "Core usage for %s updated to %d" %
                                                      (myKey, usageDict[myKey]))
                         elif ( usageDict[myKey] != 0 ):
                             capacityList.append( {
@@ -889,6 +966,10 @@ if __name__ == '__main__':
     parserObj.add_argument("-p", dest="pledge", default=False,
                                  action="store_true",
                                  help="fetch/update pledges from ReBus/CRIC")
+    parserObj.add_argument("-q", dest="quota", default=False,
+                                 action="store_true",
+                                 help="fetch/update experiment disk quota fr" +
+                                 "om Dynamo/DDM")
     parserObj.add_argument("-g", dest="usage", default=False,
                                  action="store_true",
                                  help="fetch/update max core usage from gWMS" +
@@ -946,6 +1027,12 @@ if __name__ == '__main__':
         pledgeDict = capa_cric_pledges()
     #
     #
+    # fetch experiment disk quota setting from Dynamo if requested:
+    quotaDict = None
+    if ( argStruct.quota ):
+        quotaDict = capa_dynamo_quota()
+    #
+    #
     # fetch maximum number of cores provided by sites if requested:
     usageDict = None
     if ( argStruct.usage ):
@@ -954,8 +1041,9 @@ if __name__ == '__main__':
 
 
     # update SiteCapacity JSON file as needed:
-    if ( argStruct.pledge or argStruct.usage ):
-        capacityList = capa_update_jsonfile(siteList, pledgeDict, usageDict)
+    if ( argStruct.pledge or argStruct.quota or argStruct.usage ):
+        capacityList = capa_update_jsonfile(siteList,
+                                            pledgeDict, quotaDict, usageDict)
     else:
         capacityList = capa_read_jsonfile()
 
