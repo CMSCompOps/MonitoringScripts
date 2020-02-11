@@ -37,6 +37,26 @@ links15min:fts:900:Links 15 min evaluation(s):
 links1hour:fts:3600:Links 1 hour evaluation(s):
 links6hour:fts:21600:Links 6 hours evaluation(s):
 links1day:fts:86400:Links 1 day evaluation(s):
+SRsam15min:sam:900:SAM 15 min status ranking:
+SRsam1hour:sam:3600:SAM 1 hour status ranking:
+SRsam6hour:sam:21600:SAM 6 hours status ranking:
+SRsam1day:sam:86400:SAM 1 day status ranking:
+RRsam15min:sam:900:SAM 15 min reliability ranking:
+RRsam1hour:sam:3600:SAM 1 hour reliability ranking:
+RRsam6hour:sam:21600:SAM 6 hours reliability ranking:
+RRsam1day:sam:86400:SAM 1 day reliability ranking:
+ARsam15min:sam:900:SAM 15 min availability ranking:
+ARsam1hour:sam:3600:SAM 1 hour availability ranking:
+ARsam6hour:sam:21600:SAM 6 hours availability ranking:
+ARsam1day:sam:86400:SAM 1 day availability ranking:
+SRsr15min:sam:900:SiteReadiness 15 min status ranking:
+SRsr1hour:sam:3600:SiteReadiness 1 hour status ranking:
+SRsr6hour:sam:21600:SiteReadiness 6 hours status ranking:
+SRsr1day:sam:86400:SiteReadiness 1 day status ranking:
+VRsr15min:sam:900:SiteReadiness 15 min value ranking:
+VRsr1hour:sam:3600:SiteReadiness 1 hour value ranking:
+VRsr6hour:sam:21600:SiteReadiness 6 hours value ranking:
+VRsr1day:sam:86400:SiteReadiness 1 day value ranking:
 METRIC_SUPPORT_EOF
 #
 LOGSECTION_URL="https://cmssst.web.cern.ch/cmssst/cache"
@@ -57,7 +77,7 @@ if [ -n "${REQUEST_INFO}" ];then
    REQUEST_HASH=`(echo -n "${REQUEST_PATH}" | /usr/bin/sha1sum | /usr/bin/awk '{print $1; exit}') 2>/dev/null`
    CONTENT_FILE="log_${REQUEST_HASH}.htm"
    CONTENT_LOCK="log_${REQUEST_HASH}.lck"
-   REQUEST_TITL=`(echo -e "${METRIC_SUPPORT}" | /usr/bin/awk -F: -v rp="${REQUEST_PATH}" 'BEGIN{split(rp,a,"/");ts=strftime("%Y-%b-%d %H:%M:%S",a[3],1)}{if($1==a[2]){print $4" of "a[4]" / "a[5]" for "ts" UTC";exit}}') 2>/dev/null`
+   REQUEST_TITL=`(echo -e "${METRIC_SUPPORT}" | /usr/bin/awk -F: -v rp="${REQUEST_PATH}" 'BEGIN{split(rp,a,"/");if(tolower(substr(a[5],2))=="rgroup"){a[2]=toupper(substr(a[5],0,2))a[2]};ts=strftime("%Y-%b-%d %H:%M:%S",a[3],1)}{if($1==a[2]){if(tolower(substr(a[5],2))=="rgroup"){split(a[6],b,"+");et=a[3]+($3*(b[2]+1))-1;print $4" of "a[4]" for "ts" to "strftime("%Y-%b-%d %H:%M:%S",et,1)" UTC"}else{print $4" of "a[4]" / "a[5]" for "ts" UTC"};exit}}') 2>/dev/null`
    if [ -z "${REQUEST_TITL}" ];then
       ERROR_MSG="Unsupported metric: \"${REQUEST_PATH}\""
    fi

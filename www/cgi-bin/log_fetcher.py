@@ -219,6 +219,26 @@ LFTCH_SERVICE_TYPES = { 'CE': "CE",
                         'net.perfSONAR.Bandwidth': "perfSONAR",
                         'net.perfSONAR.Latency': "perfSONAR",
                         'site': "site" }
+LFTCH_SITE_GROUPS = {
+    'AllSites':        [ "T" ],
+    'All12Sites':      [ "T1", "T2" ],
+    'American12Sites': [ "T1_US", "T2_BR", "T2_US" ],
+    'Asian12Sites':    [ "T2_CN", "T2_IN", "T2_KR", "T2_PK", "T2_TR", "T2_TW" ],
+    'Eurasian12Sites': [ "T0_CH",
+                         "T1_DE", "T1_ES", "T1_FR", "T1_IT", "T1_RU", "T1_UK",
+                         "T2_AT", "T2_BE", "T2_CH", "T2_CN", "T2_DE", "T2_EE",
+                         "T2_ES", "T2_FI", "T2_FR", "T2_GR", "T2_HU", "T2_IN",
+                         "T2_IT", "T2_KR", "T2_PK", "T2_PL", "T2_PT", "T2_RU",
+                         "T2_TR", "T2_TW", "T2_UA", "T2_UK" ],
+    'European12Sites': [ "T0_CH",
+                         "T1_DE", "T1_ES", "T1_FR", "T1_IT", "T1_RU", "T1_UK",
+                         "T2_AT", "T2_BE", "T2_CH", "T2_DE", "T2_EE", "T2_ES",
+                         "T2_FI", "T2_FR", "T2_GR", "T2_HU", "T2_IT", "T2_PL",
+                         "T2_PT", "T2_RU", "T2_UA", "T2_UK" ],
+    'Tier1Sites':      [ "T1" ],
+    'Tier2Sites':      [ "T2" ],
+    'Tier3Sites':      [ "T3" ]
+    }
 # ########################################################################### #
 
 
@@ -232,6 +252,13 @@ def lftch_monit_fetch(cfg):
     timebin  = int( cfg['time'] / cfg['period'] )
     startTIS = cfg['time'] - ( cfg['period'] * cfg['before'] )
     limitTIS = cfg['time'] + ( cfg['period'] * ( cfg['after'] + 1 ) )
+    #
+    if ( cfg['type'][1:] == "rgroup" ):
+        matchList = LFTCH_SITE_GROUPS[ cfg['name'] ]
+        matchLen  = len( matchList[0] )
+    else:
+        matchList = None
+        matchLen = 0
     #
     logging.info("Retrieving %s docs from MonIT HDFS" % cfg['title'])
     logging.log(15, "   time range %s to %s" %
@@ -405,11 +432,17 @@ def lftch_monit_fetch(cfg):
                                 if ( tis >= limitTIS ):
                                     continue
                                 myName = myJson['data']['name']
-                                if ( cfg['name'] != "*" ):
+                                if ( matchList is not None ):
+                                    if ( myName[:matchLen] not in matchList ):
+                                        continue
+                                elif ( cfg['name'] != "*" ):
                                     if ( myName != cfg['name'] ):
                                         continue
                                 myType = myJson['data']['type']
-                                if ( cfg['type'] != "*" ):
+                                if ( cfg['type'][1:] == "rgroup" ):
+                                    if ( myType != "site" ):
+                                        continue
+                                elif ( cfg['type'] != "*" ):
                                     if ( myType != cfg['type'] ):
                                         continue
                                 myStatus = myJson['data']['status']
@@ -432,7 +465,10 @@ def lftch_monit_fetch(cfg):
                                 if 'name' not in myJson['data']:
                                     myJson['data']['name'] = myJson['data']['site']
                                 myName = myJson['data']['name']
-                                if ( cfg['name'] != "*" ):
+                                if ( matchList is not None ):
+                                    if ( myName[:matchLen] not in matchList ):
+                                        continue
+                                elif ( cfg['name'] != "*" ):
                                     if ( myName != cfg['name'] ):
                                         continue
                                 myType = "site"
@@ -454,11 +490,17 @@ def lftch_monit_fetch(cfg):
                                 if ( tis >= limitTIS ):
                                     continue
                                 myName = myJson['data']['name']
-                                if ( cfg['name'] != "*" ):
+                                if ( matchList is not None ):
+                                    if ( myName[:matchLen] not in matchList ):
+                                        continue
+                                elif ( cfg['name'] != "*" ):
                                     if ( myName != cfg['name'] ):
                                         continue
                                 myType = myJson['data']['type']
-                                if ( cfg['type'] != "*" ):
+                                if ( cfg['type'][1:] == "rgroup" ):
+                                    if ( myType != "site" ):
+                                        continue
+                                elif ( cfg['type'] != "*" ):
                                     if ( myType != cfg['type'] ):
                                         continue
                                 myStatus = myJson['data']['status']
@@ -478,7 +520,10 @@ def lftch_monit_fetch(cfg):
                                 if ( tis >= limitTIS ):
                                     continue
                                 myName = myJson['data']['name']
-                                if ( cfg['name'] != "*" ):
+                                if ( matchList is not None ):
+                                    if ( myName[:matchLen] not in matchList ):
+                                        continue
+                                elif ( cfg['name'] != "*" ):
                                     if ( myName != cfg['name'] ):
                                         continue
                                 myType = "site"
@@ -535,7 +580,29 @@ def lftch_monit_fetch(cfg):
                             #
                             if tbin not in lftch_monitdocs:
                                 lftch_monitdocs[ tbin ] = []
-                            lftch_monitdocs[tbin].append( myJson['data'] )
+                            if ( cfg['type'][1:] == "rgroup" ):
+                                try:
+                                    if ( cfg['type'][0] == "s" ):
+                                        if (( myStatus == "ok" ) or
+                                            ( myStatus == "warning" )):
+                                            myCntrbt = 1.000
+                                        else:
+                                            myCntrbt = 0.000
+                                    elif ( cfg['type'][0] == "r" ):
+                                        myCntrbt = myJson['data']['reliability']
+                                    elif ( cfg['type'][0] == "a" ):
+                                        myCntrbt = myJson['data']['availability']
+                                    else:
+                                        if ( cfg['metric'][:3] == "fts" ):
+                                            myCntrbt = myJson['data']['quality']
+                                        else:
+                                            myCntrbt = myJson['data']['value']
+                                except KeyError:
+                                    myCntrbt = 0
+                                lftch_monitdocs[tbin].append( { 'name': myName,
+                                        'vrsn': version, 'cntrbt': myCntrbt } )
+                            else:
+                                lftch_monitdocs[tbin].append( myJson['data'] )
                             #
                             logging.log(15, "   adding [%d] %s / %s : %s" %
                                               (tbin, myName, myType, myStatus))
@@ -1237,6 +1304,10 @@ def lftch_write_json(cfg, docs):
     # write the documents as annotated JSON according to cfg #
     # ###################################################### #
 
+    if ( cfg['type'][1:] == "rgroup" ):
+        logging.error("Writing of JSON for ranking group not implemented")
+        return 1
+
     if ( cfg['metric'][:3] == "etf" ):
         jsonString = lftch_compose_etf(cfg, docs)
     elif ( cfg['metric'][:4] == "down" ):
@@ -1283,6 +1354,10 @@ def lftch_print_json(cfg, docs):
     # ###################################################### #
     # print the documents as annotated JSON according to cfg #
     # ###################################################### #
+
+    if ( cfg['type'][1:] == "rgroup" ):
+        logging.error("Writing of JSON for ranking group not implemented")
+        return 1
 
     if ( cfg['metric'][:3] == "etf" ):
         jsonString = lftch_compose_etf(cfg, docs)
@@ -2995,6 +3070,110 @@ def lftch_maindvi_links(cfg, docs):
 
 
 
+def lftch_maindvi_rank(cfg, docs):
+    """function to write site ranking as HTML table with canvas to a file"""
+    # ###################################################################### #
+    # prepare mainDVI section with site ranking table/graph according to cfg #
+    # ###################################################################### #
+
+    # prepare site ranking counters:
+    normalizer = 0.000
+    rankingDict = {}
+
+    # sum up site values (documents may contain superseded versions):
+    for tbin in docs:
+        normalizer += 1.000
+        #
+        # filter out superseded versions:
+        myDict = {}
+        for myDoc in docs[tbin]:
+            if ( myDoc['name'] not in myDict ):
+                myDict[ myDoc['name'] ] = myDoc
+            elif ( myDoc['vrsn'] > myDict[ myDoc['name'] ]['vrsn'] ):
+                myDict[ myDoc['name'] ] = myDoc
+        #
+        for mySite in myDict:
+            if ( mySite not in rankingDict ):
+                rankingDict[ mySite ] = myDict[ mySite ]['cntrbt']
+            else:
+                rankingDict[ mySite ] += myDict[ mySite ]['cntrbt']
+    #
+    if ( normalizer > 0.000 ):
+        for mySite in rankingDict:
+            rankingDict[ mySite ] = rankingDict[ mySite ] / normalizer
+
+
+    # write mainDVI ETF HTML section:
+    # ===============================
+    myHTML = cfg['html'] + "_wrk"
+    #
+    try:
+        with open(myHTML, 'wt') as myFile:
+            #
+            myFile.write("<TABLE BORDER=\"0\" CELLPADDING=\"0\" CELLSPACING=" +
+                         "\"8\">\n<TR>\n")
+            if ( cfg['type'] == "srgroup" ):
+                valueStrng = "Status Value"
+            elif ( cfg['type'] == "rrgroup" ):
+                valueStrng = "Reliability"
+            elif ( cfg['type'] == "argroup" ):
+                valueStrng = "Availability"
+            elif ( cfg['type'] == "vrgroup" ):
+                if ( cfg['metric'][:3] == "fts" ):
+                    valueStrng = "Avg. Quality"
+                else:
+                    valueStrng = "Avg. Value"
+            myFile.write(("   <TH STYLE=\"font-size: large; font-weight: bol" +
+                          "d;\"><B>Site:</B>\n   <TH STYLE=\"font-size: larg" +
+                          "e; font-weight: bold;\">Bar Graph:\n   <TH STYLE=" +
+                          "\"font-size: large; font-weight: bold;\">%s:\n<TR" +
+                          " HEIGHT=\"3\">\n   <TD COLSPAN=\"3\" STYLE=\"back" +
+                          "ground-color: black\">\n") % valueStrng)
+            #
+            for mySite in sorted(rankingDict, key=rankingDict.get,
+                                                                 reverse=True):
+                myPercnt = int( 500.0 * (rankingDict[mySite] + 0.001) ) / 5.0
+                if ( rankingDict[mySite] >= 0.900 ):
+                    myColour = "#80FF80"
+                elif ( rankingDict[mySite] < 0.800 ):
+                    myColour = "#FF0000"
+                else:
+                    myColour = "#FFFF00"
+                myFile.write(("<TR>\n   <TD STYLE=\"text-align: right; font-" +
+                              "weight: bold; white-space: nowrap;\">%s\n   <" +
+                              "TD STYLE=\"width: 500px; text-align: left; ba" +
+                              "ckground-color: #F4F4F4; white-space: nowrap;" +
+                              "\"><DIV STYLE=\"width: %.1f%%; background-col" +
+                              "or: %s;\">&nbsp;</DIV>\n   <TD STYLE=\"text-a" +
+                              "lign: center; white-space: nowrap;\">%.3f\n") %
+                             (mySite, myPercnt, myColour, rankingDict[mySite]))
+            #
+            myFile.write("<TR HEIGHT=\"3\">\n   <TD COLSPAN=\"3\" STYLE=\"ba" +
+                         "ckground-color: black\">\n</TABLE>\n")
+        #
+        try:
+            os.chmod(myHTML, 0o644)
+        except (IOError, OSError) as excptn:
+            logging.warning("Failed to chmod ranking mainDVI section file, %s" %
+                                                                   str(excptn))
+        os.rename(myHTML, cfg['html'])
+
+    except (IOError, OSError) as excptn:
+        logging.critical("Writing of ranking mainDVI section failed, %s" %
+                                                                   str(excptn))
+        try:
+            os.unlink( myHTML )
+        except:
+            pass
+        return 1
+
+    logging.log(25, "ranking as HTML table written to %s" %
+                                                    cfg['html'].split("/")[-1])
+    return 0
+# ########################################################################### #
+
+
+
 if __name__ == '__main__':
     lftch_cfg = {}
     rc = 0
@@ -3132,6 +3311,9 @@ if __name__ == '__main__':
             sys.exit(1)
         if (( compList[3].lower() == "all" ) or ( compList[3] == "*" )):
             lftch_cfg['name'] = "*"
+        elif ( compList[3] in LFTCH_SITE_GROUPS ):
+            # site group alias
+            lftch_cfg['name'] = compList[3]
         else:
             if (( siteRegex.match( compList[3] ) is None ) and
                 ( compList[3].count(".") < 2 )):
@@ -3151,6 +3333,9 @@ if __name__ == '__main__':
             lftch_cfg['type'] = "XROOTD"
         elif ( compList[4].lower() == "site" ):
             lftch_cfg['type'] = "site"
+        elif (( compList[4][1:].lower() == "rgroup" ) and
+              ( compList[4][0].lower() in [ "s", "r", "a", "v" ] )):
+            lftch_cfg['type'] = compList[4].lower()
         elif compList[4] in LFTCH_PROBE_ORDER:
             lftch_cfg['type'] = compList[4]
         elif compList[4][8:] in LFTCH_PROBE_ORDER:
@@ -3212,6 +3397,8 @@ if __name__ == '__main__':
     if argStruct.name is not None:
         if (( argStruct.name.lower() == "all" ) or ( argStruct.name == "*" )):
             lftch_cfg['name'] = "*"
+        elif ( argStruct.name in LFTCH_SITE_GROUPS ):
+            lftch_cfg['name'] = argStruct.name
         else:
             if (( siteRegex.match( argStruct.name ) is None ) and
                 ( argStruct.name.count(".") < 2 )):
@@ -3234,6 +3421,9 @@ if __name__ == '__main__':
             lftch_cfg['type'] = "XROOTD"
         elif ( argStruct.type.lower() == "site" ):
             lftch_cfg['type'] = "site"
+        elif (( argStruct.type[1:].lower() == "rgroup" ) and
+              ( argStruct.type[0].lower() in [ "s", "r", "a", "v" ] )):
+            lftch_cfg['type'] = argStruct.type.lower()
         elif argStruct.type in LFTCH_PROBE_ORDER:
             lftch_cfg['type'] = argStruct.type
         elif argStruct.type[8:] in LFTCH_PROBE_ORDER:
@@ -3301,7 +3491,9 @@ if __name__ == '__main__':
     # write docs in HTML table format as mainDVI section to file:
     # ===========================================================
     if 'html' in lftch_cfg:
-        if ( lftch_cfg['metric'][:3] == "etf" ):
+        if ( lftch_cfg['type'][1:] == "rgroup" ):
+            rc += lftch_maindvi_rank(lftch_cfg, lftch_monitdocs)
+        elif ( lftch_cfg['metric'][:3] == "etf" ):
             rc += lftch_maindvi_etf(lftch_cfg, lftch_monitdocs)
         elif ( lftch_cfg['metric'][:4] == "down" ):
             rc += lftch_maindvi_down(lftch_cfg, lftch_monitdocs)

@@ -1,0 +1,164 @@
+<HTML lang=en>
+<HEAD>
+   <META charset="UTF-8">
+   <TITLE>Site Ranking Selection</TITLE>
+   <STYLE TYPE="text/css">
+      BODY {
+         background-color: white
+      }
+      TD A, TD A:LINK, TD A:VISITED {
+         color:black; text-decoration:none
+      }
+   </STYLE>
+</HEAD>
+
+<BODY>
+<H1>
+   <CENTER>Site Ranking Selection</CENTER>
+</H1>
+
+Retrieving metric information for long time periods from CERN MonIT/HDFS
+takes quite a bit of time, several minutes. Be aware/please be patient
+once you click "Plot Site Ranking"!
+<HR>
+<P>
+
+
+<FORM ID="RNKNG" METHOD="GET" ENCTYPE="application/x-www-form-urlencoded" ONSUBMIT="return takeAction();">
+<TABLE BORDER="0" CELLPADDING="2" CELLSPACING="2">
+<TR>
+   <TD><B>Ranking based on metric:</B>
+   <TD> <SELECT ID="RNKNG:MTRC" NAME="metric">
+      <OPTGROUP LABEL="Common Metrics">
+         <OPTION VALUE="SRsr1day" SELECTED>Site Readiness
+         <OPTION VALUE="SRsam1day">SAM
+      </OPTGROUP>
+      <OPTGROUP LABEL="Available Metrics">
+         <OPTION VALUE="SRsam1day">SAM status 1 day
+         <OPTION VALUE="SRsam6hour">SAM status 6 hours
+         <OPTION VALUE="SRsam1hour">SAM status 1 hour
+         <OPTION VALUE="SRsam15min">SAM status 15 minutes
+         <OPTION VALUE="RRsam1day">SAM reliability 1 day
+         <OPTION VALUE="ARsam1day">SAM availability 1 day
+         <OPTION VALUE="SRsr1day">Site Readiness status 1 day
+         <OPTION VALUE="SRsr6hour">Site Readiness status 6 hours
+         <OPTION VALUE="SRsr1hour">Site Readiness status 1 hour
+         <OPTION VALUE="SRsr15min">Site Readiness status 15 minutes
+         <OPTION VALUE="VRsr1day">Site Readiness value 1 day
+      </OPTGROUP>
+   </SELECT>
+<TR>
+   <TD><B>First date/time bin:</B>
+   <TD><INPUT ID="RNKNG:FRST" TYPE="datetime-local" NAME="frst" MIN="2015-01-02T00:00"> (UTC)
+<TR>
+   <TD><B>Last date/time bin:</B>
+   <TD><INPUT ID="RNKNG:LAST" TYPE="datetime-local" NAME="last" MIN="2015-01-02T00:00"> (UTC)
+<TR>
+   <TD><B>Sites to be included:</B>
+   <TD><SELECT ID="RNKNG:SITE" NAME="site">
+      <OPTION VALUE="AllSites" SELECTED>All CMS Sites
+      <OPTION VALUE="All12Sites" SELECTED>All Tier-1,2 Sites
+      <OPTION VALUE="American12Sites">American Tier-1,2 Sites
+      <OPTION VALUE="Asian12Sites">Asian Tier-1,2 Sites
+      <OPTION VALUE="Eurasian12Sites">Eurasian Tier-1,2 Sites
+      <OPTION VALUE="European12Sites">European Tier-1,2 Sites
+      <OPTION VALUE="Tier1Sites">All Tier-1 Sites
+      <OPTION VALUE="Tier2Sites">All Tier-2 Sites
+      <OPTION VALUE="Tier3Sites">All Tier-3 Sites
+   </SELECT>
+<TR>
+   <TD>
+   <TD><INPUT TYPE="submit" VALUE="Plot Site Ranking" style="height:32px; width:148px; font-weight: bold; background-color: #B0C0FF;">
+</TABLE>
+</FORM>
+<HR>
+<P>
+
+<TABLE WIDTH="100%" BORDER="0" CELLPADDING="0" CELLSPACING="2">
+<TR>
+   <TD>&nbsp;
+   <TD STYLE="text-align: right;"><A HREF="http://cern.ch/copyright">&copy; Copyright author, CMS, Fermilab, and others 2020</A>
+</TABLE>
+
+<SCRIPT type="text/javascript" language="javascript">
+   "use strict";
+
+   // preset first/last time bin fields:
+   var timeObj, timeStr;
+   timeObj = new Date();
+   timeStr = timeObj.getUTCFullYear() + '-' +
+      ('0' + (timeObj.getUTCMonth() + 1)).slice(-2) + '-' +
+      ('0' + timeObj.getUTCDate()).slice(-2) + 'T23:59';
+   document.getElementById('RNKNG:FRST').max = timeStr;
+   document.getElementById('RNKNG:LAST').max = timeStr;
+   timeObj = new Date( Date.now() - (14 * 86400000) );
+   timeStr = timeObj.getUTCFullYear() + '-' +
+      ('0' + (timeObj.getUTCMonth() + 1)).slice(-2) + '-' +
+      ('0' + timeObj.getUTCDate()).slice(-2) + 'T00:00';
+   document.getElementById('RNKNG:FRST').value = timeStr;
+   timeObj = new Date( Date.now() - 86400000 );
+   timeStr = timeObj.getUTCFullYear() + '-' +
+      ('0' + (timeObj.getUTCMonth() + 1)).slice(-2) + '-' +
+      ('0' + timeObj.getUTCDate()).slice(-2) + 'T23:59';
+   document.getElementById('RNKNG:LAST').value = timeStr;
+
+
+   function takeAction() {
+      var timeStr, timeObj;
+
+      // assemble action URL
+      var mtrcStr = document.getElementById('RNKNG:MTRC').value;
+      var mtrcName = mtrcStr.substr(2)
+      if ( mtrcStr.substr(0,2) == 'SR' ) {
+         var mtrcType = 'srgroup';
+      } else if ( mtrcStr.substr(0,2) == 'RR' ) {
+         var mtrcType = 'rrgroup';
+      } else if ( mtrcStr.substr(0,2) == 'AR' ) {
+         var mtrcType = 'argroup';
+      } else {
+         var mtrcType = 'vrgroup';
+      }
+      var mtrcPrd = 86400;
+      if ( mtrcName.substr(-5,5) == '15min' ) mtrcPrd = 900;
+      else if ( mtrcName.substr(-5,5) == '1hour' ) mtrcPrd = 3600;
+      else if ( mtrcName.substr(-5,5) == '6hour' ) mtrcPrd = 21600;
+      timeStr = document.getElementById('RNKNG:FRST').value;
+      if ( timeStr.substr(10,1) != 'T' ) {
+          timeStr = timeStr.substr(0,10) + 'T' + timeStr.substr(11)
+      }
+      timeStr = timeStr.replace(/ /g, "") + 'Z';
+      if (( timeStr.length != 17 ) && ( timeStr.length != 20 )) {
+          alert("Bad time specification, use yyyy-mm-ddThh:mm")
+          return false;
+      }
+      timeObj = new Date( timeStr );
+      var mydebug = timeObj.getTime();
+      var frstBin = Math.trunc( timeObj.getTime() / (mtrcPrd * 1000) );
+      timeStr = document.getElementById('RNKNG:LAST').value;
+      if ( timeStr.substr(10,1) != 'T' ) {
+          timeStr = timeStr.substr(0,10) + 'T' + timeStr.substr(11)
+      }
+      timeStr = timeStr.replace(/ /g, "") + 'Z';
+      if (( timeStr.length != 17 ) && ( timeStr.length != 20 )) {
+          alert("Bad time specification, use yyyy-mm-ddThh:mm")
+          return false;
+      }
+      timeObj = new Date( timeStr );
+      var aftrBins = Math.trunc( timeObj.getTime() / (mtrcPrd * 1000) ) -
+         frstBin;
+      var cgiURL = 'https://test-cmssst.web.cern.ch/cgi-bin/log/' + mtrcName +
+         '/' + frstBin + '/' + document.getElementById('RNKNG:SITE').value +
+         '/' + mtrcType + '/0+' + aftrBins;
+      document.getElementById('RNKNG').action = cgiURL;
+      // disable query string with input values in URL
+      document.getElementById('RNKNG:MTRC').disabled = true;
+      document.getElementById('RNKNG:FRST').disabled = true;
+      document.getElementById('RNKNG:LAST').disabled = true;
+      document.getElementById('RNKNG:SITE').disabled = true;
+      document.getElementById('RNKNG').submit();
+      return false;
+   }
+</SCRIPT>
+
+</BODY>
+</HTML>
