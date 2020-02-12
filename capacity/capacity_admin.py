@@ -553,10 +553,11 @@ def capa_update_jsonfile(siteList, pledgesDict, quotaDict, usageDict):
                                     myEntry['tape_pledge'] = int(2.0 * (fractn
                                            * pledgesDict[myKey]['tape'])) / 2.0
                                     logging.log(15, ("Pledge for %s updated:" +
-                                        " %.1f, %.1f, %.1f") % myEntry['name'],
+                                                     " %.1f, %.1f, %.1f") %
+                                                              (myEntry['name'],
                                                         myEntry['hs06_pledge'],
                                                         myEntry['disk_pledge'],
-                                                        myEntry['tape_pledge'])
+                                                       myEntry['tape_pledge']))
                     del tmpSet
                     #
                     #
