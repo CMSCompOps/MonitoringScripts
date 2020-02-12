@@ -148,7 +148,7 @@ def capa_cric_pledges():
     # ####################################### #
     # return dictionary of federation pledges #
     # ####################################### #
-    URL_CRIC_PLDG = "https://wlcg-cric.cern.ch/api/core/federation/query/?json"
+    URL_CRIC_PLDG = "https://wlcg-cric.cern.ch/api/core/federation/query/?json&start_year=%d"
     #
     now = int( time.time() )
     # a WLCG pledge year starts April 1st, so quarters are shifted by one
@@ -156,20 +156,24 @@ def capa_cric_pledges():
     if (( month >= 1 ) and ( month <= 3 )):
         monthStrng = "Q4"
         yearStrng = "%d" % (time.gmtime(now)[0] - 1)
+        prevYear = time.gmtime(now)[0] - 2
     elif (( month >= 4 ) and ( month <= 6 )):
         monthStrng = "Q1"
         yearStrng = "%d" % time.gmtime(now)[0]
+        prevYear = time.gmtime(now)[0] - 1
     elif (( month >= 7 ) and ( month <= 9 )):
         monthStrng = "Q2"
         yearStrng = "%d" % time.gmtime(now)[0]
+        prevYear = time.gmtime(now)[0] - 1
     else:
         monthStrng = "Q3"
         yearStrng = "%d" % time.gmtime(now)[0]
+        prevYear = time.gmtime(now)[0] - 1
     del month
 
     logging.info("Fetching WLCG federation pledges from CRIC")
     try:
-        with urllib.request.urlopen(URL_CRIC_PLDG) as urlHandle:
+        with urllib.request.urlopen(URL_CRIC_PLDG % prevYear) as urlHandle:
             urlCharset = urlHandle.headers.get_content_charset()
             if urlCharset is None:
                 urlCharset = "utf-8"
