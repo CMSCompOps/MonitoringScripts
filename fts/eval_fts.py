@@ -562,39 +562,48 @@ class FTSmetric:
         tis1hour = now + oneDay
         tis6hour = now + oneDay
         tis1day  = now + oneDay
+        tmp15mFlag = tmp1hFlag = tmp6hFlag = tmp1dFlag = False
         for mtrc in metricList:
             if ( mtrc[0] == "fts15min" ):
+                tmp15mFlag = True
                 dirDay = mtrc[1] * 900
                 dirList.add( time.strftime("fts15min/%Y/%m/%d",
                                             time.gmtime( dirDay )) )
                 tis15min = min(tis15min, dirDay)
             elif ( mtrc[0] == "fts1hour" ):
+                tmp1hFlag = True
                 dirDay = mtrc[1] * 3600
                 dirList.add( time.strftime("fts1hour/%Y/%m/%d",
                                             time.gmtime( dirDay )) )
                 tis1hour = min(tis1hour, dirDay)
             elif ( mtrc[0] == "fts6hour" ):
+                tmp6hFlag = True
                 dirDay = mtrc[1] * 21600
                 dirList.add( time.strftime("fts6hour/%Y/%m/%d",
                                             time.gmtime( dirDay )) )
                 tis6hour = min(tis6hour, dirDay)
-            elif ( mtrc[0] == "fts1hour" ):
+            elif ( mtrc[0] == "fts1day" ):
+                tmp1dFlag = True
                 dirDay = mtrc[1] * 86400
                 dirList.add( time.strftime("fts1day/%Y/%m/%d",
                                             time.gmtime( dirDay )) )
                 tis1day = min(tis1day, dirDay)
-        for dirDay in range(start15mArea, limitLocalTmpArea, oneDay):
-            dirList.add( time.strftime("fts15min/%Y/%m/%d.tmp",
-                                        time.gmtime( dirDay )) )
-        for dirDay in range(start1hArea, limitLocalTmpArea, oneDay):
-            dirList.add( time.strftime("fts1hour/%Y/%m/%d.tmp",
-                                        time.gmtime( dirDay )) )
-        for dirDay in range(start6hArea, limitLocalTmpArea, oneDay):
-            dirList.add( time.strftime("fts6hour/%Y/%m/%d.tmp",
-                                        time.gmtime( dirDay )) )
-        for dirDay in range(start1dArea, limitLocalTmpArea, oneDay):
-            dirList.add( time.strftime("fts1day/%Y/%m/%d.tmp",
-                                        time.gmtime( dirDay )) )
+        if ( tmp15mFlag ):
+            for dirDay in range(start15mArea, limitLocalTmpArea, oneDay):
+                dirList.add( time.strftime("fts15min/%Y/%m/%d.tmp",
+                                            time.gmtime( dirDay )) )
+        if ( tmp1hFlag ):
+            for dirDay in range(start1hArea, limitLocalTmpArea, oneDay):
+                dirList.add( time.strftime("fts1hour/%Y/%m/%d.tmp",
+                                            time.gmtime( dirDay )) )
+        if ( tmp6hFlag ):
+            for dirDay in range(start6hArea, limitLocalTmpArea, oneDay):
+                dirList.add( time.strftime("fts6hour/%Y/%m/%d.tmp",
+                                            time.gmtime( dirDay )) )
+        if ( tmp1dFlag ):
+            for dirDay in range(start1dArea, limitLocalTmpArea, oneDay):
+                dirList.add( time.strftime("fts1day/%Y/%m/%d.tmp",
+                                            time.gmtime( dirDay )) )
         #
         dirList = sorted(dirList)
 
