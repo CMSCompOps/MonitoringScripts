@@ -217,48 +217,6 @@ done
 
 # get Site Readiness Report web page as PNG file:
 # -----------------------------------------------
-/usr/bin/xvfb-run --server-args="-screen 0, 1600x1200x24" /usr/bin/CutyCapt --url=http://cms-site-readiness.web.cern.ch/cms-site-readiness/SiteReadiness/HTML/SiteReadinessReport.html --out=${TMP_FILE}
-if [ $? -ne 0 ]; then
-   /bin/sleep 3
-   /bin/rm -f ${TMP_FILE} 1>/dev/null 2>&1
-   echo "failed to get site readiness report web page as png" >> ${ERR_FILE}
-   /usr/bin/xvfb-run --server-args="-screen 0, 1600x1200x24" /usr/bin/CutyCapt --url=http://cmssst.web.cern.ch/cmssst/sreadiness/SiteReadiness/HTML/SiteReadinessReport.html --out=${TMP_FILE} 1> ${ERR_FILE} 2>&1
-   RCX=$?
-   if [ ${RCX} -ne 0 ]; then
-      echo "CutyCapt retry failed too, rc=${RCX}" >> ${ERR_FILE}
-      echo "" >> ${ERR_FILE}
-      if [ ${RC} -eq 0 ]; then
-         RC=${RCX}
-      fi
-      /bin/rm -f ${TMP_FILE} 1>/dev/null 2>&1
-   else
-      echo "succeeded on second attempt" >> ${ERR_FILE}
-      echo "" >> ${ERR_FILE}
-   fi
-fi
-#
-# now cut out Tier-1 and Tier-2 CERN images:
-if [ -f ${TMP_FILE} ]; then
-   if [ ! -f ${PLOT_DIR}/cern.png ]; then
-      /usr/bin/convert -crop 1954x812+8+92 ${TMP_FILE} ${PLOT_DIR}/kit.png
-      /usr/bin/convert -crop 1954x812+8+1380 ${TMP_FILE} ${PLOT_DIR}/pic.png
-      /usr/bin/convert -crop 1954x812+8+2668 ${TMP_FILE} ${PLOT_DIR}/ccin2p3.png
-      /usr/bin/convert -crop 1954x812+8+3956 ${TMP_FILE} ${PLOT_DIR}/cnaf.png
-      /usr/bin/convert -crop 1954x812+8+5244 ${TMP_FILE} ${PLOT_DIR}/jinr.png
-      /usr/bin/convert -crop 1954x812+8+6532 ${TMP_FILE} ${PLOT_DIR}/ral.png
-      /usr/bin/convert -crop 1954x812+8+7820 ${TMP_FILE} ${PLOT_DIR}/fnal.png
-      /usr/bin/convert -crop 1362x432+279+13662 ${TMP_FILE} ${PLOT_DIR}/cern.png
-   else
-      echo "kit/pic/ccin2p3/cnaf/jinr/ral/fnal/cern.png exist, skipping"
-   fi
-   /bin/rm ${TMP_FILE}
-fi
-# #############################################################################
-
-
-
-# get new Site Readiness Report web page as PNG file:
-# ---------------------------------------------------
 /usr/bin/xvfb-run --server-args="-screen 0, 1600x1200x24" /usr/bin/CutyCapt --url=http://test-cmssst.web.cern.ch/sitereadiness/report.html --out=${TMP_FILE}
 if [ $? -ne 0 ]; then
    /bin/sleep 3
