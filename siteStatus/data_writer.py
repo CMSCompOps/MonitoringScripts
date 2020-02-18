@@ -3581,6 +3581,7 @@ def ssdw_monit_SAM_HC_FTS_SR():
     dirList = sorted( dirList )
 
 
+    vrsnDict = {}
     jsonList = []
     updateCache = True
     try:
@@ -3699,11 +3700,18 @@ def ssdw_monit_SAM_HC_FTS_SR():
                                 else:
                                     code = "u"
                                 version = myJson['metadata']['kafka_timestamp']
-                                jsonList.append( {'l': label,
-                                                  't': tis,
-                                                  's': site,
-                                                  'c': code,
-                                                  'v': version } )
+                                if ( label[-4:] == "1day" ):
+                                    myKey = (label, tis, site)
+                                    if ( myKey not in vrsnDict ):
+                                        vrsnDict[myKey] = (version, code)
+                                    elif ( version > vrsnDict[myKey][0] ):
+                                        vrsnDict[myKey] = (version, code)
+                                else:
+                                    jsonList.append( {'l': label,
+                                                      't': tis,
+                                                      's': site,
+                                                      'c': code,
+                                                      'v': version } )
                             except KeyError:
                                     continue
                     except json.decoder.JSONDecodeError as excptn:
@@ -3724,6 +3732,11 @@ def ssdw_monit_SAM_HC_FTS_SR():
         logging.error("Failed to fetch SAM,HC,FTS,SR docs from MonIT HDFS: %s"
                       % str(excptn))
         updateCache = False
+
+    for myKey in vrsnDict:
+        jsonList.append( {'l': myKey[0], 't': myKey[1], 's': myKey[2],
+                          'c': vrsnDict[myKey][1], 'v': vrsnDict[myKey][0] } )
+    del vrsnDict
 
 
     if updateCache:
