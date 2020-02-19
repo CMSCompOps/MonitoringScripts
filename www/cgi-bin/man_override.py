@@ -354,7 +354,7 @@ def ovrd_read_jsonfile(cgiMTRC):
                 fcntl.lockf(lckFile, fcntl.LOCK_EX | fcntl.LOCK_NB)
             except BlockingIOError:
                 logging.log(25, "Lock busy, retry in 250 msec")
-                sleep(0.250)
+                time.sleep(0.250)
                 remainWait -= 0.250
                 continue
             #
@@ -571,7 +571,7 @@ def ovrd_update_jsonfile(cgiMTRC, entry):
                 fcntl.lockf(lckFile, fcntl.LOCK_EX | fcntl.LOCK_NB)
             except BlockingIOError:
                 logging.log(25, "Lock busy, retry in 250 msec")
-                sleep(0.250)
+                time.sleep(0.250)
                 remainWait -= 0.250
                 continue
             #
