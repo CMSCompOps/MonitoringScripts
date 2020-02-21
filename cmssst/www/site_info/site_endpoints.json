@@ -1,0 +1,859 @@
+{
+  "metadata": {
+    "timestamp": 1582309022,
+    "desciption": {
+      "site": "CMS site name",
+      "type": "Type of endpoint",
+      "endpoint": "Endpoint, i.e. hostname.domain[:port]",
+      "usage": "Used in production, for testing, etc."
+      }
+    },
+  "data": [
+    {
+      "site": "T0_CH_CERN",
+      "type": "SRM",
+      "endpoint": "eoscmsftp.cern.ch:2811",
+      "usage": "production"
+    },
+    {
+      "site": "T1_DE_KIT",
+      "type": "XROOTD",
+      "endpoint": "cmsxrootd-redirectors.gridka.de:1094",
+      "usage": "production"
+    },
+    {
+      "site": "T1_ES_PIC",
+      "type": "XROOTD",
+      "endpoint": "xrootd01-cmst1.pic.es:1095",
+      "usage": "production"
+    },
+    {
+      "site": "T1_ES_PIC",
+      "type": "XROOTD",
+      "endpoint": "xrootd02-cmst1.pic.es:1095",
+      "usage": "production"
+    },
+    {
+      "site": "T1_FR_CCIN2P3",
+      "type": "XROOTD",
+      "endpoint": "ccxrdcms.in2p3.fr:1095",
+      "usage": "production"
+    },
+    {
+      "site": "T1_IT_CNAF",
+      "type": "XROOTD",
+      "endpoint": "xrootd-cms-01.cr.cnaf.infn.it:1094",
+      "usage": "production"
+    },
+    {
+      "site": "T1_IT_CNAF",
+      "type": "XROOTD",
+      "endpoint": "xrootd-cms-02.cr.cnaf.infn.it:1094",
+      "usage": "production"
+    },
+    {
+      "site": "T1_RU_JINR",
+      "type": "XROOTD",
+      "endpoint": "se-xrd01.jinr-t1.ru:1095",
+      "usage": "production"
+    },
+    {
+      "site": "T1_UK_RAL",
+      "type": "XROOTD",
+      "endpoint": "cms-aaa-manager01.gridpp.rl.ac.uk:1094",
+      "usage": "production"
+    },
+    {
+      "site": "T1_UK_RAL",
+      "type": "XROOTD",
+      "endpoint": "ceph-gw10.gridpp.rl.ac.uk:1094",
+      "usage": "test"
+    },
+    {
+      "site": "T1_UK_RAL",
+      "type": "XROOTD",
+      "endpoint": "ceph-gw11.gridpp.rl.ac.uk:1094",
+      "usage": "test"
+    },
+    {
+      "site": "T1_US_FNAL",
+      "type": "perfSONAR",
+      "endpoint": "psonartest1.fnal.gov",
+      "usage": "test"
+    },
+    {
+      "site": "T1_US_FNAL",
+      "type": "perfSONAR",
+      "endpoint": "psonar4.fnal.gov",
+      "usage": "test"
+    },
+    {
+      "site": "T1_US_FNAL",
+      "type": "perfSONAR",
+      "endpoint": "psonar3.fnal.gov",
+      "usage": "test"
+    },
+    {
+      "site": "T1_US_FNAL",
+      "type": "XROOTD",
+      "endpoint": "cmsxrootd-site1.fnal.gov:1094",
+      "usage": "production"
+    },
+    {
+      "site": "T1_US_FNAL",
+      "type": "XROOTD",
+      "endpoint": "cmsxrootd-site2.fnal.gov:1094",
+      "usage": "production"
+    },
+    {
+      "site": "T1_US_FNAL",
+      "type": "XROOTD",
+      "endpoint": "cmsxrootd-site3.fnal.gov:1094",
+      "usage": "production"
+    },
+    {
+      "site": "T2_AT_Vienna",
+      "type": "XROOTD",
+      "endpoint": "hephyse.oeaw.ac.at:11001",
+      "usage": "production"
+    },
+    {
+      "site": "T2_BE_IIHE",
+      "type": "SRM",
+      "endpoint": "dcache6-shadow.iihe.ac.be:8443",
+      "usage": "test"
+    },
+    {
+      "site": "T2_BE_IIHE",
+      "type": "XROOTD",
+      "endpoint": "maite.iihe.ac.be:1095",
+      "usage": "production"
+    },
+    {
+      "site": "T2_BE_UCL",
+      "type": "XROOTD",
+      "endpoint": "ingrid-se03.cism.ucl.ac.be:1094",
+      "usage": "production"
+    },
+    {
+      "site": "T2_BE_UCL",
+      "type": "XROOTD",
+      "endpoint": "ingrid-se04.cism.ucl.ac.be:1094",
+      "usage": "production"
+    },
+    {
+      "site": "T2_BE_UCL",
+      "type": "XROOTD",
+      "endpoint": "ingrid-se05.cism.ucl.ac.be:1094",
+      "usage": "production"
+    },
+    {
+      "site": "T2_BE_UCL",
+      "type": "XROOTD",
+      "endpoint": "ingrid-se06.cism.ucl.ac.be:1094",
+      "usage": "production"
+    },
+    {
+      "site": "T2_BR_SPRACE",
+      "type": "XROOTD",
+      "endpoint": "osg-se.sprace.org.br:1094",
+      "usage": "production"
+    },
+    {
+      "site": "T2_BR_UERJ",
+      "type": "XROOTD",
+      "endpoint": "xrootd.hepgrid.uerj.br:1094",
+      "usage": "production"
+    },
+    {
+      "site": "T2_CH_CERN",
+      "type": "XROOTD",
+      "endpoint": "eoscms.cern.ch:1094",
+      "usage": "production"
+    },
+    {
+      "site": "T2_CH_CSCS",
+      "type": "XROOTD",
+      "endpoint": "cms02.lcg.cscs.ch:1094",
+      "usage": "production"
+    },
+    {
+      "site": "T2_CN_Beijing",
+      "type": "XROOTD",
+      "endpoint": "cmsxrootd.ihep.ac.cn:1094",
+      "usage": "production"
+    },
+    {
+      "site": "T2_DE_DESY",
+      "type": "XROOTD",
+      "endpoint": "dcache-cms-xrootd.desy.de:1094",
+      "usage": "test"
+    },
+    {
+      "site": "T2_DE_DESY",
+      "type": "XROOTD",
+      "endpoint": "t2-cms-xrootd01.desy.de:1094",
+      "usage": "production"
+    },
+    {
+      "site": "T2_DE_DESY",
+      "type": "XROOTD",
+      "endpoint": "t2-cms-xrootd02.desy.de:1094",
+      "usage": "production"
+    },
+    {
+      "site": "T2_DE_DESY",
+      "type": "XROOTD",
+      "endpoint": "t2-cms-xrootd03.desy.de:1094",
+      "usage": "production"
+    },
+    {
+      "site": "T2_DE_RWTH",
+      "type": "XROOTD",
+      "endpoint": "grid-vo-cms.physik.rwth-aachen.de:1094",
+      "usage": "production"
+    },
+    {
+      "site": "T2_EE_Estonia",
+      "type": "perfSONAR",
+      "endpoint": "perfsonar1.hep.kbfi.ee",
+      "usage": "test"
+    },
+    {
+      "site": "T2_EE_Estonia",
+      "type": "perfSONAR",
+      "endpoint": "perfsonar2.hep.kbfi.ee",
+      "usage": "test"
+    },
+    {
+      "site": "T2_EE_Estonia",
+      "type": "XROOTD",
+      "endpoint": "xrootd1.hep.kbfi.ee:1094",
+      "usage": "production"
+    },
+    {
+      "site": "T2_EE_Estonia",
+      "type": "XROOTD",
+      "endpoint": "xrootd2.hep.kbfi.ee:1094",
+      "usage": "production"
+    },
+    {
+      "site": "T2_ES_CIEMAT",
+      "type": "XROOTD",
+      "endpoint": "gaexroot01.ciemat.es:1095",
+      "usage": "production"
+    },
+    {
+      "site": "T2_ES_CIEMAT",
+      "type": "XROOTD",
+      "endpoint": "xrootd-es-cie.ciemat.es:1095",
+      "usage": "production"
+    },
+    {
+      "site": "T2_ES_IFCA",
+      "type": "perfSONAR",
+      "endpoint": "psifca02.ifca.es",
+      "usage": "test"
+    },
+    {
+      "site": "T2_ES_IFCA",
+      "type": "XROOTD",
+      "endpoint": "pool01.ifca.es:1094",
+      "usage": "production"
+    },
+    {
+      "site": "T2_ES_IFCA",
+      "type": "XROOTD",
+      "endpoint": "pool02.ifca.es:1094",
+      "usage": "production"
+    },
+    {
+      "site": "T2_ES_IFCA",
+      "type": "XROOTD",
+      "endpoint": "pool03.ifca.es:1094",
+      "usage": "production"
+    },
+    {
+      "site": "T2_ES_IFCA",
+      "type": "XROOTD",
+      "endpoint": "pool04.ifca.es:1094",
+      "usage": "production"
+    },
+    {
+      "site": "T2_ES_IFCA",
+      "type": "XROOTD",
+      "endpoint": "pool05.ifca.es:1094",
+      "usage": "production"
+    },
+    {
+      "site": "T2_ES_IFCA",
+      "type": "XROOTD",
+      "endpoint": "pool06.ifca.es:1094",
+      "usage": "production"
+    },
+    {
+      "site": "T2_ES_IFCA",
+      "type": "XROOTD",
+      "endpoint": "pool07.ifca.es:1094",
+      "usage": "production"
+    },
+    {
+      "site": "T2_ES_IFCA",
+      "type": "XROOTD",
+      "endpoint": "pool08.ifca.es:1094",
+      "usage": "production"
+    },
+    {
+      "site": "T2_FI_HIP",
+      "type": "XROOTD",
+      "endpoint": "hask.csc.fi:1094",
+      "usage": "production"
+    },
+    {
+      "site": "T2_FI_HIP",
+      "type": "XROOTD",
+      "endpoint": "nute.csc.fi:1094",
+      "usage": "production"
+    },
+    {
+      "site": "T2_FR_CCIN2P3",
+      "type": "XROOTD",
+      "endpoint": "ccxrdcms-t2.in2p3.fr:1094",
+      "usage": "production"
+    },
+    {
+      "site": "T2_FR_GRIF_IRFU",
+      "type": "XROOTD",
+      "endpoint": "node12.datagrid.cea.fr:11001",
+      "usage": "test"
+    },
+    {
+      "site": "T2_FR_GRIF_LLR",
+      "type": "XROOTD",
+      "endpoint": "llrpp01.in2p3.fr:11001",
+      "usage": "test"
+    },
+    {
+      "site": "T2_FR_GRIF_LLR",
+      "type": "XROOTD",
+      "endpoint": "polgrid4.in2p3.fr:11001",
+      "usage": "production"
+    },
+    {
+      "site": "T2_FR_IPHC",
+      "type": "XROOTD",
+      "endpoint": "sbgse1.in2p3.fr:11001",
+      "usage": "production"
+    },
+    {
+      "site": "T2_GR_Ioannina",
+      "type": "XROOTD",
+      "endpoint": "grid02.physics.uoi.gr:11001",
+      "usage": "production"
+    },
+    {
+      "site": "T2_HU_Budapest",
+      "type": "XROOTD",
+      "endpoint": "grid143.kfki.hu:11000",
+      "usage": "production"
+    },
+    {
+      "site": "T2_IN_TIFR",
+      "type": "XROOTD",
+      "endpoint": "se01.indiacms.res.in:11001",
+      "usage": "production"
+    },
+    {
+      "site": "T2_IT_Bari",
+      "type": "XROOTD",
+      "endpoint": "ss-01.recas.ba.infn.it:8080",
+      "usage": "production"
+    },
+    {
+      "site": "T2_IT_Bari",
+      "type": "XROOTD",
+      "endpoint": "ss-02.recas.ba.infn.it:8080",
+      "usage": "production"
+    },
+    {
+      "site": "T2_IT_Bari",
+      "type": "XROOTD",
+      "endpoint": "ss-03.recas.ba.infn.it:8080",
+      "usage": "production"
+    },
+    {
+      "site": "T2_IT_Legnaro",
+      "type": "XROOTD",
+      "endpoint": "t2-xrdcms.lnl.infn.it:7070",
+      "usage": "production"
+    },
+    {
+      "site": "T2_IT_Pisa",
+      "type": "XROOTD",
+      "endpoint": "stormgf2.pi.infn.it:1094",
+      "usage": "production"
+    },
+    {
+      "site": "T2_IT_Pisa",
+      "type": "XROOTD",
+      "endpoint": "stormgf1.pi.infn.it:1094",
+      "usage": "production"
+    },
+    {
+      "site": "T2_IT_Pisa",
+      "type": "XROOTD",
+      "endpoint": "stormgf3.pi.infn.it:1094",
+      "usage": "production"
+    },
+    {
+      "site": "T2_IT_Rome",
+      "type": "XROOTD",
+      "endpoint": "cmsrm-xrootd01.roma1.infn.it:7070",
+      "usage": "production"
+    },
+    {
+      "site": "T2_IT_Rome",
+      "type": "XROOTD",
+      "endpoint": "cmsrm-xrootd02.roma1.infn.it:7070",
+      "usage": "production"
+    },
+    {
+      "site": "T2_KR_KISTI",
+      "type": "XROOTD",
+      "endpoint": "cms-t2-se01.sdfarm.kr:1095",
+      "usage": "production"
+    },
+    {
+      "site": "T2_PK_NCP",
+      "type": "XROOTD",
+      "endpoint": "pcncp22.ncp.edu.pk:11001",
+      "usage": "production"
+    },
+    {
+      "site": "T2_PL_Swierk",
+      "type": "XROOTD",
+      "endpoint": "se.cis.gov.pl:11000",
+      "usage": "production"
+    },
+    {
+      "site": "T2_PL_Warsaw",
+      "type": "XROOTD",
+      "endpoint": "se.grid.icm.edu.pl:11001",
+      "usage": "production"
+    },
+    {
+      "site": "T2_PT_NCG_Lisbon",
+      "type": "XROOTD",
+      "endpoint": "xroot.ncg.ingrid.pt:1094",
+      "usage": "production"
+    },
+    {
+      "site": "T2_RU_IHEP",
+      "type": "XROOTD",
+      "endpoint": "vobox0002.m45.ihep.su:1095",
+      "usage": "production"
+    },
+    {
+      "site": "T2_RU_INR",
+      "type": "XROOTD",
+      "endpoint": "grse001.inr.troitsk.ru:11000",
+      "usage": "production"
+    },
+    {
+      "site": "T2_RU_ITEP",
+      "type": "XROOTD",
+      "endpoint": "se3.itep.ru:1095",
+      "usage": "production"
+    },
+    {
+      "site": "T2_RU_JINR",
+      "type": "XROOTD",
+      "endpoint": "lcgsexrd.jinr.ru:1095",
+      "usage": "production"
+    },
+    {
+      "site": "T2_TR_METU",
+      "type": "XROOTD",
+      "endpoint": "eymir.grid.metu.edu.tr:11001",
+      "usage": "production"
+    },
+    {
+      "site": "T2_TW_NCHC",
+      "type": "XROOTD",
+      "endpoint": "se01.grid.nchc.org.tw:11001",
+      "usage": "production"
+    },
+    {
+      "site": "T2_UA_KIPT",
+      "type": "XROOTD",
+      "endpoint": "cms-se0.kipt.kharkov.ua:11001",
+      "usage": "production"
+    },
+    {
+      "site": "T2_UK_London_Brunel",
+      "type": "XROOTD",
+      "endpoint": "dc2-grid-64.brunel.ac.uk:11001",
+      "usage": "production"
+    },
+    {
+      "site": "T2_UK_London_IC",
+      "type": "XROOTD",
+      "endpoint": "gfe02.grid.hep.ph.ic.ac.uk:1098",
+      "usage": "production"
+    },
+    {
+      "site": "T2_UK_SGrid_Bristol",
+      "type": "XROOTD",
+      "endpoint": "lcgse01.phy.bris.ac.uk:11001",
+      "usage": "production"
+    },
+    {
+      "site": "T2_UK_SGrid_RALPP",
+      "type": "XROOTD",
+      "endpoint": "heplnx228.pp.rl.ac.uk:1094",
+      "usage": "production"
+    },
+    {
+      "site": "T2_UK_SGrid_RALPP",
+      "type": "XROOTD",
+      "endpoint": "heplnx229.pp.rl.ac.uk:1094",
+      "usage": "production"
+    },
+    {
+      "site": "T2_UK_SGrid_RALPP",
+      "type": "XROOTD",
+      "endpoint": "xroot.pp.rl.ac.uk:1094",
+      "usage": "test"
+    },
+    {
+      "site": "T2_US_Caltech",
+      "type": "perfSONAR",
+      "endpoint": "perfsonar.ultralight.org",
+      "usage": "test"
+    },
+    {
+      "site": "T2_US_Caltech",
+      "type": "perfSONAR",
+      "endpoint": "perfsonar2.ultralight.org",
+      "usage": "test"
+    },
+    {
+      "site": "T2_US_Caltech",
+      "type": "XROOTD",
+      "endpoint": "transfer-1.ultralight.org:1094",
+      "usage": "production"
+    },
+    {
+      "site": "T2_US_Caltech",
+      "type": "XROOTD",
+      "endpoint": "transfer-2.ultralight.org:1094",
+      "usage": "test"
+    },
+    {
+      "site": "T2_US_Caltech",
+      "type": "XROOTD",
+      "endpoint": "transfer-4.ultralight.org:1094",
+      "usage": "test"
+    },
+    {
+      "site": "T2_US_Caltech",
+      "type": "XROOTD",
+      "endpoint": "transfer-5.ultralight.org:1094",
+      "usage": "test"
+    },
+    {
+      "site": "T2_US_Caltech",
+      "type": "XROOTD",
+      "endpoint": "transfer-6.ultralight.org:1094",
+      "usage": "test"
+    },
+    {
+      "site": "T2_US_Caltech",
+      "type": "XROOTD",
+      "endpoint": "transfer-7.ultralight.org:1094",
+      "usage": "test"
+    },
+    {
+      "site": "T2_US_Caltech",
+      "type": "XROOTD",
+      "endpoint": "transfer-8.ultralight.org:1094",
+      "usage": "test"
+    },
+    {
+      "site": "T2_US_Caltech",
+      "type": "XROOTD",
+      "endpoint": "transfer-9.ultralight.org:1094",
+      "usage": "test"
+    },
+    {
+      "site": "T2_US_Caltech",
+      "type": "XROOTD",
+      "endpoint": "transfer-10.ultralight.org:1094",
+      "usage": "test"
+    },
+    {
+      "site": "T2_US_Florida",
+      "type": "perfSONAR",
+      "endpoint": "perfsonar1.ihepa.ufl.edu",
+      "usage": "test"
+    },
+    {
+      "site": "T2_US_Florida",
+      "type": "perfSONAR",
+      "endpoint": "perfsonar2.ihepa.ufl.edu",
+      "usage": "test"
+    },
+    {
+      "site": "T2_US_Florida",
+      "type": "XROOTD",
+      "endpoint": "cmsio5.rc.ufl.edu:1094",
+      "usage": "production"
+    },
+    {
+      "site": "T2_US_MIT",
+      "type": "perfSONAR",
+      "endpoint": "perfsonar01.cmsaf.mit.edu",
+      "usage": "test"
+    },
+    {
+      "site": "T2_US_MIT",
+      "type": "perfSONAR",
+      "endpoint": "perfsonar02.cmsaf.mit.edu",
+      "usage": "test"
+    },
+    {
+      "site": "T2_US_MIT",
+      "type": "XROOTD",
+      "endpoint": "xrootd.cmsaf.mit.edu:1094",
+      "usage": "production"
+    },
+    {
+      "site": "T2_US_Nebraska",
+      "type": "perfSONAR",
+      "endpoint": "hcc-ps01.unl.edu",
+      "usage": "test"
+    },
+    {
+      "site": "T2_US_Nebraska",
+      "type": "XROOTD",
+      "endpoint": "xrootd-local.unl.edu:1094",
+      "usage": "production"
+    },
+    {
+      "site": "T2_US_Purdue",
+      "type": "perfSONAR",
+      "endpoint": "perfsonar-cms1.itns.purdue.edu",
+      "usage": "test"
+    },
+    {
+      "site": "T2_US_Purdue",
+      "type": "perfSONAR",
+      "endpoint": "perfsonar-cms2.itns.purdue.edu",
+      "usage": "test"
+    },
+    {
+      "site": "T2_US_Purdue",
+      "type": "XROOTD",
+      "endpoint": "xrootd.rcac.purdue.edu:1094",
+      "usage": "production"
+    },
+    {
+      "site": "T2_US_UCSD",
+      "type": "perfSONAR",
+      "endpoint": "perfsonar-1.t2.ucsd.edu",
+      "usage": "test"
+    },
+    {
+      "site": "T2_US_UCSD",
+      "type": "perfSONAR",
+      "endpoint": "perfsonar-2.t2.ucsd.edu",
+      "usage": "test"
+    },
+    {
+      "site": "T2_US_UCSD",
+      "type": "XROOTD",
+      "endpoint": "redirector.t2.ucsd.edu:1094",
+      "usage": "production"
+    },
+    {
+      "site": "T2_US_Vanderbilt",
+      "type": "perfSONAR",
+      "endpoint": "perfsonar-bwctl.accre.vanderbilt.edu",
+      "usage": "test"
+    },
+    {
+      "site": "T2_US_Vanderbilt",
+      "type": "perfSONAR",
+      "endpoint": "perfsonar-owamp.accre.vanderbilt.edu",
+      "usage": "test"
+    },
+    {
+      "site": "T2_US_Vanderbilt",
+      "type": "XROOTD",
+      "endpoint": "xrootd.accre.vanderbilt.edu:1094",
+      "usage": "production"
+    },
+    {
+      "site": "T2_US_Wisconsin",
+      "type": "perfSONAR",
+      "endpoint": "perfsonar01.hep.wisc.edu",
+      "usage": "test"
+    },
+    {
+      "site": "T2_US_Wisconsin",
+      "type": "perfSONAR",
+      "endpoint": "perfsonar02.hep.wisc.edu",
+      "usage": "test"
+    },
+    {
+      "site": "T2_US_Wisconsin",
+      "type": "XROOTD",
+      "endpoint": "pubxrootd.hep.wisc.edu:1094",
+      "usage": "production"
+    },
+    {
+      "site": "T3_CH_CERN_DOMA",
+      "type": "XROOTD",
+      "endpoint": "eulake.cern.ch:1094",
+      "usage": "test"
+    },
+    {
+      "site": "T3_CH_PSI",
+      "type": "XROOTD",
+      "endpoint": "t3se01.psi.ch:1095",
+      "usage": "production"
+    },
+    {
+      "site": "T3_FR_IPNL",
+      "type": "XROOTD",
+      "endpoint": "lyogrid06.in2p3.fr:11001",
+      "usage": "production"
+    },
+    {
+      "site": "T3_IT_MIB",
+      "type": "XROOTD",
+      "endpoint": "storm.mib.infn.it:1094",
+      "usage": "production"
+    },
+    {
+      "site": "T3_IT_Trieste",
+      "type": "XROOTD",
+      "endpoint": "cmsxrd.ts.infn.it:1094",
+      "usage": "production"
+    },
+    {
+      "site": "T3_KR_KNU",
+      "type": "XROOTD",
+      "endpoint": "cluster142.knu.ac.kr:1094",
+      "usage": "test"
+    },
+    {
+      "site": "T3_TW_NTU_HEP",
+      "type": "XROOTD",
+      "endpoint": "ntugrid6.phys.ntu.edu.tw:11000",
+      "usage": "production"
+    },
+    {
+      "site": "T3_US_Baylor",
+      "type": "XROOTD",
+      "endpoint": "kodiak-se.baylor.edu:1094",
+      "usage": "production"
+    },
+    {
+      "site": "T3_US_Brown",
+      "type": "XROOTD",
+      "endpoint": "brux11.hep.brown.edu:1094",
+      "usage": "production"
+    },
+    {
+      "site": "T3_US_Colorado",
+      "type": "XROOTD",
+      "endpoint": "hepxrd01.colorado.edu:1094",
+      "usage": "production"
+    },
+    {
+      "site": "T3_US_FNALLPC",
+      "type": "XROOTD",
+      "endpoint": "cmseos.fnal.gov",
+      "usage": "test"
+    },
+    {
+      "site": "T3_US_NERSC",
+      "type": "SRMv2",
+      "endpoint": "dtn02.nersc.gov:2811",
+      "usage": "test"
+    },
+    {
+      "site": "T3_US_NERSC",
+      "type": "SRMv2",
+      "endpoint": "dtn03.nersc.gov:2811",
+      "usage": "test"
+    },
+    {
+      "site": "T3_US_NERSC",
+      "type": "SRMv2",
+      "endpoint": "dtn04.nersc.gov:2811",
+      "usage": "test"
+    },
+    {
+      "site": "T3_US_NERSC",
+      "type": "SRMv2",
+      "endpoint": "dtn05.nersc.gov:2811",
+      "usage": "test"
+    },
+    {
+      "site": "T3_US_NERSC",
+      "type": "SRMv2",
+      "endpoint": "dtn06.nersc.gov:2811",
+      "usage": "test"
+    },
+    {
+      "site": "T3_US_NERSC",
+      "type": "SRMv2",
+      "endpoint": "dtn07.nersc.gov:2811",
+      "usage": "test"
+    },
+    {
+      "site": "T3_US_NERSC",
+      "type": "SRMv2",
+      "endpoint": "dtn08.nersc.gov:2811",
+      "usage": "test"
+    },
+    {
+      "site": "T3_US_NERSC",
+      "type": "perfSONAR",
+      "endpoint": "perfsonar.nersc.gov",
+      "usage": "test"
+    },
+    {
+      "site": "T3_US_PuertoRico",
+      "type": "XROOTD",
+      "endpoint": "cms-se.hep.uprm.edu:1094",
+      "usage": "test"
+    },
+    {
+      "site": "T3_US_Rice",
+      "type": "XROOTD",
+      "endpoint": "bonner04.rice.edu:1094",
+      "usage": "production"
+    },
+    {
+      "site": "T3_US_UMD",
+      "type": "XROOTD",
+      "endpoint": "hepcms-0.umd.edu:1094",
+      "usage": "production"
+    },
+    {
+      "site": "T3_US_SDSC",
+      "type": "SRMv2",
+      "endpoint": "gordon-dm.sdsc.edu:2811",
+      "usage": "test"
+    },
+    {
+      "site": "T3_US_Vanderbilt_EC2",
+      "type": "SRMv2",
+      "endpoint": "gridftp-vanderbilt.sites.opensciencegrid.org:2814",
+      "usage": "test"
+    }
+  ]
+}
