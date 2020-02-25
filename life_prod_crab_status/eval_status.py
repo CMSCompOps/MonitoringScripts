@@ -1382,6 +1382,7 @@ if __name__ == '__main__':
                         #
                         myFile.seek(0)
                         myFile.write(jsonString)
+                        myFile.truncate()
                         #
                     logging.info("Successfully updated override file %s" %
                                                                       filename)
@@ -2113,7 +2114,7 @@ if __name__ == '__main__':
         # ############################################################## #
         PRODSTS_FILE = "./junk/ProdStatus.txt"
         PRODSTS_COPY = None
-        #PRODSTS_FILE = "/afs/cern.ch/user/c/cmssst/www/prodstatus/ProdStatus.txt"
+        #PRODSTS_FILE = "/afs/cern.ch/user/c/cmssst/www/ssb_metric/ProdStatus.txt"
         #PRODSTS_COPY = "/eos/home-c/cmssst/www/ssb_metric/ProdStatus.txt"
 
         logging.info("Writing ProdStatus SSB JSON file")
