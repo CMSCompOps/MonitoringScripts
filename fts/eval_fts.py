@@ -1058,6 +1058,11 @@ if __name__ == '__main__':
                                               ['tr_timestamp_complete']/900000)
                                     if bin15m not in bins15min:
                                         continue
+                                    #-LML patch for Vanderbilt test endpoint:
+                                    if (( myJson['data']['src_url'].find("gridftp-vanderbilt.sites.opensciencegrid.org:2814") >= 0 ) or
+                                        ( myJson['data']['dst_url'].find("gridftp-vanderbilt.sites.opensciencegrid.org:2814") >= 0 )):
+                                        continue
+                                    #-LML patch end
                                     #
                                     # dictionary key is a tuple:
                                     tuple = ("fts15min", bin15m)
