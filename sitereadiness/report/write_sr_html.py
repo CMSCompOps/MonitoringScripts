@@ -783,17 +783,7 @@ def srhr_write_html(timestamp, statusDict):
     # write Site Readiness HTML report with relevant metric information #
     # ################################################################# #
     GGUS_URL = "https://ggus.eu/?mode=ticket_info&ticket_id=%s"
-    DOWN_URL = ("https://test-cmssst.web.cern.ch/cgi-bin/log/down15min/%d/al" +
-                "l/any/0+day")
-    SAM3_URL = ("http://wlcg-sam-cms.cern.ch/templates/ember/#/historicalsmr" +
-                "y/heatMap?profile=CMS_CRITICAL_FULL&site=%s&start_time=%s&e" +
-                "nd_time=%s&time=manual&view=Test History")
-    HCGV_URL = ("https://monit-grafana.cern.ch/d/cmsTMGlobal/cms-tasks-monit" +
-                "oring-globalview?orgId=11&from=%d000&to=%d000&var-user=scia" +
-                "ba&var-site=All&var-task=All&var-Filters=data.CRAB_Workflow" +
-                "|=~|.*-%s-.*")
-    FTSLR_URL = ("https://test-cmssst.web.cern.ch/cgi-bin/log/links1day/%d/a" +
-                 "ll/any/0+0")
+    LOG_URL = "https://test-cmssst.web.cern.ch/cgi-bin/log/%s/%d/%s/%s/%s"
     # tickets:   0  1  2  3  4  5  6   7   8   9  10  11  12
     dbinSpace = [0, 2, 3, 5, 6, 7, 9, 10, 12, 13, 15, 16, 17]
     #
@@ -1036,8 +1026,9 @@ def srhr_write_html(timestamp, statusDict):
                             ttip_strng = "toolTip3"
                         else:
                             ttip_strng = "toolTip2"
-                        strt_tis = ( first1d + dbin ) * 86400
-                        url_strng = DOWN_URL % strt_tis
+                        strt_15m = ( first1d + dbin ) * 96
+                        url_strng = LOG_URL % ("down15min", \
+                                               strt_15m, "all", "any", "0+day")
                         if ( entry[0] != "none" ):
                             myFile.write(("   <TD CLASS=\"tdCell1\" STYLE=\"" +
                                           "background-color: #6080FF\"><A CL" +
@@ -1073,13 +1064,9 @@ def srhr_write_html(timestamp, statusDict):
                             rgb_strng = "#6080FF"
                         else:
                             rgb_strng = "#F4F4F4"
-                        tis = ( first1d + dbin ) * 86400
-                        strt_strng = time.strftime("%Y/%m/%d %H:%M",
-                                                              time.gmtime(tis))
-                        tis = ( first1d + dbin + 1 ) * 86400
-                        end_strng = time.strftime("%Y/%m/%d %H:%M",
-                                                              time.gmtime(tis))
-                        url_strng = SAM3_URL % (site, strt_strng, end_strng)
+                        strt_1d = first1d + dbin
+                        url_strng = LOG_URL % ("sam1day", strt_1d, site,
+                                                                    "*", "0+0")
                         if ( entry[0] != "none" ):
                             myFile.write(("   <TD CLASS=\"tdCell1\" STYLE=\"" +
                                           "background-color: %s\"><A CLASS=" +
@@ -1109,9 +1096,9 @@ def srhr_write_html(timestamp, statusDict):
                             rgb_strng = "#FF0000"
                         else:
                             rgb_strng = "#F4F4F4"
-                        strt_tis = ( first1d + dbin ) * 86400
-                        end_tis = ( first1d + dbin + 1 ) * 86400
-                        url_strng = HCGV_URL % (strt_tis, end_tis, site)
+                        strt_1d = first1d + dbin
+                        url_strng = LOG_URL % ("hc1day", strt_1d, site,
+                                                                 "site", "0+0")
                         if (( entry[0] != "none" ) and ( entry[2] != "" )):
                             myFile.write(("   <TD CLASS=\"tdCell1\" STYLE=\"" +
                                           "background-color: %s\"><A CLASS=" +
@@ -1146,8 +1133,9 @@ def srhr_write_html(timestamp, statusDict):
                             rgb_strng = "#FF0000"
                         else:
                             rgb_strng = "#F4F4F4"
-                        strt_tis = ( first1d + dbin ) * 86400
-                        url_strng = FTSLR_URL % strt_tis
+                        strt_1d = first1d + dbin
+                        url_strng = LOG_URL % ("links1day", strt_1d, site,
+                                                                    "*", "0+0")
                         if ( entry[0] != "none" ):
                             myFile.write(("   <TD CLASS=\"tdCell1\" STYLE=\"" +
                                           "background-color: %s\"><A CLASS=" +

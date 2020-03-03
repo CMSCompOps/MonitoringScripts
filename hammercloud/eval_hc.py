@@ -56,18 +56,19 @@ import pydoop.hdfs
 
 EVHC_SSB_DIR = "./junk"
 #EVHC_SSB_DIR = "/afs/cern.ch/user/c/cmssst/www/hammercloud"
-EVHC_MONIT_URL = "http://fail.cern.ch:10012/"
+EVHC_MONIT_URL = "http://fail.cern.ch:12012/"
 #EVHC_MONIT_URL = "http://monit-metrics.cern.ch:10012/"
 EVHC_BACKUP_DIR = "./junk"
 #EVHC_BACKUP_DIR = "/data/cmssst/MonitoringScripts/hammercloud/failed"
-#
-EVHC_TEMPLATE_IDS = [93, 94, 95, 96, 97, 98, 99, 100, 101]
 # ########################################################################### #
 
 
 
 evhc_glbl_cmssites = []
     # list of CMS site names
+evhc_glbl_templates = { '93': {}, '94': {}, '95': {}, '96': {}, '97': {}, \
+                        '98': {}, '99': {}, '100': {}, '101': {} }
+    # dictionary: HC-id: {cmssites: ["", "", ...], jobs: True/Fales }
 evhc_glbl_jobcondor = []
     # list of dictionaries { 'time', 'site', 'status'}
 evhc_glbl_monitdocs = {}
@@ -224,6 +225,76 @@ def evhc_vofeed():
 
 
 
+def evhc_template_cfg():
+    """function to fetch Hammer Cloud template configuration of CMS"""
+    # ##################################################################### #
+    # fill evhc_glbl_templates with CMS site information and init jobs flag #
+    # ##################################################################### #
+    global evhc_glbl_templates
+    URL_TEMPLATE = "https://hc-ai-core.cern.ch/testdirs/cms/cms.templates.json"
+
+
+    # fetch template configuration from Hammer Cloud server:
+    # =========================================================
+    logging.info("Fetching template configuration from HammerCloud")
+    try:
+        urlRequest = urllib.request.Request(URL_TEMPLATE,
+                                         headers={'Accept':'application/json'})
+        with urllib.request.urlopen( urlRequest ) as urlHandle:
+            urlCharset = urlHandle.headers.get_content_charset()
+            if urlCharset is None:
+                urlCharset = "utf-8"
+            myData = urlHandle.read().decode( urlCharset )
+            del urlCharset
+        #
+        # sanity check:
+        if ( len(myData) < 1024 ):
+            raise IOError("HammerCloud template config failed sanity check")
+    except Exception as excptn:
+        logging.critical("Failed to fetch HammerCloud template config, %s" %
+                                                                   str(excptn))
+        return
+
+
+    # unpack JSON:
+    # ============
+    hcConf = json.loads( myData )
+    del myData
+
+
+    # loop over predefined template ids and fill site list and jobs flag:
+    # ===================================================================
+    for tmpltID in evhc_glbl_templates:
+        try:
+            for myEntry in hcConf[tmpltID]['dependencies::TemplateSite.site']:
+                try:
+                    mySite = myEntry['name']
+                    if ( mySite not in evhc_glbl_cmssites ):
+                        continue
+                    #
+                    if ( 'cmssites' not in evhc_glbl_templates[ tmpltID ] ):
+                        evhc_glbl_templates[ tmpltID ]['cmssites'] = set()
+                    evhc_glbl_templates[ tmpltID ]['cmssites'].add( mySite )
+                    evhc_glbl_templates[ tmpltID ]['jobs'] = False
+                except KeyError as excptn:
+                    logging.warning("Incomplete template site entry, id=%s, %s"
+                                                      % (tmpltID, str(excptn)))
+        except KeyError as excptn:
+            logging.warning("Incomplete template dictionary, id=%s, %s" %
+                                                        (tmpltID, str(excptn)))
+
+    myCnt = 0
+    for tmpltID in evhc_glbl_templates:
+        if ( 'cmssites' in evhc_glbl_templates[ tmpltID ] ):
+            evhc_glbl_templates[ tmpltID ]['cmssites'] = \
+                           sorted( evhc_glbl_templates[ tmpltID ]['cmssites'] )
+            myCnt += len( evhc_glbl_templates[ tmpltID ]['cmssites'] )
+    logging.info("   %d CMS sites in HC template config" % myCnt)
+    return
+# ########################################################################### #
+
+
+
 def evhc_grafana_jobs(startTIS, limitTIS):
     """function to fetch HammerCloud HTCondor job records via Grafana"""
     # ############################################################# #
@@ -320,12 +391,13 @@ def evhc_grafana_jobs(startTIS, limitTIS):
                         matchObj = wfRegex.match(CRABworkflow)
                         if matchObj is not None:
                             status = None
-                            tmplNmbr = int( matchObj.group(1) )
+                            tmpltID = matchObj.group(1)
                             siteName = matchObj.group(2)
-                            if (( tmplNmbr not in EVHC_TEMPLATE_IDS ) or
+                            if (( tmpltID not in evhc_glbl_templates ) or
                                 ( siteName not in evhc_glbl_cmssites )):
                                 pass
                             elif ( hitData['Status'] == "Completed" ):
+                                evhc_glbl_templates[ tmpltID ]['jobs'] = True
                                 if 'Site' not in hitData:
                                    hitData['Site'] == ""
                                 if ((( hitData['Site'] != "Unknown" ) and
@@ -363,6 +435,7 @@ def evhc_grafana_jobs(startTIS, limitTIS):
                                                   (hitData['GlobalJobId'],
                                                    hitData['Site']))
                             elif ( hitData['Status'] == "Removed" ):
+                                evhc_glbl_templates[ tmpltID ]['jobs'] = True
                                 try:
                                     rReason = hitData['RemoveReason']
                                     if ( rReason.find("condor_rm") != -1 ):
@@ -382,6 +455,7 @@ def evhc_grafana_jobs(startTIS, limitTIS):
                                                   (hitData['GlobalJobId'],
                                                    siteName))
                             else:
+                                evhc_glbl_templates[ tmpltID ]['jobs'] = True
                                 try:
                                     eCode = hitData['Chirp_CRAB3_Job_ExitCode']
                                     try:
@@ -705,10 +779,18 @@ def evhc_evaluate_sites(metric, timebin):
         logging.log(9, "   counting job of %s at %d with %s" %
                     (site, jobRec['time'], status))
 
+
+    siteSet = set( hc_evals.keys() )
+    for tmpltID in evhc_glbl_templates:
+        if (( 'cmssites' in evhc_glbl_templates[ tmpltID ] ) and
+            ( evhc_glbl_templates[ tmpltID ]['jobs'] == True )):
+            siteSet.update( evhc_glbl_templates[ tmpltID ]['cmssites'] )
+
+
     # loop over sites and evaluate status:
     # ====================================
     counts = [0, 0, 0, 0]
-    for site in evhc_glbl_cmssites:
+    for site in sorted( siteSet ):
         successJobs = 0
         totalJobs = 0
         detail = ""
@@ -1186,6 +1268,13 @@ if __name__ == '__main__':
     successFlag = evhc_vofeed()
     if not successFlag:
         sys.exit(1)
+
+
+    # fetch HC template configuration:
+    # ================================
+    if ( (now15m - frst15m) <= 192 ):
+        # consider template information only for evaluation within 2 days:
+        evhc_template_cfg()
 
 
     # fetch relevant HammerCloud jobs records:
