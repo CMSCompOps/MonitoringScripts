@@ -1055,7 +1055,7 @@ if __name__ == '__main__':
                 'prd': True
             },
             {   'lbl': "CERN",
-                'uri': "vocms0206.cern.ch",
+                'uri': "vocms0207.cern.ch",
                 'prd': True
             },
             {   'lbl': "CERNint",
