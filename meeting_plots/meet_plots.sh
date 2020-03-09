@@ -240,14 +240,14 @@ fi
 # now cut out Tier-1 and Tier-2 CERN images:
 if [ -f ${TMP_FILE} ]; then
    if [ ! -f ${PLOT_DIR}/T2_CH_CERN_sr.png ]; then
-      /usr/bin/convert -crop 1070x474+7+1262 ${TMP_FILE} ${PLOT_DIR}/T1_DE_KIT_sr.png
-      /usr/bin/convert -crop 1070x474+7+1827 ${TMP_FILE} ${PLOT_DIR}/T1_ES_PIC_sr.png
-      /usr/bin/convert -crop 1070x474+7+2392 ${TMP_FILE} ${PLOT_DIR}/T1_FR_CCIN2P3_sr.png
-      /usr/bin/convert -crop 1070x474+7+2957 ${TMP_FILE} ${PLOT_DIR}/T1_IT_CNAF_sr.png
-      /usr/bin/convert -crop 1070x474+7+3522 ${TMP_FILE} ${PLOT_DIR}/T1_RU_JINR_sr.png
-      /usr/bin/convert -crop 1070x474+7+4087 ${TMP_FILE} ${PLOT_DIR}/T1_UK_RAL_sr.png
-      /usr/bin/convert -crop 1070x474+7+4652 ${TMP_FILE} ${PLOT_DIR}/T1_US_FNAL_sr.png
-      /usr/bin/convert -crop 1070x474+7+8042 ${TMP_FILE} ${PLOT_DIR}/T2_CH_CERN_sr.png
+      /usr/bin/convert -crop 1070x474+7+725 ${TMP_FILE} ${PLOT_DIR}/T1_DE_KIT_sr.png
+      /usr/bin/convert -crop 1070x474+7+1290 ${TMP_FILE} ${PLOT_DIR}/T1_ES_PIC_sr.png
+      /usr/bin/convert -crop 1070x474+7+1855 ${TMP_FILE} ${PLOT_DIR}/T1_FR_CCIN2P3_sr.png
+      /usr/bin/convert -crop 1070x474+7+2420 ${TMP_FILE} ${PLOT_DIR}/T1_IT_CNAF_sr.png
+      /usr/bin/convert -crop 1070x474+7+2985 ${TMP_FILE} ${PLOT_DIR}/T1_RU_JINR_sr.png
+      /usr/bin/convert -crop 1070x474+7+3550 ${TMP_FILE} ${PLOT_DIR}/T1_UK_RAL_sr.png
+      /usr/bin/convert -crop 1070x474+7+4115 ${TMP_FILE} ${PLOT_DIR}/T1_US_FNAL_sr.png
+      /usr/bin/convert -crop 1070x474+7+7505 ${TMP_FILE} ${PLOT_DIR}/T2_CH_CERN_sr.png
    else
       echo "t1_de_kit/pic/ccin2p3/cnaf/jinr/ral/fnal/cern.png exist, skipping"
    fi
@@ -277,145 +277,11 @@ fi
 # now cut out Tier-2 image:
 if [ -f ${TMP_FILE} ]; then
    if [ ! -f ${PLOT_DIR}/T2_sr.png ]; then
-      /usr/bin/convert -crop 1114x1458+7+418 ${TMP_FILE} ${PLOT_DIR}/T2_sr.png
+      /usr/bin/convert -crop 1114x1458+7+394 ${TMP_FILE} ${PLOT_DIR}/T2_sr.png
    else
       echo "T2_sr.png exist, skipping"
    fi
    /bin/rm ${TMP_FILE}
-fi
-# #############################################################################
-
-
-
-# get T1 SAM Site Availability for CMS_CRITICAL_FULL:
-# ----------------------------------------------------
-${HOME}/bin/phantomjs/phantomjs ${HOME}/bin/phantomjs/screenshot.js 'http://wlcg-sam-cms.cern.ch/templates/ember/#/historicalsmry/heatMap?group=Tier1s%20%2B%20Tier0&hosts=&profile=CMS_CRITICAL_FULL&time=Last%202%20Weeks' ${TMP_FILE}
-if [ $? -ne 0 ]; then
-   /bin/sleep 3
-   /bin/rm -f ${TMP_FILE} 1>/dev/null 2>&1
-   echo "failed to get SAM site availability web page as png" >> ${ERR_FILE}
-   ${HOME}/bin/phantomjs/phantomjs ${HOME}/bin/phantomjs/screenshot.js 'http://wlcg-sam-cms.cern.ch/templates/ember/#/historicalsmry/heatMap?group=Tier1s%20%2B%20Tier0&hosts=&profile=CMS_CRITICAL_FULL&time=Last%202%20Weeks' ${TMP_FILE}
-   RCX=$?
-   if [ ${RCX} -ne 0 ]; then
-      echo "phantomjs retry failed too, rc=${RCX}" >> ${ERR_FILE}
-      echo "" >> ${ERR_FILE}
-      if [ ${RC} -eq 0 ]; then
-         RC=${RCX}
-      fi
-      /bin/rm -f ${TMP_FILE} 1>/dev/null 2>&1
-   else
-      echo "succeeded on second attempt" >> ${ERR_FILE}
-      echo "" >> ${ERR_FILE}
-   fi
-fi
-#
-# and cut out graphic:
-if [ -f ${TMP_FILE} ]; then
-   if [ ! -f ${PLOT_DIR}/t1avail.png ]; then
-      /usr/bin/convert -crop 994x786+24+421 ${TMP_FILE} ${PLOT_DIR}/t1avail.png
-   else
-      echo "t1avail.png exists, skipping"
-   fi
-   /bin/rm ${TMP_FILE}
-fi
-
-# get T2 SAM Site Availability for CMS_CRITICAL_FULL:
-# ----------------------------------------------------
-${HOME}/bin/phantomjs/phantomjs ${HOME}/bin/phantomjs/screenshot.js 'http://wlcg-sam-cms.cern.ch/templates/ember/#/historicalsmry/heatMap?group=Tier2s&hosts=&profile=CMS_CRITICAL_FULL&time=Last%202%20Weeks' ${TMP_FILE}
-if [ $? -ne 0 ]; then
-   /bin/sleep 3
-   /bin/rm -f ${TMP_FILE} 1>/dev/null 2>&1
-   echo "failed to get SAM site availability web page as png" >> ${ERR_FILE}
-   ${HOME}/bin/phantomjs/phantomjs ${HOME}/bin/phantomjs/screenshot.js 'http://wlcg-sam-cms.cern.ch/templates/ember/#/historicalsmry/heatMap?group=Tier2s&hosts=&profile=CMS_CRITICAL_FULL&time=Last%202%20Weeks' ${TMP_FILE}
-   RCX=$?
-   if [ ${RCX} -ne 0 ]; then
-      echo "phantomjs retry failed too, rc=${RCX}" >> ${ERR_FILE}
-      echo "" >> ${ERR_FILE}
-      if [ ${RC} -eq 0 ]; then
-         RC=${RCX}
-      fi
-      /bin/rm -f ${TMP_FILE} 1>/dev/null 2>&1
-   else
-      echo "succeeded on second attempt" >> ${ERR_FILE}
-      echo "" >> ${ERR_FILE}
-   fi
-fi
-#
-# and cut out graphic:
-if [ -f ${TMP_FILE} ]; then
-   if [ ! -f ${PLOT_DIR}/t2avail.png ]; then
-      /usr/bin/convert -crop 994x4546+24+421 ${TMP_FILE} ${PLOT_DIR}/t2avail.png
-   else
-      echo "t2avail.png exists, skipping"
-   fi
-   /bin/rm ${TMP_FILE}
-fi
-# #############################################################################
-
-
-
-# get T1 Site Readiness ranking:
-# ------------------------------
-if [ ! -f ${PLOT_DIR}/t1readyrank.png ]; then
-   ${HOME}/bin/phantomjs/phantomjs ${HOME}/bin/phantomjs/screenshot.js 'http://dashb-ssb.cern.ch/dashboard/request.py/sitereadinessrank?columnid=234#time=168&start_date=&end_date=&sites=T0/1&timebins=false&nodata=false&binsselect=default&clouds=all' ${TMP_FILE}
-   if [ $? -ne 0 ]; then
-      /bin/sleep 3
-      /bin/rm -f ${TMP_FILE} 1>/dev/null 2>&1
-      echo "failed to get Tier-1 ranking web page as png" >> ${ERR_FILE}
-      ${HOME}/bin/phantomjs/phantomjs ${HOME}/bin/phantomjs/screenshot.js 'http://dashb-ssb.cern.ch/dashboard/request.py/sitereadinessrank?columnid=234#time=168&start_date=&end_date=&sites=T0/1&timebins=false&nodata=false&binsselect=default&clouds=all' ${TMP_FILE} 1> ${ERR_FILE} 2>&1
-      RCX=$?
-      if [ ${RCX} -ne 0 ]; then
-         echo "phantomjs retry failed too, rc=${RCX}" >> ${ERR_FILE}
-         echo "" >> ${ERR_FILE}
-         if [ ${RC} -eq 0 ]; then
-            RC=${RCX}
-         fi
-         /bin/rm -f ${TMP_FILE} 1>/dev/null 2>&1
-      else
-         echo "succeeded on second attempt" >> ${ERR_FILE}
-         echo "" >> ${ERR_FILE}
-      fi
-   fi
-   #
-   # and cut out graphic:
-   if [ -f ${TMP_FILE} ]; then
-      /usr/bin/convert -crop 780x534+12+414 ${TMP_FILE} ${PLOT_DIR}/t1readyrank.png
-      /bin/rm ${TMP_FILE}
-   fi
-else
-   echo "t1readyrank.png exists, skipping"
-fi
-
-# get T2 Site Readiness ranking:
-# ------------------------------
-if [ ! -f ${PLOT_DIR}/t2readyrank.png ]; then
-   ${HOME}/bin/phantomjs/phantomjs ${HOME}/bin/phantomjs/screenshot.js 'http://dashb-ssb.cern.ch/dashboard/request.py/sitereadinessrank?columnid=234#time=168&start_date=&end_date=&sites=T2&timebins=false&nodata=false&binsselect=default&clouds=all' ${TMP_FILE}
-   if [ $? -ne 0 ]; then
-      /bin/sleep 3
-      /bin/rm -f ${TMP_FILE} 1>/dev/null 2>&1
-      echo "failed to get Tier-2 ranking web page as png" >> ${ERR_FILE}
-      ${HOME}/bin/phantomjs/phantomjs ${HOME}/bin/phantomjs/screenshot.js 'http://dashb-ssb.cern.ch/dashboard/request.py/sitereadinessrank?columnid=234#time=168&start_date=&end_date=&sites=T2&timebins=false&nodata=false&binsselect=default&clouds=all' ${TMP_FILE}
-      RCX=$?
-      if [ ${RCX} -ne 0 ]; then
-         echo "phantomjs retry failed too, rc=${RCX}" >> ${ERR_FILE}
-         echo "" >> ${ERR_FILE}
-         if [ ${RC} -eq 0 ]; then
-            RC=${RCX}
-         fi
-         /bin/rm -f ${TMP_FILE} 1>/dev/null 2>&1
-      else
-         echo "succeeded on second attempt" >> ${ERR_FILE}
-         echo "" >> ${ERR_FILE}
-      fi
-   fi
-   #
-   # and cut out graphic:
-   if [ -f ${TMP_FILE} ]; then
-      /usr/bin/convert -crop 816x1182+12+414 ${TMP_FILE} ${PLOT_DIR}/t2readyrank.png
-      /bin/rm ${TMP_FILE}
-   fi
-else
-   echo "t2readyrank.png exists, skipping"
 fi
 # #############################################################################
 
