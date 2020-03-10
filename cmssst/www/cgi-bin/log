@@ -90,7 +90,7 @@ fi
 
 # check if earliest information is within 30 days:
 # ================================================
-REQUEST_MTHD=`(echo -e "${METRIC_SUPPORT}" | /usr/bin/awk -F: -v rp="${REQUEST_PATH}" 'BEGIN{split(rp,a,"/");split(a[6],b,"+")}{if($1==a[2]){nd=int((systime()-a[3]+($3*b[1])+86400)/86400);if((($2=="down")||($2=="sam")||($2=="hc")||($2=="fts")||($2=="sr")||($2=="sts"))&&(nd<=30)){print "grafana"}else{print "hadoop"};exit}}') 2>/dev/null`
+REQUEST_MTHD=`(echo -e "${METRIC_SUPPORT}" | /usr/bin/awk -F: -v rp="${REQUEST_PATH}" 'BEGIN{split(rp,a,"/");split(a[6],b,"+")}{if(tolower(substr(a[5],2))=="rgroup"){print "hadoop";exit};if($1==a[2]){nd=int((systime()-a[3]+($3*b[1])+86400)/86400);if((($2=="down")||($2=="sam")||($2=="hc")||($2=="fts")||($2=="sr")||($2=="sts"))&&(nd<=30)){print "grafana"}else{print "hadoop"};exit}}') 2>/dev/null`
 (echo "${REQUEST_OPTN}" | /bin/grep ":hadoop:") 1>/dev/null 2>&1
 if [ $? -ne 0 -a "${REQUEST_MTHD}" = "grafana" ]; then
    (echo "${REQUEST_OPTN}" | /bin/grep ":debug:") 1>/dev/null 2>&1
