@@ -1570,7 +1570,7 @@ def srhr_write_summary(timestamp, statusDict):
                 #
                 myFile.write("<TR>\n   <TD CLASS=\"tdLabel1\">%s\n" % site)
                 #
-                for ibin in range( len( statusDict[site]['sr1day'] ) ):
+                for ibin in range( total1d ):
                     detail = ""
                     #
                     if 'ggus1day' in siteDict[site]:
