@@ -55,7 +55,7 @@ import pydoop.hdfs
 
 
 EVSTS_BACKUP_DIR = "./junk"
-#EVSTS_BACKUP_DIR = "/data/cmssst/MonitoringScripts/site_status/failed"
+#EVSTS_BACKUP_DIR = "/data/cmssst/MonitoringScripts/life_prod_crab_status/failed"
 # ########################################################################### #
 
 
@@ -97,20 +97,25 @@ class StatusMetric:
                        (time.strftime("%Y-%m-%d %H:%M", time.gmtime(timeFrst)),
                     time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime(timeLast))))
         #
-        dirList = set()
+        dirList = []
+        dirSet = set()
         for dirDay in range(timeFrst, timeLast + 1, oneDay):
-            dirList.add( time.strftime("sts15min/%Y/%m/%d",
+            dirSet.add( time.strftime("sts15min/%Y/%m/%d",
                                                          time.gmtime(dirDay)) )
+        dirList.append( time.strftime("sts15min/%Y/%m/%d",
+                                                       time.gmtime(timeLast)) )
         #
         startLclTmpArea = max( calendar.timegm( time.localtime( sixDaysAgo ) ),
                                calendar.timegm( time.localtime( timeFrst ) ) )
         midnight = ( int( now / 86400 ) * 86400 )
         limitLclTmpArea = calendar.timegm( time.localtime( midnight + 86399 ) )
         for dirDay in range( startLclTmpArea, limitLclTmpArea, oneDay):
-            dirList.add( time.strftime("sts15min/%Y/%m/%d.tmp",
+            dirSet.add( time.strftime("sts15min/%Y/%m/%d.tmp",
                                                          time.gmtime(dirDay)) )
+        dirList.append( time.strftime("sts15min/%Y/%m/%d.tmp",
+                                                time.gmtime(limitLclTmpArea)) )
         #
-        dirList = sorted( dirList )
+        dirList.extend( sorted( dirSet ) )
 
         # connect to HDFS, loop over directories and read status docs:
         # ============================================================
@@ -2191,6 +2196,7 @@ if __name__ == '__main__':
         # ############################################################## #
         USABLE_FILE = "./junk/usableSites.json"
         USABLE_COPY = None
+        #USABLE_FILE = "/afs/cern.ch/user/c/cmssst/www/ssb_metric/usableSites.json"
         #USABLE_FILE = "/afs/cern.ch/user/c/cmssst/www/analysis/usableSites.json"
         #USABLE_COPY = "/eos/home-c/cmssst/www/ssb_metric/usableSites.json"
 
