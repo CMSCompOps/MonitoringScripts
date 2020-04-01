@@ -357,7 +357,7 @@ class SReadinessMetric:
                         except FileNotFoundError as excptn:
                             logging.error("HDFS file not found, %s: %s" %
                                                        (fileName, str(excptn)))
-                        except IOError as err:
+                        except IOError as excptn:
                             logging.error("IOError accessing HDFS file %s: %s"
                                                      % (fileName, str(excptn)))
                         finally:
@@ -877,7 +877,7 @@ if __name__ == '__main__':
                         except FileNotFoundError as excptn:
                             logging.error("HDFS file not found, %s: %s" %
                                                        (fileName, str(excptn)))
-                        except IOError as err:
+                        except IOError as excptn:
                             logging.error("IOError accessing HDFS file %s: %s"
                                                      % (fileName, str(excptn)))
                         finally:
@@ -1230,7 +1230,7 @@ if __name__ == '__main__':
                         except FileNotFoundError as excptn:
                             logging.error("HDFS file not found, %s: %s" %
                                                        (fileName, str(excptn)))
-                        except IOError as err:
+                        except IOError as excptn:
                             logging.error("IOError accessing HDFS file %s: %s"
                                                      % (fileName, str(excptn)))
                         finally:
