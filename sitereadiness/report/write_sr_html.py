@@ -449,7 +449,7 @@ def srhr_monit_SAM_HC_FTS_SR(timestamp, siteDict):
                     except FileNotFoundError as excptn:
                         logging.error("HDFS file not found, %s: %s" %
                                                        (fileName, str(excptn)))
-                    except IOError as err:
+                    except IOError as excptn:
                         logging.error("IOError accessing HDFS file %s: %s"
                                                      % (fileName, str(excptn)))
                     finally:
@@ -605,7 +605,7 @@ def srhr_monit_down_STS(timestamp, siteDict):
                     except FileNotFoundError as excptn:
                         logging.error("HDFS file not found, %s: %s" %
                                                        (fileName, str(excptn)))
-                    except IOError as err:
+                    except IOError as excptn:
                         logging.error("IOError accessing HDFS file %s: %s"
                                                      % (fileName, str(excptn)))
                     finally:

@@ -3356,13 +3356,13 @@ def sswp_ssb_HammerCloud15min():
             del renameFlag
         except:
             pass
-    except BaseException as err:
+    except BaseException as excptn:
         if 'stale' not in glbInfo:
             glbInfo['stale'] = "No/stale information (SSB HammerCloud 15 min"
         else:
             glbInfo['stale'] += ", SSB HammerCloud 15 min"
         logging.warning("   failed to fetch SSB HammerCloud 15 min data")
-        logging.exception(err)
+        logging.exception(excptn)
         try:
             myFile = open("%s/cache_ssbHammerCloud15m.json" % SSWP_CACHE_DIR,
                           'r')
@@ -3720,7 +3720,7 @@ def ssdw_monit_SAM_HC_FTS_SR():
                     except FileNotFoundError as excptn:
                         logging.error("HDFS file not found, %s: %s" %
                                                        (fileName, str(excptn)))
-                    except IOError as err:
+                    except IOError as excptn:
                         logging.error("IOError accessing HDFS file %s: %s"
                                                      % (fileName, str(excptn)))
                     finally:
@@ -3997,7 +3997,7 @@ def ssdw_monit_down_STS():
                     except FileNotFoundError as excptn:
                         logging.error("HDFS file not found, %s: %s" %
                                                        (fileName, str(excptn)))
-                    except IOError as err:
+                    except IOError as excptn:
                         logging.error("IOError accessing HDFS file %s: %s"
                                                      % (fileName, str(excptn)))
                     finally:
@@ -4450,7 +4450,7 @@ def ssdw_monit_etf():
                     except FileNotFoundError as excptn:
                         logging.error("HDFS file not found, %s: %s" %
                                                        (fileName, str(excptn)))
-                    except IOError as err:
+                    except IOError as excptn:
                         logging.error("IOError accessing HDFS file %s: %s"
                                                      % (fileName, str(excptn)))
                     finally:
