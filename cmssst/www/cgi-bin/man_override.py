@@ -761,6 +761,8 @@ def ovrd_html_override(cgiMTRC, siteFacility, cgiSITE):
     if ( frstFlag == False ):
         print("\n")
     for group in grpList:
+        if ( len(group) < 13 ):
+            continue
         if (( group[:4] != "cms-" ) or ( group[4:6].isupper() != True ) or
             ( group[6] != "_" ) or ( group[-5:] != "-exec" )):
             continue
@@ -779,6 +781,8 @@ def ovrd_html_override(cgiMTRC, siteFacility, cgiSITE):
                " &nbsp;\n   <TD VALIGN=\"top\" NOWRAP>%s &nbsp; <I>(allows t" +
                "o change %s)</I>") % (facility, siteStrng))
     for group in grpList:
+        if ( len(group) < 14 ):
+            continue
         if (( group[:4] != "cms-" ) or ( group[4:6].isupper() != True ) or
             ( group[6] != "_" ) or ( group[-6:] != "-admin" )):
             continue
@@ -1103,6 +1107,8 @@ def ovrd_html_capacity(siteFacility, federationNames, cgiSITE):
     if ( frstFlag == False ):
         print("\n")
     for group in grpList:
+        if ( len(group) < 13 ):
+            continue
         if (( group[:4] != "cms-" ) or ( group[4:6].isupper() != True ) or
             ( group[6] != "_" ) or ( group[-5:] != "-exec" )):
             continue
@@ -1121,6 +1127,8 @@ def ovrd_html_capacity(siteFacility, federationNames, cgiSITE):
                " &nbsp;\n   <TD VALIGN=\"top\" NOWRAP>%s &nbsp; <I>(allows t" +
                "o change %s)</I>") % (facility, siteStrng))
     for group in grpList:
+        if ( len(group) < 14 ):
+            continue
         if (( group[:4] != "cms-" ) or ( group[4:6].isupper() != True ) or
             ( group[6] != "_" ) or ( group[-6:] != "-admin" )):
             continue
