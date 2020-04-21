@@ -953,11 +953,13 @@ def ovrd_post_override(cgiMTRC, siteFacility, cgiSITE, cgiPOST):
                 for site in OVRD_AUTH_EGROUP[cgiMTRC][group]:
                     if ( site == overrideEntry['name'] ):
                          authFlag = True
-        elif (( group[:4] == "cms-" ) and ( group[4:6].isupper() == True ) and
+        elif (( len(group) >= 13 ) and
+              ( group[:4] == "cms-" ) and ( group[4:6].isupper() == True ) and
               ( group[6] == "_" ) and ( group[-5:] == "-exec" )):
             if ( siteFacility[ overrideEntry['name'] ] == group[4:-5] ):
                 authFlag = True
-        elif (( group[:4] == "cms-" ) and ( group[4:6].isupper() == True ) and
+        elif (( len(group) >= 14 ) and
+              ( group[:4] == "cms-" ) and ( group[4:6].isupper() == True ) and
               ( group[6] == "_" ) and ( group[-6:] == "-admin" )):
             if ( siteFacility[ overrideEntry['name'] ] == group[4:-6] ):
                 authFlag = True
@@ -1370,11 +1372,13 @@ def ovrd_post_capacity(siteFacility, federationNames, cgiSITE, cgiPOST):
             if ( OVRD_AUTH_EGROUP['SiteCapacity'][group] == "ALL" ):
                 authFlag = True
                 break
-        elif (( group[:4] == "cms-" ) and ( group[4:6].isupper() == True ) and
+        elif (( len(group) >= 13 ) and
+              ( group[:4] == "cms-" ) and ( group[4:6].isupper() == True ) and
               ( group[6] == "_" ) and ( group[-5:] == "-exec" )):
             if ( siteFacility[ capacityEntry['name'] ] == group[4:-5] ):
                 authFlag = True
-        elif (( group[:4] == "cms-" ) and ( group[4:6].isupper() == True ) and
+        elif (( len(group) >= 14 ) and
+              ( group[:4] == "cms-" ) and ( group[4:6].isupper() == True ) and
               ( group[6] == "_" ) and ( group[-6:] == "-admin" )):
             if ( siteFacility[ capacityEntry['name'] ] == group[4:-6] ):
                 authFlag = True
