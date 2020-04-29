@@ -1,6 +1,6 @@
 #!/eos/user/c/cmssst/packages/bin/python3.7
 # ########################################################################### #
-# python CGI script to display the facility information, allow to change it,  #
+# python CGI script to display theefacility information, allow to change it,  #
 #    upload to MonIT, and compile a acknowledgement LaTeX file.               #
 #                                                                             #
 # 2020-Mar-23   Stephan Lammel                                                #
@@ -35,7 +35,7 @@
 import os, sys, shutil
 import io
 import fcntl
-import time, calendar, pytz, datetime
+import time, calendar
 import json
 import gzip
 import re
@@ -45,10 +45,9 @@ import argparse
 import logging
 #
 # setup the Java/HDFS/PATH environment for pydoop to work properly:
-#os.environ["HADOOP_CONF_DIR"] = "/opt/hadoop/conf/etc/analytix/hadoop.analytix"
-#os.environ["JAVA_HOME"]       = "/etc/alternatives/jre"
-#os.environ["HADOOP_PREFIX"]   = "/usr/hdp/hadoop"
-#import pydoop.hdfs
+os.environ["HADOOP_CONF_DIR"] = "/opt/hadoop/conf/etc/analytix/hadoop.analytix"
+os.environ["JAVA_HOME"]       = "/etc/alternatives/jre"
+os.environ["HADOOP_PREFIX"]   = "/usr/hdp/hadoop"
 # ########################################################################### #
 
 
@@ -67,6 +66,160 @@ ADMF_CACHE = "/eos/home-c/cmssst/www/cache/"
 #
 ADMF_AUTH_CMSSST = [ "cms-comp-ops-site-support-team" ]
 ADMF_AUTH_VIEW   = [ "cms-zh", "cms-members", "cms-authorized-users" ]
+# ########################################################################### #
+
+
+
+# pytz is unusably slow, especially from EOS, compile our own static dict:
+ADMF_TIMEZONES = { 'AT': [ ( "+00:00", "UTC" ),
+                           ( "+01:00", "Europe/Vienna" ) ],
+                   'BE': [ ( "+00:00", "UTC" ),
+                           ( "+01:00", "Europe/Brussels" ) ],
+                   'BG': [ ( "+00:00", "UTC" ),
+                           ( "+02:00", "Europe/Sofia" ) ],
+                   'BR': [ ( "+00:00", "UTC" ),
+                           ( "-02:00", "America/Noronha" ),
+                           ( "-03:00", "America/Belem" ),
+                           ( "-03:00", "America/Fortaleza" ),
+                           ( "-03:00", "America/Recife" ),
+                           ( "-03:00", "America/Araguaina" ),
+                           ( "-03:00", "America/Maceio" ),
+                           ( "-03:00", "America/Bahia" ),
+                           ( "-03:00", "America/Sao_Paulo" ),
+                           ( "-04:00", "America/Campo_Grande" ),
+                           ( "-04:00", "America/Cuiaba" ),
+                           ( "-03:00", "America/Santarem" ),
+                           ( "-04:00", "America/Porto_Velho" ),
+                           ( "-04:00", "America/Boa_Vista" ),
+                           ( "-04:00", "America/Manaus" ),
+                           ( "-05:00", "America/Eirunepe" ),
+                           ( "-05:00", "America/Rio_Branco" ) ],
+                   'BY': [ ( "+00:00", "UTC" ),
+                           ( "+03:00", "Europe/Minsk" ) ],
+                   'CH': [ ( "+00:00", "UTC" ),
+                           ( "+01:00", "Europe/Zurich" ) ],
+                   'CN': [ ( "+00:00", "UTC" ),
+                           ( "+08:00", "Asia/Shanghai" ),
+                           ( "+06:00", "Asia/Urumqi" ) ],
+                   'DE': [ ( "+00:00", "UTC" ),
+                           ( "+01:00", "Europe/Berlin" ),
+                           ( "+01:00", "Europe/Busingen" ) ],
+                   'EE': [ ( "+00:00", "UTC" ),
+                           ( "+02:00", "Europe/Tallinn" ) ],
+                   'ES': [ ( "+00:00", "UTC" ),
+                           ( "+01:00", "Europe/Madrid" ),
+                           ( "+01:00", "Africa/Ceuta" ),
+                           ( "+00:00", "Atlantic/Canary" ) ],
+                   'FI': [ ( "+00:00", "UTC" ),
+                           ( "+02:00", "Europe/Helsinki" ) ],
+                   'FR': [ ( "+00:00", "UTC" ),
+                           ( "+01:00", "Europe/Paris" ) ],
+                   'GR': [ ( "+00:00", "UTC" ),
+                           ( "+02:00", "Europe/Athens" ) ],
+                   'HR': [ ( "+00:00", "UTC" ),
+                           ( "+01:00", "Europe/Zagreb" ) ],
+                   'HU': [ ( "+00:00", "UTC" ),
+                           ( "+01:00", "Europe/Budapest" ) ],
+                   'IN': [ ( "+00:00", "UTC" ),
+                           ( "+05:30", "Asia/Kolkata" ) ],
+                   'IR': [ ( "+00:00", "UTC" ),
+                           ( "+03:30", "Asia/Tehran" ) ],
+                   'IT': [ ( "+00:00", "UTC" ),
+                           ( "+01:00", "Europe/Rome" ) ],
+                   'KR': [ ( "+00:00", "UTC" ),
+                           ( "+09:00", "Asia/Seoul" ) ],
+                   'LV': [ ( "+00:00", "UTC" ),
+                           ( "+02:00", "Europe/Riga" ) ],
+                   'MX': [ ( "+00:00", "UTC" ),
+                           ( "-06:00", "America/Mexico_City" ),
+                           ( "-05:00", "America/Cancun" ),
+                           ( "-06:00", "America/Merida" ),
+                           ( "-06:00", "America/Monterrey" ),
+                           ( "-06:00", "America/Matamoros" ),
+                           ( "-07:00", "America/Mazatlan" ),
+                           ( "-07:00", "America/Chihuahua" ),
+                           ( "-07:00", "America/Ojinaga" ),
+                           ( "-07:00", "America/Hermosillo" ),
+                           ( "-08:00", "America/Tijuana" ),
+                           ( "-06:00", "America/Bahia_Banderas" ) ],
+                   'PK': [ ( "+00:00", "UTC" ),
+                           ( "+05:00", "Asia/Karachi" ) ],
+                   'PL': [ ( "+00:00", "UTC" ),
+                           ( "+01:00", "Europe/Warsaw" ) ],
+                   'PT': [ ( "+00:00", "UTC" ),
+                           ( "+00:00", "Europe/Lisbon" ),
+                           ( "+00:00", "Atlantic/Madeira" ),
+                           ( "-01:00", "Atlantic/Azores" ) ],
+                   'RU': [ ( "+00:00", "UTC" ),
+                           ( "+02:00", "Europe/Kaliningrad" ),
+                           ( "+03:00", "Europe/Moscow" ),
+                           ( "+03:00", "Europe/Kirov" ),
+                           ( "+04:00", "Europe/Astrakhan" ),
+                           ( "+04:00", "Europe/Volgograd" ),
+                           ( "+04:00", "Europe/Saratov" ),
+                           ( "+04:00", "Europe/Ulyanovsk" ),
+                           ( "+04:00", "Europe/Samara" ),
+                           ( "+05:00", "Asia/Yekaterinburg" ),
+                           ( "+06:00", "Asia/Omsk" ),
+                           ( "+07:00", "Asia/Novosibirsk" ),
+                           ( "+07:00", "Asia/Barnaul" ),
+                           ( "+07:00", "Asia/Tomsk" ),
+                           ( "+07:00", "Asia/Novokuznetsk" ),
+                           ( "+07:00", "Asia/Krasnoyarsk" ),
+                           ( "+08:00", "Asia/Irkutsk" ),
+                           ( "+09:00", "Asia/Chita" ),
+                           ( "+09:00", "Asia/Yakutsk" ),
+                           ( "+09:00", "Asia/Khandyga" ),
+                           ( "+10:00", "Asia/Vladivostok" ),
+                           ( "+10:00", "Asia/Ust-Nera" ),
+                           ( "+11:00", "Asia/Magadan" ),
+                           ( "+11:00", "Asia/Sakhalin" ),
+                           ( "+11:00", "Asia/Srednekolymsk" ),
+                           ( "+12:00", "Asia/Kamchatka" ),
+                           ( "+12:00", "Asia/Anadyr" ) ],
+                   'TH': [ ( "+00:00", "UTC" ),
+                           ( "+07:00", "Asia/Bangkok" ) ],
+                   'TR': [ ( "+00:00", "UTC" ),
+                           ( "+03:00", "Europe/Istanbul" ) ],
+                   'TW': [ ( "+00:00", "UTC" ),
+                           ( "+08:00", "Asia/Taipei" ) ],
+                   'UA': [ ( "+00:00", "UTC" ),
+                           ( "+03:00", "Europe/Simferopol" ),
+                           ( "+02:00", "Europe/Kiev" ),
+                           ( "+02:00", "Europe/Uzhgorod" ),
+                           ( "+02:00", "Europe/Zaporozhye" ) ],
+                   'UK': [ ( "+00:00", "UTC" ),
+                           ( "+00:00", "Europe/London" ) ],
+                   'US': [ ( "+00:00", "UTC" ),
+                           ( "-05:00", "America/New_York" ),
+                           ( "-05:00", "America/Detroit" ),
+                           ( "-05:00", "America/Kentucky/Louisville" ),
+                           ( "-05:00", "America/Kentucky/Monticello" ),
+                           ( "-05:00", "America/Indiana/Indianapolis" ),
+                           ( "-05:00", "America/Indiana/Vincennes" ),
+                           ( "-05:00", "America/Indiana/Winamac" ),
+                           ( "-05:00", "America/Indiana/Marengo" ),
+                           ( "-05:00", "America/Indiana/Petersburg" ),
+                           ( "-05:00", "America/Indiana/Vevay" ),
+                           ( "-06:00", "America/Chicago" ),
+                           ( "-06:00", "America/Indiana/Tell_City" ),
+                           ( "-06:00", "America/Indiana/Knox" ),
+                           ( "-06:00", "America/Menominee" ),
+                           ( "-06:00", "America/North_Dakota/Center" ),
+                           ( "-06:00", "America/North_Dakota/New_Salem" ),
+                           ( "-06:00", "America/North_Dakota/Beulah" ),
+                           ( "-07:00", "America/Denver" ),
+                           ( "-07:00", "America/Boise" ),
+                           ( "-07:00", "America/Phoenix" ),
+                           ( "-08:00", "America/Los_Angeles" ),
+                           ( "-09:00", "America/Anchorage" ),
+                           ( "-09:00", "America/Juneau" ),
+                           ( "-09:00", "America/Sitka" ),
+                           ( "-09:00", "America/Metlakatla" ),
+                           ( "-09:00", "America/Yakutat" ),
+                           ( "-09:00", "America/Nome" ),
+                           ( "-10:00", "America/Adak" ),
+                           ( "-10:00", "Pacific/Honolulu" ) ] }
 # ########################################################################### #
 
 
@@ -205,6 +358,10 @@ def admf_read_jsonfile(filepath = None):
                 logging.error("Missing key(s) in facility entry %s of %s" %
                                                         (str(entry), filepath))
                 continue
+        if ( entry['exec'] == "" ):
+            entry['exec'] = None
+        if ( entry['admin'] == "" ):
+            entry['admin'] = None
         if 'who' not in entry:
             entry['who'] = ""
         if 'when' not in entry:
@@ -234,13 +391,18 @@ def admf_compose_jsonstring(facilityList):
                         "   \"institute\": \"%s\",\n" +
                         "   \"location\": \"%s\",\n" +
                         "   \"timezone\": [ \"%s\", \"%s\" ],\n" +
-                        "   \"latex\": \"%s\",\n" +
-                        "   \"exec\": \"%s\",\n" +
-                        "   \"admin\": \"%s\",\n") %
+                        "   \"latex\": \"%s\",\n") %
                        (entry['name'], entry['institute'], entry['location'],
                         entry['timezone'][0], entry['timezone'][1],
-                        entry['latex'].translate( latexTransTable ),
-                        entry['exec'], entry['admin']))
+                        entry['latex'].translate( latexTransTable )))
+        if (( entry['exec'] is None ) or ( entry['exec'] == "" )):
+            jsonString += ("   \"exec\": null,\n")
+        else:
+            jsonString += ("   \"exec\": \"%s\",\n" % entry['exec'])
+        if (( entry['admin'] is None ) or ( entry['admin'] == "" )):
+            jsonString += ("   \"admin\": null,\n")
+        else:
+            jsonString += ("   \"admin\": \"%s\",\n" % entry['admin'])
         #
         commaSiteFlag = False
         jsonString += "   \"sites\": ["
@@ -452,6 +614,14 @@ def admf_compose_json(facilityDict, time15bin):
             jsonString += hdrString
         else:
             jsonString += hdrString[1:]
+        if ( myEntry['exec'] is None ):
+            myExec = ""
+        else:
+            myExec = myEntry['exec']
+        if ( myEntry['admin'] is None ):
+            myAdmin = ""
+        else:
+            myAdmin = myEntry['admin']
         jsonString += (("      \"name\": \"%s\",\n" +
                         "      \"institute\": \"%s\",\n" +
                         "      \"location\": \"%s\",\n" +
@@ -463,7 +633,7 @@ def admf_compose_json(facilityDict, time15bin):
                         myEntry['location'],
                         myEntry['timezone'][0], myEntry['timezone'][1],
                         myEntry['latex'].translate( latexTransTable ),
-                        myEntry['exec'], myEntry['admin']))
+                        myExec, myAdmin))
         #
         commaSiteFlag = False
         jsonString += "      \"sites\": ["
@@ -553,6 +723,7 @@ def admf_monit_upload(facilityDict, time15bin):
 
 def admf_monit_disk(firstTIS, limitTIS):
     """fetch SiteCapacity docs from MonIT/HDFS and return a site list"""
+    import pydoop.hdfs
     # ####################################################################### #
     # fetch SiteCapacity docs from MonIT/HDFS covering firstTIS to limitTIS   #
     #       time period and return a list of sites that provided 100 TBytes   #
@@ -1059,27 +1230,48 @@ def admf_html_facility(facilityList, cgiFACLTY):
                    "  <TD NOWRAP><INPUT TYPE=\"text\" MAXLENGTH=\"128\" SIZE" +
                    "=\"64\" NAME=\"location\" VALUE=\"%s\">\n      <TR>\n   " +
                    "      <TD NOWRAP>Timezone:&nbsp;\n         <TD><SELECT N" +
-                   "AME=\"timezone\">") % (bckgnd, facility, ADMF_CGIURL,
-                              facility, entry['institute'], entry['location']))
+                   "AME=\"timezone\">") % (bckgnd, entry['name'], ADMF_CGIURL,
+                         entry['name'], entry['institute'], entry['location']))
+            #
+            #try:
+            #    timezoneList = pytz.country_timezones[ facility[:2] ]
+            #except KeyError:
+            #    timezoneList = [ "UTC" ]
+            #noDayLightSavingsDate = datetime.datetime(1916,1,1)
+            #for timezoneName in timezoneList:
+            #    myTzone = pytz.timezone( timezoneName )
+            #    ndls_date = myTzone.localize( noDayLightSavingsDate )
+            #    myOffset = ndls_date.strftime('%z')
+            #    #
+            #    if ( timezoneName == entry['timezone'][1] ):
+            #        mySelected = " SELECTED"
+            #    else:
+            #        mySelected = ""
+            #    print(("            <OPTION VALUE=\"%s\"%s>%s:%s &nbsp; %s</" +
+            #           "OPTION>") % (timezoneName, mySelected,
+            #                        myOffset[:3], myOffset[-2:], timezoneName))
             #
             try:
-                timezoneList = pytz.country_timezones[ facility[:2] ]
+                timezoneList = ADMF_TIMEZONES[ entry['name'][:2] ]
             except KeyError:
-                timezoneList = [ "UTC" ]
-            noDayLightSavingsDate = datetime.datetime(1916,1,1)
-            for timezoneName in timezoneList:
-                myTzone = pytz.timezone( timezoneName )
-                ndls_date = myTzone.localize( noDayLightSavingsDate )
-                myOffset = ndls_date.strftime('%z')
-                #
-                if ( timezoneName == entry['timezone'][1] ):
+                timezoneList = [ ( "+00:00", "UTC" ) ]
+            for tzEntry in timezoneList:
+                if ( tzEntry[1] == entry['timezone'][1] ):
                     mySelected = " SELECTED"
                 else:
                     mySelected = ""
-                print(("            <OPTION VALUE=\"%s\"%s>%s:%s &nbsp; %s</" +
-                       "OPTION>") % (timezoneName, mySelected,
-                                    myOffset[:3], myOffset[-2:], timezoneName))
+                print(("            <OPTION VALUE=\"%s\"%s>%s &nbsp; %s</OPT" +
+                       "ION>") % (tzEntry[1], mySelected,
+                                                       tzEntry[0], tzEntry[1]))
             #
+            if ( entry['exec'] is None ):
+                myExec = ""
+            else:
+                myExec = entry['exec']
+            if ( entry['admin'] is None ):
+                myAdmin = ""
+            else:
+                myAdmin = entry['admin']
             mySites = ""
             for mySite in entry['sites']:
                 mySites += " %s" % mySite
@@ -1110,20 +1302,20 @@ def admf_html_facility(facilityList, cgiFACLTY):
                    "XLENGTH=\"192\" SIZE=\"64\" NAME=\"latex\" VALUE=\"%s\">" +
                    "\n      <TR>\n         <TD NOWRAP>Execs:&nbsp;\n        " +
                    " <TD NOWRAP><INPUT TYPE=\"text\" MAXLENGTH=\"80\" SIZE=" +
-                   "\"64\" NAME=\"exec\" VALUE=\"%s\" READONLY>\n      <TR>" +
-                   "\n         <TD NOWRAP>Admins:&nbsp;\n         <TD NOWRAP" +
-                   "><INPUT TYPE=\"text\" MAXLENGTH=\"80\" SIZE=\"64\" NAME=" +
-                   "\"admin\" VALUE=\"%s\" READONLY>\n      <TR>\n         <" +
-                   "TD NOWRAP>Site List:&nbsp;\n         <TD NOWRAP><INPUT T" +
-                   "YPE=\"text\" MAXLENGTH=\"128\" SIZE=\"64\" NAME=\"sites" +
-                   "\" VALUE=\"%s\"%s>\n      <TR>\n         <TD COLSPAN=\"2" +
-                   "\" NOWRAP><INPUT TYPE=\"submit\" VALUE=\"Update Informat" +
-                   "ion\" STYLE=\"height:28px; width:164px; font-weight: 600" +
-                   "; white-space: nowrap; background-color: #B0C0FF;\"%s> (" +
-                   "previous update: <I>%s by %s</I>)\n      </TABLE>\n     " +
-                   " </FORM>") % (entry['latex'].translate(latexTransTable),
-                            entry['exec'], entry['admin'], mySites, myReadonly,
-                                                    myDisabled, myWhen, myWho))
+                   "\"64\" NAME=\"exec\" VALUE=\"%s\"%s>\n      <TR>\n      " +
+                   "   <TD NOWRAP>Admins:&nbsp;\n         <TD NOWRAP><INPUT " +
+                   "TYPE=\"text\" MAXLENGTH=\"80\" SIZE=\"64\" NAME=\"admin" +
+                   "\" VALUE=\"%s\"%s>\n      <TR>\n         <TD NOWRAP>Site" +
+                   " List:&nbsp;\n         <TD NOWRAP><INPUT TYPE=\"text\" M" +
+                   "AXLENGTH=\"128\" SIZE=\"64\" NAME=\"sites\" VALUE=\"%s\"" +
+                   "%s>\n      <TR>\n         <TD COLSPAN=\"2\" NOWRAP><INPU" +
+                   "T TYPE=\"submit\" VALUE=\"Update Information\" STYLE=\"h" +
+                   "eight:28px; width:164px; font-weight: 600; white-space: " +
+                   "nowrap; background-color: #B0C0FF;\"%s> (previous update" +
+                   ": <I>%s by %s</I>)\n      </TABLE>\n      </FORM>") %
+                  (entry['latex'].translate(latexTransTable),
+                                       myExec, myReadonly, myAdmin, myReadonly,
+                               mySites, myReadonly, myDisabled, myWhen, myWho))
         #
         print("<TR HEIGHT=\"3\">\n   <TD COLSPAN=\"2\" STYLE=\"background-co" +
               "lor: black\">\n</TABLE>\n<BR>\n<P>\n")
@@ -1158,19 +1350,42 @@ def admf_post_facility(cgiFACLTY, cgiPOST):
         facilityEntry['institute'] = cgiPOST['institute'][0]
         facilityEntry['location'] = cgiPOST['location'][0]
         myTimezone = cgiPOST['timezone'][0]
-        noDayLightSavingsDate = datetime.datetime(1916,1,1)
+        #noDayLightSavingsDate = datetime.datetime(1916,1,1)
+        #try:
+        #    myTzone = pytz.timezone( myTimezone )
+        #    ndls_date = tzone.localize( noDayLightSavingsDate )
+        #    myOffset = ndls_date.strftime('%z')
+        #    myOffset = "%s:%s" % (myOffset[:3], myOffset[-2:])
+        #except:
+        #    myOffset = ADMF_NOENTRY['timezone'][0]
+        #    myTimezone = ADMF_NOENTRY['timezone'][1]
+        #facilityEntry['timezone'] = [ myOffset, myTimezone ]
         try:
-            myTzone = pytz.timezone( myTimezone )
-            ndls_date = tzone.localize( noDayLightSavingsDate )
-            myOffset = ndls_date.strftime('%z')
-            myOffset = "%s:%s" % (myOffset[:3], myOffset[-2:])
+            timezoneList = ADMF_TIMEZONES[ cgiFACLTY[:2] ]
+            for tzEntry in timezoneList:
+                if ( tzEntry[1] == myTimezone ):
+                    break;
+            if ( tzEntry[1] == myTimezone ):
+                facilityEntry['timezone'] = [ tzEntry[0], tzEntry[1] ]
+            else:
+                facilityEntry['timezone'] = [ ADMF_NOENTRY['timezone'][0],
+                                              ADMF_NOENTRY['timezone'][1] ]
         except:
-            myOffset = ADMF_NOENTRY['timezone'][0]
-            myTimezone = ADMF_NOENTRY['timezone'][1]
-        facilityEntry['timezone'] = [ myOffset, myTimezone ]
+            facilityEntry['timezone'] = [ ADMF_NOENTRY['timezone'][0],
+                                          ADMF_NOENTRY['timezone'][1] ]
         facilityEntry['latex'] = cgiPOST['latex'][0]
-        facilityEntry['exec'] = "cms-" + cgiFACLTY + "-exec@cern.ch"
-        facilityEntry['admin'] = "cms-" + cgiFACLTY + "-admin@cern.ch"
+        if ( "exec" not in cgiPOST ):
+            facilityEntry['exec'] = "cms-" + cgiFACLTY + "-exec@cern.ch"
+        elif ( cgiPOST['exec'][0] == "" ):
+            facilityEntry['exec'] = None
+        else:
+            facilityEntry['exec'] = cgiPOST['exec'][0]
+        if ( "admin" not in cgiPOST ):
+            facilityEntry['admin'] = "cms-" + cgiFACLTY + "-admin@cern.ch"
+        elif ( cgiPOST['admin'][0] == "" ):
+            facilityEntry['admin'] = None
+        else:
+            facilityEntry['admin'] = cgiPOST['admin'][0]
         mySitelist = [ e for e in (cgiPOST['sites'][0]).split(" ") \
                                         if ( siteRegex.match(e) is not None ) ]
         facilityEntry['sites'] = sorted( mySitelist )
@@ -1185,8 +1400,8 @@ def admf_post_facility(cgiFACLTY, cgiPOST):
     # check authorization:
     # ====================
     myAuth = None
-    exeGroup = "cms-" + facilityEntry['name'].split(" ")[0] + "-exec"
-    admGroup = "cms-" + facilityEntry['name'].split(" ")[0] + "-admin"
+    exeGroup = "cms-" + cgiFACLTY.split(" ")[0] + "-exec"
+    admGroup = "cms-" + cgiFACLTY.split(" ")[0] + "-admin"
     grpList = [e for e in os.environ['ADFS_GROUP'].split(";") if ( e != "" ) ]
     for group in grpList:
         if ( group in ADMF_AUTH_CMSSST ):
@@ -1208,7 +1423,7 @@ def admf_post_facility(cgiFACLTY, cgiPOST):
     # update facility file with new site entry:
     # =========================================
     if ( myAuth == "cmssst" ):
-        changeDict = admf_update_jsonfile(facilityEntry, ["exec", "admin"])
+        changeDict = admf_update_jsonfile(facilityEntry, [])
     else:
         changeDict = admf_update_jsonfile(facilityEntry, ["exec", "admin",
                                                                       "sites"])
@@ -1247,27 +1462,47 @@ def admf_post_facility(cgiFACLTY, cgiPOST):
            "TD NOWRAP><INPUT TYPE=\"text\" MAXLENGTH=\"128\" SIZE=\"64\" NAM" +
            "E=\"location\" VALUE=\"%s\">\n      <TR>\n         <TD NOWRAP>Ti" +
            "mezone:&nbsp;\n         <TD><SELECT NAME=\"timezone\">") %
-          (facility, ADMF_CGIURL, facility, entry['institute'],
+          (entry['name'], ADMF_CGIURL, entry['name'], entry['institute'],
                                                             entry['location']))
     #
+    #try:
+    #    timezoneList = pytz.country_timezones[ cgiFACLTY[:2] ]
+    #except KeyError:
+    #    timezoneList = [ "UTC" ]
+    #noDayLightSavingsDate = datetime.datetime(1916,1,1)
+    #for timezoneName in timezoneList:
+    #    myTzone = pytz.timezone( timezoneName )
+    #    ndls_date = tzone.localize( noDayLightSavingsDate )
+    #    myOffset = ndls_date.strftime('%z')
+    #    #
+    #    if ( timezoneName == entry['timezone'][1] ):
+    #        mySelected = " SELECTED"
+    #    else:
+    #        mySelected = ""
+    #    print(("            <OPTION VALUE=\"%s\"%s>%s:%s &nbsp; %s</OPTION>") %
+    #          (timezoneName, mySelected, myOffset[:3], myOffset[-2:],
+    #                                                             timezoneName))
+    #
     try:
-        timezoneList = pytz.country_timezones[ cgiFACLTY[:2] ]
+        timezoneList = ADMF_TIMEZONES[ entry['name'][:2] ]
     except KeyError:
-        timezoneList = [ "UTC" ]
-    noDayLightSavingsDate = datetime.datetime(1916,1,1)
-    for timezoneName in timezoneList:
-        myTzone = pytz.timezone( timezoneName )
-        ndls_date = tzone.localize( noDayLightSavingsDate )
-        myOffset = ndls_date.strftime('%z')
-        #
-        if ( timezoneName == entry['timezone'][1] ):
+        timezoneList = [ ( "+00:00", "UTC" ) ]
+    for tzEntry in timezoneList:
+        if ( tzEntry[1] == entry['timezone'][1] ):
             mySelected = " SELECTED"
         else:
             mySelected = ""
-        print(("            <OPTION VALUE=\"%s\"%s>%s:%s &nbsp; %s</OPTION>") %
-              (timezoneName, mySelected, myOffset[:3], myOffset[-2:],
-                                                                 timezoneName))
+        print(("            <OPTION VALUE=\"%s\"%s>%s &nbsp; %s</OPTION>") %
+                              (tzEntry[1], mySelected, tzEntry[0], tzEntry[1]))
     #
+    if ( entry['exec'] is None ):
+        myExec = ""
+    else:
+        myExec = entry['exec']
+    if ( entry['admin'] is None ):
+        myAdmin = ""
+    else:
+        myAdmin = entry['admin']
     mySites = ""
     for mySite in entry['sites']:
         mySites += " %s" % mySite
@@ -1294,19 +1529,19 @@ def admf_post_facility(cgiFACLTY, cgiPOST):
            "sp;\n         <TD NOWRAP><INPUT TYPE=\"text\" MAXLENGTH=\"192\" " +
            "SIZE=\"64\" NAME=\"latex\" VALUE=\"%s\">\n      <TR>\n         <" +
            "TD NOWRAP>Execs:&nbsp;\n         <TD NOWRAP><INPUT TYPE=\"text\"" +
-           " MAXLENGTH=\"80\" SIZE=\"64\" NAME=\"exec\" VALUE=\"%s\" READONL" +
-           "Y>\n      <TR>\n         <TD NOWRAP>Admins:&nbsp;\n         <TD " +
-           "NOWRAP><INPUT TYPE=\"text\" MAXLENGTH=\"80\" SIZE=\"64\" NAME=\"" +
-           "admin\" VALUE=\"%s\" READONLY>\n      <TR>\n         <TD NOWRAP>" +
-           "Site List:&nbsp;\n         <TD NOWRAP><INPUT TYPE=\"text\" MAXLE" +
-           "NGTH=\"128\" SIZE=\"64\" NAME=\"sites\" VALUE=\"%s\"%s>\n      <" +
-           "TR>\n         <TD COLSPAN=\"2\" NOWRAP><INPUT TYPE=\"submit\" VA" +
-           "LUE=\"Update Information\" STYLE=\"height:28px; width:164px; fon" +
-           "t-weight: 600; white-space: nowrap; background-color: #B0C0FF;\"" +
-           "%s> (previous update: <I>%s by %s</I>)\n      </TABLE>\n      </" +
-           "FORM>") % (entry['latex'].translate(latexTransTable),
-                            entry['exec'], entry['admin'], mySites, myReadonly,
-                                                    myDisabled, myWhen, myWho))
+           " MAXLENGTH=\"80\" SIZE=\"64\" NAME=\"exec\" VALUE=\"%s\"%s>\n   " +
+           "   <TR>\n         <TD NOWRAP>Admins:&nbsp;\n         <TD NOWRAP>" +
+           "<INPUT TYPE=\"text\" MAXLENGTH=\"80\" SIZE=\"64\" NAME=\"admin\"" +
+           " VALUE=\"%s\"%s>\n      <TR>\n         <TD NOWRAP>Site List:&nbs" +
+           "p;\n         <TD NOWRAP><INPUT TYPE=\"text\" MAXLENGTH=\"128\" S" +
+           "IZE=\"64\" NAME=\"sites\" VALUE=\"%s\"%s>\n      <TR>\n         " +
+           "<TD COLSPAN=\"2\" NOWRAP><INPUT TYPE=\"submit\" VALUE=\"Update I" +
+           "nformation\" STYLE=\"height:28px; width:164px; font-weight: 600;" +
+           " white-space: nowrap; background-color: #B0C0FF;\"%s> (previous " +
+           "update: <I>%s by %s</I>)\n      </TABLE>\n      </FORM>") %
+          (entry['latex'].translate(latexTransTable),
+                         entry['exec'], myReadonly, entry['admin'], myReadonly,
+                               mySites, myReadonly, myDisabled, myWhen, myWho))
     #
     print("<TR HEIGHT=\"3\">\n   <TD COLSPAN=\"2\" STYLE=\"background-color:" +
           " black\">\n</TABLE>\n<BR>\n<P>\n")
@@ -1342,6 +1577,35 @@ def admf_html_trailer(msgLog):
 
 
 
+def admf_make_tzlist():
+    import  pytz, datetime
+    ADMF_COUNTRIES = [ "AT", "BE", "BG", "BR", "BY", "CH", "CN", "DE", "EE",
+                       "ES", "FI", "FR", "GR", "HR", "HU", "IN", "IR", "IT",
+                       "KR", "LV", "MX", "PK", "PL", "PT", "RU", "TH", "TR",
+                       "TW", "UA", "UK", "US" ]
+    # no CMS sites in southern hemisphere with daylight-savings timezone
+    noDayLightSavingsDate = datetime.datetime(2020,1,1)
+    print("ADMF_TIMEZONES = {")
+    for myCC in ADMF_COUNTRIES:
+        myTZ = myCC
+        if ( myTZ == "UK" ):
+            myTZ = "GB"
+        timezoneList = pytz.country_timezones[ myTZ ]
+        print("                   '%s': [ ( \"+00:00\", \"UTC\" )" % myCC,
+                                                                        end="")
+        for timezoneName in timezoneList:
+            myTzone = pytz.timezone( timezoneName )
+            ndls_date = myTzone.localize( noDayLightSavingsDate )
+            myOffset = ndls_date.strftime('%z')
+            print(",\n                           ( \"%s:%s\", \"%s\" )" %
+                           (myOffset[:3], myOffset[-2:], timezoneName), end="")
+        print(" ],")
+    print("                 }")
+    return
+# ########################################################################### #
+
+
+
 if __name__ == '__main__':
     #
     os.umask(0o022)
@@ -1358,6 +1622,9 @@ if __name__ == '__main__':
                                  metavar="YYYYqN",
                                  help=("compile acknowledgement LaTeX file f" +
                                        "or previous (or specified) quarter"))
+    parserObj.add_argument("-T", dest="timezone", default=False,
+                                 action="store_true",
+                                 help=argparse.SUPPRESS)
     argStruct = parserObj.parse_args()
     #
     # configure message logging:
@@ -1395,7 +1662,9 @@ if __name__ == '__main__':
     #
     #
     #
-    if ( argStruct.upload ):
+    if ( argStruct.timezone ):
+        admf_make_tzlist()
+    elif ( argStruct.upload ):
         #
         now15m = int( time.time() / 900 )
         #
