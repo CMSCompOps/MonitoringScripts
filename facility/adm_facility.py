@@ -1716,6 +1716,7 @@ if __name__ == '__main__':
         #
         facilityDict = admf_read_jsonfile()
         #
+        duplicateCheck = set()
         for myFacility in sorted( facilityDict.keys() ):
             keepFlag = False
             for mySite in facilityDict[myFacility]['sites']:
@@ -1723,8 +1724,11 @@ if __name__ == '__main__':
                     keepFlag = True
                     break
             if (( keepFlag == False ) or
-                ( facilityDict[myFacility]['latex'] == "" )):
+                ( facilityDict[myFacility]['latex'] == "" ) or
+                ( facilityDict[myFacility]['latex'] in duplicateCheck )):
                 del facilityDict[myFacility]
+            else:
+                duplicateCheck.add( facilityDict[myFacility]['latex'] )
         #
         admf_write_acknowledgement( previousQuarter, facilityDict )
         admf_latex_acknowledgement( previousQuarter )
