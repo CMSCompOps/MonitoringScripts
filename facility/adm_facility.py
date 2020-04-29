@@ -495,8 +495,8 @@ def admf_monit_upload(facilityDict, time15bin):
     # ################################################################# #
     # upload FacilityInfo information as JSON metric documents to MonIT #
     # ################################################################# #
-    MONIT_URL = "http://monit-metrics.cern.ch:10012/"
-    #MONIT_URL = "http://fail.cern.ch:10001/"
+    #MONIT_URL = "http://monit-metrics.cern.ch:10012/"
+    MONIT_URL = "http://fail.cern.ch:10001/"
     MONIT_HDR = {'Content-Type': "application/json; charset=UTF-8"}
     #
     logging.info("Composing FacilityInfo JSON array and uploading to MonIT")
@@ -510,7 +510,7 @@ def admf_monit_upload(facilityDict, time15bin):
         return False
     cnt_docs = jsonString.count("\"producer\": \"cmssst\"")
     #
-    #jsonString = jsonString.replace("ssbmetric", "metrictest")
+    jsonString = jsonString.replace("ssbmetric", "metrictest")
 
 
     # upload string with JSON document array to MonIT/HDFS:
