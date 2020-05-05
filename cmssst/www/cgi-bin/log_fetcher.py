@@ -13,10 +13,10 @@
 #   /etf15min  / 1550923650     / T0_CH_CERN  / site           / 0+0
 #    down15min / 201902231200   / ce07.pic.es / CE             /
 #    sam15min  / 20190223120730 / all         / SE-xrootd-read /
-#    sam1hour                                                  /
-#    sam6hour                                                  /
-#    sam1day                                                   / debug
-#    hc15min     "HammerCloud"
+#    sam1hour                                 / srgroup        /
+#    sam6hour                                   rrgroup        /
+#    sam1day                                    argroup        / debug
+#    hc15min     "HammerCloud"                  vrgroup
 #    hc1hour
 #    hc6hour
 #    hc1day
@@ -617,10 +617,17 @@ def lftch_monit_fetch(cfg):
                                             myCntrbt = myJson['data']['quality']
                                         else:
                                             myCntrbt = myJson['data']['value']
+                                    myDowntime = False
+                                    if (( cfg['metric'][:3] == "sam" ) or
+                                        ( cfg['metric'][:2] == "sr" )):
+                                        if ( myStatus == "downtime" ):
+                                            myDowntime = True
                                 except KeyError:
                                     myCntrbt = 0
+                                    myDowntime = False
                                 lftch_monitdocs[tbin].append( { 'name': myName,
-                                        'vrsn': version, 'cntrbt': myCntrbt } )
+                                        'vrsn': version, 'cntrbt': myCntrbt,
+                                                       'dwnflg': myDowntime } )
                             else:
                                 lftch_monitdocs[tbin].append( myJson['data'] )
                             #
@@ -3478,13 +3485,19 @@ def lftch_maindvi_rank(cfg, docs):
         #
         for mySite in myDict:
             if ( mySite not in rankingDict ):
-                rankingDict[ mySite ] = myDict[ mySite ]['cntrbt']
-            else:
-                rankingDict[ mySite ] += myDict[ mySite ]['cntrbt']
+                rankingDict[ mySite ] = [ 0.000, 0.000, 0.000 ]
+            rankingDict[ mySite ][0] += myDict[ mySite ]['cntrbt']
+            #
+            if ( myDict[ mySite ]['dwnflg'] == False ):
+                rankingDict[ mySite ][1] += myDict[ mySite ]['cntrbt']
+                rankingDict[ mySite ][2] += 1.000
     #
     if ( normalizer > 0.000 ):
         for mySite in rankingDict:
-            rankingDict[ mySite ] = rankingDict[ mySite ] / normalizer
+            rankingDict[ mySite ][0] = rankingDict[ mySite ][0] / normalizer
+            if ( rankingDict[ mySite ][2] > 0.000 ):
+                rankingDict[ mySite ][1] = rankingDict[ mySite ][1] / \
+                                                       rankingDict[ mySite ][2]
 
 
     # write mainDVI ETF HTML section:
@@ -3507,33 +3520,67 @@ def lftch_maindvi_rank(cfg, docs):
                     valueStrng = "Avg. Quality"
                 else:
                     valueStrng = "Avg. Value"
-            myFile.write(("   <TH STYLE=\"font-size: large; font-weight: bol" +
-                          "d;\"><B>Site:</B>\n   <TH STYLE=\"font-size: larg" +
-                          "e; font-weight: bold;\">Bar Graph:\n   <TH STYLE=" +
-                          "\"font-size: large; font-weight: bold;\">%s:\n<TR" +
-                          " HEIGHT=\"3\">\n   <TD COLSPAN=\"3\" STYLE=\"back" +
-                          "ground-color: black\">\n") % valueStrng)
+            if (( cfg['metric'][:3] == "sam" ) or
+                ( cfg['metric'][:2] == "sr" )):
+                myFile.write(("   <TH STYLE=\"font-size: large; font-weight:" +
+                              " bold;\"><B>Site:</B>\n   <TH STYLE=\"font-si" +
+                              "ze: large; font-weight: bold;\">Bar Graph:\n " +
+                              "  <TH STYLE=\"font-size: large; font-weight: " +
+                              "bold;\">%s:\n   <TH STYLE=\"font-size: large;" +
+                              "font-weight: normal;\">outside downtime:\n<TR" +
+                              " HEIGHT=\"3\">\n   <TD COLSPAN=\"4\" STYLE=\"" +
+                              "background-color: black\">\n") % valueStrng)
+            else:
+                myFile.write(("   <TH STYLE=\"font-size: large; font-weight:" +
+                              " bold;\"><B>Site:</B>\n   <TH STYLE=\"font-si" +
+                              "ze: large; font-weight: bold;\">Bar Graph:\n " +
+                              "  <TH STYLE=\"font-size: large; font-weight: " +
+                              "bold;\">%s:\n<TR HEIGHT=\"3\">\n   <TD COLSPA" +
+                              "N=\"3\" STYLE=\"background-color: black\">\n") %
+                             valueStrng)
             #
-            for mySite in sorted(rankingDict, key=rankingDict.get,
+            for mySite in sorted(rankingDict.keys(),
+                                 key=lambda k: rankingDict[k][0],
                                                                  reverse=True):
-                myPercnt = int( 500.0 * (rankingDict[mySite] + 0.001) ) / 5.0
-                if ( rankingDict[mySite] >= 0.900 ):
+                myPercnt = int( 500.0 * (rankingDict[mySite][0] + 0.001) )/5.0
+                if ( rankingDict[mySite][0] >= 0.900 ):
                     myColour = "#80FF80"
-                elif ( rankingDict[mySite] < 0.800 ):
+                elif ( rankingDict[mySite][0] < 0.800 ):
                     myColour = "#FF0000"
                 else:
                     myColour = "#FFFF00"
-                myFile.write(("<TR>\n   <TD STYLE=\"text-align: right; font-" +
-                              "weight: bold; white-space: nowrap;\">%s\n   <" +
-                              "TD STYLE=\"width: 500px; text-align: left; ba" +
-                              "ckground-color: #F4F4F4; white-space: nowrap;" +
-                              "\"><DIV STYLE=\"width: %.1f%%; background-col" +
-                              "or: %s;\">&nbsp;</DIV>\n   <TD STYLE=\"text-a" +
-                              "lign: center; white-space: nowrap;\">%.3f\n") %
-                             (mySite, myPercnt, myColour, rankingDict[mySite]))
+                if (( cfg['metric'][:3] == "sam" ) or
+                    ( cfg['metric'][:2] == "sr" )):
+                    myFile.write(("<TR>\n   <TD STYLE=\"text-align: right; f" +
+                                  "ont-weight: bold; white-space: nowrap;\">" +
+                                  "%s\n   <TD STYLE=\"width: 500px; text-ali" +
+                                  "gn: left; background-color: #F4F4F4; whit" +
+                                  "e-space: nowrap;\"><DIV STYLE=\"width: " +
+                                  "%.1f%%; background-color: %s;\">&nbsp;</D" +
+                                  "IV>\n   <TD STYLE=\"text-align: center; f" +
+                                  "ont-weight: bold; white-space: nowrap;\">" +
+                                  "%.3f\n   <TD STYLE=\"text-align: center; " +
+                                  "white-space: nowrap;\">%.3f\n") % (mySite,
+                                    myPercnt, myColour, rankingDict[mySite][0],
+                                                       rankingDict[mySite][1]))
+                else:
+                    myFile.write(("<TR>\n   <TD STYLE=\"text-align: right; f" +
+                                  "ont-weight: bold; white-space: nowrap;\">" +
+                                  "%s\n   <TD STYLE=\"width: 500px; text-ali" +
+                                  "gn: left; background-color: #F4F4F4; whit" +
+                                  "e-space: nowrap;\"><DIV STYLE=\"width: " +
+                                  "%.1f%%; background-color: %s;\">&nbsp;</D" +
+                                  "IV>\n   <TD STYLE=\"text-align: center; w" +
+                                  "hite-space: nowrap;\">%.3f\n") % (mySite,
+                                   myPercnt, myColour, rankingDict[mySite][0]))
             #
-            myFile.write("<TR HEIGHT=\"3\">\n   <TD COLSPAN=\"3\" STYLE=\"ba" +
-                         "ckground-color: black\">\n</TABLE>\n")
+            if (( cfg['metric'][:3] == "sam" ) or
+                ( cfg['metric'][:2] == "sr" )):
+                myFile.write("<TR HEIGHT=\"3\">\n   <TD COLSPAN=\"4\" STYLE=" +
+                             "\"background-color: black\">\n</TABLE>\n")
+            else:
+                myFile.write("<TR HEIGHT=\"3\">\n   <TD COLSPAN=\"3\" STYLE=" +
+                             "\"background-color: black\">\n</TABLE>\n")
         #
         try:
             os.chmod(myHTML, 0o644)
