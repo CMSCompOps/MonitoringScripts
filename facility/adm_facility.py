@@ -23,7 +23,7 @@
 #     "latex": "Fermi National Accelerator Laboratory, Batavia, USA",
 #     "exec": "cms-US_FNAL-exec@cern.ch",
 #     "admin": "cms-US_FNAL-admin@cern.ch",
-#     "sites": [ "T1_US_FNAL", "T1_US_FNAL_Disk", "T3_US_HEPCloud" ],
+#     "sites": [ { "site": "T1_US_FNAL" }, {"site": "T1_US_FNAL_Disk" } ],
 #     "who": null,
 #     "when": null
 #   },
@@ -314,6 +314,8 @@ def admf_cric_facility():
 def admf_read_jsonfile(filepath = None):
     """read JSON list from file and return content as list of dictionaries"""
     # ####################################################################### #
+    siteRegex = re.compile(r"T\d_[A-Z]{2,2}_\w+")
+    #
     if filepath is None:
         filepath = ADMF_FACILITY_JSON
     if ( os.path.isfile( filepath ) != True ):
@@ -321,6 +323,7 @@ def admf_read_jsonfile(filepath = None):
     if ( filepath[-5:] != ".json" ):
         raise ValueError("Illegal JSON filename, \"%s\"" % filepath)
     lockpath = filepath[:-4] + "lock"
+    #
     logging.info("Fetching facility information, %s" %
                                                     os.path.basename(filepath))
 
@@ -355,9 +358,18 @@ def admf_read_jsonfile(filepath = None):
             ( 'location' not in entry ) or ( 'timezone' not in entry ) or
             ( 'latex' not in entry ) or ( 'exec' not in entry ) or
             ( 'admin' not in entry ) or ( 'sites' not in entry )):
-                logging.error("Missing key(s) in facility entry %s of %s" %
+                logging.error("Missing key(s) in facility entry %s in %s" %
                                                         (str(entry), filepath))
                 continue
+        for indx in range(len(entry['sites'])-1, -1, -1):
+            if ( 'site' not in entry['sites'][indx] ):
+                logging.error("Missing key in sites entry %s of %s in %s" %
+                          (str(entry['sites'][indx]), entry['name'], filepath))
+                del entry['sites'][indx]
+            elif ( siteRegex.match( entry['sites'][indx]['site'] ) is None ):
+                logging.error("Illegal sitename in entry %s of %s in %s" %
+                          (str(entry['sites'][indx]), entry['name'], filepath))
+                del entry['sites'][indx]
         if ( entry['exec'] == "" ):
             entry['exec'] = None
         if ( entry['admin'] == "" ):
@@ -406,13 +418,35 @@ def admf_compose_jsonstring(facilityList):
         #
         commaSiteFlag = False
         jsonString += "   \"sites\": ["
-        for site in entry['sites']:
+        for siteEntry in entry['sites']:
             if commaSiteFlag:
-                jsonString += (", \"%s\"" % site)
+                jsonString += (",\n     {\n       \"site\": \"%s\"" %
+                                                             siteEntry['site'])
             else:
-                jsonString += (" \"%s\"" % site)
+                jsonString += ("\n     {\n       \"site\": \"%s\"" %
+                                                             siteEntry['site'])
+            if ( 'latex' in siteEntry ):
+                jsonString += (",\n       \"latex\": \"%s\"" %
+                                 siteEntry['latex'].translate(latexTransTable))
+            if ( 'subsites' in siteEntry ):
+                commaSubsiteFlag = False
+                jsonString += (",\n       \"subsites\": [")
+                for subsiteEntry in siteEntry['subsites']:
+                    if commaSubsiteFlag:
+                        jsonString += ((",\n         {\n           \"subsite" +
+                                       "\": \"%s\"") % subsiteEntry['subsite'])
+                    else:
+                        jsonString += (("\n         {\n           \"subsite" +
+                                       "\": \"%s\"") % subsiteEntry['subsite'])
+                    if ( 'latex' in subsiteEntry ):
+                        jsonString += (",\n           \"latex\": \"%s\"" %
+                              subsiteEntry['latex'].translate(latexTransTable))
+                    jsonString += ("\n         }")
+                    commaSubsiteFlag = True
+                jsonString += ("\n       ]")
+            jsonString += ("\n     }")
             commaSiteFlag = True
-        jsonString += " ],\n"
+        jsonString += "\n   ],\n"
         #
         if entry['who'] is not None:
             jsonString += ("   \"who\": \"%s\",\n" % entry['who'])
@@ -452,6 +486,11 @@ def admf_update_jsonfile(entry, keepKeyList, filepath = None):
         ( 'admin' not in entry ) or ( 'sites' not in entry )):
             logging.error("Missing key(s) in facility entry %s for %s" %
                                                         (str(entry), filepath))
+            return {}
+    for siteEntry in entry['sites']:
+        if ( 'site' not in siteEntry ):
+            logging.error("Missing key in sites entry %s of %s in %s" %
+                                     (str(siteEntry), entry['name'], filepath))
             return {}
     if ( facilityRegex.match( entry['name'] ) is None ):
         logging.error("Illegal facility name %s" % entry['name'])
@@ -639,11 +678,36 @@ def admf_compose_json(facilityDict, time15bin):
         jsonString += "      \"sites\": ["
         for mySite in myEntry['sites']:
             if commaSiteFlag:
-                jsonString += (", \"%s\"" % mySite)
+                jsonString += (",\n         {\n            \"site\": \"%s\"" %
+                                                                mySite['site'])
             else:
-                jsonString += (" \"%s\"" % mySite)
+                jsonString += ("\n         {\n            \"site\": \"%s\"" %
+                                                                mySite['site'])
+            if ( 'latex' in siteEntry ):
+                jsonString += (",\n            \"latex\": \"%s\"" %
+                                    mySite['latex'].translate(latexTransTable))
+            if ( 'subsites' in mySite ):
+                commaSubsiteFlag = False
+                jsonString += ",\n            \"subsites\": ["
+                for mySubsite in mySite['subsites']:
+                    if commaSubsiteFlag:
+                        jsonString += ((",\n               {\n              " +
+                                        "    \"subsite\": \"%s\"") %
+                                                          mySubsite['subsite'])
+                    else:
+                        jsonString += (("\n               {\n               " +
+                                        "   \"subsite\": \"%s\"") %
+                                                          mySubsite['subsite'])
+                    if ( 'latex' in mySubsite ):
+                        jsonString += ((",\n                  \"latex\": \"" +
+                                        "%s\"") %
+                                 mySubsite['latex'].translate(latexTransTable))
+                    jsonString += "\n               }"
+                    commaSubsiteFlag = True
+                jsonString += "\n            ]"
+            jsonString += "\n         }"
             commaSiteFlag = True
-        jsonString += " ],\n"
+        jsonString += "\n      ],\n"
         #
         if myEntry['who'] is not None:
             jsonString += ("      \"who\": \"%s\",\n" % myEntry['who'])
@@ -665,8 +729,8 @@ def admf_monit_upload(facilityDict, time15bin):
     # ################################################################# #
     # upload FacilityInfo information as JSON metric documents to MonIT #
     # ################################################################# #
-    #MONIT_URL = "http://monit-metrics.cern.ch:10012/"
-    MONIT_URL = "http://fail.cern.ch:10001/"
+    MONIT_URL = "http://monit-metrics.cern.ch:10012/"
+    #MONIT_URL = "http://fail.cern.ch:10001/"
     MONIT_HDR = {'Content-Type': "application/json; charset=UTF-8"}
     #
     logging.info("Composing FacilityInfo JSON array and uploading to MonIT")
@@ -680,7 +744,7 @@ def admf_monit_upload(facilityDict, time15bin):
         return False
     cnt_docs = jsonString.count("\"producer\": \"cmssst\"")
     #
-    jsonString = jsonString.replace("ssbmetric", "metrictest")
+    #jsonString = jsonString.replace("ssbmetric", "metrictest")
 
 
     # upload string with JSON document array to MonIT/HDFS:
@@ -721,7 +785,7 @@ def admf_monit_upload(facilityDict, time15bin):
 
 
 
-def admf_monit_disk(firstTIS, limitTIS):
+def admf_monit_disk(firstTIS, limitTIS, siteDict, fsssDict):
     """fetch SiteCapacity docs from MonIT/HDFS and return a site list"""
     import pydoop.hdfs
     # ####################################################################### #
@@ -740,8 +804,6 @@ def admf_monit_disk(firstTIS, limitTIS):
     if ( first15m >= limit15m ):
         logging.critical("Empty time interval for sites to provide disk space")
         return []
-    #
-    siteRegex = re.compile(r"T\d_[A-Z]{2,2}_\w+")
     #
     logging.info("Retrieving SiteCapacity docs from MonIT HDFS")
     logging.log(15, "   between %s and %s" %
@@ -861,33 +923,56 @@ def admf_monit_disk(firstTIS, limitTIS):
         #
         tbin = myList[indx]
         for mySite in tmpDict[tbin]:
-            if ( siteRegex.match( mySite ) is None ):
+            try:
+                myFacility = siteDict[ mySite ]
+            except KeyError:
                 continue
             myDisk = max( tmpDict[tbin][mySite][1]['disk_usable'],
                           tmpDict[tbin][mySite][1]['disk_experiment_use'] )
             myTime = ( e15m - s15m ) * 900
             #
-            if ( mySite in integrationDict ):
-                integrationDict[ mySite ] += myDisk * myTime
+            myFsss = myFacility + "___" + mySite
+            if ( myFsss not in fsssDict ):
+                myFsss = myFacility
+                if ( myFsss not in fsssDict ):
+                    continue
+            if ( myFsss in integrationDict ):
+                integrationDict[ myFsss ] += myDisk * myTime
             else:
-                integrationDict[ mySite ] = myDisk * myTime
-    siteList = []
+                integrationDict[ myFsss ] = myDisk * myTime
+    ackSet = set()
     myTime = ( limit15m - first15m ) * 900
-    for mySite in sorted( integrationDict.keys() ):
-        myDisk = integrationDict[ mySite ] / myTime
-        logging.log(25, "Site %s provided %.1f TB disk" % (mySite, myDisk))
+    for myFsss in sorted( integrationDict.keys(), reverse=True ):
+        myDisk = integrationDict[ myFsss ] / myTime
+        logging.log(25, "Fsss %s provided %.1f TB disk" % (myFsss, myDisk))
         if ( myDisk >= 100.0 ):
-            siteList.append( mySite )
+            ackSet.add( fsssDict[myFsss] )
+        else:
+            fsssList = myFsss.split("___")
+            if ( len(fsssList) == 3 ):
+                parentFsss = fsssList[0] + "___" + fsssList[1]
+                if ( parentFsss not in fsssDict ):
+                    parentFsss = fsssList[0]
+            elif ( len(fsssList) == 2 ):
+                parentFsss = fsssList[0]
+            else:
+                continue
+            if ( parentFsss not in fsssDict ):
+                continue
+            if ( parentFsss in integrationDict ):
+                integrationDict[ parentFsss ] += integrationDict[ myFsss ]
+            else:
+                integrationDict[ parentFsss ] = integrationDict[ myFsss ]
 
 
-    logging.info("   found %d sites providing 100 TB or more" % len(siteList))
+    logging.info("   found %d fsss'es providing 100 TB or more" % len(ackSet))
     #
-    return siteList
+    return list( ackSet )
 # ########################################################################### #
 
 
 
-def admf_influxdb_jobmon(firstTIS, limitTIS):
+def admf_influxdb_jobmon(firstTIS, limitTIS, siteDict, fsssDict):
     """sum up CPU usage from MonIT/InfluxDB and return a site list"""
     # ####################################################################### #
     # fetch summed up core usage and count during firstTIS and limitTIS from  #
@@ -907,8 +992,6 @@ def admf_influxdb_jobmon(firstTIS, limitTIS):
         logging.critical("Empty time interval for sites to provide disk space")
         return []
     #
-    siteRegex = re.compile(r"T\d_[A-Z]{2,2}_\w+")
-    #
     logging.info("Querying InfluxDB about job core usage via Grafana")
     logging.log(15, "   between %s and %s" %
                        (time.strftime("%Y-%m-%d", time.gmtime(first15m * 900)),
@@ -921,7 +1004,7 @@ def admf_influxdb_jobmon(firstTIS, limitTIS):
         requestObj = urllib.request.Request((URL_INFLUXDB %
                                              (first15m * 900, limit15m * 900)),
                                             headers=HDR_GRAFANA, method="GET")
-        with urllib.request.urlopen( requestObj, timeout=180 ) as responseObj:
+        with urllib.request.urlopen( requestObj, timeout=600 ) as responseObj:
             urlCharset = responseObj.headers.get_content_charset()
             if urlCharset is None:
                 urlCharset = "utf-8"
@@ -949,37 +1032,60 @@ def admf_influxdb_jobmon(firstTIS, limitTIS):
             try:
                 indx = mySerie['columns'].index("sum")
                 mySite = mySerie['tags']['Site']
-                if ( siteRegex.match( mySite ) is None ):
+                try:
+                    myFacility = siteDict[ mySite ]
+                except KeyError:
                     continue
+                myFsss = myFacility + "___" + mySite
+                if ( myFsss not in fsssDict ):
+                    myFsss = myFacility
+                    if ( myFsss not in fsssDict ):
+                        continue
                 myCores = int( mySerie['tags']['RequestCpus'] )
                 for myValue in mySerie['values']:
                     myCount = myValue[indx]
-                    if ( mySite in integrationDict ):
-                        integrationDict[ mySite ] += myCores * myCount
+                    if ( myFsss in integrationDict ):
+                        integrationDict[ myFsss ] += myCores * myCount
                     else:
-                        integrationDict[ mySite ] = myCores * myCount
+                        integrationDict[ myFsss ] = myCores * myCount
             except (ValueError, KeyError) as excptn:
                 logging.warning("Bad query result entry, skipping, %s" %
                                                                    str(excptn))
                 continue
-    siteList = []
+    ackSet = set()
     myTime = ( limit15m - first15m ) / 96
-    for mySite in sorted( integrationDict.keys() ):
-        myCPU = integrationDict[ mySite ] / myTime
-        logging.log(25, "Site %s provided %.1f CPU cores" % (mySite, myCPU))
+    for myFsss in sorted( integrationDict.keys(), reverse=True ):
+        myCPU = integrationDict[ myFsss ] / myTime
+        logging.log(25, "Fsss %s provided %.1f CPU cores" % (myFsss, myCPU))
         if ( myCPU >= 100.0 ):
-            siteList.append( mySite )
+            ackSet.add( fsssDict[myFsss] )
+        else:
+            fsssList = myFsss.split("___")
+            if ( len(fsssList) == 3 ):
+                parentFsss = fsssList[0] + "___" + fsssList[1]
+                if ( parentFsss not in fsssDict ):
+                    parentFsss = fsssList[0]
+            elif ( len(fsssList) == 2 ):
+                parentFsss = fsssList[0]
+            else:
+                continue
+            if ( parentFsss not in fsssDict ):
+                continue
+            if ( parentFsss in integrationDict ):
+                integrationDict[ parentFsss ] += integrationDict[ myFsss ]
+            else:
+                integrationDict[ parentFsss ] = integrationDict[ myFsss ]
 
 
-    logging.info("   found %d sites providing 100 cores or more" %
-                                                                 len(siteList))
+    logging.info("   found %d fsss'es providing 100 cores or more" %
+                                                                   len(ackSet))
     #
-    return siteList
+    return list( ackSet )
 # ########################################################################### #
 
 
 
-def admf_write_acknowledgement(quarterString, facilityDict, filepath = None):
+def admf_write_acknowledgement(quarterString, tupleList, filepath = None):
     """write computing acknowledgement LaTex file"""
     # ####################################################################### #
     ADMF_QRTR_NAMES = {'1': "first", '2': "second", '3': "third", '4': "fourth"}
@@ -1021,16 +1127,13 @@ def admf_write_acknowledgement(quarterString, facilityDict, filepath = None):
                                                (ADMF_QRTR_NAMES[quarter], year)
 
     latexStrng += "\n\\vspace{4 ex}\n\n{\\parindent 0pt"
-    facilityList = sorted( facilityDict.keys() )
-    prevCountry = facilityList[0][:2]
-    for myFacility in facilityList:
-        myCountry = myFacility[:2]
-        if ( myCountry == prevCountry ):
-            latexStrng += ("\n%s\\\\" % facilityDict[myFacility]['latex'])
+    prevCountry = None
+    for myTuple in sorted( tupleList ):
+        if (( prevCountry is None ) or ( prevCountry == myTuple[0] )):
+            latexStrng += ("\n%s\\\\" % myTuple[1])
         else:
-            latexStrng += ("[0.5 ex]\n%s\\\\" %
-                                             facilityDict[myFacility]['latex'])
-        prevCountry = myCountry
+            latexStrng += ("[0.5 ex]\n%s\\\\" % myTuple[1])
+        prevCountry = myTuple[0]
     latexStrng += "\n}\n\n\\end{document}\n"
 
 
@@ -1039,7 +1142,7 @@ def admf_write_acknowledgement(quarterString, facilityDict, filepath = None):
 
 
     logging.log(25, "LaTex acknowledgement file written with %d facilities" %
-                                                             len(facilityList))
+                                                                len(tupleList))
     return
 # ########################################################################### #
 
@@ -1700,37 +1803,63 @@ if __name__ == '__main__':
                                         (nxtYear, nxtMonth), "%Y-%m-%d %Z") ) )
         #
         #
+        # read in facility information:
+        # =============================
+        facilityDict = admf_read_jsonfile()
+        #
+        # generate site-to-facility dictionary:
+        # -------------------------------------
+        siteDict = {}
+        for myFacility in facilityDict:
+            for siteEntry in facilityDict[myFacility]['sites']:
+                siteDict[ siteEntry['site'] ] = myFacility
+        #
+        # generate facility___site___subsite to (CC,LaTex) dictionary:
+        # ------------------------------------------------------------
+        fsssDict = {}
+        for myFacility in facilityDict:
+            if (( 'latex' in facilityDict[myFacility] ) and
+                ( facilityDict[myFacility]['latex'] is not None ) and
+                ( facilityDict[myFacility]['latex'] != "" )):
+                myTuple = ( myFacility[:2], facilityDict[myFacility]['latex'] )
+                fsssDict[ myFacility ] = myTuple
+            #
+            for siteEntry in facilityDict[myFacility]['sites']:
+                if (( 'latex' in siteEntry ) and
+                    ( siteEntry['latex'] is not None ) and
+                    ( siteEntry['latex'] != "" )):
+                    fsss = myFacility + "___" + siteEntry['site']
+                    myTuple = ( siteEntry['site'][3:5], siteEntry['latex'] )
+                    fsssDict[ fsss ] = myTuple
+                #
+                if ( 'subsites' in siteEntry ):
+                    for subsiteEntry in siteEntry['subsites']:
+                        if (( 'latex' in subsiteEntry ) and
+                            ( subsiteEntry['latex'] is not None ) and
+                            ( subsiteEntry['latex'] != "" )):
+                            fsss = myFacility + "___" + siteEntry['site'] + \
+                                                "___" + subsiteEntry['subsite']
+                            myTuple = ( siteEntry['site'][3:5],
+                                                        subsiteEntry['latex'] )
+                            fsssDict[ fsss ] = myTuple
+        #
+        #
         # get list of sites contributing disk space:
         # ==========================================
-        diskList = admf_monit_disk(frstDay, nextDay)
+        diskTuple = admf_monit_disk(frstDay, nextDay, siteDict, fsssDict)
         #
         #
         # get list of sites contributing computing:
         # =========================================
-        compList = admf_influxdb_jobmon(frstDay, nextDay)
+        compTuple = admf_influxdb_jobmon(frstDay, nextDay, siteDict, fsssDict)
         #
         #
-        siteList = sorted( set( diskList + compList ) )
-        logging.log(25, "Sites contributing: %s" % str(siteList))
+        tupleList = sorted( set( diskTuple + compTuple ) )
+        logging.log(25, "Fsss'es contributing: %d + %d = %d" %
+                              (len(diskTuple), len(compTuple), len(tupleList)))
         #
         #
-        facilityDict = admf_read_jsonfile()
-        #
-        duplicateCheck = set()
-        for myFacility in sorted( facilityDict.keys() ):
-            keepFlag = False
-            for mySite in facilityDict[myFacility]['sites']:
-                if mySite in siteList:
-                    keepFlag = True
-                    break
-            if (( keepFlag == False ) or
-                ( facilityDict[myFacility]['latex'] == "" ) or
-                ( facilityDict[myFacility]['latex'] in duplicateCheck )):
-                del facilityDict[myFacility]
-            else:
-                duplicateCheck.add( facilityDict[myFacility]['latex'] )
-        #
-        admf_write_acknowledgement( previousQuarter, facilityDict )
+        admf_write_acknowledgement( previousQuarter, tupleList )
         admf_latex_acknowledgement( previousQuarter )
     else:
         #
