@@ -270,6 +270,91 @@ def capa_gwmsmon_usage():
 
 
 
+def capa_startd_usage():
+    # ##################################################### #
+    # return dictionary of max cores used during last month #
+    # ##################################################### #
+    URL_GRAFANA = "https://monit-grafana.cern.ch/api/datasources/proxy/8332/_msearch?filter_path=responses.aggregations.cpus_per_site.buckets.key,responses.aggregations.cpus_per_site.buckets.max_cpus_a.value,responses.aggregations.cpus_per_site.buckets.max_cpus_b.value"
+    HDR_GRAFANA = {'Authorization': "Bearer eyJrIjoiWGdESVczR28ySGVVNFJMMHpRQ0FiM25EM0dKQm5HNTEiLCJuIjoiZnRzX2NsaSIsImlkIjoyNX0=", 'Content-Type': "application/json; charset=UTF-8"}
+    #
+    siteRegex = re.compile(r"T\d_[A-Z]{2,2}_\w+")
+    #
+    logging.info("Fetching max core usage count of startds via Grafana")
+
+    # prepare Lucene ElasticSearch query:
+    # ===================================
+    today = int( time.time() / 86400 )
+    startTIS = ( today - 30 ) * 86400
+    limitTIS = today * 86400
+    queryString = ("{\"search_type\":\"query_then_fetch\",\"index\":[\"monit" +
+                   "_prod_cms_raw_si_condor_*\"],\"ignore_unavailable\":true" +
+                   "}\n{\"query\":{\"bool\":{\"must\":[{\"match_phrase\":{\"" +
+                   "metadata.topic\":\"cms_raw_si_condor_startd\"}}],\"must_" +
+                   "not\":[{\"match_phrase\":{\"data.payload.SlotType\":\"Dy" +
+                   "namic\"}}],\"filter\":{\"range\":{\"metadata.timestamp\"" +
+                   ":{\"gte\":%d,\"lt\":%d,\"format\":\"epoch_second\"}}}}}," +
+                   "\"size\":0,\"aggs\":{\"cpus_per_site\":{\"terms\":{\"fie" +
+                   "ld\":\"data.payload.GLIDEIN_CMSSite\",\"size\":512},\"ag" +
+                   "gs\":{\"cpus_per_report_a\":{\"date_histogram\":{\"field" +
+                   "\":\"metadata.timestamp\",\"interval\":\"360s\",\"offset" +
+                   "\":\"0s\"},\"aggs\":{\"cpus\":{\"sum\":{\"field\":\"data" +
+                   ".payload.TotalSlotCpus\"}}}},\"cpus_per_report_b\":{\"da" +
+                   "te_histogram\":{\"field\":\"metadata.timestamp\",\"inter" +
+                   "val\":\"360s\",\"offset\":\"180s\"},\"aggs\":{\"cpus\":{" +
+                   "\"sum\":{\"field\":\"data.payload.TotalSlotCpus\"}}}},\"" +
+                   "max_cpus_a\":{\"max_bucket\":{\"buckets_path\":\"cpus_pe" +
+                   "r_report_a>cpus\"}},\"max_cpus_b\":{\"max_bucket\":{\"bu" +
+                   "ckets_path\":\"cpus_per_report_b>cpus\"}}}}}}\n") % \
+                                                           (startTIS, limitTIS)
+
+    # fetch startd max core usage count from ElasticSearch:
+    # =====================================================
+    try:
+        requestObj = urllib.request.Request(URL_GRAFANA,
+                                            data=queryString.encode("utf-8"),
+                                            headers=HDR_GRAFANA, method="POST")
+        with urllib.request.urlopen( requestObj, timeout=90 ) as responseObj:
+            urlCharset = responseObj.headers.get_content_charset()
+            if urlCharset is None:
+                urlCharset = "utf-8"
+            myData = responseObj.read().decode( urlCharset )
+            del urlCharset
+        #
+        # sanity check:
+        if ( len(myData) < 2048 ):
+            raise ValueError("Startd max core usage data failed sanity check")
+        #
+        # decode JSON:
+        myJson = json.loads( myData )
+        del myData
+        #
+        # loop over entries and add max one month usage to dictionary:
+        usageDict = {}
+        for myRspns in myJson['responses']:
+            for myBuckt in myRspns['aggregations']['cpus_per_site']['buckets']:
+                try:
+                    mySite = myBuckt['key']
+                    if ( siteRegex.match( mySite ) is None ):
+                        continue
+                    myUsage = int( max( myBuckt['max_cpus_a']['value'],
+                                        myBuckt['max_cpus_b']['value'] ) )
+                except KeyError:
+                    logging.warning("Missing key in ES bucket, skipping, %s" %
+                                                                   str(excptn))
+                    continue
+                logging.debug("Core Usage for \"%s\": %d" % (mySite, myUsage))
+                usageDict[ mySite ] = myUsage
+        del myJson
+    except urllib.error.URLError as excptn:
+        logging.error("Failed to query ElasticSearch via Grafana, %s" %
+                                                                   str(excptn))
+        return {}
+    #
+    return usageDict
+# ########################################################################### #
+
+
+
 def capa_dynamo_quota():
     # ##################################################################### #
     # return dictionary of current experiment disk quota settings in Dynamo #
@@ -975,10 +1060,10 @@ if __name__ == '__main__':
                                  action="store_true",
                                  help="fetch/update experiment disk quota fr" +
                                  "om Dynamo/DDM")
-    parserObj.add_argument("-g", dest="usage", default=False,
+    parserObj.add_argument("-u", dest="usage", default=False,
                                  action="store_true",
-                                 help="fetch/update max core usage from gWMS" +
-                                 "mon/Grafana")
+                                 help="fetch/update max core usage from Elas" +
+                                 "ticSearch/startd data")
     parserObj.add_argument("-f", dest="file", default=None, const="",
                                  action="store", nargs="?",
                                  metavar="filepath",
@@ -1041,7 +1126,7 @@ if __name__ == '__main__':
     # fetch maximum number of cores provided by sites if requested:
     usageDict = None
     if ( argStruct.usage ):
-        usageDict = capa_gwmsmon_usage()
+        usageDict = capa_startd_usage()
 
 
 

@@ -82,9 +82,9 @@ fi
 
 
 
-# evaluate Life, Prod, and Crab Status and upload JSON to MonIT:
-# ==============================================================
-`dirname $0`/capacity_admin.py -v -g
+# update site capacity DDM quota and core usage information:
+# ==========================================================
+`dirname $0`/capacity_admin.py -v -q -u
 # #############################################################################
 
 
