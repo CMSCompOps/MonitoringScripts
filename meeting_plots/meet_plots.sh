@@ -165,12 +165,12 @@ SLOT_QRYP="orgId=11&from=${SLOT_STIS}000&to=${SLOT_ETIS}000&panelId=4&width=1024
 for QSITE in ${SLOT_SITES}; do
    SITE="${QSITE//.\*}"
    if [ ! -f ${PLOT_DIR}/${SITE}_running.png ]; then
-      /usr/bin/wget -O ${PLOT_DIR}/${SITE}_running.png --header="Authorization: Bearer eyJrIjoiM0dOMXlRc3JXN3c3WUt4WE9INjMybWdBbXh6TElHdFUiLCJuIjoiY21zLXNpdGVzdXBwb3J0IiwiaWQiOjExfQ==" --header="Accept: image/png" ${SLOT_URL}?${SLOT_QRYR}${QSITE}
+      /usr/bin/wget -O ${PLOT_DIR}/${SITE}_running.png --no-check-certificate --header="Authorization: Bearer eyJrIjoiM0dOMXlRc3JXN3c3WUt4WE9INjMybWdBbXh6TElHdFUiLCJuIjoiY21zLXNpdGVzdXBwb3J0IiwiaWQiOjExfQ==" --header="Accept: image/png" ${SLOT_URL}?${SLOT_QRYR}${QSITE}
       if [ $? -ne 0 ]; then
          /bin/sleep 3
          /bin/rm -f ${PLOT_DIR}/${SITE}_running.png 1>/dev/null 2>&1
          echo "failed to get ${SITE} running job plot from dashboard" >> ${ERR_FILE}
-         /usr/bin/wget -O ${PLOT_DIR}/${SITE}_running.png --header="Authorization: Bearer eyJrIjoiM0dOMXlRc3JXN3c3WUt4WE9INjMybWdBbXh6TElHdFUiLCJuIjoiY21zLXNpdGVzdXBwb3J0IiwiaWQiOjExfQ==" --header="Accept: image/png" ${SLOT_URL}?${SLOT_QRYR}${QSITE} 1> ${ERR_FILE} 2>&1
+         /usr/bin/wget -O ${PLOT_DIR}/${SITE}_running.png --no-check-certificate --header="Authorization: Bearer eyJrIjoiM0dOMXlRc3JXN3c3WUt4WE9INjMybWdBbXh6TElHdFUiLCJuIjoiY21zLXNpdGVzdXBwb3J0IiwiaWQiOjExfQ==" --header="Accept: image/png" ${SLOT_URL}?${SLOT_QRYR}${QSITE} 1> ${ERR_FILE} 2>&1
          RCX=$?
          if [ ${RCX} -ne 0 ]; then
             echo "wget retry failed too, rc=${RCX}" >> ${ERR_FILE}
@@ -188,12 +188,12 @@ for QSITE in ${SLOT_SITES}; do
       echo "${SITE}_running.png exists, skipping"
    fi
    if [ ! -f ${PLOT_DIR}/${SITE}_pending.png ]; then
-      /usr/bin/wget -O ${PLOT_DIR}/${SITE}_pending.png --header="Authorization: Bearer eyJrIjoiM0dOMXlRc3JXN3c3WUt4WE9INjMybWdBbXh6TElHdFUiLCJuIjoiY21zLXNpdGVzdXBwb3J0IiwiaWQiOjExfQ==" --header="Accept: image/png" ${SLOT_URL}?${SLOT_QRYP}${QSITE}
+      /usr/bin/wget -O ${PLOT_DIR}/${SITE}_pending.png --no-check-certificate --header="Authorization: Bearer eyJrIjoiM0dOMXlRc3JXN3c3WUt4WE9INjMybWdBbXh6TElHdFUiLCJuIjoiY21zLXNpdGVzdXBwb3J0IiwiaWQiOjExfQ==" --header="Accept: image/png" ${SLOT_URL}?${SLOT_QRYP}${QSITE}
       if [ $? -ne 0 ]; then
          /bin/sleep 3
          /bin/rm -f ${PLOT_DIR}/${SITE}_pending.png 1>/dev/null 2>&1
          echo "failed to get ${SITE} pending job plot from dashboard" >> ${ERR_FILE}
-         /usr/bin/wget -O ${PLOT_DIR}/${SITE}_pending.png --header="Authorization: Bearer eyJrIjoiM0dOMXlRc3JXN3c3WUt4WE9INjMybWdBbXh6TElHdFUiLCJuIjoiY21zLXNpdGVzdXBwb3J0IiwiaWQiOjExfQ==" --header="Accept: image/png" ${SLOT_URL}?${SLOT_QRYP}${QSITE} 1> ${ERR_FILE} 2>&1
+         /usr/bin/wget -O ${PLOT_DIR}/${SITE}_pending.png --no-check-certificate --header="Authorization: Bearer eyJrIjoiM0dOMXlRc3JXN3c3WUt4WE9INjMybWdBbXh6TElHdFUiLCJuIjoiY21zLXNpdGVzdXBwb3J0IiwiaWQiOjExfQ==" --header="Accept: image/png" ${SLOT_URL}?${SLOT_QRYP}${QSITE} 1> ${ERR_FILE} 2>&1
          RCX=$?
          if [ ${RCX} -ne 0 ]; then
             echo "wget retry failed too, rc=${RCX}" >> ${ERR_FILE}
