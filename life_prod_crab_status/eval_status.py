@@ -1453,7 +1453,7 @@ if __name__ == '__main__':
         # ===================================================================
         mtrc = srObj.metrics()[-1]
         siteList = sorted( set( srObj.sites( mtrc ) +
-                                [ e['name'] for e in overrideDict ] ) )
+                                list( overrideDict.keys() ) ) )
 
 
         # loop over sites and evaluate LifeStatus:
@@ -1638,7 +1638,7 @@ if __name__ == '__main__':
         # ===================================================================
         mtrc = srObj.metrics()[-1]
         siteList = sorted( set( srObj.sites( mtrc ) +
-                                [ e['name'] for e in overrideDict ] ) )
+                                list( overrideDict.keys() ) ) )
 
 
         # loop over sites and evaluate ProdStatus:
@@ -1822,7 +1822,7 @@ if __name__ == '__main__':
         # ===================================================================
         mtrc = srObj.metrics()[-1]
         siteList = sorted( set( srObj.sites( mtrc ) +
-                                [ e['name'] for e in overrideDict ] ) )
+                                list( overrideDict.keys() ) ) )
 
 
         # loop over sites and evaluate CrabStatus:
