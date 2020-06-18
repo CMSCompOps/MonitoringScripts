@@ -1452,7 +1452,8 @@ if __name__ == '__main__':
         # get list of sites for evaluation from latest Site Readiness metric:
         # ===================================================================
         mtrc = srObj.metrics()[-1]
-        siteList = srObj.sites( mtrc )
+        siteList = sorted( set( srObj.sites( mtrc ) +
+                                [ e['name'] for e in overrideDict ] ) )
 
 
         # loop over sites and evaluate LifeStatus:
@@ -1636,7 +1637,8 @@ if __name__ == '__main__':
         # get list of sites for evaluation from latest Site Readiness metric:
         # ===================================================================
         mtrc = srObj.metrics()[-1]
-        siteList = srObj.sites( mtrc )
+        siteList = sorted( set( srObj.sites( mtrc ) +
+                                [ e['name'] for e in overrideDict ] ) )
 
 
         # loop over sites and evaluate ProdStatus:
@@ -1819,7 +1821,8 @@ if __name__ == '__main__':
         # get list of sites for evaluation from latest Site Readiness metric:
         # ===================================================================
         mtrc = srObj.metrics()[-1]
-        siteList = srObj.sites( mtrc )
+        siteList = sorted( set( srObj.sites( mtrc ) +
+                                [ e['name'] for e in overrideDict ] ) )
 
 
         # loop over sites and evaluate CrabStatus:
