@@ -444,6 +444,9 @@ def evhc_grafana_jobs(startTIS, limitTIS):
                                     elif ( rReason.find("ython-initiated action") != -1 ):
                                         # job cancelled by HammerCloud itself
                                         pass
+                                    elif ( rReason.find("due to proxy expiration") != -1 ):
+                                        # HammerCloud certificate issue
+                                        pass
                                     elif ( rReason.find("SYSTEM_PERIODIC_REMOVE") != -1 ):
                                         status = "Failed, GlobalPool periodic cleanup"
                                     else:
