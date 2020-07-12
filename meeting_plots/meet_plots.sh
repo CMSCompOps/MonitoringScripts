@@ -158,7 +158,7 @@ WE_TIS=`/bin/date +'%s' -u -d "last Wednesday"`
 SLOT_STIS=`echo "${WE_TIS} - 172800" | /usr/bin/bc`
 SLOT_ETIS=`echo "${WE_TIS} + 432000" | /usr/bin/bc`
 SLOT_SITES='T1_DE_KIT T1_ES_PIC T1_IT_CNAF T1_FR_CCIN2P3 T1_UK_RAL T1_US_FNAL T1_RU_JINR T2_CH_CERN T2_.*'
-SLOT_URL='https://monit-grafana.cern.ch/render/d-solo/YcGYFOVWz/requested-cpu?'
+SLOT_URL='https://monit-grafana.cern.ch/render/d-solo/YcGYFOVWz/requested-cpu'
 SLOT_QRYR="orgId=11&from=${SLOT_STIS}000&to=${SLOT_ETIS}000&panelId=2&width=1024&height=768&var-site="
 SLOT_QRYP="orgId=11&from=${SLOT_STIS}000&to=${SLOT_ETIS}000&panelId=4&width=1024&height=768&var-site="
 #
