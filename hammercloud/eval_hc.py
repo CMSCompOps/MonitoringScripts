@@ -301,8 +301,8 @@ def evhc_grafana_jobs(startTIS, limitTIS):
     # fill global HTCondor list with job records from ElasticSearch #
     # ############################################################# #
     global evhc_glbl_jobcondor
-    URL_GRAFANA = "https://monit-grafana.cern.ch/api/datasources/proxy/8332/_msearch"
-    HDR_GRAFANA = {'Authorization': "Bearer eyJrIjoiWGdESVczR28ySGVVNFJMMHpRQ0FiM25EM0dKQm5HNTEiLCJuIjoiZnRzX2NsaSIsImlkIjoyNX0=", 'Content-Type': "application/json; charset=UTF-8"}
+    URL_GRAFANA = "https://monit-grafana.cern.ch/api/datasources/proxy/8787/_msearch"
+    HDR_GRAFANA = {'Authorization': "Bearer eyJrIjoiZWRnWXc1bUZWS0kwbWExN011TGNTN2I2S1JpZFFtTWYiLCJuIjoiY21zLXNzYiIsImlkIjoxMX0=", 'Content-Type': "application/json; charset=UTF-8"}
     #
     logging.info("Fetching job records via Grafana, %d (%s) to %d (%s)" %
                  (startTIS, time.strftime("%Y-%m-%d %H:%M",
