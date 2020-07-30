@@ -274,8 +274,8 @@ def capa_startd_usage():
     # ##################################################### #
     # return dictionary of max cores used during last month #
     # ##################################################### #
-    URL_GRAFANA = "https://monit-grafana.cern.ch/api/datasources/proxy/8332/_msearch?filter_path=responses.aggregations.cpus_per_site.buckets.key,responses.aggregations.cpus_per_site.buckets.max_cpus_a.value,responses.aggregations.cpus_per_site.buckets.max_cpus_b.value"
-    HDR_GRAFANA = {'Authorization': "Bearer eyJrIjoiWGdESVczR28ySGVVNFJMMHpRQ0FiM25EM0dKQm5HNTEiLCJuIjoiZnRzX2NsaSIsImlkIjoyNX0=", 'Content-Type': "application/json; charset=UTF-8"}
+    URL_GRAFANA = "https://monit-grafana.cern.ch/api/datasources/proxy/8787/_msearch?filter_path=responses.aggregations.cpus_per_site.buckets.key,responses.aggregations.cpus_per_site.buckets.max_cpus_a.value,responses.aggregations.cpus_per_site.buckets.max_cpus_b.value"
+    HDR_GRAFANA = {'Authorization': "Bearer eyJrIjoiZWRnWXc1bUZWS0kwbWExN011TGNTN2I2S1JpZFFtTWYiLCJuIjoiY21zLXNzYiIsImlkIjoxMX0=", 'Content-Type': "application/json; charset=UTF-8"}
     #
     siteRegex = re.compile(r"T\d_[A-Z]{2,2}_\w+")
     #
