@@ -301,7 +301,7 @@ def evhc_grafana_jobs(startTIS, limitTIS):
     # fill global HTCondor list with job records from ElasticSearch #
     # ############################################################# #
     global evhc_glbl_jobcondor
-    URL_GRAFANA = "https://monit-grafana.cern.ch/api/datasources/proxy/8787/_msearch"
+    URL_GRAFANA = "https://monit-grafana.cern.ch/api/datasources/proxy/9668/_msearch"
     HDR_GRAFANA = {'Authorization': "Bearer eyJrIjoiZWRnWXc1bUZWS0kwbWExN011TGNTN2I2S1JpZFFtTWYiLCJuIjoiY21zLXNzYiIsImlkIjoxMX0=", 'Content-Type': "application/json; charset=UTF-8"}
     #
     logging.info("Fetching job records via Grafana, %d (%s) to %d (%s)" %
@@ -314,18 +314,18 @@ def evhc_grafana_jobs(startTIS, limitTIS):
     # prepare Lucene ElasticSearch query:
     # ===================================
     queryString = ("{\"search_type\":\"query_then_fetch\",\"index\":[\"monit" +
-                   "_prod_condor_raw_metric_v002-*\"]}\n{\"query\":{\"bool\"" +
-                   ":{\"must\":[{\"match_phrase\":{\"data.metadata.spider_so" +
-                   "urce\":\"condor_history\"}},{\"match_phrase\":{\"data.CR" +
-                   "AB_UserHN\":\"sciaba\"}}],\"filter\":{\"range\":{\"data." +
-                   "RecordTime\":{\"gte\":%d,\"lt\":%d,\"format\":\"epoch_se" +
-                   "cond\"}}}}},\"_source\":{\"includes\":[\"data.GlobalJobI" +
-                   "d\",\"data.Site\",\"data.Status\",\"data.NumRestarts\"," +
-                   "\"data.RemoveReason\",\"data.Chirp_CRAB3_Job_ExitCode\"," +
-                   "\"data.ExitCode\",\"data.CRAB_Workflow\",\"data.CRAB_Id" +
-                   "\",\"data.CRAB_Retry\",\"data.RecordTime\"]},\"size\":81" +
-                   "92,\"search_after\":[%%d],\"sort\":[{\"data.RecordTime\"" +
-                   ":\"asc\"}]}\n") % (startTIS, limitTIS)
+                   "_prod_condor_raw_metric*\"]}\n{\"query\":{\"bool\":{\"mu" +
+                   "st\":[{\"match_phrase\":{\"data.metadata.spider_source\"" +
+                   ":\"condor_history\"}},{\"match_phrase\":{\"data.CRAB_Use" +
+                   "rHN\":\"sciaba\"}}],\"filter\":{\"range\":{\"data.Record" +
+                   "Time\":{\"gte\":%d,\"lt\":%d,\"format\":\"epoch_second\"" +
+                   "}}}}},\"_source\":{\"includes\":[\"data.GlobalJobId\",\"" +
+                   "data.Site\",\"data.Status\",\"data.NumRestarts\",\"data." +
+                   "RemoveReason\",\"data.Chirp_CRAB3_Job_ExitCode\",\"data." +
+                   "ExitCode\",\"data.CRAB_Workflow\",\"data.CRAB_Id\",\"dat" +
+                   "a.CRAB_Retry\",\"data.RecordTime\"]},\"track_total_hits" +
+                   "\":true,\"size\":8192,\"search_after\":[%%d],\"sort\":[{" +
+                   "\"data.RecordTime\":\"asc\"}]}\n") % (startTIS, limitTIS)
 
     # prepare regular expression for HammerCloud CRAB workflow name match:
     # ====================================================================
@@ -372,10 +372,10 @@ def evhc_grafana_jobs(startTIS, limitTIS):
         for response in jobrecords['responses']:
             try:
                 if nHitsHdr is None:
-                    nHitsHdr = response['hits']['total']
-                elif ( nHitsHdr != response['hits']['total'] ):
+                    nHitsHdr = response['hits']['total']['value']
+                elif ( nHitsHdr != response['hits']['total']['value'] ):
                     logging.warning("Changed job record count, %d versus %d" %
-                                    (nHitsHdr, response['hits']['total']))
+                                (nHitsHdr, response['hits']['total']['value']))
                 lastTImS = response['hits']['hits'][-1] \
                                    ['_source']['data']['RecordTime']
 
