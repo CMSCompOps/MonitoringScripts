@@ -1,4 +1,4 @@
-#! /usr/bin/python3
+#!/usr/bin/python3
 import gitlab
 from gitlab.exceptions import GitlabCreateError
 
@@ -12,9 +12,10 @@ def get_project(name, force, gl):
     siteconf_id = gl.groups.get("SITECONF").id
     try:
         logging.info("Creating SITECONF project for {}".format(name))
-        return gl.projects.create({"name": "TEST", "namespace_id": siteconf_id})
-    except GitlabCreateError as e:
-        if e.error_message["name"][0] == "has already been taken":
+        #return gl.projects.create({"name": "TEST", "namespace_id": siteconf_id})
+        return gl.projects.create({"name": name, "namespace_id": siteconf_id})
+    except (GitlabCreateError, GitlabHttpError) as e:
+        if e.error_message['name'][0] == "has already been taken":
             if force:
                 logging.info("SITECONF project already exists, retrieving SITECONF project")
                 return gl.projects.get("SITECONF/{}".format(name))
@@ -62,7 +63,7 @@ if __name__ == "__main__":
     logging.info("Adding empty file to repository")
     try:
         project.files.create({"file_path": "JobConfig/site-local-config.xml", "content": "", "branch": "master", "commit_message": "First Commit"})
-    except GitlabCreateError as e:
+    except (GitlabCreateError, GitlabHttpError) as e:
         if e.error_message == "A file with this name already exists":
             logging.warning("JobConfig/site-local-config.xml already exists")
         else:
@@ -88,11 +89,13 @@ if __name__ == "__main__":
 
     logging.info("Retrieving cmssst user id")
     cmssst = gl.users.list(search="cmssst")[0].id
-    logging.info("Adding the cmssst user as mantainer")
+    logging.info("Adding the cmssst user as maintainer")
     try:
         project.members.create({"user_id": cmssst, "access_level": gitlab.MAINTAINER_ACCESS})
-    except GitlabCreateError as e:
-        if e.error_message == "Member already exists":
+    except (GitlabCreateError, GitlabHttpError) as e:
+        if e.error_message['access_level'][0] == "should be greater than or equal to Owner inherited membership from group siteconf":
+            pass
+        elif e.error_message == "Member already exists":
             logging.info("The cmssst user is already a member, changing access level anyway")
             user = project.members.get(cmssst)
             user.access_level = gitlab.MAINTAINER_ACCESS
