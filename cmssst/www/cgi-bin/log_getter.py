@@ -274,10 +274,10 @@ def lget_grafana_fetch(cfg):
         for myResponse in myResult['responses']:
             try:
                 if nDocsHdr is None:
-                    nDocsHdr = myResponse['hits']['total']
-                elif ( nDocsHdr != myResponse['hits']['total'] ):
+                    nDocsHdr = myResponse['hits']['total']['value']
+                elif ( nDocsHdr != myResponse['hits']['total']['value'] ):
                     logging.warning("Changed job record count, %d versus %d" %
-                                    (nDocsHdr, myResponse['hits']['total']))
+                              (nDocsHdr, myResponse['hits']['total']['value']))
                 #
                 nDocsChnk += len( myResponse['hits']['hits'] )
                 #
