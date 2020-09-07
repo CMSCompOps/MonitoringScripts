@@ -984,6 +984,10 @@ def admf_influxdb_jobmon(firstTIS, limitTIS, siteDict, fsssDict):
     #       cores, the tags of interest.                                      #
     # ####################################################################### #
     URL_INFLUXDB = "https://monit-grafana.cern.ch/api/datasources/proxy/7731/query?db=monit_production_cmsjm&q=SELECT%%20SUM%%28wavg_count%%29%%20FROM%%20%%22long%%22.%%22condor_1d%%22%%20WHERE%%20%%22Status%%22%%20=%%20%%27Running%%27%%20AND%%20time%%20%%3E=%%20%ds%%20and%%20time%%20%%3C%%20%ds%%20GROUP%%20BY%%20%%22RequestCpus%%22%%2C%%20%%22Site%%22"
+    # -------------------------------------------------------------------------
+    # urllib.parse.unquote(URL_INFLUXDB % (123456789, 987654321))
+    # 'https://monit-grafana.cern.ch/api/datasources/proxy/7731/query?db=monit_production_cmsjm&q=SELECT SUM(wavg_count) FROM "long"."condor_1d" WHERE "Status" = \'Running\' AND time >= 123456789s and time < 987654321s GROUP BY "RequestCpus", "Site"'
+    # -------------------------------------------------------------------------
     HDR_GRAFANA = {'Authorization': "Bearer eyJrIjoiZWRnWXc1bUZWS0kwbWExN011TGNTN2I2S1JpZFFtTWYiLCJuIjoiY21zLXNzYiIsImlkIjoxMX0=", 'Content-Type': "application/x-www-form-urlencoded; charset=UTF-8", 'Accept': "application/json"}
     #
     first15m = int( firstTIS / 86400 ) * 96
@@ -1054,6 +1058,132 @@ def admf_influxdb_jobmon(firstTIS, limitTIS, siteDict, fsssDict):
                 continue
     ackSet = set()
     myTime = ( limit15m - first15m ) / 96
+    for myFsss in sorted( integrationDict.keys(), reverse=True ):
+        myCPU = integrationDict[ myFsss ] / myTime
+        logging.log(25, "Fsss %s provided %.1f CPU cores" % (myFsss, myCPU))
+        if ( myCPU >= 100.0 ):
+            ackSet.add( fsssDict[myFsss] )
+        else:
+            fsssList = myFsss.split("___")
+            if ( len(fsssList) == 3 ):
+                parentFsss = fsssList[0] + "___" + fsssList[1]
+                if ( parentFsss not in fsssDict ):
+                    parentFsss = fsssList[0]
+            elif ( len(fsssList) == 2 ):
+                parentFsss = fsssList[0]
+            else:
+                continue
+            if ( parentFsss not in fsssDict ):
+                continue
+            if ( parentFsss in integrationDict ):
+                integrationDict[ parentFsss ] += integrationDict[ myFsss ]
+            else:
+                integrationDict[ parentFsss ] = integrationDict[ myFsss ]
+
+
+    logging.info("   found %d fsss'es providing 100 cores or more" %
+                                                                   len(ackSet))
+    #
+    return list( ackSet )
+# ########################################################################### #
+
+
+
+def admf_grafana_jobmon(firstTIS, limitTIS, siteDict, fsssDict):
+    """sum up CPU usage from MonIT/ElasticSearch and return a site list"""
+    # ####################################################################### #
+    # fetch summed up core usage times count during firstTIS and limitTIS     #
+    #       from MonIT/ElasticSearch and return a list of sites that provided #
+    #       100 cores or more of CPU during that period.                      #
+    # CMS job monitoring information in InfluxDB/ElasticSearch is aggregated  #
+    #       from HTCondor 12 minute job snapshots retaining tags. We thus     #
+    #       have to aggregate over the tags that are not of interest and sum  #
+    #       the product of number-of-cores and usage for each site.           #
+    # ####################################################################### #
+    URL_GRAFANA = "https://monit-grafana.cern.ch/api/datasources/proxy/9475/_msearch"
+    HDR_GRAFANA = {'Authorization': "Bearer eyJrIjoiZWRnWXc1bUZWS0kwbWExN011TGNTN2I2S1JpZFFtTWYiLCJuIjoiY21zLXNzYiIsImlkIjoxMX0=", 'Content-Type': "application/json; charset=UTF-8", 'Accept': "application/json"}
+    #
+    first15m = int( firstTIS / 86400 ) * 96
+    limit15m = int( limitTIS / 86400 ) * 96
+    if ( first15m >= limit15m ):
+        logging.critical("Empty time interval for sites to provide computing")
+        return []
+    #
+    logging.info("Querying ElasticSearch about job core usage via Grafana")
+    logging.log(15, "   between %s and %s" %
+                       (time.strftime("%Y-%m-%d", time.gmtime(first15m * 900)),
+                   time.strftime("%Y-%m-%d", time.gmtime((limit15m * 900)-1))))
+
+
+    # prepare Lucene ElasticSearch query:
+    # ===================================
+    queryString = ("\"search_type\":\"query_then_fetch\",\"ignore_unavailabl" +
+                   "e\":true,\"index\":[\"monit_prod_condor_agg_metric*\"]}" +
+                   "\n{\"query\":{\"bool\":{\"must\":[{\"match_phrase\":{\"d" +
+                   "ata.Status\":\"Running\"}}],\"filter\":{\"range\":{\"met" +
+                   "adata.timestamp\":{\"gte\":%d,\"lt\":%d,\"format\":\"epo" +
+                   "ch_second\"}}}}},\"size\":0,\"aggs\":{\"corehours_per_si" +
+                   "te\":{\"terms\":{\"field\":\"data.Site\",\"size\":512}," +
+                   "\"aggs\":{\"corehours_of_entry\":{\"sum\":{\"script\":{" +
+                   "\"lang\":\"painless\",\"source\":\"doc['data.RequestCpus" +
+                   "'].value * doc['data.wavg_count'].value\"}}}}}}}\n") % \
+                                               (first15m * 900, limit15m * 900)
+
+
+    # execute query and receive results from ElasticSearch:
+    # =====================================================
+    try:
+        requestObj = urllib.request.Request(URL_GRAFANA,
+                                            data=queryString.encode("utf-8"),
+                                            headers=HDR_GRAFANA, method="POST")
+        with urllib.request.urlopen( requestObj, timeout=600 ) as responseObj:
+            urlCharset = responseObj.headers.get_content_charset()
+            if urlCharset is None:
+                urlCharset = "utf-8"
+            myData = responseObj.read().decode( urlCharset )
+            del urlCharset
+        #
+        # sanity check:
+        if ( len(myData) < 1024 ):
+            raise ValueError("Job core usage data failed sanity check")
+        #
+        # decode JSON:
+        myJson = json.loads( myData )
+        del myData
+        #
+    except urllib.error.URLError as excptn:
+        logging.error("Failed to query ElasticSearch via Grafana, %s" %
+                                                                   str(excptn))
+        return []
+
+
+    # loop over results and integrate core usage by site:
+    # ===================================================
+    integrationDict = {}
+    for myRspns in myJson['responses']:
+        for myBuckt in myRspns['aggregations']['corehours_per_site']['buckets']:
+            try:
+                mySite = myBuckt['key']
+                try:
+                    myFacility = siteDict[ mySite ]
+                except KeyError:
+                    continue
+                myFsss = myFacility + "___" + mySite
+                if ( myFsss not in fsssDict ):
+                    myFsss = myFacility
+                    if ( myFsss not in fsssDict ):
+                        continue
+                myUsage = myBuckt['corehours_of_entry']['value']
+                if ( myFsss in integrationDict ):
+                    integrationDict[ myFsss ] += myUsage
+                else:
+                    integrationDict[ myFsss ] = myUsage
+            except KeyError as excptn:
+                logging.warning("Bad query result entry, skipping, %s" %
+                                                                   str(excptn))
+                continue
+    ackSet = set()
+    myTime = ( limit15m - first15m ) / 4
     for myFsss in sorted( integrationDict.keys(), reverse=True ):
         myCPU = integrationDict[ myFsss ] / myTime
         logging.log(25, "Fsss %s provided %.1f CPU cores" % (myFsss, myCPU))
@@ -1851,7 +1981,7 @@ if __name__ == '__main__':
         #
         # get list of sites contributing computing:
         # =========================================
-        compTuple = admf_influxdb_jobmon(frstDay, nextDay, siteDict, fsssDict)
+        compTuple = admf_grafana_jobmon(frstDay, nextDay, siteDict, fsssDict)
         #
         #
         tupleList = sorted( set( diskTuple + compTuple ) )

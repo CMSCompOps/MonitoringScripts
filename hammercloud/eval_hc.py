@@ -304,8 +304,8 @@ def evhc_grafana_jobs(startTIS, limitTIS, mustClauses=None):
     # fill global HTCondor list with job records from ElasticSearch #
     # ############################################################# #
     global evhc_glbl_jobcondor
-    URL_GRAFANA = "https://monit-grafana.cern.ch/api/datasources/proxy/8332/_msearch"
-    HDR_GRAFANA = {'Authorization': "Bearer eyJrIjoiWGdESVczR28ySGVVNFJMMHpRQ0FiM25EM0dKQm5HNTEiLCJuIjoiZnRzX2NsaSIsImlkIjoyNX0=", 'Content-Type': "application/json; charset=UTF-8"}
+    URL_GRAFANA = "https://monit-grafana.cern.ch/api/datasources/proxy/9668/_msearch"
+    HDR_GRAFANA = {'Authorization': "Bearer eyJrIjoiZWRnWXc1bUZWS0kwbWExN011TGNTN2I2S1JpZFFtTWYiLCJuIjoiY21zLXNzYiIsImlkIjoxMX0=", 'Content-Type': "application/json; charset=UTF-8"}
     #
     logging.info("Fetching job records via Grafana, %d (%s) to %d (%s)" %
                  (startTIS, time.strftime("%Y-%m-%d %H:%M",
@@ -318,7 +318,7 @@ def evhc_grafana_jobs(startTIS, limitTIS, mustClauses=None):
     # ===================================
     queryType = {
         "search_type": "query_then_fetch",
-        "index": ["monit_prod_condor_raw_metric_v002-*"]
+        "index": ["monit_prod_condor_raw_metric*"]
     }
     source = {
         'includes': ['data.GlobalJobId', 'data.Site', 'data.Status',
@@ -400,10 +400,10 @@ def evhc_grafana_jobs(startTIS, limitTIS, mustClauses=None):
         for response in jobrecords['responses']:
             try:
                 if nHitsHdr is None:
-                    nHitsHdr = response['hits']['total']
-                elif ( nHitsHdr != response['hits']['total'] ):
+                    nHitsHdr = response['hits']['total']['value']
+                elif ( nHitsHdr != response['hits']['total']['value'] ):
                     logging.warning("Changed job record count, %d versus %d" %
-                                    (nHitsHdr, response['hits']['total']))
+                                (nHitsHdr, response['hits']['total']['value']))
                 lastTImS = response['hits']['hits'][-1] \
                                    ['_source']['data']['RecordTime']
 
@@ -471,6 +471,9 @@ def evhc_grafana_jobs(startTIS, limitTIS, mustClauses=None):
                                         pass
                                     elif ( rReason.find("ython-initiated action") != -1 ):
                                         # job cancelled by HammerCloud itself
+                                        pass
+                                    elif ( rReason.find("due to proxy expiration") != -1 ):
+                                        # HammerCloud certificate issue
                                         pass
                                     elif ( rReason.find("SYSTEM_PERIODIC_REMOVE") != -1 ):
                                         status = "Failed, GlobalPool periodic cleanup"
