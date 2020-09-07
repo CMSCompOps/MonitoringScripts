@@ -49,7 +49,10 @@ import subprocess
 os.environ["HADOOP_CONF_DIR"] = "/opt/hadoop/conf/etc/analytix/hadoop.analytix"
 os.environ["JAVA_HOME"]       = "/etc/alternatives/jre"
 os.environ["HADOOP_PREFIX"]   = "/usr/hdp/hadoop"
-import pydoop.hdfs
+try:
+    import pydoop.hdfs
+except:
+    pass
 # ########################################################################### #
 
 
@@ -295,7 +298,7 @@ def evhc_template_cfg():
 
 
 
-def evhc_grafana_jobs(startTIS, limitTIS):
+def evhc_grafana_jobs(startTIS, limitTIS, mustClauses=None):
     """function to fetch HammerCloud HTCondor job records via Grafana"""
     # ############################################################# #
     # fill global HTCondor list with job records from ElasticSearch #
@@ -313,19 +316,42 @@ def evhc_grafana_jobs(startTIS, limitTIS):
 
     # prepare Lucene ElasticSearch query:
     # ===================================
-    queryString = ("{\"search_type\":\"query_then_fetch\",\"index\":[\"monit" +
-                   "_prod_condor_raw_metric_v002-*\"]}\n{\"query\":{\"bool\"" +
-                   ":{\"must\":[{\"match_phrase\":{\"data.metadata.spider_so" +
-                   "urce\":\"condor_history\"}},{\"match_phrase\":{\"data.CR" +
-                   "AB_UserHN\":\"sciaba\"}}],\"filter\":{\"range\":{\"data." +
-                   "RecordTime\":{\"gte\":%d,\"lt\":%d,\"format\":\"epoch_se" +
-                   "cond\"}}}}},\"_source\":{\"includes\":[\"data.GlobalJobI" +
-                   "d\",\"data.Site\",\"data.Status\",\"data.NumRestarts\"," +
-                   "\"data.RemoveReason\",\"data.Chirp_CRAB3_Job_ExitCode\"," +
-                   "\"data.ExitCode\",\"data.CRAB_Workflow\",\"data.CRAB_Id" +
-                   "\",\"data.CRAB_Retry\",\"data.RecordTime\"]},\"size\":81" +
-                   "92,\"search_after\":[%%d],\"sort\":[{\"data.RecordTime\"" +
-                   ":\"asc\"}]}\n") % (startTIS, limitTIS)
+    queryType = {
+        "search_type": "query_then_fetch",
+        "index": ["monit_prod_condor_raw_metric_v002-*"]
+    }
+    source = {
+        'includes': ['data.GlobalJobId', 'data.Site', 'data.Status',
+                     'data.NumRestarts', 'data.RemoveReason',
+                     'data.Chirp_CRAB3_Job_ExitCode', 'data.ExitCode',
+                     'data.CRAB_Workflow', 'data.CRAB_Id', 'data.CRAB_Retry',
+                     'data.RecordTime']
+    }
+    query = {
+        'bool': {
+            'must': [
+                {'match_phrase': {'data.metadata.spider_source':
+                 'condor_history'}},
+                {'match_phrase': {'data.CRAB_UserHN': 'sciaba'}}
+            ],
+            'filter': {
+                'range': {
+                    'data.RecordTime': {
+                        'gte': int(startTIS),
+                        'lt': int(limitTIS),
+                        'format': 'epoch_second'}
+                    }
+                }
+            },
+    }
+    query['bool']['must'].extend(mustClauses or [])
+    totalQuery = {
+        'query' : query,
+        '_source' : source,
+        'size': 8192,
+        'search_after': [ None ], # Filled later
+        'sort': [ {'data.RecordTime': 'asc'} ]
+    }
 
     # prepare regular expression for HammerCloud CRAB workflow name match:
     # ====================================================================
@@ -341,9 +367,11 @@ def evhc_grafana_jobs(startTIS, limitTIS):
         #
         # fetch chunk job records from ElasticSearch:
         # ===========================================
+        totalQuery['search_after'][0] = int(afterTImS)
+        queryString = json.dumps(queryType) + '\n' + json.dumps(totalQuery) + '\n'
         try:
             requestObj = urllib.request.Request(URL_GRAFANA,
-                         data=(queryString % afterTImS).encode("utf-8"),
+                         data=queryString.encode("utf-8"),
                          headers=HDR_GRAFANA, method="POST")
             responseObj = urllib.request.urlopen( requestObj, timeout=60 )
             #
