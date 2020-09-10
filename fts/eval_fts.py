@@ -253,6 +253,7 @@ class FTSmetric:
                   ( error_lower.find("insufficient user privileges") >= 0 ) or
                   ( error_message.find("Authorization denied") >= 0 ) or
                   ( error_lower.find("establishing access rights") >= 0 ) or
+                  ( error_lower.find("authorization error) >= 0 ) or
                   ( error_lower.find("certificate issued for a diff") >= 0 )):
                 return "src_perm"
             elif (( error_lower.find("no such file or directory") >= 0 ) or
