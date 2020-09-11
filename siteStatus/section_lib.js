@@ -131,10 +131,16 @@ function dateString4(timeInSeconds) {
 function canvas_clicked(id, event) {
 
    var myArray = id.id.split("/");
-   if ( myArray.length >= 3 ) {
+   if ( myArray.length >= 4 ) {
       var myMetric = myArray[0];
       var mySecton = myArray[1];
       var mySitHst = myArray[2];
+      var mySitTyp = myArray[3];
+   } else if ( myArray.length >= 3 ) {
+      var myMetric = myArray[0];
+      var mySecton = myArray[1];
+      var mySitHst = myArray[2];
+      var mySitTyp = "All";
    } else {
       return false;
    }
@@ -263,11 +269,11 @@ function canvas_clicked(id, event) {
          'interval_bin&var-filters=dst_hostname|=|' + mySitHst;
    } else if ( myMetric =="SAMservice" ) {
       myStart = myOffset + ( ( myTarget - 1 ) * myPeriod );
-      myEnd = myOffset + ( ( myTarget + 2 ) * myPeriod );
-      id.href = 'http://wlcg-sam-cms.cern.ch/templates/ember/#/historicalsmr' +
-         'y/heatMap?profile=CMS_CRITICAL_FULL&hostname=' + mySitHst +
-         '&start_time=' + dateString3(myStart) + '&end_time=' +
-         dateString3(myEnd) + '&time=manual&view=Test History';
+      myEnd = myOffset + ( ( myTarget + 1 ) * myPeriod );
+      id.href = 'https://monit-grafana.cern.ch/d/m7XtZsEZk4/wlcg-sitemon-his' +
+         'torical-tests?orgId=20&var-vo=cms&var-dst_tier=All&var-dst_hostnam' +
+         'e=' + mySitHst + '&var-service_flavour=' + mySitTyp +
+         '&from=' + myStart.toString() + '000&to=' + myEnd.toString() + '000';
    }
 
    return false;
@@ -337,11 +343,7 @@ function writePmonthTable() {
          // loop over site elements and write the metrics of each:
          for ( var cnt=0; cnt < myData.elements.length; cnt+=1 ) {
             // concatenate host and type excluding domain
-            var indx = myData.elements[cnt].host.indexOf('.');
-            if ( indx <= 0 ) {
-               indx = myData.elements[cnt].host.length;
-            }
-            var eName = myData.elements[cnt].host.substring(0,indx) + ' / ' +
+            var eName = myData.elements[cnt].host + ' / ' +
                myData.elements[cnt].type;
 
             myTableStr += '<TR>\n   <TD COLSPAN="5" bgcolor="#000000" STYLE=' +
@@ -449,11 +451,7 @@ function writePweekTable() {
          // loop over site elements and write the metrics of each:
          for ( var cnt=0; cnt < myData.elements.length; cnt+=1 ) {
             // concatenate host and type excluding domain
-            var indx = myData.elements[cnt].host.indexOf('.');
-            if ( indx <= 0 ) {
-               indx = myData.elements[cnt].host.length;
-            }
-            var eName = myData.elements[cnt].host.substring(0,indx) + ' / ' +
+            var eName = myData.elements[cnt].host + ' / ' +
                myData.elements[cnt].type;
 
             myTableStr += '<TR>\n   <TD COLSPAN="5" bgcolor="#000000" STYLE=' +
@@ -561,11 +559,7 @@ function writeYesterdayTable() {
          // loop over site elements and write the metrics of each:
          for ( var cnt=0; cnt < myData.elements.length; cnt+=1 ) {
             // concatenate host and type excluding domain
-            var indx = myData.elements[cnt].host.indexOf('.');
-            if ( indx <= 0 ) {
-               indx = myData.elements[cnt].host.length;
-            }
-            var eName = myData.elements[cnt].host.substring(0,indx) + ' / ' +
+            var eName = myData.elements[cnt].host + ' / ' +
                myData.elements[cnt].type;
 
             myTableStr += '<TR>\n   <TD COLSPAN="5" bgcolor="#000000" STYLE=' +
@@ -671,11 +665,7 @@ function writeTodayTable() {
          // loop over site elements and write the metrics of each:
          for ( var cnt=0; cnt < myData.elements.length; cnt+=1 ) {
             // concatenate host and type excluding domain
-            var indx = myData.elements[cnt].host.indexOf('.');
-            if ( indx <= 0 ) {
-               indx = myData.elements[cnt].host.length;
-            }
-            var eName = myData.elements[cnt].host.substring(0,indx) + ' / ' +
+            var eName = myData.elements[cnt].host + ' / ' +
                myData.elements[cnt].type;
 
             myTableStr += '<TR>\n   <TD COLSPAN="5" bgcolor="#000000" STYLE=' +
@@ -782,11 +772,7 @@ function writeFweekTable() {
          // loop over site elements and write the metrics of each:
          for ( var cnt=0; cnt < myData.elements.length; cnt+=1 ) {
             // concatenate host and type excluding domain
-            var indx = myData.elements[cnt].host.indexOf('.');
-            if ( indx <= 0 ) {
-               indx = myData.elements[cnt].host.length;
-            }
-            var eName = myData.elements[cnt].host.substring(0,indx) + ' / ' +
+            var eName = myData.elements[cnt].host + ' / ' +
                myData.elements[cnt].type;
 
             myTableStr += '<TR>\n   <TD COLSPAN="5" bgcolor="#000000" STYLE=' +

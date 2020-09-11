@@ -133,10 +133,16 @@ function dateString4(timeInSeconds) {
 function canvas_clicked(id, event) {
 
    var myArray = id.id.split("/");
-   if ( myArray.length >= 3 ) {
+   if ( myArray.length >= 4 ) {
       var myMetric = myArray[0];
       var mySecton = myArray[1];
       var mySitHst = myArray[2];
+      var mySitTyp = myArray[3];
+   } else if ( myArray.length >= 3 ) {
+      var myMetric = myArray[0];
+      var mySecton = myArray[1];
+      var mySitHst = myArray[2];
+      var mySitTyp = "All";
    } else {
       return false;
    }
@@ -266,10 +272,10 @@ function canvas_clicked(id, event) {
    } else if ( myMetric =="SAMservice" ) {
       myStart = myOffset + ( ( myTarget - 1 ) * myPeriod );
       myEnd = myOffset + ( ( myTarget + 2 ) * myPeriod );
-      id.href = 'http://wlcg-sam-cms.cern.ch/templates/ember/#/historicalsmr' +
-         'y/heatMap?profile=CMS_CRITICAL_FULL&hostname=' + mySitHst +
-         '&start_time=' + dateString3(myStart) + '&end_time=' +
-         dateString3(myEnd) + '&time=manual&view=Test History';
+      id.href = 'https://monit-grafana.cern.ch/d/m7XtZsEZk4/wlcg-sitemon-his' +
+         'torical-tests?orgId=20&var-vo=cms&var-dst_tier=All&var-dst_hostnam' +
+         'e=' + mySitHst + '&var-service_flavour=' + mySitTyp +
+         '&from=' + myStart.toString() + '000&to=' + myEnd.toString() + '000';
    }
 
    return false;
