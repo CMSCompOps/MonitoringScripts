@@ -253,7 +253,7 @@ class FTSmetric:
                   ( error_lower.find("insufficient user privileges") >= 0 ) or
                   ( error_message.find("Authorization denied") >= 0 ) or
                   ( error_lower.find("establishing access rights") >= 0 ) or
-                  ( error_lower.find("authorization error) >= 0 ) or
+                  ( error_lower.find("authorization error") >= 0 ) or
                   ( error_lower.find("certificate issued for a diff") >= 0 )):
                 return "src_perm"
             elif (( error_lower.find("no such file or directory") >= 0 ) or
@@ -274,7 +274,8 @@ class FTSmetric:
             if (( error_lower.find("operation timed out") >= 0 ) or
                 ( error_lower.find("connection timed out") >= 0 ) or
                 ( error_lower.find("idle timeout") >= 0 ) or
-                ( error_lower.find("performance marker timeout") >= 0 )):
+                ( error_lower.find("performance marker timeout") >= 0 ) or
+                ( error_lower.find("timeout expired") >= 0 )):
                 return "trn_tout"
             elif ( error_lower.find("file not found") >= 0 ):
                 return "src_miss"
@@ -496,7 +497,8 @@ class FTSmetric:
                 ( error_lower.find("upload not yet completed") >= 0 ) or
                 ( error_lower.find("no such request") >= 0 ) or
                 ( error_lower.find("failed to process") >= 0 ) or
-                ( error_lower.find("unable to write replica") >= 0 )):
+                ( error_lower.find("unable to write replica") >= 0 ) or
+                ( error_lower.find("handshake_failure; redirections") >= 0 )):
                 return classfcn
         if error_message not in FTSmetric.staticErrorList:
             FTSmetric.staticErrorList.append( error_message )
