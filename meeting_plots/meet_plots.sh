@@ -159,18 +159,18 @@ SLOT_STIS=`echo "${WE_TIS} - 172800" | /usr/bin/bc`
 SLOT_ETIS=`echo "${WE_TIS} + 432000" | /usr/bin/bc`
 SLOT_SITES='T1_DE_KIT T1_ES_PIC T1_IT_CNAF T1_FR_CCIN2P3 T1_UK_RAL T1_US_FNAL T1_RU_JINR T2_CH_CERN T2_.*'
 SLOT_URL='https://monit-grafana.cern.ch/render/d-solo/YcGYFOVWz/requested-cpu'
-SLOT_QRYR="orgId=11&from=${SLOT_STIS}000&to=${SLOT_ETIS}000&panelId=2&width=1024&height=768&var-site="
+SLOT_QRYR="orgId=11&from=${SLOT_STIS}000&to=${SLOT_ETIS}000&panelId=5&width=1024&height=768&var-site="
 SLOT_QRYP="orgId=11&from=${SLOT_STIS}000&to=${SLOT_ETIS}000&panelId=4&width=1024&height=768&var-site="
 #
 for QSITE in ${SLOT_SITES}; do
    SITE="${QSITE//.\*}"
    if [ ! -f ${PLOT_DIR}/${SITE}_running.png ]; then
-      /usr/bin/wget -O ${PLOT_DIR}/${SITE}_running.png --no-check-certificate --header="Authorization: Bearer eyJrIjoiM0dOMXlRc3JXN3c3WUt4WE9INjMybWdBbXh6TElHdFUiLCJuIjoiY21zLXNpdGVzdXBwb3J0IiwiaWQiOjExfQ==" --header="Accept: image/png" ${SLOT_URL}?${SLOT_QRYR}${QSITE}
+      /usr/bin/wget -O ${PLOT_DIR}/${SITE}_running.png --timeout=900 --no-check-certificate --header="Authorization: Bearer eyJrIjoiM0dOMXlRc3JXN3c3WUt4WE9INjMybWdBbXh6TElHdFUiLCJuIjoiY21zLXNpdGVzdXBwb3J0IiwiaWQiOjExfQ==" --header="Accept: image/png" ${SLOT_URL}?${SLOT_QRYR}${QSITE}
       if [ $? -ne 0 ]; then
          /bin/sleep 3
          /bin/rm -f ${PLOT_DIR}/${SITE}_running.png 1>/dev/null 2>&1
          echo "failed to get ${SITE} running job plot from dashboard" >> ${ERR_FILE}
-         /usr/bin/wget -O ${PLOT_DIR}/${SITE}_running.png --no-check-certificate --header="Authorization: Bearer eyJrIjoiM0dOMXlRc3JXN3c3WUt4WE9INjMybWdBbXh6TElHdFUiLCJuIjoiY21zLXNpdGVzdXBwb3J0IiwiaWQiOjExfQ==" --header="Accept: image/png" ${SLOT_URL}?${SLOT_QRYR}${QSITE} 1> ${ERR_FILE} 2>&1
+         /usr/bin/wget -O ${PLOT_DIR}/${SITE}_running.png --timeout=900 --no-check-certificate --header="Authorization: Bearer eyJrIjoiM0dOMXlRc3JXN3c3WUt4WE9INjMybWdBbXh6TElHdFUiLCJuIjoiY21zLXNpdGVzdXBwb3J0IiwiaWQiOjExfQ==" --header="Accept: image/png" ${SLOT_URL}?${SLOT_QRYR}${QSITE} 1> ${ERR_FILE} 2>&1
          RCX=$?
          if [ ${RCX} -ne 0 ]; then
             echo "wget retry failed too, rc=${RCX}" >> ${ERR_FILE}
@@ -188,12 +188,12 @@ for QSITE in ${SLOT_SITES}; do
       echo "${SITE}_running.png exists, skipping"
    fi
    if [ ! -f ${PLOT_DIR}/${SITE}_pending.png ]; then
-      /usr/bin/wget -O ${PLOT_DIR}/${SITE}_pending.png --no-check-certificate --header="Authorization: Bearer eyJrIjoiM0dOMXlRc3JXN3c3WUt4WE9INjMybWdBbXh6TElHdFUiLCJuIjoiY21zLXNpdGVzdXBwb3J0IiwiaWQiOjExfQ==" --header="Accept: image/png" ${SLOT_URL}?${SLOT_QRYP}${QSITE}
+      /usr/bin/wget -O ${PLOT_DIR}/${SITE}_pending.png --timeout=900 --no-check-certificate --header="Authorization: Bearer eyJrIjoiM0dOMXlRc3JXN3c3WUt4WE9INjMybWdBbXh6TElHdFUiLCJuIjoiY21zLXNpdGVzdXBwb3J0IiwiaWQiOjExfQ==" --header="Accept: image/png" ${SLOT_URL}?${SLOT_QRYP}${QSITE}
       if [ $? -ne 0 ]; then
          /bin/sleep 3
          /bin/rm -f ${PLOT_DIR}/${SITE}_pending.png 1>/dev/null 2>&1
          echo "failed to get ${SITE} pending job plot from dashboard" >> ${ERR_FILE}
-         /usr/bin/wget -O ${PLOT_DIR}/${SITE}_pending.png --no-check-certificate --header="Authorization: Bearer eyJrIjoiM0dOMXlRc3JXN3c3WUt4WE9INjMybWdBbXh6TElHdFUiLCJuIjoiY21zLXNpdGVzdXBwb3J0IiwiaWQiOjExfQ==" --header="Accept: image/png" ${SLOT_URL}?${SLOT_QRYP}${QSITE} 1> ${ERR_FILE} 2>&1
+         /usr/bin/wget -O ${PLOT_DIR}/${SITE}_pending.png --timeout=900 --no-check-certificate --header="Authorization: Bearer eyJrIjoiM0dOMXlRc3JXN3c3WUt4WE9INjMybWdBbXh6TElHdFUiLCJuIjoiY21zLXNpdGVzdXBwb3J0IiwiaWQiOjExfQ==" --header="Accept: image/png" ${SLOT_URL}?${SLOT_QRYP}${QSITE} 1> ${ERR_FILE} 2>&1
          RCX=$?
          if [ ${RCX} -ne 0 ]; then
             echo "wget retry failed too, rc=${RCX}" >> ${ERR_FILE}
