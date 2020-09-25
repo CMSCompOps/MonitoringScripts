@@ -273,9 +273,10 @@ function canvas_clicked(id, event) {
       myStart = myOffset + ( ( myTarget - 1 ) * myPeriod );
       myEnd = myOffset + ( ( myTarget + 2 ) * myPeriod );
       id.href = 'https://monit-grafana.cern.ch/d/m7XtZsEZk4/wlcg-sitemon-his' +
-         'torical-tests?orgId=20&var-vo=cms&var-dst_tier=All&var-dst_hostnam' +
-         'e=' + mySitHst + '&var-service_flavour=' + mySitTyp +
-         '&from=' + myStart.toString() + '000&to=' + myEnd.toString() + '000';
+         'torical-tests?orgId=20&var-vo=cms&var-dst_tier=All&var-dst_experim' +
+         'ent_site=' + myData.site + '&var-dst_hostname=' + mySitHst + '&var' +
+         '-service_flavour=' + mySitTyp + '&from=' + myStart.toString() +
+         '000&to=' + myEnd.toString() + '000';
    }
 
    return false;
@@ -630,7 +631,7 @@ function writeTable(widthName) {
                // second, previous month's, column:
                myTableStr += '   <TD><A CLASS="toolTip1" ' +
                   'HREF="javascript:void(0);" ID="' + mName + '/pmonth/' +
-                  myData.elements[cnt].host +
+                  myData.elements[cnt].host + '/' + myData.elements[cnt].type +
                   '" ONMOUSEDOWN="canvas_clicked(this, event)"><CANVAS ID="c' +
                   'nvs_' + eName + '_' + mName + '_s1" WIDTH="' + sizeCnvs[0] +
                   '" HEIGHT="18"></CANVAS><SPAN><TABLE WIDTH="100%" BORDER="' +
@@ -645,7 +646,7 @@ function writeTable(widthName) {
                // third, previous week's, column:
                myTableStr += '   <TD><A CLASS="toolTip2" ' +
                   'HREF="javascript:void(0);" ID="' + mName + '/pweek/' +
-                  myData.elements[cnt].host +
+                  myData.elements[cnt].host + '/' + myData.elements[cnt].type +
                   '" ONMOUSEDOWN="canvas_clicked(this, event)"><CANVAS ID="c' +
                   'nvs_' + eName + '_' + mName + '_s2" WIDTH="' + sizeCnvs[1] +
                   '" HEIGHT="18"></CANVAS><SPAN><TABLE WIDTH="100%" BORDER="' +
@@ -660,7 +661,7 @@ function writeTable(widthName) {
                // fourth, yesterday's, column:
                myTableStr += '   <TD><A CLASS="toolTip3" ' +
                   'HREF="javascript:void(0);" ID="' + mName + '/yrday/' +
-                  myData.elements[cnt].host +
+                  myData.elements[cnt].host + '/' + myData.elements[cnt].type +
                   '" ONMOUSEDOWN="canvas_clicked(this, event)"><CANVAS ID="c' +
                   'nvs_' + eName + '_' + mName + '_s3" WIDTH="' + sizeCnvs[2] +
                   '" HEIGHT="18"></CANVAS><SPAN><TABLE WIDTH="100%" BORDER="' +
@@ -674,7 +675,7 @@ function writeTable(widthName) {
                // fifth, today's, column:
                myTableStr += '   <TD><A CLASS="toolTip4" ' +
                   'HREF="javascript:void(0);" ID="' + mName + '/today/' +
-                  myData.elements[cnt].host +
+                  myData.elements[cnt].host + '/' + myData.elements[cnt].type +
                   '" ONMOUSEDOWN="canvas_clicked(this, event)"><CANVAS ID="c' +
                   'nvs_' + eName + '_' + mName + '_s4" WIDTH="' + sizeCnvs[3] +
                   '" HEIGHT="18"></CANVAS><SPAN><TABLE WIDTH="100%" BORDER="' +
@@ -688,7 +689,7 @@ function writeTable(widthName) {
                // sixth, following week's column:
                myTableStr += '   <TD><A CLASS="toolTip5" ' +
                   'HREF="javascript:void(0);" ID="' + mName + '/fweek/' +
-                  myData.elements[cnt].host +
+                  myData.elements[cnt].host + '/' + myData.elements[cnt].type +
                   '" ONMOUSEDOWN="canvas_clicked(this, event)"><CANVAS ID="c' +
                   'nvs_' + eName + '_' + mName + '_s5" WIDTH="' + sizeCnvs[4] +
                   '" HEIGHT="18"></CANVAS><SPAN><TABLE WIDTH="100%" BORDER="' +

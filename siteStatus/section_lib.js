@@ -271,9 +271,10 @@ function canvas_clicked(id, event) {
       myStart = myOffset + ( ( myTarget - 1 ) * myPeriod );
       myEnd = myOffset + ( ( myTarget + 1 ) * myPeriod );
       id.href = 'https://monit-grafana.cern.ch/d/m7XtZsEZk4/wlcg-sitemon-his' +
-         'torical-tests?orgId=20&var-vo=cms&var-dst_tier=All&var-dst_hostnam' +
-         'e=' + mySitHst + '&var-service_flavour=' + mySitTyp +
-         '&from=' + myStart.toString() + '000&to=' + myEnd.toString() + '000';
+         'torical-tests?orgId=20&var-vo=cms&var-dst_tier=All&var-dst_experim' +
+         'ent_site=' + myData.site + '&var-dst_hostname=' + mySitHst + '&var' +
+         '-service_flavour=' + mySitTyp + '&from=' + myStart.toString() +
+         '000&to=' + myEnd.toString() + '000';
    }
 
    return false;
@@ -365,6 +366,7 @@ function writePmonthTable() {
                }
                myTableStr += '   <TD COLSPAN="3"><A HREF="javascript:void(0)' +
                   ';" ID="' + mName + '/pmonth/' + myData.elements[cnt].host +
+                  '/' + myData.elements[cnt].type +
                   '" ONMOUSEDOWN="canvas_clicked(this, event)"><CANVAS ID="c' +
                   'nvs_' + eName + '_' + mName + '_s1" WIDTH="782" HEIGHT="1' +
                   '8"></CANVAS><\A>\n';
@@ -473,6 +475,7 @@ function writePweekTable() {
                }
                myTableStr += '   <TD COLSPAN="3"><A HREF="javascript:void(0)' +
                   ';" ID="' + mName + '/pweek/' + myData.elements[cnt].host +
+                  '/' + myData.elements[cnt].type +
                   '" ONMOUSEDOWN="canvas_clicked(this, event)"><CANVAS ID="c' +
                   'nvs_' + eName + '_' + mName + '_s2" WIDTH="730" HEIGHT="1' +
                   '8"></CANVAS></A>\n';
@@ -581,6 +584,7 @@ function writeYesterdayTable() {
                }
                myTableStr += '   <TD COLSPAN="3"><A HREF="javascript:void(0)' +
                   ';" ID="' + mName + '/yrday/' + myData.elements[cnt].host +
+                  '/' + myData.elements[cnt].type +
                   '" ONMOUSEDOWN="canvas_clicked(this, event)"><CANVAS ID="c' +
                   'nvs_' + eName + '_' + mName + '_s3" WIDTH="626" HEIGHT="1' +
                   '8"></CANVAS></A>\n';
@@ -687,6 +691,7 @@ function writeTodayTable() {
                }
                myTableStr += '   <TD COLSPAN="3"><A HREF="javascript:void(0)' +
                   ';" ID="' + mName + '/today/' + myData.elements[cnt].host +
+                  '/' + myData.elements[cnt].type +
                   '" ONMOUSEDOWN="canvas_clicked(this, event)"><CANVAS ID="c' +
                   'nvs_' + eName + '_' + mName + '_s4" WIDTH="626" HEIGHT="1' +
                   '8"></CANVAS></A>\n';
@@ -794,6 +799,7 @@ function writeFweekTable() {
                }
                myTableStr += '   <TD COLSPAN="3"><A HREF="javascript:void(0)' +
                   ';" ID="' + mName + '/fweek/' + myData.elements[cnt].host +
+                  '/' + myData.elements[cnt].type +
                   '" ONMOUSEDOWN="canvas_clicked(this, event)"><CANVAS ID="c' +
                   'nvs_' + eName + '_' + mName + '_s5" WIDTH="730" HEIGHT="1' +
                   '8"></CANVAS></A>\n';
