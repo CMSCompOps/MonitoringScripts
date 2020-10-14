@@ -256,19 +256,19 @@ function canvas_clicked(id, event) {
    } else if ( myMetric =="FTSsource" ) {
       myStart = myOffset + ( ( myTarget - 1 ) * myPeriod );
       myEnd = myOffset + ( ( myTarget + 2 ) * myPeriod );
-      id.href = 'https://monit-grafana.cern.ch/d/000000420/fts-transfers-30-' +
-         'days?orgId=20&from=' + myStart + '000&to=' + myEnd + '000&var-grou' +
-         'p_by=endpnt&var-vo=cms&var-src_country=All&var-dst_country=All&var' +
-         '-src_site=All&var-dst_site=All&var-fts_server=All&var-bin=$__auto_' +
-         'interval_bin&var-filters=src_hostname|=|' + mySitHst;
+      id.href = 'https://monit-grafana.cern.ch/d/CIjJHKdGk/fts-transfers-es?' +
+         'orgId=20&from=' + myStart + '000&to=' + myEnd + '000&var-group_by=' +
+         'endpnt&var-vo=cms&var-src_country=All&var-dst_country=All&var-src_' +
+         'site=All&var-dst_site=All&var-fts_server=All&var-bin=1h&var-includ' +
+         'e=&var-filters=data.src_hostname|=|' + mySitHst;
    } else if ( myMetric =="FTSdestination" ) {
       myStart = myOffset + ( ( myTarget - 1 ) * myPeriod );
       myEnd = myOffset + ( ( myTarget + 2 ) * myPeriod );
-      id.href = 'https://monit-grafana.cern.ch/d/000000420/fts-transfers-30-' +
-         'days?orgId=20&from=' + myStart + '000&to=' + myEnd + '000&var-grou' +
-         'p_by=endpnt&var-vo=cms&var-src_country=All&var-dst_country=All&var' +
-         '-src_site=All&var-dst_site=All&var-fts_server=All&var-bin=$__auto_' +
-         'interval_bin&var-filters=dst_hostname|=|' + mySitHst;
+      id.href = 'https://monit-grafana.cern.ch/d/CIjJHKdGk/fts-transfers-es?' +
+         'orgId=20&from=' + myStart + '000&to=' + myEnd + '000&var-group_by=' +
+         'endpnt&var-vo=cms&var-src_country=All&var-dst_country=All&var-src_' +
+         'site=All&var-dst_site=All&var-fts_server=All&var-bin=1h&var-includ' +
+         'e=&var-filters=data.dst_hostname|=|' + mySitHst;
    } else if ( myMetric =="SAMservice" ) {
       myStart = myOffset + ( ( myTarget - 1 ) * myPeriod );
       myEnd = myOffset + ( ( myTarget + 2 ) * myPeriod );
