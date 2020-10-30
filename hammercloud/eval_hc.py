@@ -944,9 +944,9 @@ def evhc_monit_upload():
     docs = json.loads(jsonString)
     ndocs = len(docs)
     successFlag = True
-    for myOffset in range(0, ndocs, 8192):
+    for myOffset in range(0, ndocs, 2048):
         # MonIT upload channel can handle at most 10,000 docs at once
-        dataString = json.dumps( docs[myOffset:min(ndocs,myOffset+8192)] )
+        dataString = json.dumps( docs[myOffset:min(ndocs,myOffset+2048)] )
         #
         try:
             # MonIT needs a document array and without newline characters:
@@ -957,13 +957,13 @@ def evhc_monit_upload():
             if ( responseObj.status != http.HTTPStatus.OK ):
                 logging.error(("Failed to upload JSON [%d:%d] string to MonI" +
                                "T, %d \"%s\"") %
-                              (myOffset, min(ndocs,myOffset+8192),
+                              (myOffset, min(ndocs,myOffset+2048),
                                responseObj.status, responseObj.reason))
                 successFlag = False
             responseObj.close()
         except urllib.error.URLError as excptn:
             logging.error("Failed to upload JSON [%d:%d], %s" %
-                             (myOffset, min(ndocs,myOffset+8192), str(excptn)))
+                             (myOffset, min(ndocs,myOffset+2048), str(excptn)))
     del docs
 
     if ( successFlag ):
