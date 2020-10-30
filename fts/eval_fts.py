@@ -1909,12 +1909,12 @@ if __name__ == '__main__':
         docs = json.loads(jsonString)
         ndocs = len(docs)
         successFlag = True
-        for myOffset in range(0, ndocs, 4096):
+        for myOffset in range(0, ndocs, 2048):
             if ( myOffset > 0 ):
                 # give importer time to process documents
                 time.sleep(1.500)
             # MonIT upload channel can handle at most 10,000 docs at once
-            dataString = json.dumps( docs[myOffset:min(ndocs,myOffset+4096)] )
+            dataString = json.dumps( docs[myOffset:min(ndocs,myOffset+2048)] )
             #
             try:
                 # MonIT needs a document array and without newline characters:
@@ -1925,13 +1925,13 @@ if __name__ == '__main__':
                 if ( responseObj.status != http.HTTPStatus.OK ):
                     logging.error(("Failed to upload JSON [%d:%d] string to " +
                                    "MonIT, %d \"%s\"") %
-                                  (myOffset, min(ndocs,myOffset+4096),
+                                  (myOffset, min(ndocs,myOffset+2048),
                                    responseObj.status, responseObj.reason))
                     successFlag = False
                 responseObj.close()
             except urllib.error.URLError as excptn:
                 logging.error("Failed to upload JSON [%d:%d], %s" %
-                             (myOffset, min(ndocs,myOffset+4096), str(excptn)))
+                             (myOffset, min(ndocs,myOffset+2048), str(excptn)))
                 successFlag = False
         del docs
 
