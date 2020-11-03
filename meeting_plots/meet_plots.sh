@@ -13,6 +13,7 @@ trap '(/bin/rm -f ${EXC_LOCK} ${TMP_FILE} ${ERR_FILE}) 1> /dev/null 2>&1' 0
 
 
 PLOT_DIR="/afs/cern.ch/user/c/cmssst/www/meet_plots"
+COPY_DIR="/eos/home-c/cmssst/www/meet_plots"
 EMAIL_ADDR="lammel@fnal.gov"
 if [ -z "${HOME}" ]; then
    HOME="/afs/cern.ch/user/c/cmssst"
@@ -65,8 +66,8 @@ EXC_LOCK="/var/tmp/cmssst/meet_plots.lock"
 
 
 
-# check Kerberos ticket and AFS token:
-# ------------------------------------
+# check Kerberos ticket, AFS token, and EOS-fusebind:
+# ---------------------------------------------------
 echo "Checking Kerberos ticket/AFS token:"
 /bin/rm ${ERR_FILE} 1>/dev/null 2>&1
 /usr/bin/klist 2> ${ERR_FILE}
@@ -85,11 +86,22 @@ if [ ${RC} -ne 0 ]; then
       exit ${RC}
    fi
 fi
+#
 /bin/rm ${ERR_FILE} 1>/dev/null 2>&1
 /usr/bin/aklog 2> ${ERR_FILE}
 RC=$?
 if [ ${RC} -ne 0 ]; then
    MSG="unable to acquire AFS token, aklog=${RC}"
+   echo "   ${MSG}"
+   /usr/bin/Mail -s "$0 ${MSG}" ${EMAIL_ADDR} < ${ERR_FILE}
+   exit ${RC}
+fi
+#
+/bin/rm ${ERR_FILE} 1>/dev/null 2>&1
+/usr/bin/eosfusebind -g 2> ${ERR_FILE}
+RC=$?
+if [ ${RC} -ne 0 ]; then
+   MSG="unable to EOS fuse-bind, eosfusebind=${RC}"
    echo "   ${MSG}"
    /usr/bin/Mail -s "$0 ${MSG}" ${EMAIL_ADDR} < ${ERR_FILE}
    exit ${RC}
@@ -133,8 +145,8 @@ elif [ -f ${PLOT_DIR}/.timestamp ]; then
       # plots for this week exist, nothing to do
       echo "Plots for this week, ${THIS_WEEK}, exist already"
       #
-      # release space_mon lock:
-      # -----------------------
+      # release cmssst/meet_plots lock:
+      # -------------------------------
       echo "Releasing lock for cmssst/meet_plots"
       /bin/rm ${EXC_LOCK}
       exit 0
@@ -317,6 +329,16 @@ fi
 PAST_WEEKS=`/usr/bin/awk 'BEGIN{tis=systime();for(pwk=6;pwk<=10;pwk+=1){wis=tis-pwk*7*24*60*60;print strftime("%Y.%U",wis)}}'`
 (cd ${PLOT_DIR}; /bin/rm -r ${PAST_WEEKS} 1>/dev/null 2>&1)
 PAST_WEEKS=""
+# #############################################################################
+
+
+
+# copy plots into secondary area:
+# -------------------------------
+if [ -e ${COPY_DIR} ]; then
+   echo "Copying plots into secondary area:
+   /bin/cp -p ${PLOT_DIR}/*.png ${PLOT_DIR}/.time* ${COPY_DIR}
+fi
 # #############################################################################
 
 
