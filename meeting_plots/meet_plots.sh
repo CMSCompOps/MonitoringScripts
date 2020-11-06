@@ -336,8 +336,9 @@ PAST_WEEKS=""
 # copy plots into secondary area:
 # -------------------------------
 if [ -e ${COPY_DIR} ]; then
-   echo "Copying plots into secondary area:
+   echo "Copying plots into secondary area:"
    /bin/cp -p ${PLOT_DIR}/*.png ${PLOT_DIR}/.time* ${COPY_DIR}
+   /usr/bin/chmod go+r ${COPY_DIR}/*.png ${COPY_DIR}/.time*
 fi
 # #############################################################################
 
