@@ -17,7 +17,7 @@
 # ADFS_FULLNAME = John Doe
 # ADFS_GROUP = cms-comp-ops-site-support-team;cms-zh;cms-members;cms-web-access;cms-authorized-users;cms-US_Fermilab-admin;
 #
-# /eos/home-c/cmssst/www/override/CrabStatus.json:
+# /eos/user/c/cmssst/www/override/CrabStatus.json:
 # [
 #   { "name": "T9_US_Fermilab",
 #     "status": "enabled",
@@ -121,16 +121,16 @@ OVRD_CAPACITY_DESC = {
     'who':                      "Username of last non-automatic update"
 }
 OVRD_LOCK_PATH = {
-    'LifeStatus':   "/eos/home-c/cmssst/www/override/status.lock",
-    'ProdStatus':   "/eos/home-c/cmssst/www/override/status.lock",
-    'CrabStatus':   "/eos/home-c/cmssst/www/override/status.lock",
-    'SiteCapacity': "/eos/home-c/cmssst/www/capacity/update.lock"
+    'LifeStatus':   "/eos/user/c/cmssst/www/override/status.lock",
+    'ProdStatus':   "/eos/user/c/cmssst/www/override/status.lock",
+    'CrabStatus':   "/eos/user/c/cmssst/www/override/status.lock",
+    'SiteCapacity': "/eos/user/c/cmssst/www/capacity/update.lock"
 }
 OVRD_FILE_PATH = {
-    'LifeStatus':   "/eos/home-c/cmssst/www/override/LifeStatus.json",
-    'ProdStatus':   "/eos/home-c/cmssst/www/override/ProdStatus.json",
-    'CrabStatus':   "/eos/home-c/cmssst/www/override/CrabStatus.json",
-    'SiteCapacity': "/eos/home-c/cmssst/www/capacity/SiteCapacity.json"
+    'LifeStatus':   "/eos/user/c/cmssst/www/override/LifeStatus.json",
+    'ProdStatus':   "/eos/user/c/cmssst/www/override/ProdStatus.json",
+    'CrabStatus':   "/eos/user/c/cmssst/www/override/CrabStatus.json",
+    'SiteCapacity': "/eos/user/c/cmssst/www/capacity/SiteCapacity.json"
 }
 OVRD_CGIURL = "https://test-cmssst.web.cern.ch/cgi-bin/set"
 #
@@ -694,6 +694,164 @@ def ovrd_append_log(cgiMTRC, entry):
 
 
 
+def ovrd_auth_cern_sso():
+    # ####################################################################### #
+    # function to get CGI access information at CERN                          #
+    #          returns a dictionary {'username':, 'fullname':, 'egroups': }   #
+    # ####################################################################### #
+    #
+    authDict = {'username': "unknown", 'fullname': "Not Known", 'egroups': []}
+
+
+    # ADFS (old SSO) e-group list:
+    try:
+        myUser = os.environ['ADFS_LOGIN']
+        authDict['username'] = myUser
+        #
+        myName = os.environ['ADFS_FULLNAME']
+        authDict['fullname'] = myName
+        #
+        myGroup = os.environ['ADFS_GROUP']
+        authDict['egroups'] = [e for e in myGroup.split(";") if ( e != "" ) ]
+        #
+        logging.info("CGI access by: %s / \"%s\" member of %s" %
+                                   (authDict['username'], authDict['fullname'],
+                                                     str(authDict['egroups'])))
+        return authDict
+    except KeyError:
+        try:
+            myUser = os.environ['OIDC_CLAIM_sub']
+            authDict['username'] = myUser
+            #
+            myName = os.environ['OIDC_CLAIM_name']
+            authDict['fullname'] = myName
+        except KeyError:
+            try:
+                myUser = os.environ['REMOTE_USER']
+                authDict['username'] = myUser.split("@")[0]
+                #
+                authDict['fullname'] = " ".join(myUser.split("@")[0:2])
+            except KeyError:
+                logging.error("Failed to identify username of executing CGI")
+                #
+                logging.info("CGI access by: %s / \"%s\" member of %s" %
+                                   (authDict['username'], authDict['fullname'],
+                                                     str(authDict['egroups'])))
+                return authDict
+
+
+    # OIDC (new SSO) e-group list:
+    #
+    # acquire API access token:
+    OVRD_AT_URL = "https://auth.cern.ch/auth/realms/cern/api-access/token"
+    OVRD_AT_HDR = {'Content-Type': "application/x-www-form-urlencoded"}
+    OVRD_AT_DATA = {'grant_type': "client_credentials",
+                    'client_id': "cmssst_cgi",
+                    'client_secret': "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+                    'audience': "authorization-service-api"}
+    try:
+        requestObj = urllib.request.Request(OVRD_AT_URL,
+                         data=urllib.parse.urlencode(OVRD_AT_DATA).encode(),
+                         headers=OVRD_AT_HDR, method="POST")
+        with urllib.request.urlopen( requestObj, timeout=90 ) as urlHndl:
+            myCharset = urlHndl.headers.get_content_charset()
+            if myCharset is None:
+                myCharset = "utf-8"
+            myData = urlHndl.read().decode( myCharset )
+            del(myCharset)
+    except urllib.error.URLError as excptn:
+        logging.error(("Failed to access CERN Authorization Service access t" +
+                       "oken API URL, %s") % str(excptn))
+        #
+        logging.info("CGI access by: %s / \"%s\" member of %s" %
+                                   (authDict['username'], authDict['fullname'],
+                                                     str(authDict['egroups'])))
+        return authDict
+    try:
+        apiToken = json.loads( myData )['access_token']
+    except (json.JSONDecodeError, KeyError) as excptn:
+        logging.error("Failed to decode access token, %s" % str(excptn))
+        #
+        logging.info("CGI access by: %s / \"%s\" member of %s" %
+                                   (authDict['username'], authDict['fullname'],
+                                                     str(authDict['egroups'])))
+        return authDict
+    #
+    # get user id:
+    OVRD_ID_URL = "https://authorization-service-api.web.cern.ch/api/v1.0/Identity"
+    OVRD_ID_QRY = {'filter': "upn:" + myUser}
+    OVRD_ID_HDR = {'Accept': "application/json",
+                   'Authorization': "Bearer " + apiToken}
+    try:
+        getURL = OVRD_ID_URL + "?" + urllib.parse.urlencode(OVRD_ID_QRY)
+        requestObj = urllib.request.Request(getURL,
+                         headers=OVRD_ID_HDR, method="GET")
+        with urllib.request.urlopen( requestObj, timeout=90 ) as urlHndl:
+            myCharset = urlHndl.headers.get_content_charset()
+            if myCharset is None:
+                myCharset = "utf-8"
+            myData = urlHndl.read().decode( myCharset )
+            del(myCharset)
+    except urllib.error.URLError as excptn:
+        logging.error(("Failed to access CERN Authorization Service identity" +
+                       " API URL, %s") % str(excptn))
+        #
+        logging.info("CGI access by: %s / \"%s\" member of %s" %
+                                   (authDict['username'], authDict['fullname'],
+                                                     str(authDict['egroups'])))
+        return authDict
+    try:
+        userId = json.loads( myData )['data'][0]['id']
+    except (json.JSONDecodeError, KeyError, IndexError) as excptn:
+        logging.error("Failed to decode user identity, %s" % str(excptn))
+        #
+        logging.info("CGI access by: %s / \"%s\" member of %s" %
+                                   (authDict['username'], authDict['fullname'],
+                                                     str(authDict['egroups'])))
+        return authDict
+    #
+    # get user groups:
+    OVRD_GRP_URL = "https://authorization-service-api.web.cern.ch/api/v1.0/Identity/" + userId + "/groups"
+    OVRD_GRP_QRY = {'recursive': "false" }
+    OVRD_GRP_HDR = {'Accept': "application/json",
+                   'Authorization': "Bearer " + apiToken}
+    try:
+        getURL = OVRD_GRP_URL + "?" + urllib.parse.urlencode(OVRD_GRP_QRY)
+        requestObj = urllib.request.Request(getURL,
+                         headers=OVRD_GRP_HDR, method="GET")
+        with urllib.request.urlopen( requestObj, timeout=90 ) as urlHndl:
+            myCharset = urlHndl.headers.get_content_charset()
+            if myCharset is None:
+                myCharset = "utf-8"
+            myData = urlHndl.read().decode( myCharset )
+            del(myCharset)
+    except urllib.error.URLError as excptn:
+        logging.error(("Failed to access CERN Authorization Service groups A" +
+                       "PI URL, %s") % str(excptn))
+        #
+        logging.info("CGI access by: %s / \"%s\" member of %s" %
+                                   (authDict['username'], authDict['fullname'],
+                                                     str(authDict['egroups'])))
+        return authDict
+    try:
+        authDict['egroups'] = [ e['groupIdentifier'] for e in \
+                                                 json.loads( myData )['data'] ]
+    except (json.JSONDecodeError, KeyError, IndexError) as excptn:
+        logging.error("Failed to decode e-group list, %s" % str(excptn))
+        #
+        logging.info("CGI access by: %s / \"%s\" member of %s" %
+                                   (authDict['username'], authDict['fullname'],
+                                                     str(authDict['egroups'])))
+        return authDict
+
+
+    logging.info("CGI access by: %s / \"%s\" member of %s" %
+        (authDict['username'], authDict['fullname'], str(authDict['egroups'])))
+    return authDict
+# ########################################################################### #
+
+
+
 def ovrd_html_header(cgiMTHD, cgiMTRC, cgiSITE):
     """write head of HTML page to stdout"""
     # ####################################################################### #
@@ -725,7 +883,7 @@ def ovrd_html_header(cgiMTHD, cgiMTRC, cgiSITE):
 
 
 
-def ovrd_html_override(cgiMTRC, siteFacility, cgiSITE):
+def ovrd_html_override(authDict, cgiMTRC, siteFacility, cgiSITE):
     """write main section of HTML override page to stdout"""
     # ####################################################################### #
     OVRD_NOENTRY = { 'name': None, 'status': None, 'mode': 'oneday',
@@ -735,13 +893,11 @@ def ovrd_html_override(cgiMTRC, siteFacility, cgiSITE):
     siteAuth = set()
     mstrFlag = False
 
-    grpList = [e for e in os.environ['ADFS_GROUP'].split(";") if ( e != "" ) ]
-
     print(("<TABLE>\n<TR>\n   <TD VALIGN=\"top\" NOWRAP><B>%s</B> &nbsp;\n  " +
            " <TD VALIGN=\"top\" NOWRAP><B>e-group</B> member of &nbsp;\n   <" +
-           "TD VALIGN=\"top\" NOWRAP>\n") % os.environ['ADFS_FULLNAME'])
+           "TD VALIGN=\"top\" NOWRAP>\n") % authDict['fullname'])
     frstFlag = True
-    for group in grpList:
+    for group in authDict['egroups']:
         if group in OVRD_AUTH_EGROUP[cgiMTRC]:
             viewFlag = True
             descripton = "allows to view all"
@@ -760,7 +916,7 @@ def ovrd_html_override(cgiMTRC, siteFacility, cgiSITE):
             frstFlag = False
     if ( frstFlag == False ):
         print("\n")
-    for group in grpList:
+    for group in authDict['egroups']:
         if ( len(group) < 13 ):
             continue
         if (( group[:4] != "cms-" ) or ( group[4:6].isupper() != True ) or
@@ -780,7 +936,7 @@ def ovrd_html_override(cgiMTRC, siteFacility, cgiSITE):
         print(("<TR>\n   <TD>\n<TD VALIGN=\"top\" NOWRAP><B>Executive</B> of" +
                " &nbsp;\n   <TD VALIGN=\"top\" NOWRAP>%s &nbsp; <I>(allows t" +
                "o change %s)</I>") % (facility, siteStrng))
-    for group in grpList:
+    for group in authDict['egroups']:
         if ( len(group) < 14 ):
             continue
         if (( group[:4] != "cms-" ) or ( group[4:6].isupper() != True ) or
@@ -898,7 +1054,7 @@ def ovrd_html_override(cgiMTRC, siteFacility, cgiSITE):
 
 
 
-def ovrd_post_override(cgiMTRC, siteFacility, cgiSITE, cgiPOST):
+def ovrd_post_override(authDict, cgiMTRC, siteFacility, cgiSITE, cgiPOST):
     """set override and write main section of HTML update page to stdout"""
     # ####################################################################### #
     commentRegex = re.compile("[^a-zA-Z0-9_.,:;!?=/+*#~ -]")
@@ -913,7 +1069,7 @@ def ovrd_post_override(cgiMTRC, siteFacility, cgiSITE, cgiPOST):
         overrideEntry['mode'] = cgiPOST['mode'][0]
         overrideEntry['when'] = time.strftime("%Y-%b-%d %H:%M:%S",
                                                       time.gmtime(time.time()))
-        overrideEntry['who'] = os.environ['ADFS_LOGIN']
+        overrideEntry['who'] = authDict['username']
         overrideEntry['why'] = commentRegex.sub("", cgiPOST['why'][0])
     except (KeyError, IndexError) as excptn:
         logging.critical("Bad CGI data, %s" % str(excptn))
@@ -942,8 +1098,7 @@ def ovrd_post_override(cgiMTRC, siteFacility, cgiSITE, cgiPOST):
     # check authorization:
     authFlag = False
     mstrFlag = False
-    grpList = [e for e in os.environ['ADFS_GROUP'].split(";") if ( e != "" ) ]
-    for group in grpList:
+    for group in authDict['egroups']:
         if group in OVRD_AUTH_EGROUP[cgiMTRC]:
             if ( OVRD_AUTH_EGROUP[cgiMTRC][group] == "ALL" ):
                 authFlag = True
@@ -1071,7 +1226,7 @@ def ovrd_post_override(cgiMTRC, siteFacility, cgiSITE, cgiPOST):
 
 
 
-def ovrd_html_capacity(siteFacility, federationNames, cgiSITE):
+def ovrd_html_capacity(authDict, siteFacility, federationNames, cgiSITE):
     """write main section of HTML capacity page to stdout"""
     # ####################################################################### #
     OVRD_NOENTRY = { 'name': None,           'wlcg_federation_name': None,
@@ -1088,13 +1243,11 @@ def ovrd_html_capacity(siteFacility, federationNames, cgiSITE):
     siteAuth = set()
     mstrFlag = False
 
-    grpList = [e for e in os.environ['ADFS_GROUP'].split(";") if ( e != "" ) ]
-
     print(("<TABLE>\n<TR>\n   <TD VALIGN=\"top\" NOWRAP><B>%s</B> &nbsp;\n  " +
            " <TD VALIGN=\"top\" NOWRAP><B>e-group</B> member of &nbsp;\n   <" +
-           "TD VALIGN=\"top\" NOWRAP>\n") % os.environ['ADFS_FULLNAME'])
+           "TD VALIGN=\"top\" NOWRAP>\n") % authDict['fullname'])
     frstFlag = True
-    for group in grpList:
+    for group in authDict['egroups']:
         if group in OVRD_AUTH_EGROUP['SiteCapacity']:
             viewFlag = True
             descripton = "allows to view all"
@@ -1108,7 +1261,7 @@ def ovrd_html_capacity(siteFacility, federationNames, cgiSITE):
             frstFlag = False
     if ( frstFlag == False ):
         print("\n")
-    for group in grpList:
+    for group in authDict['egroups']:
         if ( len(group) < 13 ):
             continue
         if (( group[:4] != "cms-" ) or ( group[4:6].isupper() != True ) or
@@ -1128,7 +1281,7 @@ def ovrd_html_capacity(siteFacility, federationNames, cgiSITE):
         print(("<TR>\n   <TD>\n<TD VALIGN=\"top\" NOWRAP><B>Executive</B> of" +
                " &nbsp;\n   <TD VALIGN=\"top\" NOWRAP>%s &nbsp; <I>(allows t" +
                "o change %s)</I>") % (facility, siteStrng))
-    for group in grpList:
+    for group in authDict['egroups']:
         if ( len(group) < 14 ):
             continue
         if (( group[:4] != "cms-" ) or ( group[4:6].isupper() != True ) or
@@ -1303,7 +1456,8 @@ def ovrd_html_capacity(siteFacility, federationNames, cgiSITE):
 
 
 
-def ovrd_post_capacity(siteFacility, federationNames, cgiSITE, cgiPOST):
+def ovrd_post_capacity(authDict, siteFacility, federationNames,
+                                                             cgiSITE, cgiPOST):
     """set capacity and write main section of HTML update page to stdout"""
     # ####################################################################### #
     OVRD_NOENTRY = { 'name': None,           'wlcg_federation_name': None,
@@ -1348,7 +1502,7 @@ def ovrd_post_capacity(siteFacility, federationNames, cgiSITE, cgiPOST):
                            int( 2.0 * float( cgiPOST['tape_usable'][0] )) / 2.0
         capacityEntry['when'] = time.strftime("%Y-%b-%d %H:%M:%S",
                                                       time.gmtime(time.time()))
-        capacityEntry['who'] = os.environ['ADFS_LOGIN']
+        capacityEntry['who'] = authDict['username']
     except (KeyError, IndexError) as excptn:
         logging.critical("Bad CGI data, %s" % str(excptn))
         return
@@ -1366,8 +1520,7 @@ def ovrd_post_capacity(siteFacility, federationNames, cgiSITE, cgiPOST):
 
     # check authorization:
     authFlag = False
-    grpList = [e for e in os.environ['ADFS_GROUP'].split(";") if ( e != "" ) ]
-    for group in grpList:
+    for group in authDict['egroups']:
         if group in OVRD_AUTH_EGROUP['SiteCapacity']:
             if ( OVRD_AUTH_EGROUP['SiteCapacity'][group] == "ALL" ):
                 authFlag = True
@@ -1640,6 +1793,11 @@ if __name__ == '__main__':
     #
     #
     #
+    # get CGI authorization information:
+    authDict = ovrd_auth_cern_sso()
+    #
+    #
+    #
     # write page header:
     ovrd_html_header(cgiMTHD, cgiMTRC, cgiSITE)
     #
@@ -1655,16 +1813,16 @@ if __name__ == '__main__':
             #
             #
             if ( cgiMTHD == "GET" ):
-                ovrd_html_capacity(siteFacility, federationList, cgiSITE)
+                ovrd_html_capacity(authDict, siteFacility, federationList, cgiSITE)
             elif ( cgiMTHD == "POST" ):
-                ovrd_post_capacity(siteFacility, federationList, cgiSITE, cgiPOST)
+                ovrd_post_capacity(authDict, siteFacility, federationList, cgiSITE, cgiPOST)
         else:
             #
             #
             if ( cgiMTHD == "GET" ):
-                ovrd_html_override(cgiMTRC, siteFacility, cgiSITE)
+                ovrd_html_override(authDict ,cgiMTRC, siteFacility, cgiSITE)
             elif ( cgiMTHD == "POST" ):
-                ovrd_post_override(cgiMTRC, siteFacility, cgiSITE, cgiPOST)
+                ovrd_post_override(authDict, cgiMTRC, siteFacility, cgiSITE, cgiPOST)
         #
     except Exception as excptn:
         logging.critical("CGI execution failure, %s" % str(excptn))

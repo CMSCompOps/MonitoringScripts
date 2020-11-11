@@ -45,9 +45,9 @@ import json
 import gzip
 #
 # setup the Java/HDFS/PATH environment for pydoop to work properly:
-os.environ["HADOOP_CONF_DIR"] = "/eos/home-c/cmssst/packages/etc/hadoop/conf/hadoop.analytix"
+os.environ["HADOOP_CONF_DIR"] = "/eos/user/c/cmssst/packages/etc/hadoop/conf/hadoop.analytix"
 os.environ["JAVA_HOME"]       = "/eos/user/c/cmssst/packages/lib/jvm/java-1.8.0-openjdk-1.8.0.201.b09-2.el7_6.x86_64/jre"
-os.environ["HADOOP_PREFIX"]   = "/eos/home-c/cmssst/packages/hadoop/hadoop-2.7.5"
+os.environ["HADOOP_PREFIX"]   = "/eos/user/c/cmssst/packages/hadoop/hadoop-2.7.5"
 import pydoop.hdfs
 # ########################################################################### #
 

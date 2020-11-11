@@ -23,11 +23,11 @@ SET_RQST=`/usr/bin/awk 'BEGIN{split(ENVIRON["PATH_INFO"],a,"/");if(a[1]!=""){pri
 if [ "${SET_RQST}" = "LifeStatus" -o "${SET_RQST}" = "ProdStatus" -o \
      "${SET_RQST}" = "CrabStatus" -o "${SET_RQST}" = "SiteCapacity" ]; then
    #
-   /usr/bin/timeout 180 /eos/home-c/cmssst/www/cgi-bin/man_override.py
+   /usr/bin/timeout 180 /eos/user/c/cmssst/www/cgi-bin/man_override.py
    exec 1>&- 2>&-
 elif [ "${SET_RQST}" = "FacilityInfo" ]; then
    #
-   /usr/bin/timeout 180 /eos/home-c/cmssst/www/cgi-bin/adm_facility.py
+   /usr/bin/timeout 180 /eos/user/c/cmssst/www/cgi-bin/adm_facility.py
    exec 1>&- 2>&-
 else
    echo "Content-type: text/html"
