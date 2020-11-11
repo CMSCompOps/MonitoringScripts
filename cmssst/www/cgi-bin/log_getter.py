@@ -32,8 +32,6 @@
 #    links1hour
 #    links6hour
 #    links1day
-#
-# QUERY_STRING REMOTE_USER ADFS_LOGIN ADFS_FULLNAME ADFS_GROUP
 
 
 
@@ -1197,7 +1195,7 @@ def lget_print_json(cfg, docs):
 
 
 def lget_html_header(cfg):
-    """function to write top of HTML page written by log for log_fetcher.py"""
+    """function to write top of HTML page written by log for log_getter.py"""
     # ###################################################################### #
 
     if ( cfg['name'] != "*" ):

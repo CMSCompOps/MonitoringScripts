@@ -33,8 +33,6 @@
 #    links1hour
 #    links6hour
 #    links1day
-#
-# QUERY_STRING REMOTE_USER ADFS_LOGIN ADFS_FULLNAME ADFS_GROUP
 
 
 
