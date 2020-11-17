@@ -23,6 +23,8 @@
 #             'queue':
 #             'batch':
 #             'production': true | false
+#             'rpath': [ "id", "path" ]
+#             'wpath': [ "id", "path" ]
 #         }, {
 #             ...
 #         }
@@ -48,7 +50,7 @@ import pydoop.hdfs
 
 
 
-VOFEED_VERSION = "v2.00.06"
+VOFEED_VERSION = "v2.01.00"
 # ########################################################################### #
 
 
@@ -183,6 +185,8 @@ class vofeed:
                     srvc['endpoint'] = service.attrib['endpoint']
                 if ( ctgry == 'CE' ):
                     resources = service.findall('ce_resource')
+                elif ( ctgry == 'SE' ):
+                    resources = service.findall('se_resource')
                 else:
                     resources = []
                 #
@@ -195,6 +199,14 @@ class vofeed:
                             xsrvc['batch'] = resource.attrib['batch_system']
                         if 'queue' in resource.attrib:
                             xsrvc['queue'] = resource.attrib['queue']
+                        if (( 'id' in resource.attrib ) and
+                            ( 'path' in resource.attrib )):
+                            if ( resource.attrib['id'][0:2] == "RD" ):
+                                xsrvc['rpath'] = (resource.attrib['id'],
+                                                  resource.attrib['path'])
+                            elif ( resource.attrib['id'][0:2] == "WR" ):
+                                xsrvc['wpath'] = (resource.attrib['id'],
+                                                  resource.attrib['path'])
                         self.add1service(0, site, xsrvc)
                         del xsrvc
                 #
@@ -448,6 +460,10 @@ class vofeed:
         for srv in self.topo[timestamp][site]:
             if (( srv['hostname'] == service['hostname'] ) and
                 ( srv['flavour'] == service['flavour'] )):
+                if (( 'rpath' in service ) and ( 'rpath' not in srv )):
+                    srv['rpath'] = service['rpath']
+                if (( 'wpath' in service ) and ( 'wpath' not in srv )):
+                    srv['wpath'] = service['wpath']
                 if ( srv['production'] == True ):
                     return
                 elif ( service['production'] == False ):
@@ -618,6 +634,20 @@ class vofeed:
                       ( 'batch' in srvc )):
                     xmlString += (">\n         <ce_resource batch_system=\"" +
                                   "%s\"/>\n      </service>\n") % srvc['batch']
+                elif (( 'rpath' in srvc ) and ( 'wpath' in srvc )):
+                    xmlString += (">\n         <se_resource id=\"%s\" path=" +
+                                  "\"%s\"/>\n         <se_resource id=\"%s" +
+                                  "\" path=\"%s\"/>\n      </service>\n") % \
+                                 (srvc['rpath'][0], srvc['rpath'][1],
+                                  srvc['wpath'][0], srvc['wpath'][1])
+                elif ( 'rpath' in srvc ):
+                    xmlString += (">\n         <se_resource id=\"%s\" path=" +
+                                  "\"%s\"/>\n      </service>\n") % \
+                                 (srvc['rpath'][0], srvc['rpath'][1])
+                elif ( 'wpath' in srvc ):
+                    xmlString += (">\n         <se_resource id=\"%s\" path=" +
+                                  "\"%s\"/>\n      </service>\n") % \
+                                 (srvc['wpath'][0], srvc['wpath'][1])
                 else:
                     xmlString += "/>\n"
             xmlString += ("      <group name=\"Tier-%s\" type=\"CMS_Tier\"/>" +
@@ -709,6 +739,14 @@ class vofeed:
                     if 'batch' in srvc:
                         jsonString += ",\n         \"batch\": \"%s\"" % \
                                       srvc['batch']
+                    if 'rpath' in srvc:
+                        jsonString += (",\n         \"rpath\": [\"%s\", \"%s" +
+                                       "\"]") % (srvc['rpath'][0],
+                                                 srvc['rpath'][1])
+                    if 'wpath' in srvc:
+                        jsonString += (",\n         \"wpath\": [\"%s\", \"%s" +
+                                       "\"]") % (srvc['wpath'][0],
+                                                 srvc['wpath'][1])
                     if not srvc['production']:
                         jsonString += ",\n         \"production\": false"
                     jsonString += "\n       }"
@@ -868,7 +906,7 @@ if __name__ == '__main__':
         facilityRegex = re.compile(r"[A-Z]{2,2}_\w+")
         emailDict = {}
         for entry in siteDict:
-            site = siteDict[entry]['name']
+            site = siteDict[entry]['name'].replace('_Disk','')
             if ( siteRegex.match( site ) is None ):
                 continue
             try:
@@ -1306,6 +1344,208 @@ if __name__ == '__main__':
                 pass
 
         return
+    # ####################################################################### #
+
+
+
+    def vofd_rucio(vofeedObj, timestamp, siteDict, host2grid):
+        # ################################################### #
+        # fill vofeedObj with SE/SRMv2 information from Rucio #
+        # ################################################### #
+        import rucio.client.rseclient
+        import rucio.common.exception
+        #
+        os.environ["RUCIO_HOME"] = "/data/cmssst/packages"
+
+        logging.info("Fetching LFN-to-PFN translations from PhEDEx")
+        try:
+            rucioDict = {}
+
+            # initialize Rucio client for current username:
+            myUser = getpass.getuser()
+            rseClient=rucio.client.rseclient.RSEClient(account=myUser)
+
+            # loop over Rucio Storage Elements:
+            for rseName in [ d['rse'] for d in rseClient.list_rses() ]:
+                #
+                # get supported protocols for the RSE:
+                try:
+                    rseProtocols = rseClient.get_protocols(rseName)
+                except rucio.common.exception.RSEProtocolNotSupported:
+                    continue
+                rucioDict[rseName] = {}
+        
+                # loop over protocols of RSE:
+                for rseProto in rseProtocols:
+                    rseScheme = rseProto['scheme']
+                    rseHost = rseProto['hostname'].lower()
+                    rsePort = rseProto['port']
+                    rseOper = []
+                    for rseOps in rseProto['domains']['wan']:
+                        if ( rseProto['domains']['wan'][rseOps] > 0 ):
+                            rseOper.append(rseOps)
+                    #
+                    # check read operation is enabled:
+                    rseReadPath = None
+                    if ( rseProto['domains']['wan']['read'] > 0 ):
+                        # get RSE path of SAM read area:
+                        try:
+                            rseReadURL = next(iter( \
+                                rseClient.lfns2pfns(rseName,
+                                                  ["cms:/store/mc/SAM/"],
+                                                  protocol_domain="wan",
+                                                  operation="read",
+                                                  scheme=rseScheme).values()) )
+                            rseReadPath = urllib.parse.urlunparse(
+                                urllib.parse.urlparse( rseReadURL
+                                )._replace(scheme="", netloc="") )
+                        except:
+                            logging.warning("No SAM read path at RSE %s" %
+                                                                       rseName)
+                    #
+                    # check write operation is enabled:
+                    rseWritePath = None
+                    if ( rseProto['domains']['wan']['write'] > 0 ):
+                        #
+                        # get RSE path of SAM write area:
+                        try:
+                            rseWriteURL = next(iter( \
+                                rseClient.lfns2pfns(rseName,
+                                                  ["cms:/store/unmerged/SAM/"],
+                                                  protocol_domain="wan",
+                                                  operation="write",
+                                                  scheme=rseScheme).values() ))
+                            rseWritePath = urllib.parse.urlunparse(
+                                urllib.parse.urlparse( rseWriteURL
+                                )._replace(scheme="", netloc="") )
+                        except:
+                            logging.warning("No SAM write path at RSE %s" %
+                                                                       rseName)
+                    #
+                    rucioDict[rseName][rseScheme] = { 'hostname': rseHost,
+                                                      'port': rsePort,
+                                                      'wan': rseOper,
+                                                      'rpath': rseReadPath,
+                                                      'wpath': rseWritePath }
+            #
+            # convert to JSON string:
+            jsonStrng = json.dumps(rucioDict, indent=3)
+            #
+            # sanity check:
+            if ( len(jsonStrng) < 1024 ):
+                raise IOError("Rucio-RSE data failed sanity check")
+            #
+            # update cache:
+            try:
+                myFile = open("%s/Rucio.json_new" % VOFD_CACHE_DIR, 'w')
+                try:
+                    myFile.write(jsonStrng)
+                    renameFlag = True
+                except:
+                    renameFlag = False
+                finally:
+                    myFile.close()
+                    del myFile
+                if renameFlag:
+                    os.rename("%s/Rucio.json_new" % VOFD_CACHE_DIR,
+                        "%s/Rucio.json" % VOFD_CACHE_DIR)
+                    logging.info("   cache of Rucio-RSE data updated")
+                del renameFlag
+            except:
+                pass
+            #
+            del jsonStrng
+        except:
+            logging.error("Failed to fetch Rucio-RSE data")
+            try:
+                with open("%s/Rucio.json" % VOFD_CACHE_DIR, 'r') as myFile:
+                    myData = myFile.read()
+                    logging.warning("Using cached Rucio-RSE data")
+            except:
+                logging.critical("Failed to read cached Rucio-RSE data")
+                raise
+            #
+            rucioDict = json.loads( myData )
+            del myData
+
+
+        # loop over RSE-protocol dictionary:
+        for rseName in rucioDict:
+            #
+            # extract CMS sitename:
+            if ( len(rseName.split("_")) < 3 ):
+                # RSE name outside CMS naming convention:
+                continue
+            for i in range(len(rseName.split("_")), 2, -1):
+                rseSite = "_".join(rseName.split("_")[:i])
+                # KNU site kept T2* PhEDEx nodename when switching to Tier-3
+                if ( rseSite == "T2_KR_KNU" ):
+                    rseSite = "T3_KR_KNU"
+                if rseSite in siteDict:
+                    break
+                rseSite = None
+            if rseSite is None:
+                continue
+
+            # loop over protocols of RSE:
+            for rseProto in rucioDict[rseName]:
+                rseDict = rucioDict[rseName][rseProto]
+                rseHost = rseDict['hostname']
+                #
+                if (( rseHost == "cmseos-gridftp.fnal.gov" ) and
+                    ( rseSite == "T1_US_FNAL" )):
+                    continue
+                #
+                if ( rseProto == "srm" ):
+                    rseFlavour = "SRM"
+                elif ( rseProto == "gsiftp" ):
+                    rseFlavour="SRM"
+                elif ( rseProto == "root" ):
+                    rseFlavour="XRootD"
+                elif ( rseProto == "davs" ):
+                    rseFlavour="WebDAV"
+                elif ( rseProto == "https" ):
+                    rseFlavour="WebDAV"
+                #
+                if ( rseFlavour != "SRM"):
+                    # skip non SRMv2 for the time being
+                    continue
+                service = { 'category': "SE", 'hostname': rseHost,
+                            'flavour': rseFlavour,
+                            'endpoint': "%s:%d" % (rseHost, rseDict['port']) }
+                #
+                try:
+                    service['gridsite'] = host2grid[ (rseHost, "SE") ]
+                except KeyError:
+                    pass
+                #
+                if (( rseDict['rpath'] is not None ) and
+                    ( 'read' in rseDict['wan'] )):
+                    rseID = "RD"
+                    if ( 'third_party_copy' in rseDict['wan'] ):
+                        rseID += "3PCP"
+                    service['rpath'] = (rseID, rseDict['rpath'])
+                if (( rseDict['wpath'] is not None ) and
+                    ( 'write' in rseDict['wan'] )):
+                    rseID = "WR"
+                    if ( 'delete' in rseDict['wan'] ):
+                        rseID += "DEL"
+                    if ( 'third_party_copy' in rseDict['wan'] ):
+                        rseID += "3PCP"
+                    service['wpath'] = (rseID, rseDict['wpath'])
+
+                logging.debug("   site %s: hostname %s flavour %s" %
+                                                     (rseSite, rseHost, "SRM"))
+                logging.log(9, "      %s" % str(service))
+                #
+                try:
+                    if ( 'write' in rseDict['wan'] ):
+                        vofeedObj.add1service(timestamp, rseSite, service)
+                except:
+                    pass
+
+        return
+    # ####################################################################### #
 
 
 
@@ -1636,9 +1876,9 @@ if __name__ == '__main__':
     vofd_glideinWMSfactory(vofd, timestamp, hostDict)
 
 
-    # get SE information from PhEDEx:
-    # ===============================
-    vofd_phedex(vofd, timestamp, hostDict)
+    # get SE information from Rucio:
+    # ==============================
+    vofd_rucio(vofd, timestamp, emailDict, hostDict)
 
 
     # add extra xrootd/perfSONAR/test endpoints:
