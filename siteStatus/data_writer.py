@@ -1550,7 +1550,7 @@ def sswp_init():
     global glbTickets
     global glbSites
     global glbElements
-    URL_SSWB_BASE = 'http://test-cmssst.web.cern.ch/siteStatus/'
+    URL_SSWB_BASE = 'http://cmssst.web.cern.ch/siteStatus/'
     FILENAME_MSG = './message.txt'
 
     # configure the message logger:
