@@ -12,8 +12,7 @@ trap '(/bin/rm -f ${EXC_LOCK} ${TMP_FILE} ${ERR_FILE}) 1> /dev/null 2>&1' 0
 
 
 
-PLOT_DIR="/afs/cern.ch/user/c/cmssst/www/meet_plots"
-COPY_DIR="/eos/home-c/cmssst/www/meet_plots"
+PLOT_DIR="/eos/home-c/cmssst/www/meet_plots"
 EMAIL_ADDR="lammel@fnal.gov"
 if [ -z "${HOME}" ]; then
    HOME="/afs/cern.ch/user/c/cmssst"
@@ -170,7 +169,7 @@ WE_TIS=`/bin/date +'%s' -u -d "last Wednesday"`
 SLOT_STIS=`echo "${WE_TIS} - 172800" | /usr/bin/bc`
 SLOT_ETIS=`echo "${WE_TIS} + 432000" | /usr/bin/bc`
 SLOT_SITES='T1_DE_KIT T1_ES_PIC T1_IT_CNAF T1_FR_CCIN2P3 T1_UK_RAL T1_US_FNAL T1_RU_JINR T2_CH_CERN T2_.*'
-SLOT_URL='https://monit-grafana.cern.ch/render/d-solo/YcGYFOVWz/requested-cpu'
+SLOT_URL='https://monit-grafana.cern.ch/render/d-solo/requested-cpu/requested-cpu'
 SLOT_QRYR="orgId=11&from=${SLOT_STIS}000&to=${SLOT_ETIS}000&panelId=5&width=1024&height=768&tz=UTC&timeout=900&var-site="
 SLOT_QRYP="orgId=11&from=${SLOT_STIS}000&to=${SLOT_ETIS}000&panelId=4&width=1024&height=768&tz=UTC&timeout=900&var-site="
 #
@@ -295,6 +294,7 @@ if [ -f ${TMP_FILE} ]; then
    fi
    /bin/rm ${TMP_FILE}
 fi
+/usr/bin/chmod go+r ${PLOT_DIR}/*.png ${PLOT_DIR}/.time*
 # #############################################################################
 
 
@@ -329,17 +329,6 @@ fi
 PAST_WEEKS=`/usr/bin/awk 'BEGIN{tis=systime();for(pwk=6;pwk<=10;pwk+=1){wis=tis-pwk*7*24*60*60;print strftime("%Y.%U",wis)}}'`
 (cd ${PLOT_DIR}; /bin/rm -r ${PAST_WEEKS} 1>/dev/null 2>&1)
 PAST_WEEKS=""
-# #############################################################################
-
-
-
-# copy plots into secondary area:
-# -------------------------------
-if [ -e ${COPY_DIR} ]; then
-   echo "Copying plots into secondary area:"
-   /bin/cp -p ${PLOT_DIR}/*.png ${PLOT_DIR}/.time* ${COPY_DIR}
-   /usr/bin/chmod go+r ${COPY_DIR}/*.png ${COPY_DIR}/.time*
-fi
 # #############################################################################
 
 
