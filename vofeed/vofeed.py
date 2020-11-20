@@ -1553,7 +1553,7 @@ if __name__ == '__main__':
         # ########################################################### #
         # get xrootd, perfSONAR, and test endpoints missing from CRIC #
         # ########################################################### #
-        FILE_CMSSST_ENDPNT = "/afs/cern.ch/user/c/cmssst/www/site_info/site_endpoints.json"
+        FILE_CMSSST_ENDPNT = "/eos/home-c/cmssst/www/site_info/site_endpoints.json"
         URL_CMSSST_ENDPNT = "http://cmssst.web.cern.ch/cmssst/site_info/site_endpoints.json"
 
         # read CMSSST-endpoint file and fallback to URL in case of failure:
