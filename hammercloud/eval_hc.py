@@ -66,8 +66,8 @@ EVHC_BACKUP_DIR = "./junk"
 
 evhc_glbl_cmssites = []
     # list of CMS site names
-evhc_glbl_templates = { '93': {}, '94': {}, '95': {}, '96': {}, '97': {}, \
-                        '98': {}, '99': {}, '100': {}, '101': {} }
+evhc_glbl_templates = { '203': {}, '204': {}, '205': {}, '206': {}, \
+                        '207': {}, '208': {}, '209': {}, '210': {}, '211': {} }
     # dictionary: HC-id: {cmssites: ["", "", ...], jobs: True/Fales }
 evhc_glbl_jobcondor = []
     # list of dictionaries { 'time', 'site', 'status'}
