@@ -50,7 +50,7 @@ import pydoop.hdfs
 
 
 
-VOFEED_VERSION = "v2.01.00"
+VOFEED_VERSION = "v2.01.01"
 # ########################################################################### #
 
 
@@ -1091,6 +1091,10 @@ if __name__ == '__main__':
             {   'lbl': "UCSD",
                 'uri': "gfactory-2.opensciencegrid.org",
                 'prd': True
+            },
+            {   'lbl': "UCSDitb",
+                'uri': "gfactory-itb-1.opensciencegrid.org",
+                'prd':False
             },
             {   'lbl': "CERN",
                 'uri': "vocms0207.cern.ch",
