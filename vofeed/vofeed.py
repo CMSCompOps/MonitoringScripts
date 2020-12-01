@@ -50,7 +50,7 @@ import pydoop.hdfs
 
 
 
-VOFEED_VERSION = "v2.01.01"
+VOFEED_VERSION = "v2.01.02"
 # ########################################################################### #
 
 
@@ -1482,9 +1482,6 @@ if __name__ == '__main__':
                 continue
             for i in range(len(rseName.split("_")), 2, -1):
                 rseSite = "_".join(rseName.split("_")[:i])
-                # KNU site kept T2* PhEDEx nodename when switching to Tier-3
-                if ( rseSite == "T2_KR_KNU" ):
-                    rseSite = "T3_KR_KNU"
                 if rseSite in siteDict:
                     break
                 rseSite = None
