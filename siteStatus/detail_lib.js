@@ -196,62 +196,62 @@ function canvas_clicked(id, event) {
    if ( myMetric == "Downtime" ) {
       myStart = myOffset + ((myTarget + 2) * myPeriod);
       myBin = Math.trunc( myStart / 900 );
-      id.href = 'https://test-cmssst.web.cern.ch/cgi-bin' +
+      id.href = 'https://cmssst.web.cern.ch/cgi-bin' +
          '/log/down15min/' + myBin + '/' + mySitHst + '/*/day+0';
    } else if ( myMetric == "SAM1day" ) {
       myStart = myOffset + (myTarget * myPeriod) + (myPeriod/2);
       myBin = Math.trunc( myStart / 86400 );
-      id.href = 'https://test-cmssst.web.cern.ch/cgi-bin' +
+      id.href = 'https://cmssst.web.cern.ch/cgi-bin' +
          '/log/sam1day/' + myBin + '/' + mySitHst + '/*/0+0';
    } else if ( myMetric == "HC1day" ) {
       myStart = myOffset + (myTarget * myPeriod) + (myPeriod/2);
       myBin = Math.trunc( myStart / 86400 );
-      id.href = 'https://test-cmssst.web.cern.ch/cgi-bin' +
+      id.href = 'https://cmssst.web.cern.ch/cgi-bin' +
          '/log/hc1day/' + myBin + '/' + mySitHst + '/site/0+0';
    } else if ( myMetric == "FTS1day" ) {
       myStart = myOffset + (myTarget * myPeriod) + (myPeriod/2);
       myBin = Math.trunc( myStart / 86400 );
-      id.href = 'https://test-cmssst.web.cern.ch/cgi-bin' +
+      id.href = 'https://cmssst.web.cern.ch/cgi-bin' +
          '/log/links1day/' + myBin + '/' + mySitHst + '/*/0+0';
    } else if ( myMetric == "SR1day" ) {
       myStart = myOffset + (myTarget * myPeriod) + (myPeriod/2);
       myBin = Math.trunc( myStart / 86400 );
-      id.href = 'https://test-cmssst.web.cern.ch/cgi-bin' +
+      id.href = 'https://cmssst.web.cern.ch/cgi-bin' +
          '/log/sr1day/' + myBin + '/' + mySitHst + '/site/0+0';
    } else if ( myMetric.substring(4, 10) == "Status" ) {
       myStart = myOffset + ((myTarget + 2) * myPeriod);
       myBin = Math.trunc( myStart / 900 );
-      id.href = 'https://test-cmssst.web.cern.ch/cgi-bin' +
+      id.href = 'https://cmssst.web.cern.ch/cgi-bin' +
          '/log/sts15min/' + myBin + '/' + mySitHst + '/*/day+0';
    } else if ( myMetric == "manLifeStatus" ) {
       if ( mySecton == "today" ) {
-         id.href = 'https://test-cmssst.web.cern.ch/cgi-bin/set/LifeStatus/' +
+         id.href = 'https://cmssst.web.cern.ch/cgi-bin/set/LifeStatus/' +
             mySitHst;
       }
    } else if ( myMetric == "manProdStatus" ) {
       if ( mySecton == "today" ) {
-         id.href = 'https://test-cmssst.web.cern.ch/cgi-bin/set/ProdStatus/' +
+         id.href = 'https://cmssst.web.cern.ch/cgi-bin/set/ProdStatus/' +
             mySitHst;
       }
    } else if ( myMetric == "manCrabStatus" ) {
       if ( mySecton == "today" ) {
-         id.href = 'https://test-cmssst.web.cern.ch/cgi-bin/set/CrabStatus/' +
+         id.href = 'https://cmssst.web.cern.ch/cgi-bin/set/CrabStatus/' +
             mySitHst;
       }
    } else if ( myMetric == "SAMsite" ) {
       myStart = myOffset + (myTarget * myPeriod) + (myPeriod/2);
       myBin = Math.trunc( myStart / myPeriod );
-      id.href = 'https://test-cmssst.web.cern.ch/cgi-bin' +
+      id.href = 'https://cmssst.web.cern.ch/cgi-bin' +
          '/log/sam' + myTrailr + '/' + myBin + '/' + mySitHst + '/*/1+2';
    } else if ( myMetric == "HammerCloud" ) {
       myStart = myOffset + (myTarget * myPeriod) + (myPeriod/2);
       myBin = Math.trunc( myStart / myPeriod );
-      id.href = 'https://test-cmssst.web.cern.ch/cgi-bin' +
+      id.href = 'https://cmssst.web.cern.ch/cgi-bin' +
          '/log/hc' + myTrailr + '/' + myBin + '/' + mySitHst + '/*/1+2';
    } else if ( myMetric == "FTSsite" ) {
       myStart = myOffset + (myTarget * myPeriod) + (myPeriod/2);
       myBin = Math.trunc( myStart / myPeriod );
-      id.href = 'https://test-cmssst.web.cern.ch/cgi-bin' +
+      id.href = 'https://cmssst.web.cern.ch/cgi-bin' +
          '/log/fts' + myTrailr + '/' + myBin + '/' + mySitHst + '/*/1+2';
    } else if ( myMetric =="FTSsource" ) {
       myStart = myOffset + ( ( myTarget - 1 ) * myPeriod );

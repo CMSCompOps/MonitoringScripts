@@ -132,7 +132,7 @@ OVRD_FILE_PATH = {
     'CrabStatus':   "/eos/user/c/cmssst/www/override/CrabStatus.json",
     'SiteCapacity': "/eos/user/c/cmssst/www/capacity/SiteCapacity.json"
 }
-OVRD_CGIURL = "https://test-cmssst.web.cern.ch/cgi-bin/set"
+OVRD_CGIURL = "https://cmssst.web.cern.ch/cgi-bin/set"
 #
 OVRD_CACHE = "/eos/user/c/cmssst/www/cache"
 # ########################################################################### #

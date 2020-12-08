@@ -59,8 +59,7 @@ VRsr6hour:sam:21600:SiteReadiness 6 hours value ranking:
 VRsr1day:sam:86400:SiteReadiness 1 day value ranking:
 METRIC_SUPPORT_EOF
 #
-LOGSECTION_URL="https://cmssst.web.cern.ch/cmssst/cache"
-LOGSECTION_URL="https://test-cmssst.web.cern.ch/cache"
+LOGSECTION_URL="https://cmssst.web.cern.ch/cache"
 LOGSECTION_DIR="/eos/user/c/cmssst/www/cache"
 #
 KRB5_KEYTAB="/eos/user/c/cmssst/private/cmssstro.keytab"

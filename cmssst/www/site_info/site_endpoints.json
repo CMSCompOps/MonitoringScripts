@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "timestamp": 1582309022,
+    "timestamp": 1605881060,
     "desciption": {
       "site": "CMS site name",
       "type": "Type of endpoint",
@@ -114,7 +114,7 @@
     {
       "site": "T2_AT_Vienna",
       "type": "XROOTD",
-      "endpoint": "hephyse.oeaw.ac.at:11001",
+      "endpoint": "eos.grid.vbc.ac.at:1094",
       "usage": "production"
     },
     {
@@ -179,6 +179,12 @@
     },
     {
       "site": "T2_CN_Beijing",
+      "type": "SRMv2",
+      "endpoint": "ccsrm.ihep.ac.cn:2811",
+      "usage": "test"
+    },
+    {
+      "site": "T2_CN_Beijing",
       "type": "XROOTD",
       "endpoint": "cmsxrootd.ihep.ac.cn:1094",
       "usage": "production"
@@ -210,7 +216,7 @@
     {
       "site": "T2_DE_RWTH",
       "type": "XROOTD",
-      "endpoint": "grid-vo-cms.physik.rwth-aachen.de:1094",
+      "endpoint": "grid-dcache.physik.rwth-aachen.de:1094",
       "usage": "production"
     },
     {
@@ -436,12 +442,6 @@
       "usage": "production"
     },
     {
-      "site": "T2_PL_Warsaw",
-      "type": "XROOTD",
-      "endpoint": "se.grid.icm.edu.pl:11001",
-      "usage": "production"
-    },
-    {
       "site": "T2_PT_NCG_Lisbon",
       "type": "XROOTD",
       "endpoint": "xroot.ncg.ingrid.pt:1094",
@@ -540,56 +540,8 @@
     {
       "site": "T2_US_Caltech",
       "type": "XROOTD",
-      "endpoint": "transfer-1.ultralight.org:1094",
+      "endpoint": "xrootd.ultralight.org:1094",
       "usage": "production"
-    },
-    {
-      "site": "T2_US_Caltech",
-      "type": "XROOTD",
-      "endpoint": "transfer-2.ultralight.org:1094",
-      "usage": "test"
-    },
-    {
-      "site": "T2_US_Caltech",
-      "type": "XROOTD",
-      "endpoint": "transfer-4.ultralight.org:1094",
-      "usage": "test"
-    },
-    {
-      "site": "T2_US_Caltech",
-      "type": "XROOTD",
-      "endpoint": "transfer-5.ultralight.org:1094",
-      "usage": "test"
-    },
-    {
-      "site": "T2_US_Caltech",
-      "type": "XROOTD",
-      "endpoint": "transfer-6.ultralight.org:1094",
-      "usage": "test"
-    },
-    {
-      "site": "T2_US_Caltech",
-      "type": "XROOTD",
-      "endpoint": "transfer-7.ultralight.org:1094",
-      "usage": "test"
-    },
-    {
-      "site": "T2_US_Caltech",
-      "type": "XROOTD",
-      "endpoint": "transfer-8.ultralight.org:1094",
-      "usage": "test"
-    },
-    {
-      "site": "T2_US_Caltech",
-      "type": "XROOTD",
-      "endpoint": "transfer-9.ultralight.org:1094",
-      "usage": "test"
-    },
-    {
-      "site": "T2_US_Caltech",
-      "type": "XROOTD",
-      "endpoint": "transfer-10.ultralight.org:1094",
-      "usage": "test"
     },
     {
       "site": "T2_US_Florida",
@@ -690,7 +642,7 @@
     {
       "site": "T2_US_Vanderbilt",
       "type": "XROOTD",
-      "endpoint": "xrootd.accre.vanderbilt.edu:1094",
+      "endpoint": "xrootd-srv1.accre.vanderbilt.edu:1094",
       "usage": "production"
     },
     {
@@ -730,6 +682,12 @@
       "usage": "production"
     },
     {
+      "site": "T3_FR_IPNL",
+      "type": "XROOTD",
+      "endpoint": "lyoeos.in2p3.fr:1094",
+      "usage": "test"
+    },
+    {
       "site": "T3_IT_MIB",
       "type": "XROOTD",
       "endpoint": "storm.mib.infn.it:1094",
@@ -748,6 +706,12 @@
       "usage": "test"
     },
     {
+      "site": "T3_TW_NCU",
+      "type": "XROOTD",
+      "endpoint": "grid71.phy.ncu.edu.tw:1094",
+      "usage": "production"
+    },
+    {
       "site": "T3_TW_NTU_HEP",
       "type": "XROOTD",
       "endpoint": "ntugrid6.phys.ntu.edu.tw:11000",
@@ -763,6 +727,12 @@
       "site": "T3_US_Brown",
       "type": "XROOTD",
       "endpoint": "brux11.hep.brown.edu:1094",
+      "usage": "production"
+    },
+    {
+      "site": "T3_US_CMU",
+      "type": "XROOTD",
+      "endpoint": "cmsdata.phys.cmu.edu:1094",
       "usage": "production"
     },
     {
@@ -847,12 +817,6 @@
       "site": "T3_US_SDSC",
       "type": "SRMv2",
       "endpoint": "gordon-dm.sdsc.edu:2811",
-      "usage": "test"
-    },
-    {
-      "site": "T3_US_Vanderbilt_EC2",
-      "type": "SRMv2",
-      "endpoint": "gridftp-vanderbilt.sites.opensciencegrid.org:2814",
       "usage": "test"
     }
   ]

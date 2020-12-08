@@ -1417,7 +1417,7 @@ def lget_url4sam(inputString, cfg, tbin, name, clss):
     # ############################################################### #
     # enhance SAM 15 min results with hyperlink to the evaluation log #
     # ############################################################### #
-    LGET_LOG_URL = "https://test-cmssst.web.cern.ch/cgi-bin/log"
+    LGET_LOG_URL = "https://cmssst.web.cern.ch/cgi-bin/log"
     #
     myHTML = ""
 
@@ -2085,7 +2085,7 @@ def lget_url4sr(inputString, cfg, tbin, site):
     # ##################################################################### #
     # replace SR SAM,HC,FTS references with hyperlink to the evaluation log #
     # ##################################################################### #
-    LGET_LOG_URL = "https://test-cmssst.web.cern.ch/cgi-bin/log"
+    LGET_LOG_URL = "https://cmssst.web.cern.ch/cgi-bin/log"
     #
     myHTML = ""
 

@@ -146,7 +146,7 @@ once you click "Plot Site Ranking"!
       timeObj = new Date( timeStr );
       var aftrBins = Math.trunc( timeObj.getTime() / (mtrcPrd * 1000) ) -
          frstBin;
-      var cgiURL = 'https://test-cmssst.web.cern.ch/cgi-bin/log/' + mtrcName +
+      var cgiURL = 'https://cmssst.web.cern.ch/cgi-bin/log/' + mtrcName +
          '/' + frstBin + '/' + document.getElementById('RNKNG:SITE').value +
          '/' + mtrcType + '/0+' + aftrBins;
       document.getElementById('RNKNG').action = cgiURL;
