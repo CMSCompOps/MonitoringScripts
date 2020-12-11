@@ -783,7 +783,7 @@ def srhr_write_html(timestamp, statusDict):
     # write Site Readiness HTML report with relevant metric information #
     # ################################################################# #
     GGUS_URL = "https://ggus.eu/?mode=ticket_info&ticket_id=%s"
-    LOG_URL = "https://test-cmssst.web.cern.ch/cgi-bin/log/%s/%d/%s/%s/%s"
+    LOG_URL = "https://cmssst.web.cern.ch/cgi-bin/log/%s/%d/%s/%s/%s"
     # tickets:   0  1  2  3  4  5  6   7   8   9  10  11  12
     dbinSpace = [0, 2, 3, 5, 6, 7, 9, 10, 12, 13, 15, 16, 17]
     #
