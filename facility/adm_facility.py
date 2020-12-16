@@ -20,10 +20,18 @@
 #     "institute": "Fermi National Accelerator Laboratory",
 #     "location": "Batavia, Illinois, United States",
 #     "timezone": [ "-06:00", "America/Chicago" ],
-#     "latex": "Fermi National Accelerator Laboratory, Batavia, USA",
+#     "acknowledge": "Institut für Hochenergiephysik, Wien, Austria",
+#     "doi": "http://dx.doi.org/10.10000/100000000",
 #     "exec": "cms-US_FNAL-exec@cern.ch",
 #     "admin": "cms-US_FNAL-admin@cern.ch",
-#     "sites": [ { "site": "T1_US_FNAL" }, {"site": "T1_US_FNAL_Disk" } ],
+#     "sites": [ { "site": "T1_US_FNAL",
+#                  "acknowledge": "Fermi ...",
+#                  "doi": "http://dx.doi.org/10.10000/100000001" },
+#                { "site": "T2_FR_GRIF_LLR",
+#                  "subsites": [ { "subsite": "GRIF-LLR" },
+#                                { "subsite": "GRIF-LAL",
+#                                  "acknowledge": "Laboratoire de ...",
+#                                  "doi": "" } ] } ],
 #     "who": null,
 #     "when": null
 #   },
@@ -32,13 +40,16 @@
 #
 #
 #
-import os, sys, shutil
+import os, sys
+import pwd
+import shutil
 import io
 import fcntl
 import time, calendar
 import json
 import gzip
 import re
+import html
 import urllib.request, urllib.parse
 import http
 import argparse
@@ -52,13 +63,13 @@ os.environ["HADOOP_PREFIX"]   = "/usr/hdp/hadoop"
 
 
 
-ADMF_CGIURL = "https://test-cmssst.web.cern.ch/cgi-bin/set/FacilityInfo"
-#ADMF_CGIURL = "https://test-cmssst.web.cern.ch/cgi-bin/test.sh"
+ADMF_CGIURL = "https://cmssst.web.cern.ch/cgi-bin/set/FacilityInfo"
+#ADMF_CGIURL = "https://cmssst.web.cern.ch/cgi-bin/test.sh"
 #
-ADMF_FACILITY_JSON = "/eos/home-c/cmssst/www/facility/FacilityInfo.json"
+ADMF_FACILITY_JSON = "/eos/user/c/cmssst/www/facility/FacilityInfo.json"
 ADMF_ACKNWLDG_WORK = "/data/cmssst/MonitoringScripts/facility/"
-ADMF_ACKNWLDG_PUBL = "/eos/home-c/cmssst/www/facility/"
-ADMF_CACHE = "/eos/home-c/cmssst/www/cache/"
+ADMF_ACKNWLDG_PUBL = "/eos/user/c/cmssst/www/facility/"
+ADMF_CACHE = "/eos/user/c/cmssst/www/cache/"
 #ADMF_FACILITY_JSON = "./FacilityInfo.json"
 #ADMF_ACKNWLDG_WORK = "./junk/"
 #ADMF_ACKNWLDG_PUBL = "./"
@@ -339,7 +350,7 @@ def admf_read_jsonfile(filepath = None):
                 remainWait -= 0.250
                 continue
             #
-            with open(filepath, "rt") as myFile:
+            with open(filepath, mode="rt", encoding="utf-8") as myFile:
                 jsonString = myFile.read()
             #
             fcntl.lockf(lckFile, fcntl.LOCK_UN)
@@ -356,8 +367,9 @@ def admf_read_jsonfile(filepath = None):
     for entry in facilityList:
         if (( 'name' not in entry ) or ( 'institute' not in entry ) or
             ( 'location' not in entry ) or ( 'timezone' not in entry ) or
-            ( 'latex' not in entry ) or ( 'exec' not in entry ) or
-            ( 'admin' not in entry ) or ( 'sites' not in entry )):
+            ( 'acknowledge' not in entry ) or ( 'doi' not in entry ) or
+            ( 'exec' not in entry ) or ( 'admin' not in entry ) or
+            ( 'sites' not in entry )):
                 logging.error("Missing key(s) in facility entry %s in %s" %
                                                         (str(entry), filepath))
                 continue
@@ -370,10 +382,12 @@ def admf_read_jsonfile(filepath = None):
                 logging.error("Illegal sitename in entry %s of %s in %s" %
                           (str(entry['sites'][indx]), entry['name'], filepath))
                 del entry['sites'][indx]
+        if entry['doi'] is None:
+            entry['doi'] = ""
         if ( entry['exec'] == "" ):
-            entry['exec'] = None
+            entry['exec'] = "cms-%s-exec@cern.ch" % entry['name']
         if ( entry['admin'] == "" ):
-            entry['admin'] = None
+            entry['admin'] = "cms-%s-admin@cern.ch" % entry['name']
         if 'who' not in entry:
             entry['who'] = ""
         if 'when' not in entry:
@@ -389,7 +403,6 @@ def admf_read_jsonfile(filepath = None):
 def admf_compose_jsonstring(facilityList):
     """compose JSON string from list of facilities"""
     # ####################################################################### #
-    latexTransTable = { 34: "\\\"", 92: "\\\\" }
 
     jsonString = "["
     commaFlag = False
@@ -403,15 +416,19 @@ def admf_compose_jsonstring(facilityList):
                         "   \"institute\": \"%s\",\n" +
                         "   \"location\": \"%s\",\n" +
                         "   \"timezone\": [ \"%s\", \"%s\" ],\n" +
-                        "   \"latex\": \"%s\",\n") %
+                        "   \"acknowledge\": \"%s\",\n") %
                        (entry['name'], entry['institute'], entry['location'],
                         entry['timezone'][0], entry['timezone'][1],
-                        entry['latex'].translate( latexTransTable )))
-        if (( entry['exec'] is None ) or ( entry['exec'] == "" )):
+                        entry['acknowledge']))
+        if ( entry['doi'] is None ):
+            jsonString += ("   \"doi\": \"\",\n")
+        else:
+            jsonString += ("   \"doi\": \"%s\",\n" % entry['doi'])
+        if ( entry['exec'] is None ):
             jsonString += ("   \"exec\": null,\n")
         else:
             jsonString += ("   \"exec\": \"%s\",\n" % entry['exec'])
-        if (( entry['admin'] is None ) or ( entry['admin'] == "" )):
+        if ( entry['admin'] is None ):
             jsonString += ("   \"admin\": null,\n")
         else:
             jsonString += ("   \"admin\": \"%s\",\n" % entry['admin'])
@@ -425,9 +442,15 @@ def admf_compose_jsonstring(facilityList):
             else:
                 jsonString += ("\n     {\n       \"site\": \"%s\"" %
                                                              siteEntry['site'])
-            if ( 'latex' in siteEntry ):
-                jsonString += (",\n       \"latex\": \"%s\"" %
-                                 siteEntry['latex'].translate(latexTransTable))
+            if ( 'acknowledge' in siteEntry ):
+                jsonString += (",\n       \"acknowledge\": \"%s\"" %
+                                                      siteEntry['acknowledge'])
+                if (( 'doi' not in siteEntry ) or
+                    ( siteEntry['doi'] is None )):
+                    jsonString += (",\n       \"doi\": \"\"")
+                else:
+                    jsonString += (",\n       \"doi\": \"%s\"" %
+                                                              siteEntry['doi'])
             if ( 'subsites' in siteEntry ):
                 commaSubsiteFlag = False
                 jsonString += (",\n       \"subsites\": [")
@@ -438,9 +461,15 @@ def admf_compose_jsonstring(facilityList):
                     else:
                         jsonString += (("\n         {\n           \"subsite" +
                                        "\": \"%s\"") % subsiteEntry['subsite'])
-                    if ( 'latex' in subsiteEntry ):
-                        jsonString += (",\n           \"latex\": \"%s\"" %
-                              subsiteEntry['latex'].translate(latexTransTable))
+                    if ( 'acknowledge' in subsiteEntry ):
+                        jsonString += (",\n           \"acknowledge\": \"%s\""
+                                                 % subsiteEntry['acknowledge'])
+                        if (( 'doi' not in subsiteEntry ) or
+                            ( subsiteEntry['doi'] is None )):
+                            jsonString += (",\n           \"doi\": \"\"")
+                        else:
+                            jsonString += (",\n           \"doi\": \"%s\"" %
+                                                           subsiteEntry['doi'])
                     jsonString += ("\n         }")
                     commaSubsiteFlag = True
                 jsonString += ("\n       ]")
@@ -448,14 +477,14 @@ def admf_compose_jsonstring(facilityList):
             commaSiteFlag = True
         jsonString += "\n   ],\n"
         #
-        if entry['who'] is not None:
-            jsonString += ("   \"who\": \"%s\",\n" % entry['who'])
-        else:
+        if (( entry['who'] is None ) or ( entry['who'] == "" )):
             jsonString += ("   \"who\": null,\n")
-        if entry['when'] is not None:
-            jsonString += ("   \"when\": \"%s\"\n }" % entry['when'])
         else:
+            jsonString += ("   \"who\": \"%s\",\n" % entry['who'])
+        if (( entry['when'] is None ) or ( entry['when'] == "" )):
             jsonString += ("   \"when\": null\n }")
+        else:
+            jsonString += ("   \"when\": \"%s\"\n }" % entry['when'])
         commaFlag = True
     jsonString += "\n]\n"
     #
@@ -467,8 +496,8 @@ def admf_compose_jsonstring(facilityList):
 def admf_update_jsonfile(entry, keepKeyList, filepath = None):
     """update the facility file with a facility entry"""
     # ###################################################################### #
-    # name, institute, location, timezone, latex, exec, admin, and sites are #
-    # mandatory keys in the dictionary entry.                                #
+    # name, institute, location, timezone, acknowledge, exec, admin, and     #
+    # sites are mandatory keys in the dictionary entry.                      #
     # ###################################################################### #
     if filepath is None:
         filepath = ADMF_FACILITY_JSON
@@ -482,8 +511,9 @@ def admf_update_jsonfile(entry, keepKeyList, filepath = None):
 
     if (( 'name' not in entry ) or ( 'institute' not in entry ) or
         ( 'location' not in entry ) or ( 'timezone' not in entry ) or
-        ( 'latex' not in entry ) or ( 'exec' not in entry ) or
-        ( 'admin' not in entry ) or ( 'sites' not in entry )):
+        ( 'acknowledge' not in entry ) or ( 'doi' not in entry ) or
+        ( 'exec' not in entry ) or ( 'admin' not in entry ) or
+        ( 'sites' not in entry )):
             logging.error("Missing key(s) in facility entry %s for %s" %
                                                         (str(entry), filepath))
             return {}
@@ -499,10 +529,7 @@ def admf_update_jsonfile(entry, keepKeyList, filepath = None):
     try:
         who = entry['who']
     except KeyError:
-        try:
-            who = os.environ['ADFS_LOGIN']
-        except KeyError:
-            who = os.getlogin()
+        who = pwd.getpwuid(os.getuid())[0]
     try:
         when = entry['when']
     except KeyError:
@@ -526,7 +553,7 @@ def admf_update_jsonfile(entry, keepKeyList, filepath = None):
             #
             #
             try:
-                with open(filepath, "r+t") as myFile:
+                with open(filepath, mode="r+t", encoding="utf-8") as myFile:
                     #
                     jsonString = myFile.read()
                     #
@@ -538,6 +565,22 @@ def admf_update_jsonfile(entry, keepKeyList, filepath = None):
                         if ( fclty['name'] == facility ):
                             oldEntry = fclty
                             break
+                    # copy old site 'acknowledge', 'doi', and 'subsites' over:
+                    for mySite in entry['sites']:
+                        # search for old site dictionary and copy:
+                        oldSite = { 'site': None }
+                        for oldSite in oldEntry['sites']:
+                            if ( mySite['site'] == oldSite['site'] ):
+                                break;
+                        if ( mySite['site'] == oldSite['site'] ):
+                            if 'acknowledge' in oldSite:
+                                mySite['acknowledge'] = oldSite['acknowledge']
+                                if 'doi' in oldSite:
+                                    mySite['doi'] = oldSite['doi']
+                                else:
+                                    mySite['doi'] = None
+                            if 'subsites' in oldSite:
+                                mySite['subsites'] = oldSite['subsites']
                     for key in keepKeyList:
                          entry[key] = oldEntry[key]
                     for key in entry:
@@ -600,8 +643,8 @@ def admf_append_log(changeDict, filepath = None):
                                                     os.path.basename(filepath))
 
     facility = changeDict['name']
-    who = changeDict['who']
-    when  = changeDict['when']
+    who = str( changeDict['who'] )
+    when  = str( changeDict['when'] )
     #
     del changeDict['name']
     del changeDict['who']
@@ -630,8 +673,6 @@ def admf_compose_json(facilityDict, time15bin):
     # ############################################################# #
     # compose a JSON string from the facilities dictionary provided #
     # ############################################################# #
-    latexTransTable = { 34: "\\\"", 92: "\\\\" }
-
 
     # convert facility dictionary into JSON document array string:
     # ============================================================
@@ -653,6 +694,14 @@ def admf_compose_json(facilityDict, time15bin):
             jsonString += hdrString
         else:
             jsonString += hdrString[1:]
+        if ( myEntry['acknowledge'] is None ):
+            myAcknowledge = ""
+        else:
+            myAcknowledge = myEntry['acknowledge']
+        if ( myEntry['doi'] is None ):
+            myDoi = ""
+        else:
+            myDoi = myEntry['doi']
         if ( myEntry['exec'] is None ):
             myExec = ""
         else:
@@ -665,14 +714,14 @@ def admf_compose_json(facilityDict, time15bin):
                         "      \"institute\": \"%s\",\n" +
                         "      \"location\": \"%s\",\n" +
                         "      \"timezone\": [ \"%s\", \"%s\" ],\n" +
-                        "      \"latex\": \"%s\",\n" +
+                        "      \"acknowledge\": \"%s\",\n" +
+                        "      \"doi\": \"%s\",\n" +
                         "      \"exec\": \"%s\",\n" +
                         "      \"admin\": \"%s\",\n") %
                        (myEntry['name'], myEntry['institute'],
                         myEntry['location'],
                         myEntry['timezone'][0], myEntry['timezone'][1],
-                        myEntry['latex'].translate( latexTransTable ),
-                        myExec, myAdmin))
+                        myEntry['acknowledge'], myDoi, myExec, myAdmin))
         #
         commaSiteFlag = False
         jsonString += "      \"sites\": ["
@@ -683,9 +732,15 @@ def admf_compose_json(facilityDict, time15bin):
             else:
                 jsonString += ("\n         {\n            \"site\": \"%s\"" %
                                                                 mySite['site'])
-            if ( 'latex' in siteEntry ):
-                jsonString += (",\n            \"latex\": \"%s\"" %
-                                    mySite['latex'].translate(latexTransTable))
+            if ( 'acknowledge' in mySite ):
+                jsonString += (",\n            \"acknowledge\": \"%s\"" %
+                                                         mySite['acknowledge'])
+                if (( 'doi' not in mySite ) or
+                    ( mySite['doi'] is None )):
+                    jsonString += (",\n            \"doi\": \"\"")
+                else:
+                    jsonString += (",\n            \"doi\": \"%s\"" %
+                                                                 mySite['doi'])
             if ( 'subsites' in mySite ):
                 commaSubsiteFlag = False
                 jsonString += ",\n            \"subsites\": ["
@@ -698,10 +753,16 @@ def admf_compose_json(facilityDict, time15bin):
                         jsonString += (("\n               {\n               " +
                                         "   \"subsite\": \"%s\"") %
                                                           mySubsite['subsite'])
-                    if ( 'latex' in mySubsite ):
-                        jsonString += ((",\n                  \"latex\": \"" +
-                                        "%s\"") %
-                                 mySubsite['latex'].translate(latexTransTable))
+                    if ( 'acknowledge' in mySubsite ):
+                        jsonString += ((",\n                  \"acknowledge" +
+                                        "\": \"%s\"") %
+                                                      mySubsite['acknowledge'])
+                        if (( 'doi' not in mySubsite ) or
+                            ( mySubsite['doi'] is None )):
+                            jsonString += (",\n                  \"doi\": \"\"")
+                        else:
+                            jsonString += ((",\n                  \"doi\": " +
+                                                  "\"%s\"") % mySubsite['doi'])
                     jsonString += "\n               }"
                     commaSubsiteFlag = True
                 jsonString += "\n            ]"
@@ -709,14 +770,14 @@ def admf_compose_json(facilityDict, time15bin):
             commaSiteFlag = True
         jsonString += "\n      ],\n"
         #
-        if myEntry['who'] is not None:
+        if myEntry['who'] is None:
+            jsonString += ("      \"who\": \"\",\n")
+        else:
             jsonString += ("      \"who\": \"%s\",\n" % myEntry['who'])
+        if myEntry['when'] is None:
+            jsonString += ("      \"when\": \"\"\n   }\n }")
         else:
-            jsonString += ("      \"who\": null,\n")
-        if myEntry['when'] is not None:
             jsonString += ("      \"when\": \"%s\"\n }" % myEntry['when'])
-        else:
-            jsonString += ("      \"when\": null\n   }\n }")
         commaFlag = True
     jsonString += "\n]\n"
 
@@ -729,8 +790,8 @@ def admf_monit_upload(facilityDict, time15bin):
     # ################################################################# #
     # upload FacilityInfo information as JSON metric documents to MonIT #
     # ################################################################# #
-    MONIT_URL = "http://monit-metrics.cern.ch:10012/"
-    #MONIT_URL = "http://fail.cern.ch:10001/"
+    #MONIT_URL = "http://monit-metrics.cern.ch:10012/"
+    MONIT_URL = "http://fail.cern.ch:10001/"
     MONIT_HDR = {'Content-Type': "application/json; charset=UTF-8"}
     #
     logging.info("Composing FacilityInfo JSON array and uploading to MonIT")
@@ -744,7 +805,7 @@ def admf_monit_upload(facilityDict, time15bin):
         return False
     cnt_docs = jsonString.count("\"producer\": \"cmssst\"")
     #
-    #jsonString = jsonString.replace("ssbmetric", "metrictest")
+    jsonString = jsonString.replace("ssbmetric", "metrictest")
 
 
     # upload string with JSON document array to MonIT/HDFS:
@@ -752,12 +813,12 @@ def admf_monit_upload(facilityDict, time15bin):
     docs = json.loads(jsonString)
     ndocs = len(docs)
     successFlag = True
-    for myOffset in range(0, ndocs, 4096):
+    for myOffset in range(0, ndocs, 1024):
         if ( myOffset > 0 ):
             # give importer time to process documents
             time.sleep(1.500)
         # MonIT upload channel can handle at most 10,000 docs at once
-        dataString = json.dumps( docs[myOffset:min(ndocs,myOffset+4096)] )
+        dataString = json.dumps( docs[myOffset:min(ndocs,myOffset+1024)] )
         #
         try:
             # MonIT needs a document array and without newline characters:
@@ -768,13 +829,13 @@ def admf_monit_upload(facilityDict, time15bin):
             if ( responseObj.status != http.HTTPStatus.OK ):
                 logging.error(("Failed to upload JSON [%d:%d] string to MonI" +
                                "T, %d \"%s\"") %
-                              (myOffset, min(ndocs,myOffset+4096),
+                              (myOffset, min(ndocs,myOffset+1024),
                                responseObj.status, responseObj.reason))
                 successFlag = False
             responseObj.close()
         except urllib.error.URLError as excptn:
             logging.error("Failed to upload JSON [%d:%d], %s" %
-                             (myOffset, min(ndocs,myOffset+4096), str(excptn)))
+                             (myOffset, min(ndocs,myOffset+1024), str(excptn)))
             successFlag = False
     del docs
 
@@ -1100,7 +1161,7 @@ def admf_grafana_jobmon(firstTIS, limitTIS, siteDict, fsssDict):
     #       have to aggregate over the tags that are not of interest and sum  #
     #       the product of number-of-cores and usage for each site.           #
     # ####################################################################### #
-    URL_GRAFANA = "https://monit-grafana.cern.ch/api/datasources/proxy/9475/_msearch"
+    URL_GRAFANA = "https://monit-grafana.cern.ch/api/datasources/proxy/9582/_msearch"
     HDR_GRAFANA = {'Authorization': "Bearer eyJrIjoiZWRnWXc1bUZWS0kwbWExN011TGNTN2I2S1JpZFFtTWYiLCJuIjoiY21zLXNzYiIsImlkIjoxMX0=", 'Content-Type': "application/json; charset=UTF-8", 'Accept': "application/json"}
     #
     first15m = int( firstTIS / 86400 ) * 96
@@ -1117,8 +1178,8 @@ def admf_grafana_jobmon(firstTIS, limitTIS, siteDict, fsssDict):
 
     # prepare Lucene ElasticSearch query:
     # ===================================
-    queryString = ("\"search_type\":\"query_then_fetch\",\"ignore_unavailabl" +
-                   "e\":true,\"index\":[\"monit_prod_condor_agg_metric*\"]}" +
+    queryString = ("{\"search_type\":\"query_then_fetch\",\"ignore_unavailab" +
+                   "le\":true,\"index\":[\"monit_prod_condor_agg_metric*\"]}" +
                    "\n{\"query\":{\"bool\":{\"must\":[{\"match_phrase\":{\"d" +
                    "ata.Status\":\"Running\"}}],\"filter\":{\"range\":{\"met" +
                    "adata.timestamp\":{\"gte\":%d,\"lt\":%d,\"format\":\"epo" +
@@ -1216,114 +1277,214 @@ def admf_grafana_jobmon(firstTIS, limitTIS, siteDict, fsssDict):
 
 
 def admf_write_acknowledgement(quarterString, tupleList, filepath = None):
-    """write computing acknowledgement LaTex file"""
+    """write computing acknowledgement spreadsheet file"""
+    import xlwt
     # ####################################################################### #
-    ADMF_QRTR_NAMES = {'1': "first", '2': "second", '3': "third", '4': "fourth"}
-    year, quarter = quarterString.split("q")
+    doiRegex = re.compile(r"(?:[A-Za-z0-9\-./:]+/)*(10.\d{4,9}/[-._;()/:A-Z0-9]+)$")
+    #
     if filepath is None:
-        filepath = ADMF_ACKNWLDG_WORK + "compack_" + quarterString + ".tex"
-    logging.info("Writing LaTex acknowledgement file for %s, %s" %
-                                                     (quarterString, filepath))
-
-    latexStrng = ("%LaTeX\n\\documentclass[12pt]{article}\n\\usepackage{wrap" +
-                  "fig}\n\\usepackage{graphicx}\n%\n\\textheight 648pt\n\\to" +
-                  "pmargin 16pt\n\\oddsidemargin -8pt\n\\textwidth 480pt\n%" +
-                  "\n\\begin{document}\n\\pagestyle{empty}\n\n\\begin{wrapfi" +
-                  "gure}[3]{r}{0.16\\textwidth}\n   \\centering\n   \\includ" +
-                  "egraphics[width=0.16\\textwidth]{cms_color.eps}\n\\end{wr" +
-                  "apfigure}\n\n\\hspace{1 em}\\\\\n\n{\\LARGE \\bf \\noinde" +
-                  "nt CMS Computing Acknowledgements}\\\\\n\n\\vspace{10 ex}" +
-                  "\n\n\\noindent\n")
-    latexStrng += ("The Compact Muon Solenoid (CMS) experiment is a truly in" +
-                   "ternational\nendeavour. During operation of the Large Ha" +
-                   "dron Collider (LHC) CMS\nrecords close to one hundred TB" +
-                   "ytes per day. The collision data need\nto be processed t" +
-                   "o reconstruct physics quantities, detector responses\nne" +
-                   "ed to be simulated, and all those data analysed. Algorth" +
-                   "ms are\nsteadily improved and shutdown periods of the LH" +
-                   "C used to reprocess\nand reanalyse existing data. CMS us" +
-                   "es grid technologies to accomplish\nthese very CPU-inten" +
-                   "sive activities. The distributed computing\ninfrastructu" +
-                   "re of CMS encompasses over 60 computing centers around\n" +
-                   "the world. Many resources are pledged as part of the Wor" +
-                   "ldwide LHC\nComputing Grid (WLCG) project. Additional re" +
-                   "sources of the European\nGrid Infrastructure (EGI) and O" +
-                   "pen Science Grid (OSG) organizations\nare contributed be" +
-                   "yond the pledge or used opportunistically by CMS.\n\nWe " +
-                   "thank all data centers, institutes, universities, and re" +
-                   "source\nproviders for their support! The organizations b" +
-                   "elow have contributed\nsignificantly to the CMS computin" +
-                   "g grid in the %s quarter of %s.\n") % \
-                                               (ADMF_QRTR_NAMES[quarter], year)
-
-    latexStrng += "\n\\vspace{4 ex}\n\n{\\parindent 0pt"
-    prevCountry = None
-    for myTuple in sorted( tupleList ):
-        if (( prevCountry is None ) or ( prevCountry == myTuple[0] )):
-            latexStrng += ("\n%s\\\\" % myTuple[1])
-        else:
-            latexStrng += ("[0.5 ex]\n%s\\\\" % myTuple[1])
-        prevCountry = myTuple[0]
-    latexStrng += "\n}\n\n\\end{document}\n"
+        filepath = ADMF_ACKNWLDG_WORK + "compack_" + quarterString + ".xls"
+    #
+    pubpath = ADMF_ACKNWLDG_PUBL + os.path.basename(filepath)
+    #
+    logging.info("Generating Acknowledgement spreadsheet for %s, %s" %
+                                                      (quarterString, pubpath))
 
 
-    with open(filepath, "wt") as myFile:
-        myFile.write( latexStrng )
+    # generate Exel spreadsheet file:
+    # ===============================
+    myWorkbook = xlwt.Workbook(encoding="utf-8")
+    mySheet = myWorkbook.add_sheet("compack_" + quarterString)
+
+    myList = sorted( tupleList,
+                     key=lambda k: [k[0].casefold(), k[1].casefold()] )
+    mxName = 0
+    for myRow in range( len(myList) ):
+        mxName = max( mxName, len(myList[myRow][1]) )
+        mySheet.write(myRow, 0, myList[myRow][1])
+        mySheet.write(myRow, 1, myList[myRow][0])
+        if myList[myRow][2] is not None:
+            matchObj = doiRegex.match( myList[myRow][2] )
+            if ( matchObj is not None ):
+                mySheet.write(myRow, 2, matchObj[1])
+
+    myColumn = mySheet.col(0)
+    myColumn.width = round( 256 * mxName * 0.90 )
+    myColumn = mySheet.col(1)
+    myColumn.width = round( 256 * 24 * 0.90 )
+    myColumn = mySheet.col(2)
+    myColumn.width = 256 * 32
+
+    myWorkbook.save(filepath)
 
 
-    logging.log(25, "LaTex acknowledgement file written with %d facilities" %
-                                                                len(tupleList))
+    # publish Exel file:
+    # ==================
+    shutil.copyfile(filepath, pubpath)
+
+
+    mySize = os.stat(pubpath).st_size
+    logging.log(25, ("Acknowledgement spreadsheet generated, %d Entries, %d " +
+                     "Bytes") % (len(myList), mySize))
     return
 # ########################################################################### #
 
 
 
-def admf_latex_acknowledgement(quarterString, filepath = None):
-    """run latex on a the acknowledgement file and generate a PDF file"""
+def admf_auth_cern_sso():
     # ####################################################################### #
-    if filepath is None:
-        filepath = ADMF_ACKNWLDG_WORK + "compack_" + quarterString + ".tex"
-    if ( filepath[-4:] != ".tex" ):
-        raise ValueError("Illegal LaTex filename, \"%s\"" % filepath)
+    # function to get CGI access information at CERN                          #
+    #          returns a dictionary {'username':, 'fullname':, 'egroups': }   #
+    # ####################################################################### #
     #
-    workdir = os.path.dirname(filepath)
-    if ( workdir == "" ):
-        workdir = "./"
-    filename = os.path.basename(filepath)
-    dvipath = filepath[:-3] + "dvi"
-    pdfpath = filepath[:-3] + "pdf"
-    pubpath = ADMF_ACKNWLDG_PUBL + os.path.basename(pdfpath)
+    authDict = {'username': "unknown", 'fullname': "Not Known", 'egroups': []}
+
+
+    # ADFS (old SSO) e-group list:
+    try:
+        myUser = os.environ['ADFS_LOGIN']
+        authDict['username'] = myUser
+        #
+        myName = os.environ['ADFS_FULLNAME']
+        authDict['fullname'] = myName
+        #
+        myGroup = os.environ['ADFS_GROUP']
+        authDict['egroups'] = [e for e in myGroup.split(";") if ( e != "" ) ]
+        #
+        logging.info("CGI access by: %s / \"%s\" member of %s" %
+                                   (authDict['username'], authDict['fullname'],
+                                                     str(authDict['egroups'])))
+        return authDict
+    except KeyError:
+        try:
+            myUser = os.environ['OIDC_CLAIM_sub']
+            authDict['username'] = myUser
+            #
+            myName = os.environ['OIDC_CLAIM_name']
+            authDict['fullname'] = myName
+        except KeyError:
+            try:
+                myUser = os.environ['REMOTE_USER']
+                authDict['username'] = myUser.split("@")[0]
+                #
+                authDict['fullname'] = " ".join(myUser.split("@")[0:2])
+            except KeyError:
+                logging.error("Failed to identify username of executing CGI")
+                #
+                logging.info("CGI access by: %s / \"%s\" member of %s" %
+                                   (authDict['username'], authDict['fullname'],
+                                                     str(authDict['egroups'])))
+                return authDict
+
+
+    # OIDC (new SSO) e-group list:
     #
-    logging.info("Generating PDF file from LaTeX file, %s" % filepath)
+    # acquire API access token:
+    ADMF_AT_URL = "https://auth.cern.ch/auth/realms/cern/api-access/token"
+    ADMF_AT_HDR = {'Content-Type': "application/x-www-form-urlencoded"}
+    ADMF_AT_DATA = {'grant_type': "client_credentials",
+                    'client_id': "cmssst_cgi",
+                    'client_secret': "XXXXXXXX-XXXXXXXXX-XXXX-XXXXXXXXXXXX",
+                    'audience': "authorization-service-api"}
+    try:
+        requestObj = urllib.request.Request(ADMF_AT_URL,
+                         data=urllib.parse.urlencode(ADMF_AT_DATA).encode(),
+                         headers=ADMF_AT_HDR, method="POST")
+        with urllib.request.urlopen( requestObj, timeout=90 ) as urlHndl:
+            myCharset = urlHndl.headers.get_content_charset()
+            if myCharset is None:
+                myCharset = "utf-8"
+            myData = urlHndl.read().decode( myCharset )
+            del(myCharset)
+    except urllib.error.URLError as excptn:
+        logging.error(("Failed to access CERN Authorization Service access t" +
+                       "oken API URL, %s") % str(excptn))
+        #
+        logging.info("CGI access by: %s / \"%s\" member of %s" %
+                                   (authDict['username'], authDict['fullname'],
+                                                     str(authDict['egroups'])))
+        return authDict
+    try:
+        apiToken = json.loads( myData )['access_token']
+    except (json.JSONDecodeError, KeyError) as excptn:
+        logging.error("Failed to decode access token, %s" % str(excptn))
+        #
+        logging.info("CGI access by: %s / \"%s\" member of %s" %
+                                   (authDict['username'], authDict['fullname'],
+                                                     str(authDict['egroups'])))
+        return authDict
+    #
+    # get user id:
+    ADMF_ID_URL = "https://authorization-service-api.web.cern.ch/api/v1.0/Identity"
+    ADMF_ID_QRY = {'filter': "upn:" + myUser}
+    ADMF_ID_HDR = {'Accept': "application/json",
+                   'Authorization': "Bearer " + apiToken}
+    try:
+        getURL = ADMF_ID_URL + "?" + urllib.parse.urlencode(ADMF_ID_QRY)
+        requestObj = urllib.request.Request(getURL,
+                         headers=ADMF_ID_HDR, method="GET")
+        with urllib.request.urlopen( requestObj, timeout=90 ) as urlHndl:
+            myCharset = urlHndl.headers.get_content_charset()
+            if myCharset is None:
+                myCharset = "utf-8"
+            myData = urlHndl.read().decode( myCharset )
+            del(myCharset)
+    except urllib.error.URLError as excptn:
+        logging.error(("Failed to access CERN Authorization Service identity" +
+                       " API URL, %s") % str(excptn))
+        #
+        logging.info("CGI access by: %s / \"%s\" member of %s" %
+                                   (authDict['username'], authDict['fullname'],
+                                                     str(authDict['egroups'])))
+        return authDict
+    try:
+        userId = json.loads( myData )['data'][0]['id']
+    except (json.JSONDecodeError, KeyError, IndexError) as excptn:
+        logging.error("Failed to decode user identity, %s" % str(excptn))
+        #
+        logging.info("CGI access by: %s / \"%s\" member of %s" %
+                                   (authDict['username'], authDict['fullname'],
+                                                     str(authDict['egroups'])))
+        return authDict
+    #
+    # get user groups:
+    ADMF_GRP_URL = "https://authorization-service-api.web.cern.ch/api/v1.0/Identity/" + userId + "/groups"
+    ADMF_GRP_QRY = {'recursive': "false" }
+    ADMF_GRP_HDR = {'Accept': "application/json",
+                   'Authorization': "Bearer " + apiToken}
+    try:
+        getURL = ADMF_GRP_URL + "?" + urllib.parse.urlencode(ADMF_GRP_QRY)
+        requestObj = urllib.request.Request(getURL,
+                         headers=ADMF_GRP_HDR, method="GET")
+        with urllib.request.urlopen( requestObj, timeout=90 ) as urlHndl:
+            myCharset = urlHndl.headers.get_content_charset()
+            if myCharset is None:
+                myCharset = "utf-8"
+            myData = urlHndl.read().decode( myCharset )
+            del(myCharset)
+    except urllib.error.URLError as excptn:
+        logging.error(("Failed to access CERN Authorization Service groups A" +
+                       "PI URL, %s") % str(excptn))
+        #
+        logging.info("CGI access by: %s / \"%s\" member of %s" %
+                                   (authDict['username'], authDict['fullname'],
+                                                     str(authDict['egroups'])))
+        return authDict
+    try:
+        authDict['egroups'] = [ e['groupIdentifier'] for e in \
+                                                 json.loads( myData )['data'] ]
+    except (json.JSONDecodeError, KeyError, IndexError) as excptn:
+        logging.error("Failed to decode e-group list, %s" % str(excptn))
+        #
+        logging.info("CGI access by: %s / \"%s\" member of %s" %
+                                   (authDict['username'], authDict['fullname'],
+                                                     str(authDict['egroups'])))
+        return authDict
 
 
-    # generate DVI file:
-    # ==================
-    myRC = os.system("cd %s; /usr/bin/latex %s 1>/dev/null" %
-                                                           (workdir, filename))
-    if ( myRC != 0 ):
-        logging.error("First LaTeX run failed with rc=%d" % myRC)
-    myRC = os.system("cd %s; /usr/bin/latex %s 1>/dev/null" %
-                                                           (workdir, filename))
-    if ( myRC != 0 ):
-        logging.error("Second LaTeX run failed with rc=%d" % myRC)
-
-
-    # generate PDF file:
-    # ==================
-    myRC = os.system("/usr/bin/dvipdf %s %s 1>/dev/null" % (dvipath, pdfpath))
-    if ( myRC != 0 ):
-        logging.error("DVI to PDF conversion failed with rc=%d" % myRC)
-
-
-    # publish PDF file:
-    # =================
-    shutil.copyfile(pdfpath, pubpath)
-
-
-    mySize = os.stat(pubpath).st_size
-    logging.log(25, "PDF file generated, %d Bytes, %s" % (mySize, pubpath))
-    return
+    logging.info("CGI access by: %s / \"%s\" member of %s" %
+        (authDict['username'], authDict['fullname'], str(authDict['egroups'])))
+    return authDict
 # ########################################################################### #
 
 
@@ -1352,16 +1513,16 @@ def admf_html_header(cgiMTHD, cgiFACLTY):
 
 
 
-def admf_html_facility(facilityList, cgiFACLTY):
-    """write main section of HTML capacity page to stdout"""
+def admf_html_facility(authDict, facilityList, cgiFACLTY):
+    """write main section of HTML facility page to stdout"""
     # ####################################################################### #
-    latexTransTable = { 34: "&quot;" }
     #
     ADMF_NOENTRY = { 'name': None,
                      'institute': "unknown",
                      'location': "",
                      'timezone': [ "+00:00", "UTC" ],
-                     'latex': "",
+                     'acknowledge': "",
+                     'doi': "",
                      'exec': None,
                      'admin': None,
                      'sites': [],
@@ -1376,13 +1537,11 @@ def admf_html_facility(facilityList, cgiFACLTY):
     authAdmin = []
     authView = False
     #
-    grpList = [e for e in os.environ['ADFS_GROUP'].split(";") if ( e != "" ) ]
-    #
     print(("<TABLE>\n<TR>\n   <TD VALIGN=\"top\" NOWRAP><B>%s</B> &nbsp;\n  " +
            " <TD VALIGN=\"top\" NOWRAP><B>e-group</B> member of &nbsp;\n   <" +
-           "TD VALIGN=\"top\" NOWRAP>") % os.environ['ADFS_FULLNAME'])
+           "TD VALIGN=\"top\" NOWRAP>") % authDict['fullname'])
     frstFlag = True
-    for group in grpList:
+    for group in authDict['egroups']:
         if ( group in ADMF_AUTH_CMSSST ):
             authView = True
             authCmsst = True
@@ -1464,7 +1623,8 @@ def admf_html_facility(facilityList, cgiFACLTY):
                    "=\"64\" NAME=\"location\" VALUE=\"%s\">\n      <TR>\n   " +
                    "      <TD NOWRAP>Timezone:&nbsp;\n         <TD><SELECT N" +
                    "AME=\"timezone\">") % (bckgnd, entry['name'], ADMF_CGIURL,
-                         entry['name'], entry['institute'], entry['location']))
+                         entry['name'], html.escape( entry['institute'] ),
+                                                            entry['location']))
             #
             #try:
             #    timezoneList = pytz.country_timezones[ facility[:2] ]
@@ -1507,7 +1667,7 @@ def admf_html_facility(facilityList, cgiFACLTY):
                 myAdmin = entry['admin']
             mySites = ""
             for mySite in entry['sites']:
-                mySites += " %s" % mySite
+                mySites += " %s" % mySite['site']
             mySites = mySites[1:]
             if ( authCmsst ):
                 myReadonly = ""
@@ -1518,36 +1678,39 @@ def admf_html_facility(facilityList, cgiFACLTY):
             else:
                 myReadonly = " READONLY"
                 myDisabled = " DISABLED"
-            if (( "when" not in entry ) or
-                ( entry['when'] is None ) or
-                ( entry['when'] == "" )):
-                myWhen = ADMF_NOENTRY['when']
-            else:
-                myWhen = entry['when']
             if (( "who" not in entry ) or
                 ( entry['who'] is None ) or
                 ( entry['who'] == "" )):
                 myWho = ADMF_NOENTRY['who']
             else:
                 myWho = entry['who']
-            print(("            </SELECT>\n      <TR>\n         <TD NOWRAP>L" +
-                   "atex:&nbsp;\n         <TD NOWRAP><INPUT TYPE=\"text\" MA" +
-                   "XLENGTH=\"192\" SIZE=\"64\" NAME=\"latex\" VALUE=\"%s\">" +
-                   "\n      <TR>\n         <TD NOWRAP>Execs:&nbsp;\n        " +
-                   " <TD NOWRAP><INPUT TYPE=\"text\" MAXLENGTH=\"80\" SIZE=" +
-                   "\"64\" NAME=\"exec\" VALUE=\"%s\"%s>\n      <TR>\n      " +
-                   "   <TD NOWRAP>Admins:&nbsp;\n         <TD NOWRAP><INPUT " +
-                   "TYPE=\"text\" MAXLENGTH=\"80\" SIZE=\"64\" NAME=\"admin" +
-                   "\" VALUE=\"%s\"%s>\n      <TR>\n         <TD NOWRAP>Site" +
-                   " List:&nbsp;\n         <TD NOWRAP><INPUT TYPE=\"text\" M" +
-                   "AXLENGTH=\"128\" SIZE=\"64\" NAME=\"sites\" VALUE=\"%s\"" +
-                   "%s>\n      <TR>\n         <TD COLSPAN=\"2\" NOWRAP><INPU" +
-                   "T TYPE=\"submit\" VALUE=\"Update Information\" STYLE=\"h" +
-                   "eight:28px; width:164px; font-weight: 600; white-space: " +
-                   "nowrap; background-color: #B0C0FF;\"%s> (previous update" +
-                   ": <I>%s by %s</I>)\n      </TABLE>\n      </FORM>") %
-                  (entry['latex'].translate(latexTransTable),
-                                       myExec, myReadonly, myAdmin, myReadonly,
+            if (( "when" not in entry ) or
+                ( entry['when'] is None ) or
+                ( entry['when'] == "" )):
+                myWhen = ADMF_NOENTRY['when']
+            else:
+                myWhen = entry['when']
+            print(("            </SELECT>\n      <TR>\n         <TD NOWRAP>A" +
+                   "cknowledgement:&nbsp;\n         <TD NOWRAP><INPUT TYPE=" +
+                   "\"text\" MAXLENGTH=\"192\" SIZE=\"64\" NAME=\"acknowledg" +
+                   "e\" VALUE=\"%s\">\n      <TR>\n         <TD NOWRAP>DOI:&" +
+                   "nbsp;\n         <TD NOWRAP><INPUT TYPE=\"text\" MAXLENGT" +
+                   "H=\"80\" SIZE=\"64\" NAME=\"doi\" VALUE=\"%s\">\n      <" +
+                   "TR>\n         <TD NOWRAP>Execs:&nbsp;\n         <TD NOWR" +
+                   "AP><INPUT TYPE=\"text\" MAXLENGTH=\"80\" SIZE=\"64\" NAM" +
+                   "E=\"exec\" VALUE=\"%s\"%s>\n      <TR>\n         <TD NOW" +
+                   "RAP>Admins:&nbsp;\n         <TD NOWRAP><INPUT TYPE=\"tex" +
+                   "t\" MAXLENGTH=\"80\" SIZE=\"64\" NAME=\"admin\" VALUE=\"" +
+                   "%s\"%s>\n      <TR>\n         <TD NOWRAP>Site List:&nbsp" +
+                   ";\n         <TD NOWRAP><INPUT TYPE=\"text\" MAXLENGTH=\"" +
+                   "128\" SIZE=\"64\" NAME=\"sites\" VALUE=\"%s\"%s>\n      " +
+                   "<TR>\n         <TD COLSPAN=\"2\" NOWRAP><INPUT TYPE=\"su" +
+                   "bmit\" VALUE=\"Update Information\" STYLE=\"height:28px;" +
+                   " width:164px; font-weight: 600; white-space: nowrap; bac" +
+                   "kground-color: #B0C0FF;\"%s> (previous update: <I>%s by " +
+                   "%s</I>)\n      </TABLE>\n      </FORM>") %
+                  (html.escape( entry['acknowledge'] ), entry['doi'],
+                      myExec, myReadonly, myAdmin, myReadonly,
                                mySites, myReadonly, myDisabled, myWhen, myWho))
         #
         print("<TR HEIGHT=\"3\">\n   <TD COLSPAN=\"2\" STYLE=\"background-co" +
@@ -1558,17 +1721,17 @@ def admf_html_facility(facilityList, cgiFACLTY):
 
 
 
-def admf_post_facility(cgiFACLTY, cgiPOST):
-    """set capacity and write main section of HTML update page to stdout"""
+def admf_post_facility(authDict, cgiFACLTY, cgiPOST):
+    """set facility and write main section of HTML update page to stdout"""
     # ####################################################################### #
     siteRegex = re.compile(r"T\d_[A-Z]{2,2}_\w+")
-    #
-    latexTransTable = { 34: "&quot;" }
     #
     ADMF_NOENTRY = { 'name': None,
                      'institute': "unknown",
                      'location': "",
                      'timezone': [ "+00:00", "UTC" ],
+                     'acknowledge': "",
+                     'doi': "",
                      'latex': "",
                      'exec': None,
                      'admin': None,
@@ -1580,7 +1743,7 @@ def admf_post_facility(cgiFACLTY, cgiPOST):
     facilityEntry = {}
     try:
         facilityEntry['name'] = cgiFACLTY
-        facilityEntry['institute'] = cgiPOST['institute'][0]
+        facilityEntry['institute'] = html.unescape( cgiPOST['institute'][0] )
         facilityEntry['location'] = cgiPOST['location'][0]
         myTimezone = cgiPOST['timezone'][0]
         #noDayLightSavingsDate = datetime.datetime(1916,1,1)
@@ -1606,7 +1769,11 @@ def admf_post_facility(cgiFACLTY, cgiPOST):
         except:
             facilityEntry['timezone'] = [ ADMF_NOENTRY['timezone'][0],
                                           ADMF_NOENTRY['timezone'][1] ]
-        facilityEntry['latex'] = cgiPOST['latex'][0]
+        facilityEntry['acknowledge'] = html.unescape(cgiPOST['acknowledge'][0])
+        if (( "doi" not in cgiPOST ) or ( cgiPOST['doi'][0] == "" )):
+            facilityEntry['doi'] = None
+        else:
+            facilityEntry['doi'] = cgiPOST['doi'][0]
         if ( "exec" not in cgiPOST ):
             facilityEntry['exec'] = "cms-" + cgiFACLTY + "-exec@cern.ch"
         elif ( cgiPOST['exec'][0] == "" ):
@@ -1619,12 +1786,12 @@ def admf_post_facility(cgiFACLTY, cgiPOST):
             facilityEntry['admin'] = None
         else:
             facilityEntry['admin'] = cgiPOST['admin'][0]
-        mySitelist = [ e for e in (cgiPOST['sites'][0]).split(" ") \
+        mySitelist = [ {'site': e} for e in (cgiPOST['sites'][0]).split(" ") \
                                         if ( siteRegex.match(e) is not None ) ]
-        facilityEntry['sites'] = sorted( mySitelist )
+        facilityEntry['sites'] = sorted( mySitelist, key=lambda e: e['site'] )
+        facilityEntry['who'] = authDict['username']
         facilityEntry['when'] = time.strftime("%Y-%b-%d %H:%M:%S",
                                                       time.gmtime(time.time()))
-        facilityEntry['who'] = os.environ['ADFS_LOGIN']
     except (KeyError, IndexError) as excptn:
         logging.critical("Bad CGI data, %s" % str(excptn))
         return
@@ -1635,8 +1802,7 @@ def admf_post_facility(cgiFACLTY, cgiPOST):
     myAuth = None
     exeGroup = "cms-" + cgiFACLTY.split(" ")[0] + "-exec"
     admGroup = "cms-" + cgiFACLTY.split(" ")[0] + "-admin"
-    grpList = [e for e in os.environ['ADFS_GROUP'].split(";") if ( e != "" ) ]
-    for group in grpList:
+    for group in authDict['egroups']:
         if ( group in ADMF_AUTH_CMSSST ):
             myAuth = "cmssst"
             break
@@ -1695,8 +1861,8 @@ def admf_post_facility(cgiFACLTY, cgiPOST):
            "TD NOWRAP><INPUT TYPE=\"text\" MAXLENGTH=\"128\" SIZE=\"64\" NAM" +
            "E=\"location\" VALUE=\"%s\">\n      <TR>\n         <TD NOWRAP>Ti" +
            "mezone:&nbsp;\n         <TD><SELECT NAME=\"timezone\">") %
-          (entry['name'], ADMF_CGIURL, entry['name'], entry['institute'],
-                                                            entry['location']))
+          (entry['name'], ADMF_CGIURL, entry['name'],
+                         html.escape( entry['institute'] ), entry['location']))
     #
     #try:
     #    timezoneList = pytz.country_timezones[ cgiFACLTY[:2] ]
@@ -1738,7 +1904,7 @@ def admf_post_facility(cgiFACLTY, cgiPOST):
         myAdmin = entry['admin']
     mySites = ""
     for mySite in entry['sites']:
-        mySites += " %s" % mySite
+        mySites += " %s" % mySite['site']
     mySites = mySites[1:]
     if ( myAuth == "cmssst" ):
         myReadonly = ""
@@ -1746,33 +1912,36 @@ def admf_post_facility(cgiFACLTY, cgiPOST):
     else:
         myReadonly = " READONLY"
         myDisabled = ""
-    if (( "when" not in entry ) or
-        ( entry['when'] is None ) or
-        ( entry['when'] == "" )):
-        myWhen = ADMF_NOENTRY['when']
-    else:
-        myWhen = entry['when']
     if (( "who" not in entry ) or
         ( entry['who'] is None ) or
         ( entry['who'] == "" )):
         myWho = ADMF_NOENTRY['who']
     else:
         myWho = entry['who']
-    print(("            </SELECT>\n      <TR>\n         <TD NOWRAP>Latex:&nb" +
-           "sp;\n         <TD NOWRAP><INPUT TYPE=\"text\" MAXLENGTH=\"192\" " +
-           "SIZE=\"64\" NAME=\"latex\" VALUE=\"%s\">\n      <TR>\n         <" +
-           "TD NOWRAP>Execs:&nbsp;\n         <TD NOWRAP><INPUT TYPE=\"text\"" +
-           " MAXLENGTH=\"80\" SIZE=\"64\" NAME=\"exec\" VALUE=\"%s\"%s>\n   " +
-           "   <TR>\n         <TD NOWRAP>Admins:&nbsp;\n         <TD NOWRAP>" +
-           "<INPUT TYPE=\"text\" MAXLENGTH=\"80\" SIZE=\"64\" NAME=\"admin\"" +
-           " VALUE=\"%s\"%s>\n      <TR>\n         <TD NOWRAP>Site List:&nbs" +
-           "p;\n         <TD NOWRAP><INPUT TYPE=\"text\" MAXLENGTH=\"128\" S" +
-           "IZE=\"64\" NAME=\"sites\" VALUE=\"%s\"%s>\n      <TR>\n         " +
-           "<TD COLSPAN=\"2\" NOWRAP><INPUT TYPE=\"submit\" VALUE=\"Update I" +
-           "nformation\" STYLE=\"height:28px; width:164px; font-weight: 600;" +
-           " white-space: nowrap; background-color: #B0C0FF;\"%s> (previous " +
-           "update: <I>%s by %s</I>)\n      </TABLE>\n      </FORM>") %
-          (entry['latex'].translate(latexTransTable),
+    if (( "when" not in entry ) or
+        ( entry['when'] is None ) or
+        ( entry['when'] == "" )):
+        myWhen = ADMF_NOENTRY['when']
+    else:
+        myWhen = entry['when']
+    print(("            </SELECT>\n      <TR>\n         <TD NOWRAP>Acknowled" +
+           "gement:&nbsp;\n         <TD NOWRAP><INPUT TYPE=\"text\" MAXLENGT" +
+           "H=\"192\" SIZE=\"64\" NAME=\"acknowledge\" VALUE=\"%s\">\n      " +
+           "<TR>\n         <TD NOWRAP>DOI:&nbsp;\n         <TD NOWRAP><INPUT" +
+           " TYPE=\"text\" MAXLENGTH=\"80\" SIZE=\"64\" NAME=\"doi\" VALUE=" +
+           "\"%s\">\n      <TR>\n         <TD NOWRAP>Execs:&nbsp;\n         " +
+           "<TD NOWRAP><INPUT TYPE=\"text\" MAXLENGTH=\"80\" SIZE=\"64\" NAM" +
+           "E=\"exec\" VALUE=\"%s\"%s>\n      <TR>\n         <TD NOWRAP>Admi" +
+           "ns:&nbsp;\n         <TD NOWRAP><INPUT TYPE=\"text\" MAXLENGTH=\"" +
+           "80\" SIZE=\"64\" NAME=\"admin\" VALUE=\"%s\"%s>\n      <TR>\n   " +
+           "      <TD NOWRAP>Site List:&nbsp;\n         <TD NOWRAP><INPUT TY" +
+           "PE=\"text\" MAXLENGTH=\"128\" SIZE=\"64\" NAME=\"sites\" VALUE=" +
+           "\"%s\"%s>\n      <TR>\n         <TD COLSPAN=\"2\" NOWRAP><INPUT " +
+           "TYPE=\"submit\" VALUE=\"Update Information\" STYLE=\"height:28px" +
+           "; width:164px; font-weight: 600; white-space: nowrap; background" +
+           "-color: #B0C0FF;\"%s> (previous update: <I>%s by %s</I>)\n      " +
+           "</TABLE>\n      </FORM>") %
+          (html.escape( entry['acknowledge'] ), entry['doi'],
                          entry['exec'], myReadonly, entry['admin'], myReadonly,
                                mySites, myReadonly, myDisabled, myWhen, myWho))
     #
@@ -1944,33 +2113,41 @@ if __name__ == '__main__':
             for siteEntry in facilityDict[myFacility]['sites']:
                 siteDict[ siteEntry['site'] ] = myFacility
         #
-        # generate facility___site___subsite to (CC,LaTex) dictionary:
-        # ------------------------------------------------------------
+        # generate facility___site___subsite to (CC,acknowledge) dictionary:
+        # ------------------------------------------------------------------
         fsssDict = {}
         for myFacility in facilityDict:
-            if (( 'latex' in facilityDict[myFacility] ) and
-                ( facilityDict[myFacility]['latex'] is not None ) and
-                ( facilityDict[myFacility]['latex'] != "" )):
-                myTuple = ( myFacility[:2], facilityDict[myFacility]['latex'] )
+            if (( 'acknowledge' in facilityDict[myFacility] ) and
+                ( facilityDict[myFacility]['acknowledge'] is not None ) and
+                ( facilityDict[myFacility]['acknowledge'] != "" )):
+                myInstList = facilityDict[myFacility]['acknowledge'].split(",")
+                myTuple = ( myInstList[-1].strip(),
+                            ",".join(myInstList[0:-1]).strip(),
+                            facilityDict[myFacility]['doi'] )
                 fsssDict[ myFacility ] = myTuple
             #
             for siteEntry in facilityDict[myFacility]['sites']:
-                if (( 'latex' in siteEntry ) and
-                    ( siteEntry['latex'] is not None ) and
-                    ( siteEntry['latex'] != "" )):
+                if (( 'acknowledge' in siteEntry ) and
+                    ( siteEntry['acknowledge'] is not None ) and
+                    ( siteEntry['acknowledge'] != "" )):
                     fsss = myFacility + "___" + siteEntry['site']
-                    myTuple = ( siteEntry['site'][3:5], siteEntry['latex'] )
+                    myInstList = siteEntry['acknowledge'].split(",")
+                    myTuple = ( myInstList[-1].strip(),
+                                ",".join(myInstList[0:-1]).strip(),
+                                siteEntry['doi'] )
                     fsssDict[ fsss ] = myTuple
                 #
                 if ( 'subsites' in siteEntry ):
                     for subsiteEntry in siteEntry['subsites']:
-                        if (( 'latex' in subsiteEntry ) and
-                            ( subsiteEntry['latex'] is not None ) and
-                            ( subsiteEntry['latex'] != "" )):
+                        if (( 'acknowledge' in subsiteEntry ) and
+                            ( subsiteEntry['acknowledge'] is not None ) and
+                            ( subsiteEntry['acknowledge'] != "" )):
                             fsss = myFacility + "___" + siteEntry['site'] + \
                                                 "___" + subsiteEntry['subsite']
-                            myTuple = ( siteEntry['site'][3:5],
-                                                        subsiteEntry['latex'] )
+                            myInstList = subsiteEntry['acknowledge'].split(",")
+                            myTuple = ( myInstList[-1].strip(),
+                                        ",".join(myInstList[0:-1]).strip(),
+                                        subsiteEntry['doi'] )
                             fsssDict[ fsss ] = myTuple
         #
         #
@@ -1990,7 +2167,6 @@ if __name__ == '__main__':
         #
         #
         admf_write_acknowledgement( previousQuarter, tupleList )
-        admf_latex_acknowledgement( previousQuarter )
     else:
         #
         # parse CGI parameters:
@@ -2024,6 +2200,11 @@ if __name__ == '__main__':
         #
         #
         #
+        # get CGI authorization information:
+        authDict = admf_auth_cern_sso()
+        #
+        #
+        #
         # write page header:
         admf_html_header(cgiMTHD, cgiFACLTY)
         #
@@ -2041,9 +2222,9 @@ if __name__ == '__main__':
             #
             #
             if ( cgiMTHD == "GET" ):
-                admf_html_facility(facilityList, cgiFACLTY)
+                admf_html_facility(authDict, facilityList, cgiFACLTY)
             elif ( cgiMTHD == "POST" ):
-                admf_post_facility(cgiFACLTY, cgiPOST)
+                admf_post_facility(authDict, cgiFACLTY, cgiPOST)
         except Exception as excptn:
             logging.critical("CGI execution failure, %s" % str(excptn))
         #

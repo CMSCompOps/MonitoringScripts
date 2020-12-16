@@ -1,0 +1,2119 @@
+[
+ {
+   "name": "AT_Vienna",
+   "institute": "Institut fuer Hochenergiephysik",
+   "location": "Wien, Austria",
+   "timezone": [ "+01:00", "Europe/Vienna" ],
+   "acknowledge": "Institut für Hochenergiephysik, Wien, Austria",
+   "doi": "",
+   "exec": "cms-AT_Vienna-exec@cern.ch",
+   "admin": "cms-AT_Vienna-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T2_AT_Vienna"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "BE_IIHE",
+   "institute": "Inter-University Institute for High Energies",
+   "location": "Bruxelles, Belgium",
+   "timezone": [ "+01:00", "Europe/Brussels" ],
+   "acknowledge": "Inter University Institute For High Energies, Brussel, Belgium",
+   "doi": "",
+   "exec": "cms-BE_IIHE-exec@cern.ch",
+   "admin": "cms-BE_IIHE-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T2_BE_IIHE"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "BE_UCL",
+   "institute": "Universite Catholique de Louvain",
+   "location": "Ottignies-Louvain-la-Neuve, Belgium",
+   "timezone": [ "+01:00", "Europe/Brussels" ],
+   "acknowledge": "Université Catholique de Louvain, Louvain-la-Neuve, Belgium",
+   "doi": "http://dx.doi.org/10.13039/501100005041",
+   "exec": "cms-BE_UCL-exec@cern.ch",
+   "admin": "cms-BE_UCL-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T2_BE_UCL"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "BG_UNI_SOFIA",
+   "institute": "Sofia University",
+   "location": "Sofia, Bulgaria",
+   "timezone": [ "+02:00", "Europe/Sofia" ],
+   "acknowledge": "University of Sofia, Sofia, Bulgaria",
+   "doi": "",
+   "exec": "cms-BG_UNI_SOFIA-exec@cern.ch",
+   "admin": "cms-BG_UNI_SOFIA-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T3_BG_UNI_SOFIA"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "BR_SPRACE",
+   "institute": "Sao Paulo Research and Analysis Center",
+   "location": "Sao Paulo, Brazil",
+   "timezone": [ "-03:00", "America/Sao_Paulo" ],
+   "acknowledge": "São Paulo Research and Analysis Center, São Paulo, Brazil",
+   "doi": "",
+   "exec": "cms-BR_SPRACE-exec@cern.ch",
+   "admin": "cms-BR_SPRACE-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T2_BR_SPRACE"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "BR_UERJ",
+   "institute": "Universidade do Estado do Rio de Janeiro",
+   "location": "Rio de Janeiro, Brazil",
+   "timezone": [ "-03:00", "America/Sao_Paulo" ],
+   "acknowledge": "Universidade do Estado do Rio de Janeiro, Rio de Janeiro, Brazil",
+   "doi": "http://dx.doi.org/10.13039/501100006702",
+   "exec": "cms-BR_UERJ-exec@cern.ch",
+   "admin": "cms-BR_UERJ-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T2_BR_UERJ"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "BR_UFRGS",
+   "institute": "Universidade Federal do Rio Grande do Sul",
+   "location": "Porto Alegre, Brazil",
+   "timezone": [ "-03:00", "America/Sao_Paulo" ],
+   "acknowledge": "University of Rio Grande do Sul, Porto Alegre, Brazil",
+   "doi": "",
+   "exec": "cms-BR_UFRGS-exec@cern.ch",
+   "admin": "cms-BR_UFRGS-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T3_BR_UFRGS"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "BY_NCPHEP",
+   "institute": "National Center of Particle and High Energy Physics",
+   "location": "Minsk, Belarus",
+   "timezone": [ "+03:00", "Europe/Minsk" ],
+   "acknowledge": "National Center of Particle and High Energy Physics, Minsk, Belarus",
+   "doi": "",
+   "exec": "cms-BY_NCPHEP-exec@cern.ch",
+   "admin": "cms-BY_NCPHEP-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T3_BY_NCPHEP"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "CH_CERN",
+   "institute": "Conseil Europeen pour la Recherche Nucleaire",
+   "location": "Geneve, Switzerland",
+   "timezone": [ "+01:00", "Europe/Zurich" ],
+   "acknowledge": "CERN, European Organization for Nuclear Research, Geneva, Switzerland",
+   "doi": "http://dx.doi.org/10.13039/100012470",
+   "exec": "cms-CH_CERN-exec@cern.ch",
+   "admin": "cms-CH_CERN-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T0_CH_CERN"
+     },
+     {
+       "site": "T2_CH_CERN"
+     },
+     {
+       "site": "T3_CH_CERNBOX"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "CH_CERN_DOMA",
+   "institute": "CERN Data Organization, Management, and Access test",
+   "location": "Geneve, Switzerland",
+   "timezone": [ "+01:00", "Europe/Zurich" ],
+   "acknowledge": "",
+   "doi": "",
+   "exec": "cms-CH_CERN_DOMA-exec@cern.ch",
+   "admin": "cms-CH_CERN_DOMA-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T3_CH_CERN_DOMA"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "CH_CERN_HLT",
+   "institute": "CMS High Level Trigger farm",
+   "location": "Geneve, Switzerland",
+   "timezone": [ "+01:00", "Europe/Zurich" ],
+   "acknowledge": "",
+   "doi": "",
+   "exec": "cms-CH_CERN_HLT-exec@cern.ch",
+   "admin": "cms-CH_CERN_HLT-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T2_CH_CERN_HLT"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "CH_CERN_HelixNebula",
+   "institute": "CERN Science Cloud Project",
+   "location": "Geneve, Switzerland",
+   "timezone": [ "+01:00", "Europe/Zurich" ],
+   "acknowledge": "",
+   "doi": "",
+   "exec": "cms-CH_CERN_HelixNebula-exec@cern.ch",
+   "admin": "cms-CH_CERN_HelixNebula-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T3_CH_CERN_HelixNebula_REHA"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "CH_CERN_OpenData",
+   "institute": "CERN Data Open Access",
+   "location": "Geneve, Switzerland",
+   "timezone": [ "+01:00", "Europe/Zurich" ],
+   "acknowledge": "",
+   "doi": "",
+   "exec": "cms-CH_CERN_OpenData-exec@cern.ch",
+   "admin": "cms-CH_CERN_OpenData-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T3_CH_CERN_OpenData"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "CH_CMSAtHome",
+   "institute": "CMS at Home Services",
+   "location": "Geneve, Switzerland",
+   "timezone": [ "+01:00", "Europe/Zurich" ],
+   "acknowledge": "",
+   "doi": "",
+   "exec": "cms-CH_CMSAtHome-exec@cern.ch",
+   "admin": "cms-CH_CMSAtHome-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T3_CH_CMSAtHome"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "CH_CSCS",
+   "institute": "Swiss National Supercomputing Centre",
+   "location": "Lugano, Switzerland",
+   "timezone": [ "+01:00", "Europe/Zurich" ],
+   "acknowledge": "CSCS - Swiss National Supercomputing Centre, Lugano, Switzerland",
+   "doi": "",
+   "exec": "cms-CH_CSCS-exec@cern.ch",
+   "admin": "cms-CH_CSCS-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T0_CH_CSCS_HPC"
+     },
+     {
+       "site": "T2_CH_CSCS"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "CH_PSI",
+   "institute": "Paul Scherrer Institut",
+   "location": "Villigen, Switzerland",
+   "timezone": [ "+01:00", "Europe/Zurich" ],
+   "acknowledge": "Paul Scherrer Institute, Villigen, Switzerland",
+   "doi": "",
+   "exec": "cms-CH_PSI-exec@cern.ch",
+   "admin": "cms-CH_PSI-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T3_CH_PS"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "CH_Volunteer",
+   "institute": "CMS Volunteer Resources",
+   "location": "Geneve, Switzerland",
+   "timezone": [ "+01:00", "Europe/Zurich" ],
+   "acknowledge": "",
+   "doi": "",
+   "exec": "cms-CH_Volunteer-exec@cern.ch",
+   "admin": "cms-CH_Volunteer-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T3_CH_Volunteer"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "CN_Beijing",
+   "institute": "Institute of High Energy Physics, Chinese Academy of Sciences",
+   "location": "Beijing, China",
+   "timezone": [ "+08:00", "Asia/Shanghai" ],
+   "acknowledge": "Institute of High Energy Physics of the Chinese Academy of Sciences, Beijing, China",
+   "doi": "http://dx.doi.org/10.13039/501100011181",
+   "exec": "cms-CN_Beijing-exec@cern.ch",
+   "admin": "cms-CN_Beijing-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T2_CN_Beijing"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "CN_PKU",
+   "institute": "Peking University",
+   "location": "Beijing, China",
+   "timezone": [ "+08:00", "Asia/Shanghai" ],
+   "acknowledge": "Peking University, Beijing, China",
+   "doi": "",
+   "exec": "cms-CN_PKU-exec@cern.ch",
+   "admin": "cms-CN_PKU-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T3_CN_PKU"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "DE_DESY",
+   "institute": "Deutsches Elektronen-Synchrotron",
+   "location": "Hamburg, Germany",
+   "timezone": [ "+01:00", "Europe/Berlin" ],
+   "acknowledge": "Deutsches Elektronen-Synchrotron, Hamburg, Germany",
+   "doi": "http://dx.doi.org/10.13039/501100001647",
+   "exec": "cms-DE_DESY-exec@cern.ch",
+   "admin": "cms-DE_DESY-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T2_DE_DESY"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "DE_KIT",
+   "institute": "Karlsruhe Institute of Technology",
+   "location": "Karlsruhe, Germany",
+   "timezone": [ "+01:00", "Europe/Berlin" ],
+   "acknowledge": "Karlsruher Institut für Technologie, Karlsruhe, Germany",
+   "doi": "http://dx.doi.org/10.13039/100009133",
+   "exec": "cms-DE_KIT-exec@cern.ch",
+   "admin": "cms-DE_KIT-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T1_DE_KIT"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "DE_RWTH",
+   "institute": "Rheinisch-Westfaelische Technische Hochschule Aachen",
+   "location": "Aachen, Germany",
+   "timezone": [ "+01:00", "Europe/Berlin" ],
+   "acknowledge": "RWTH Aachen University, Aachen, Germany",
+   "doi": "http://dx.doi.org/10.13039/501100007210",
+   "exec": "cms-DE_RWTH-exec@cern.ch",
+   "admin": "cms-DE_RWTH-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T2_DE_RWTH"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "EE_Estonia",
+   "institute": "Laboratory of High Energy and Computational Physics of Estonia",
+   "location": "Tallinn, Estonia",
+   "timezone": [ "+02:00", "Europe/Tallinn" ],
+   "acknowledge": "National Institute of Chemical Physics and Biophysics, Tallinn, Estonia",
+   "doi": "http://dx.doi.org/10.13039/501100005789",
+   "exec": "cms-EE_Estonia-exec@cern.ch",
+   "admin": "cms-EE_Estonia-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T2_EE_Estonia"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "ES_CIEMAT",
+   "institute": "Centro de Investigaciones Energeticas, Medioambientales y Tecnologicas",
+   "location": "Madrid, Spain",
+   "timezone": [ "+01:00", "Europe/Madrid" ],
+   "acknowledge": "Centro de Investigaciones Energéticas Medioambientales y Tecnológicas (CIEMAT), Madrid, Spain",
+   "doi": "http://dx.doi.org/10.13039/501100009613",
+   "exec": "cms-ES_CIEMAT-exec@cern.ch",
+   "admin": "cms-ES_CIEMAT-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T2_ES_CIEMAT"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "ES_IFCA",
+   "institute": "Instituto de Fisica de Cantabria",
+   "location": "Santander, Spain",
+   "timezone": [ "+01:00", "Europe/Madrid" ],
+   "acknowledge": "Instituto de Física de Cantabria (IFCA), CSIC-Universidad de Cantabria, Santander, Spain",
+   "doi": "",
+   "exec": "cms-ES_IFCA-exec@cern.ch",
+   "admin": "cms-ES_IFCA-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T2_ES_IFCA"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "ES_Oviedo",
+   "institute": "University of Oviedo",
+   "location": "Oviedo, Spain",
+   "timezone": [ "+01:00", "Europe/Madrid" ],
+   "acknowledge": "Universidad de Oviedo, Instituto Universitario de Ciencias y Tecnologías Espaciales de Asturias (ICTEA), Oviedo, Spain",
+   "doi": "",
+   "exec": "cms-ES_Oviedo-exec@cern.ch",
+   "admin": "cms-ES_Oviedo-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T3_ES_Oviedo"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "ES_PIC",
+   "institute": "Port d'Informacio Cientifica",
+   "location": "Barcelona, Spain",
+   "timezone": [ "+01:00", "Europe/Madrid" ],
+   "acknowledge": "Port d'Informació Científica, Bellaterra, Spain",
+   "doi": "",
+   "exec": "cms-ES_PIC-exec@cern.ch",
+   "admin": "cms-ES_PIC-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T1_ES_PIC"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "FI_HIP",
+   "institute": "Helsinki Institute of Physics",
+   "location": "Helsinki, Finland",
+   "timezone": [ "+02:00", "Europe/Helsinki" ],
+   "acknowledge": "Helsinki Institute of Physics, Helsinki, Finland",
+   "doi": "",
+   "exec": "cms-FI_HIP-exec@cern.ch",
+   "admin": "cms-FI_HIP-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T2_FI_HIP"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "FR_CCIN2P3",
+   "institute": "Centre de Calcul de l'IN2P3",
+   "location": "Lyon, France",
+   "timezone": [ "+01:00", "Europe/Paris" ],
+   "acknowledge": "Institut national de physique nucléaire et de physique des particules, IN2P3, Villeurbanne, France",
+   "doi": "",
+   "exec": "cms-FR_CCIN2P3-exec@cern.ch",
+   "admin": "cms-FR_CCIN2P3-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T1_FR_CCIN2P3"
+     },
+     {
+       "site": "T2_FR_CCIN2P3"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "FR_GRIF_IRFU",
+   "institute": "Grille de Recherche d'Ile de France, Institut de recherche sur les lois fondamentales de l'Univers",
+   "location": "Saclay, France",
+   "timezone": [ "+01:00", "Europe/Paris" ],
+   "acknowledge": "Institut de recherche sur les lois fondamentales de l'Univers, CEA, Université Paris-Saclay, Gif-sur-Yvette, France",
+   "doi": "",
+   "exec": "cms-FR_GRIF_IRFU-exec@cern.ch",
+   "admin": "cms-FR_GRIF_IRFU-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T2_FR_GRIF_IRFU"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "FR_GRIF_LLR",
+   "institute": "Grille de Recherche d'Ile de France, Laboratoire Leprince-Ringuet",
+   "location": "Palaiseau, France",
+   "timezone": [ "+01:00", "Europe/Paris" ],
+   "acknowledge": "Laboratoire Leprince-Ringuet, CNRS/IN2P3, Ecole Polytechnique, Institut Polytechnique de Paris, Palaiseau, France",
+   "doi": "",
+   "exec": "cms-FR_GRIF_LLR-exec@cern.ch",
+   "admin": "cms-FR_GRIF_LLR-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T2_FR_GRIF_LLR",
+       "subsites": [
+         {
+           "subsite": "GRIF-LLR"
+         },
+         {
+           "subsite": "GRIF-LAL",
+           "acknowledge": "Laboratoire de l'accélérateur linéaire (LAL), Iréne Joliot-Curie 2 Infinity Physics Laboratory, Saint-Aubin, France",
+           "doi": ""
+         }
+       ]
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "FR_IPHC",
+   "institute": "Institut Pluridisciplinaire Hubert Curien",
+   "location": "Strasbourg, France",
+   "timezone": [ "+01:00", "Europe/Paris" ],
+   "acknowledge": "Institut Pluridisciplinaire Hubert Curien (IPHC), Strasbourg, France",
+   "doi": "",
+   "exec": "cms-FR_IPHC-exec@cern.ch",
+   "admin": "cms-FR_IPHC-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T2_FR_IPHC"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "FR_IPNL",
+   "institute": "L'Institut de Physique des 2 Infinis de Lyon",
+   "location": "Lyon, France",
+   "timezone": [ "+01:00", "Europe/Paris" ],
+   "acknowledge": "Institut de Physique des 2 Infinis de Lyon, Villeurbanne, France",
+   "doi": "",
+   "exec": "cms-FR_IPNL-exec@cern.ch",
+   "admin": "cms-FR_IPNL-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T3_FR_IPNL"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "GR_Demokritos",
+   "institute": "National Centre of Scientific Research, Demokritos",
+   "location": "Agia Paraskevi, Greece",
+   "timezone": [ "+02:00", "Europe/Athens" ],
+   "acknowledge": "Institute of Nuclear and Particle Physics (INPP), NCSR Demokritos, Aghia Paraskevi, Greece",
+   "doi": "",
+   "exec": "cms-GR_Demokritos-exec@cern.ch",
+   "admin": "cms-GR_Demokritos-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T3_GR_Demokritos"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "GR_IASA",
+   "institute": "Institute of Accelerating Systems and Applications",
+   "location": "Athens, Greece",
+   "timezone": [ "+02:00", "Europe/Athens" ],
+   "acknowledge": "Institute of Accelerating Systems and Applications (IASA), Athens, Greece",
+   "doi": "",
+   "exec": "cms-GR_IASA-exec@cern.ch",
+   "admin": "cms-GR_IASA-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T3_GR_IASA"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "GR_Ioannina",
+   "institute": "University of Ioannina",
+   "location": "Ioannina, Greece",
+   "timezone": [ "+02:00", "Europe/Athens" ],
+   "acknowledge": "University of Ioánnina, Ioánnina, Greece",
+   "doi": "",
+   "exec": "cms-GR_Ioannina-exec@cern.ch",
+   "admin": "cms-GR_Ioannina-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T2_GR_Ioannina"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "HR_IRB",
+   "institute": "Institut Ruder Boskovic",
+   "location": "Zagreb, Croatia",
+   "timezone": [ "+01:00", "Europe/Zagreb" ],
+   "acknowledge": "Institute Rudjer Boskovic, Zagreb, Croatia",
+   "doi": "",
+   "exec": "cms-HR_IRB-exec@cern.ch",
+   "admin": "cms-HR_IRB-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T3_HR_IRB"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "HU_Budapest",
+   "institute": "Hungarian Academy of Sciences",
+   "location": "Budapest, Hungary",
+   "timezone": [ "+01:00", "Europe/Budapest" ],
+   "acknowledge": "Wigner Research Centre for Physics, Budapest, Hungary",
+   "doi": "http://dx.doi.org/10.13039/501100014549",
+   "exec": "cms-HU_Budapest-exec@cern.ch",
+   "admin": "cms-HU_Budapest-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T2_HU_Budapest"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "HU_Debrecen",
+   "institute": "Institute of Nuclear Research ATOMKI",
+   "location": "Debrecen, Hungary",
+   "timezone": [ "+01:00", "Europe/Budapest" ],
+   "acknowledge": "Institute of Nuclear Research ATOMKI, Debrecen, Hungary",
+   "doi": "",
+   "exec": "cms-HU_Debrecen-exec@cern.ch",
+   "admin": "cms-HU_Debrecen-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T3_HU_Debrecen"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "IN_IOPB",
+   "institute": "Institute of Physics, Bhubaneswar",
+   "location": "Bhubaneswar, India",
+   "timezone": [ "+05:30", "Asia/Kolkata" ],
+   "acknowledge": "Institute of Physics, Bhubaneswar, Bhubaneswar, India",
+   "doi": "",
+   "exec": "cms-IN_IOPB-exec@cern.ch",
+   "admin": "cms-IN_IOPB-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T3_IN_IOPB"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "IN_PUHEP",
+   "institute": "Panjab University, Chandigarh",
+   "location": "Chandigarh, India",
+   "timezone": [ "+05:30", "Asia/Kolkata" ],
+   "acknowledge": "Panjab University, Chandigarh, India",
+   "doi": "",
+   "exec": "cms-IN_PUHEP-exec@cern.ch",
+   "admin": "cms-IN_PUHEP-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T3_IN_PUHEP"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "IN_TIFR",
+   "institute": "Tata Institute of Fundamental Research",
+   "location": "Mumbai, India",
+   "timezone": [ "+05:30", "Asia/Kolkata" ],
+   "acknowledge": "Tata Institute of Fundamental Research, Mumbai, India",
+   "doi": "http://dx.doi.org/10.13039/501100001405",
+   "exec": "cms-IN_TIFR-exec@cern.ch",
+   "admin": "cms-IN_TIFR-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T2_IN_TIFR"
+     },
+     {
+       "site": "T3_IN_TIFRCloud"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "IN_VBU",
+   "institute": "Vinoba Bhave University",
+   "location": "Hazaribagh, Jharkhand, India",
+   "timezone": [ "+05:30", "Asia/Kolkata" ],
+   "acknowledge": "Vinoba Bhave University, Hazaribag, India",
+   "doi": "",
+   "exec": "cms-IN_VBU-exec@cern.ch",
+   "admin": "cms-IN_VBU-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T3_IN_VBU"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "IR_IPM",
+   "institute": "Institute for Research in Fundamental Sciences",
+   "location": "Tehran, Iran",
+   "timezone": [ "+03:30", "Asia/Tehran" ],
+   "acknowledge": "Institute for Research in Fundamental Sciences (IPM), Tehran, Iran",
+   "doi": "",
+   "exec": "cms-IR_IPM-exec@cern.ch",
+   "admin": "cms-IR_IPM-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T3_IR_IPM"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "IT_Bari",
+   "institute": "Istituto Nazionale di Fisica Nucleare Sezione di Bari",
+   "location": "Bari, Italy",
+   "timezone": [ "+01:00", "Europe/Rome" ],
+   "acknowledge": "INFN Sezione di Bari, Università di Bari, Politecnico di Bari, Bari, Italy",
+   "doi": "",
+   "exec": "cms-IT_Bari-exec@cern.ch",
+   "admin": "cms-IT_Bari-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T2_IT_Bari"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "IT_Bologna",
+   "institute": "University of Bologna",
+   "location": "Bologna, Italy",
+   "timezone": [ "+01:00", "Europe/Rome" ],
+   "acknowledge": "INFN Sezione di Bologna, Università di Bologna, Bologna, Italy",
+   "doi": "",
+   "exec": "cms-IT_Bologna-exec@cern.ch",
+   "admin": "cms-IT_Bologna-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T3_IT_Bologna"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "IT_CNAF",
+   "institute": "Centro Nazionale Analisi Fotogrammi",
+   "location": "Bologna, Italy",
+   "timezone": [ "+01:00", "Europe/Rome" ],
+   "acknowledge": "INFN CNAF, Bologna, Italy",
+   "doi": "",
+   "exec": "cms-IT_CNAF-exec@cern.ch",
+   "admin": "cms-IT_CNAF-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T1_IT_CNAF"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "IT_Firenze",
+   "institute": "Universita degli Studi di Firenze",
+   "location": "Firenze, Italy",
+   "timezone": [ "+01:00", "Europe/Rome" ],
+   "acknowledge": "INFN Sezione di Firenze, Università di Firenze, Firenze, Italy",
+   "doi": "",
+   "exec": "cms-IT_Firenze-exec@cern.ch",
+   "admin": "cms-IT_Firenze-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T3_IT_Firenze"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "IT_Legnaro",
+   "institute": "Laboratori Nazionali di Legnaro",
+   "location": "Padua, Italy",
+   "timezone": [ "+01:00", "Europe/Rome" ],
+   "acknowledge": "Laboratori Nazionali di Legnaro, Legnaro, Italy",
+   "doi": "",
+   "exec": "cms-IT_Legnaro-exec@cern.ch",
+   "admin": "cms-IT_Legnaro-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T2_IT_Legnaro"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "IT_MIB",
+   "institute": "National Institute of Nuclear Physics, Milan Bicocca Section",
+   "location": "Milano, Italy",
+   "timezone": [ "+01:00", "Europe/Rome" ],
+   "acknowledge": "INFN Sezione di Milano-Bicocca, Università di Milano-Bicocca, Milano, Italy",
+   "doi": "",
+   "exec": "cms-IT_MIB-exec@cern.ch",
+   "admin": "cms-IT_MIB-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T3_IT_MIB"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "IT_Opportunistic",
+   "institute": "Opportunistic Resources",
+   "location": "Pisa, Italy",
+   "timezone": [ "+01:00", "Europe/Rome" ],
+   "acknowledge": "INFN Sezione di Pisa, Università di Pisa, Scuola Normale Superiore di Pisa, Pisa, Italy",
+   "doi": "http://dx.doi.org/10.13039/100009093",
+   "exec": "cms-IT_Opportunistic-exec@cern.ch",
+   "admin": "cms-IT_Opportunistic-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T3_IT_Opportunistic"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "IT_Perugia",
+   "institute": "Universita degli Studi di Perugia",
+   "location": "Perugia, Italy",
+   "timezone": [ "+01:00", "Europe/Rome" ],
+   "acknowledge": "INFN Sezione di Perugia, Università di Perugia, Perugia, Italy",
+   "doi": "",
+   "exec": "cms-IT_Perugia-exec@cern.ch",
+   "admin": "cms-IT_Perugia-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T3_IT_Perugia"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "IT_Pisa",
+   "institute": "Istituto Nazionale di Fisica Nucleare, Sezione di Pisa",
+   "location": "Pisa, Italy",
+   "timezone": [ "+01:00", "Europe/Rome" ],
+   "acknowledge": "INFN Sezione di Pisa, Università di Pisa, Scuola Normale Superiore di Pisa, Pisa, Italy",
+   "doi": "http://dx.doi.org/10.13039/100009093",
+   "exec": "cms-IT_Pisa-exec@cern.ch",
+   "admin": "cms-IT_Pisa-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T2_IT_Pisa"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "IT_Rome",
+   "institute": "Istituto Nazionale di Fisica Nucleare, Sezione di Roma",
+   "location": "Roma, Italy",
+   "timezone": [ "+01:00", "Europe/Rome" ],
+   "acknowledge": "INFN Sezione di Roma, Sapienza Università di Roma, Rome, Italy",
+   "doi": "http://dx.doi.org/10.13039/501100004271",
+   "exec": "cms-IT_Rome-exec@cern.ch",
+   "admin": "cms-IT_Rome-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T2_IT_Rome"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "IT_Trieste",
+   "institute": "INFN Trieste",
+   "location": "Trieste, Italy",
+   "timezone": [ "+01:00", "Europe/Rome" ],
+   "acknowledge": "INFN Sezione di Trieste, Università di Trieste, Trieste, Italy",
+   "doi": "",
+   "exec": "cms-IT_Trieste-exec@cern.ch",
+   "admin": "cms-IT_Trieste-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T3_IT_Trieste"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "KR_KISTI",
+   "institute": "Korea Institute of Science and Technology Information",
+   "location": "Daejeon, South Korea",
+   "timezone": [ "+09:00", "Asia/Seoul" ],
+   "acknowledge": "Korea Institute of Science and Technology Information (KISTI), Daejeon, South Korea",
+   "doi": "http://dx.doi.org/10.13039/501100003693",
+   "exec": "cms-KR_KISTI-exec@cern.ch",
+   "admin": "cms-KR_KISTI-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T2_KR_KISTI"
+     },
+     {
+       "site": "T3_KR_KISTI"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "KR_KNU",
+   "institute": "Kyungpook National University",
+   "location": "Daegu, South Korea",
+   "timezone": [ "+09:00", "Asia/Seoul" ],
+   "acknowledge": "Kyungpook National University, Daegu, Korea",
+   "doi": "http://dx.doi.org/10.13039/501100002531",
+   "exec": "cms-KR_KNU-exec@cern.ch",
+   "admin": "cms-KR_KNU-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T3_KR_KNU"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "KR_UOS",
+   "institute": "University of Seoul",
+   "location": "Seoul, South Korea",
+   "timezone": [ "+09:00", "Asia/Seoul" ],
+   "acknowledge": "University of Seoul, Seoul, Korea",
+   "doi": "",
+   "exec": "cms-KR_UOS-exec@cern.ch",
+   "admin": "cms-KR_UOS-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T3_KR_UOS"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "MX_Cinvestav",
+   "institute": "Centro de Investigacion y de Estudios Avanzados del IPN",
+   "location": "Mexico City, Mexico",
+   "timezone": [ "-06:00", "America/Mexico_City" ],
+   "acknowledge": "Centro de Investigacion y de Estudios Avanzados del IPN, Mexico City, Mexico",
+   "doi": "",
+   "exec": "cms-MX_Cinvestav-exec@cern.ch",
+   "admin": "cms-MX_Cinvestav-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T3_MX_Cinvestav"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "PK_NCP",
+   "institute": "National Centre for Physics",
+   "location": "Islamabad, Pakistan",
+   "timezone": [ "+05:00", "Asia/Karachi" ],
+   "acknowledge": "National Centre for Physics, Quaid-I-Azam University, Islamabad, Pakistan",
+   "doi": "http://dx.doi.org/10.13039/501100004253",
+   "exec": "cms-PK_NCP-exec@cern.ch",
+   "admin": "cms-PK_NCP-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T2_PK_NCP"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "PL_Swierk",
+   "institute": "Centrum Informatyczne Swierk ",
+   "location": "Swierk, Poland",
+   "timezone": [ "+01:00", "Europe/Warsaw" ],
+   "acknowledge": "National Centre for Nuclear Research, Swierk, Poland",
+   "doi": "",
+   "exec": "cms-PL_Swierk-exec@cern.ch",
+   "admin": "cms-PL_Swierk-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T2_PL_Swierk"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "PT_NCG_Lisbon",
+   "institute": "Infraestrutura Nacional de Computacao Distrbuida",
+   "location": "Lisboa, Portugal",
+   "timezone": [ "+00:00", "Europe/Lisbon" ],
+   "acknowledge": "Laboratório de Instrumentação e Física Experimental de Partículas, Lisboa, Portugal",
+   "doi": "",
+   "exec": "cms-PT_NCG_Lisbon-exec@cern.ch",
+   "admin": "cms-PT_NCG_Lisbon-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T2_PT_NCG_Lisbon"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "RU_FIAN",
+   "institute": "Lebedev Physical Institute",
+   "location": "Moskva, Russia",
+   "timezone": [ "+03:00", "Europe/Moscow" ],
+   "acknowledge": "P.N. Lebedev Physical Institute, Moscow, Russia",
+   "doi": "",
+   "exec": "cms-RU_FIAN-exec@cern.ch",
+   "admin": "cms-RU_FIAN-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T3_RU_FIAN"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "RU_IHEP",
+   "institute": "Institute for High Energy Physics",
+   "location": "Protvino, Russia",
+   "timezone": [ "+03:00", "Europe/Moscow" ],
+   "acknowledge": "Institute for High Energy Physics of National Research Centre `Kurchatov Institute', Protvino, Russia",
+   "doi": "",
+   "exec": "cms-RU_IHEP-exec@cern.ch",
+   "admin": "cms-RU_IHEP-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T2_RU_IHEP"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "RU_INR",
+   "institute": "Institute for Nuclear Research of the Russian Academy of Sciences",
+   "location": "Troitsk, Russia",
+   "timezone": [ "+03:00", "Europe/Moscow" ],
+   "acknowledge": "Institute for Nuclear Research (INR) of the Russian Academy of Sciences, Troitsk, Russia",
+   "doi": "",
+   "exec": "cms-RU_INR-exec@cern.ch",
+   "admin": "cms-RU_INR-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T2_RU_INR"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "RU_ITEP",
+   "institute": "Institute for Theoretical and Experimental Physics",
+   "location": "Moskva, Russia",
+   "timezone": [ "+03:00", "Europe/Moscow" ],
+   "acknowledge": "Institute for Theoretical and Experimental Physics named by A.I. Alikhanov of NRC 'Kurchatov Institute', Moscow, Russia",
+   "doi": "",
+   "exec": "cms-RU_ITEP-exec@cern.ch",
+   "admin": "cms-RU_ITEP-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T2_RU_ITEP"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "RU_JINR",
+   "institute": "Joint Institute for Nuclear Research",
+   "location": "Dubna, Russia",
+   "timezone": [ "+03:00", "Europe/Moscow" ],
+   "acknowledge": "Joint Institute for Nuclear Research, Dubna, Russia",
+   "doi": "",
+   "exec": "cms-RU_JINR-exec@cern.ch",
+   "admin": "cms-RU_JINR-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T1_RU_JINR"
+     },
+     {
+       "site": "T1_RU_JINR_Disk"
+     },
+     {
+       "site": "T2_RU_JINR"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "RU_MEPhI",
+   "institute": "National Research Nuclear University MEPhI",
+   "location": "Moskva, Russia",
+   "timezone": [ "+03:00", "Europe/Moscow" ],
+   "acknowledge": "National Research Nuclear University 'Moscow Engineering Physics Institute' (MEPhI), Moscow, Russia",
+   "doi": "",
+   "exec": "cms-RU_MEPhI-exec@cern.ch",
+   "admin": "cms-RU_MEPhI-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T3_RU_MEPhI"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "RU_SINP",
+   "institute": "Skobeltsyn Institute of Nuclear Physics",
+   "location": "Moskva, Russia",
+   "timezone": [ "+03:00", "Europe/Moscow" ],
+   "acknowledge": "Skobeltsyn Institute of Nuclear Physics, Lomonosov Moscow State University, Moscow, Russia",
+   "doi": "",
+   "exec": "cms-RU_SINP-exec@cern.ch",
+   "admin": "cms-RU_SINP-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T2_RU_SINP"
+     },
+     {
+       "site": "T3_RU_SINP"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "TH_CHULA",
+   "institute": "Chulalongkorn University",
+   "location": "Bangkok, Thailand",
+   "timezone": [ "+07:00", "Asia/Bangkok" ],
+   "acknowledge": "Chulalongkorn University, Faculty of Science, Department of Physics, Bangkok, Thailand",
+   "doi": "",
+   "exec": "cms-TH_CHULA-exec@cern.ch",
+   "admin": "cms-TH_CHULA-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T3_TH_CHULA"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "TR_METU",
+   "institute": "Middle East Technical University",
+   "location": "Ankara, Turkey",
+   "timezone": [ "+03:00", "Europe/Istanbul" ],
+   "acknowledge": "Middle East Technical University, Physics Department, Ankara, Turkey",
+   "doi": "http://dx.doi.org/10.13039/501100004175",
+   "exec": "cms-TR_METU-exec@cern.ch",
+   "admin": "cms-TR_METU-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T2_TR_METU"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "TW_NCHC",
+   "institute": "National Center for High-performance Computing",
+   "location": "Tainan City, Taiwan",
+   "timezone": [ "+08:00", "Asia/Taipei" ],
+   "acknowledge": "National Center for High-performance Computing (NCHC), Tainan City, Taiwan",
+   "doi": "",
+   "exec": "cms-TW_NCHC-exec@cern.ch",
+   "admin": "cms-TW_NCHC-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T2_TW_NCHC"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "TW_NCU",
+   "institute": "National Central University",
+   "location": "Taoyuan City, Taiwan",
+   "timezone": [ "+08:00", "Asia/Taipei" ],
+   "acknowledge": "National Central University, Chung-Li, Taiwan",
+   "doi": "",
+   "exec": "cms-TW_NCU-exec@cern.ch",
+   "admin": "cms-TW_NCU-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T3_TW_NCU"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "TW_NTU_HEP",
+   "institute": "National Taiwan University",
+   "location": "Taipei City, Taiwan",
+   "timezone": [ "+08:00", "Asia/Taipei" ],
+   "acknowledge": "National Taiwan University (NTU), Taipei, Taiwan",
+   "doi": "",
+   "exec": "cms-TW_NTU_HEP-exec@cern.ch",
+   "admin": "cms-TW_NTU_HEP-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T3_TW_NTU_HEP"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "UA_KIPT",
+   "institute": "Kharkov Institute of Physics and Technology",
+   "location": "Kharkov, Ukraine",
+   "timezone": [ "+02:00", "Europe/Kiev" ],
+   "acknowledge": "National Scientific Center, Kharkov Institute of Physics and Technology, Kharkov, Ukraine",
+   "doi": "",
+   "exec": "cms-UA_KIPT-exec@cern.ch",
+   "admin": "cms-UA_KIPT-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T2_UA_KIPT"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "UK_London_Brunel",
+   "institute": "Brunel University London",
+   "location": "Uxbridge, UK",
+   "timezone": [ "+00:00", "Europe/London" ],
+   "acknowledge": "GridPP, Brunel University, Uxbridge, United Kingdom",
+   "doi": "http://dx.doi.org/10.13039/100008475",
+   "exec": "cms-UK_London_Brunel-exec@cern.ch",
+   "admin": "cms-UK_London_Brunel-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T2_UK_London_Brunel"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "UK_London_IC",
+   "institute": "Imperial College London",
+   "location": "London, UK",
+   "timezone": [ "+00:00", "Europe/London" ],
+   "acknowledge": "GridPP, Imperial College, London, United Kingdom",
+   "doi": "http://dx.doi.org/10.13039/501100000761",
+   "exec": "cms-UK_London_IC-exec@cern.ch",
+   "admin": "cms-UK_London_IC-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T2_UK_London_IC"
+     },
+     {
+       "site": "T3_UK_GridPP_Cloud"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "UK_London_QMUL",
+   "institute": "Queen Mary University of London",
+   "location": "London, UK",
+   "timezone": [ "+00:00", "Europe/London" ],
+   "acknowledge": "GridPP, Queen Mary University of London, London, United Kingdom",
+   "doi": "http://dx.doi.org/10.13039/501100000851",
+   "exec": "cms-UK_London_QMUL-exec@cern.ch",
+   "admin": "cms-UK_London_QMUL-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T3_UK_London_QMUL"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "UK_London_RHUL",
+   "institute": "Royal Holloway, University of London",
+   "location": "London, UK",
+   "timezone": [ "+00:00", "Europe/London" ],
+   "acknowledge": "GridPP, Royal Holloway, University of London, London, United Kingdom",
+   "doi": "",
+   "exec": "cms-UK_London_RHUL-exec@cern.ch",
+   "admin": "cms-UK_London_RHUL-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T3_UK_London_RHUL"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "UK_Opportunistic",
+   "institute": "Opportunistic Resources, Dynamic on Demand Analysis Service",
+   "location": "London, UK",
+   "timezone": [ "+00:00", "Europe/London" ],
+   "acknowledge": "GridPP, Imperial College, London, United Kingdom",
+   "doi": "http://dx.doi.org/10.13039/501100000761",
+   "exec": "cms-UK_Opportunistic-exec@cern.ch",
+   "admin": "cms-UK_Opportunistic-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T3_UK_Opportunistic"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "UK_RAL",
+   "institute": "Rutherford Appleton Laboratory",
+   "location": "Didcot, UK",
+   "timezone": [ "+00:00", "Europe/London" ],
+   "acknowledge": "GridPP, Rutherford Appleton Laboratory, Didcot, United Kingdom",
+   "doi": "http://dx.doi.org/10.13039/100014570",
+   "exec": "cms-UK_RAL-exec@cern.ch",
+   "admin": "cms-UK_RAL-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T1_UK_RAL"
+     },
+     {
+       "site": "T1_UK_RAL_Disk"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "UK_SGrid_Bristol",
+   "institute": "University of Bristol",
+   "location": "Bristol, UK",
+   "timezone": [ "+00:00", "Europe/London" ],
+   "acknowledge": "GridPP, University of Bristol, Bristol, United Kingdom",
+   "doi": "http://dx.doi.org/10.13039/501100005618",
+   "exec": "cms-UK_SGrid_Bristol-exec@cern.ch",
+   "admin": "cms-UK_SGrid_Bristol-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T2_UK_SGrid_Bristol"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "UK_SGrid_Oxford",
+   "institute": "University of Oxford",
+   "location": "Oxford, UK",
+   "timezone": [ "+00:00", "Europe/London" ],
+   "acknowledge": "GridPP, University of Oxford, Oxford, United Kingdom",
+   "doi": "",
+   "exec": "cms-UK_SGrid_Oxford-exec@cern.ch",
+   "admin": "cms-UK_SGrid_Oxford-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T3_UK_SGrid_Oxford"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "UK_SGrid_RALPP",
+   "institute": "Rutherford Appleton Laboratory, Particle Physics Department",
+   "location": "Didcot, UK",
+   "timezone": [ "+00:00", "Europe/London" ],
+   "acknowledge": "GridPP, Rutherford Appleton Laboratory, Didcot, United Kingdom",
+   "doi": "",
+   "exec": "cms-UK_SGrid_RALPP-exec@cern.ch",
+   "admin": "cms-UK_SGrid_RALPP-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T2_UK_SGrid_RALPP"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "UK_ScotGrid_GLA",
+   "institute": "University of Glasgow",
+   "location": "Glasgow, Scotland, UK",
+   "timezone": [ "+00:00", "Europe/London" ],
+   "acknowledge": "GridPP, University of Glasgow, Glasgow, UK",
+   "doi": "",
+   "exec": "cms-UK_ScotGrid_GLA-exec@cern.ch",
+   "admin": "cms-UK_ScotGrid_GLA-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T3_UK_ScotGrid_GLA"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "US_BU",
+   "institute": "Boston University",
+   "location": "Boston, Massachusetts, USA",
+   "timezone": [ "-05:00", "America/New_York" ],
+   "acknowledge": "Boston University, Boston, USA",
+   "doi": "",
+   "exec": "cms-US_BU-exec@cern.ch",
+   "admin": "cms-US_BU-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T3_US_BU"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "US_Baylor",
+   "institute": "Baylor University",
+   "location": "Waco, Texas, USA",
+   "timezone": [ "-06:00", "America/Chicago" ],
+   "acknowledge": "Baylor University, Waco, USA",
+   "doi": "http://dx.doi.org/10.13039/100007492",
+   "exec": "cms-US_Baylor-exec@cern.ch",
+   "admin": "cms-US_Baylor-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T3_US_Baylor"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "US_Brown",
+   "institute": "Brown University",
+   "location": "Providence, Rhode Island, USA",
+   "timezone": [ "-05:00", "America/New_York" ],
+   "acknowledge": "Brown University, Providence, USA",
+   "doi": "",
+   "exec": "cms-US_Brown-exec@cern.ch",
+   "admin": "cms-US_Brown-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T3_US_Brown"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "US_CMU",
+   "institute": "Carnegie Mellon University",
+   "location": "Pittsburgh, Pennsylvania, USA",
+   "timezone": [ "-05:00", "America/New_York" ],
+   "acknowledge": "Carnegie Mellon University, Pittsburgh, USA",
+   "doi": "",
+   "exec": "cms-US_CMU-exec@cern.ch",
+   "admin": "cms-US_CMU-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T3_US_CMU"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "US_Caltech",
+   "institute": "California Institute of Technology",
+   "location": "Pasadena, United States",
+   "timezone": [ "-08:00", "America/Los_Angeles" ],
+   "acknowledge": "California Institute of Technology, Pasadena, USA",
+   "doi": "http://dx.doi.org/10.13039/100006961",
+   "exec": "cms-US_Caltech-exec@cern.ch",
+   "admin": "cms-US_Caltech-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T2_US_Caltech"
+     },
+     {
+       "site": "T3_US_Caltech_Cloud"
+     },
+     {
+       "site": "T3_US_Caltech_HPC"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "US_Colorado",
+   "institute": "University of Colorado Boulder",
+   "location": "Boulder, Colorado, USA",
+   "timezone": [ "-07:00", "America/Denver" ],
+   "acknowledge": "University of Colorado Boulder, Boulder, USA",
+   "doi": "http://dx.doi.org/10.13039/100007493",
+   "exec": "cms-US_Colorado-exec@cern.ch",
+   "admin": "cms-US_Colorado-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T3_US_Colorado"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "US_FIT",
+   "institute": "Florida Institute of Technology",
+   "location": "Melbourne, Florida, USA",
+   "timezone": [ "-05:00", "America/New_York" ],
+   "acknowledge": "Florida Institute of Technology, Melbourne, USA",
+   "doi": "",
+   "exec": "cms-US_FIT-exec@cern.ch",
+   "admin": "cms-US_FIT-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T3_US_FIT"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "US_FNAL",
+   "institute": "Fermi National Accelerator Laboratory",
+   "location": "Batavia, Illinois, United States",
+   "timezone": [ "-06:00", "America/Chicago" ],
+   "acknowledge": "Fermi National Accelerator Laboratory, Batavia, USA",
+   "doi": "http://dx.doi.org/10.13039/100006230",
+   "exec": "cms-US_FNAL-exec@cern.ch",
+   "admin": "cms-US_FNAL-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T1_US_FNAL"
+     },
+     {
+       "site": "T1_US_FNAL_Disk"
+     },
+     {
+       "site": "T3_US_FNALLPC"
+     },
+     {
+       "site": "T3_US_HEPCloud"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "US_Florida",
+   "institute": "University of Florida",
+   "location": "Gainesville, Florida, USA",
+   "timezone": [ "-05:00", "America/New_York" ],
+   "acknowledge": "University of Florida, Gainesville, USA",
+   "doi": "http://dx.doi.org/10.13039/100009406",
+   "exec": "cms-US_Florida-exec@cern.ch",
+   "admin": "cms-US_Florida-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T2_US_Florida"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "US_JHU",
+   "institute": "Johns Hopkins University",
+   "location": "Baltimore, Maryland, USA",
+   "timezone": [ "-05:00", "America/New_York" ],
+   "acknowledge": "Johns Hopkins University, Baltimore, USA",
+   "doi": "",
+   "exec": "cms-US_JHU-exec@cern.ch",
+   "admin": "cms-US_JHU-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T3_US_JHU"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "US_Kansas",
+   "institute": "University of Kansas",
+   "location": "Lawrence, Kansas, USA",
+   "timezone": [ "-06:00", "America/Chicago" ],
+   "acknowledge": "The University of Kansas, Lawrence, USA",
+   "doi": "",
+   "exec": "cms-US_Kansas-exec@cern.ch",
+   "admin": "cms-US_Kansas-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T3_US_Kansas"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "US_MIT",
+   "institute": "Massachusetts Institute of Technology",
+   "location": "Cambridge, Massachusetts, USA",
+   "timezone": [ "-05:00", "America/New_York" ],
+   "acknowledge": "Massachusetts Institute of Technology, Cambridge, USA",
+   "doi": "http://dx.doi.org/10.13039/100006919",
+   "exec": "cms-US_MIT-exec@cern.ch",
+   "admin": "cms-US_MIT-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T2_US_MIT"
+     },
+     {
+       "site": "T3_US_MIT"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "US_Minnesota",
+   "institute": "University of Minnesota",
+   "location": "Minneapolis, Minnesota, USA",
+   "timezone": [ "-06:00", "America/Chicago" ],
+   "acknowledge": "University of Minnesota, Minneapolis, USA",
+   "doi": "",
+   "exec": "cms-US_Minnesota-exec@cern.ch",
+   "admin": "cms-US_Minnesota-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T3_US_Minnesota"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "US_NEU",
+   "institute": "Northeastern University",
+   "location": "Boston, Massachusetts, USA",
+   "timezone": [ "-05:00", "America/New_York" ],
+   "acknowledge": "Northeastern University, Boston, USA",
+   "doi": "",
+   "exec": "cms-US_NEU-exec@cern.ch",
+   "admin": "cms-US_NEU-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T3_US_NEU"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "US_Nebraska",
+   "institute": "University of Nebraska - Lincoln",
+   "location": "Lincoln, Nebraska, USA",
+   "timezone": [ "-06:00", "America/Chicago" ],
+   "acknowledge": "University of Nebraska-Lincoln, Lincoln, USA",
+   "doi": "http://dx.doi.org/10.13039/100008114",
+   "exec": "cms-US_Nebraska-exec@cern.ch",
+   "admin": "cms-US_Nebraska-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T2_US_Nebraska"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "US_NotreDame",
+   "institute": "University of Notre Dame",
+   "location": "South Bend, Indiana, USA",
+   "timezone": [ "-05:00", "America/Indiana/Indianapolis" ],
+   "acknowledge": "University of Notre Dame, Notre Dame, USA",
+   "doi": "",
+   "exec": "cms-US_NotreDame-exec@cern.ch",
+   "admin": "cms-US_NotreDame-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T3_US_NotreDame"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "US_OSG",
+   "institute": "Open Science Grid Resources",
+   "location": "Batavia, Illinois, USA",
+   "timezone": [ "-06:00", "America/Chicago" ],
+   "acknowledge": "Fermi National Accelerator Laboratory, Batavia, USA",
+   "doi": "http://dx.doi.org/10.13039/100006230",
+   "exec": "cms-US_OSG-exec@cern.ch",
+   "admin": "cms-US_OSG-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T3_US_ANL",
+       "acknowledge": "Argonne Leadership Computing Facility (ALCF), a U.S. Department of Energy Office of Science User Facility, Lemont, USA",
+       "doi": ""
+     },
+     {
+       "site": "T3_US_NERSC",
+       "acknowledge": "National Energy Research Scientific Computing Center (NERSC), a U.S. Department of Energy Office of Science User Facility, Berkeley, USA",
+       "doi": "http://dx.doi.org/10.13039/100017223"
+     },
+     {
+       "site": "T3_US_OSG",
+       "acknowledge": "Open Science Grid (OSG) Consortium, USA",
+       "doi": ""
+     },
+     {
+       "site": "T3_US_PSC",
+       "acknowledge": "Pittsburgh Supercomputing Center (PSC), Pittsburgh, USA",
+       "doi": ""
+     },
+     {
+       "site": "T3_US_SDSC",
+       "acknowledge": "San Diego Supercomputer Center (SDSC), La Jolla, USA",
+       "doi": "http://dx.doi.org/10.13039/100016353"
+     },
+     {
+       "site": "T3_US_TACC",
+       "acknowledge": "Texas Advanced Computing Center (TACC), Austin, USA",
+       "doi": ""
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "US_OSU",
+   "institute": "Ohio State University",
+   "location": "Columbus, Ohio, USA",
+   "timezone": [ "-05:00", "America/New_York" ],
+   "acknowledge": "The Ohio State University, Columbus, USA",
+   "doi": "",
+   "exec": "cms-US_OSU-exec@cern.ch",
+   "admin": "cms-US_OSU-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T3_US_OSU"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "US_Princeton",
+   "institute": "Princeton University",
+   "location": "Princeton, New Jersey, USA",
+   "timezone": [ "-05:00", "America/New_York" ],
+   "acknowledge": "Princeton University, Princeton, USA",
+   "doi": "",
+   "exec": "cms-US_Princeton-exec@cern.ch",
+   "admin": "cms-US_Princeton-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T3_US_Princeton_ARM"
+     },
+     {
+       "site": "T3_US_Princeton_ICSE"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "US_PuertoRico",
+   "institute": "University of Puerto Rico, Mayaguez",
+   "location": "Mayaguez, Puerto Rico, USA",
+   "timezone": [ "-05:00", "America/New_York" ],
+   "acknowledge": "University of Puerto Rico, Mayaguez, USA",
+   "doi": "",
+   "exec": "cms-US_PuertoRico-exec@cern.ch",
+   "admin": "cms-US_PuertoRico-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T3_US_PuertoRico"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "US_Purdue",
+   "institute": "Purdue University",
+   "location": "West Lafayette, Indiana, USA",
+   "timezone": [ "-05:00", "America/Indiana/Indianapolis" ],
+   "acknowledge": "Purdue University, West Lafayette, USA",
+   "doi": "http://dx.doi.org/10.13039/100006377",
+   "exec": "cms-US_Purdue-exec@cern.ch",
+   "admin": "cms-US_Purdue-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T2_US_Purdue"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "US_Rice",
+   "institute": "Rice University",
+   "location": "Houston, Texas, USA",
+   "timezone": [ "-06:00", "America/Chicago" ],
+   "acknowledge": "Rice University, Houston, USA",
+   "doi": "",
+   "exec": "cms-US_Rice-exec@cern.ch",
+   "admin": "cms-US_Rice-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T3_US_Rice"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "US_Rutgers",
+   "institute": "Rutgers, The State University of New Jersey",
+   "location": "Piscataway, New Jersey, USA",
+   "timezone": [ "-05:00", "America/New_York" ],
+   "acknowledge": "Rutgers, The State University of New Jersey, Piscataway, USA",
+   "doi": "",
+   "exec": "cms-US_Rutgers-exec@cern.ch",
+   "admin": "cms-US_Rutgers-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T3_US_Rutgers"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "US_TAMU",
+   "institute": "Texas A&M University",
+   "location": "College Station, Texas, USA",
+   "timezone": [ "-06:00", "America/Chicago" ],
+   "acknowledge": "Texas A&M University, College Station, USA",
+   "doi": "",
+   "exec": "cms-US_TAMU-exec@cern.ch",
+   "admin": "cms-US_TAMU-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T3_US_TAMU"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "US_UB",
+   "institute": "State University of New York at Buffalo",
+   "location": "Buffalo, New York, USA",
+   "timezone": [ "-05:00", "America/New_York" ],
+   "acknowledge": "State University of New York at Buffalo, Buffalo, USA",
+   "doi": "",
+   "exec": "cms-US_UB-exec@cern.ch",
+   "admin": "cms-US_UB-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T3_US_UB"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "US_UCR",
+   "institute": "University of California, Riverside",
+   "location": "Riverside, California, USA",
+   "timezone": [ "-08:00", "America/Los_Angeles" ],
+   "acknowledge": "University of California, Riverside, Riverside, USA",
+   "doi": "",
+   "exec": "cms-US_UCR-exec@cern.ch",
+   "admin": "cms-US_UCR-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T3_US_UCR"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "US_UCSD",
+   "institute": "University of California, San Diego",
+   "location": "La Jolla, United States",
+   "timezone": [ "-08:00", "America/Los_Angeles" ],
+   "acknowledge": "University of California, San Diego, La Jolla, USA",
+   "doi": "http://dx.doi.org/10.13039/100007911",
+   "exec": "cms-US_UCSD-exec@cern.ch",
+   "admin": "cms-US_UCSD-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T2_US_UCSD"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "US_UIowa",
+   "institute": "University of Iowa",
+   "location": "Iowa City, Iowa, USA",
+   "timezone": [ "-06:00", "America/Chicago" ],
+   "acknowledge": "The University of Iowa, Iowa City, USA",
+   "doi": "",
+   "exec": "cms-US_UIowa-exec@cern.ch",
+   "admin": "cms-US_UIowa-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T3_US_UIowa"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "US_UMD",
+   "institute": "University of Maryland",
+   "location": "College Park, Maryland, USA",
+   "timezone": [ "-05:00", "America/New_York" ],
+   "acknowledge": "University of Maryland, College Park, USA",
+   "doi": "",
+   "exec": "cms-US_UMD-exec@cern.ch",
+   "admin": "cms-US_UMD-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T3_US_UMD"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "US_UMiss",
+   "institute": "University of Mississippi",
+   "location": "Oxford, Mississippi, USA",
+   "timezone": [ "-06:00", "America/Chicago" ],
+   "acknowledge": "University of Mississippi, Oxford, USA",
+   "doi": "",
+   "exec": "cms-US_UMiss-exec@cern.ch",
+   "admin": "cms-US_UMiss-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T3_US_UMiss"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "US_UVA",
+   "institute": "University of Virginia",
+   "location": "Charlottesville, Virginia, USA",
+   "timezone": [ "-05:00", "America/New_York" ],
+   "acknowledge": "University of Virginia, Charlottesville, USA",
+   "doi": "",
+   "exec": "cms-US_UVA-exec@cern.ch",
+   "admin": "cms-US_UVA-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T3_US_UVA"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "US_VC3_NotreDame",
+   "institute": "USCMS Virtual Clusters for Community Computation",
+   "location": "South Bend, Indiana, USA",
+   "timezone": [ "-05:00", "America/Indiana/Indianapolis" ],
+   "acknowledge": "University of Notre Dame, Notre Dame, USA",
+   "doi": "",
+   "exec": "cms-US_VC3_NotreDame-exec@cern.ch",
+   "admin": "cms-US_VC3_NotreDame-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T3_US_VC3_NotreDame"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "US_Vanderbilt",
+   "institute": "Vanderbilt University",
+   "location": "Nashville, Tennessee, United States",
+   "timezone": [ "-06:00", "America/Chicago" ],
+   "acknowledge": "Vanderbilt University, Nashville, USA",
+   "doi": "http://dx.doi.org/10.13039/100006537",
+   "exec": "cms-US_Vanderbilt-exec@cern.ch",
+   "admin": "cms-US_Vanderbilt-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T2_US_Vanderbilt"
+     },
+     {
+       "site": "T3_US_Vanderbilt_EC2"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "US_Wisconsin",
+   "institute": "University of Wisconsin-Madison",
+   "location": "Madison, Wisconsin, United States",
+   "timezone": [ "-06:00", "America/Chicago" ],
+   "acknowledge": "University of Wisconsin - Madison, Madison, USA",
+   "doi": "http://dx.doi.org/10.13039/100007015",
+   "exec": "cms-US_Wisconsin-exec@cern.ch",
+   "admin": "cms-US_Wisconsin-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T2_US_Wisconsin"
+     }
+   ],
+   "who": null,
+   "when": null
+ }
+]
