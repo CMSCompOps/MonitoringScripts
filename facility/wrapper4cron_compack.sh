@@ -6,6 +6,8 @@
 EXC_LOCK=""
 trap 'exit 1' 1 2 3 15
 trap '(/bin/rm -f ${EXC_LOCK}) 1> /dev/null 2>&1' 0
+
+EMAIL_ADDR="lammel@fnal.gov"
 # #############################################################################
 
 
@@ -86,10 +88,14 @@ fi
 # =====================================
 `dirname $0`/adm_facility.py -a -vv
 #
-/bin/rm -f /tmp/cmssst_facilACK.txt 1>/dev/null 2>&1
-/bin/ls -l /eos/home-c/cmssst/www/facility 1> /tmp/cmssst_facilACK.txt 2>&1
-/usr/bin/Mail -s "$0 new compack" lammel@fnal.gov < /tmp/cmssst_facilACK.txt
-/bin/rm -f /tmp/cmssst_facilACK.txt 1>/dev/null 2>&1
+if [ -e `dirname $0`/log.txt ]; then
+   /usr/bin/Mail -s "$0 new compack" ${EMAIL_ADDR} < `dirname $0`/log.txt
+else
+   /bin/rm -f /tmp/cmssst_facilACK.txt 1>/dev/null 2>&1
+   /bin/ls -l /eos/user/c/cmssst/www/facility 1> /tmp/cmssst_facilACK.txt 2>&1
+   /usr/bin/Mail -s "$0 new compack" ${EMAIL_ADDR} < /tmp/cmssst_facilACK.txt
+   /bin/rm -f /tmp/cmssst_facilACK.txt 1>/dev/null 2>&1
+fi
 # #############################################################################
 
 
