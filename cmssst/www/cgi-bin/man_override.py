@@ -712,7 +712,8 @@ def ovrd_auth_cern_sso():
         authDict['fullname'] = myName
         #
         myGroup = os.environ['ADFS_GROUP']
-        authDict['egroups'] = [e for e in myGroup.split(";") if ( e != "" ) ]
+        authDict['egroups'] = [e.lower() for e in myGroup.split(";") \
+                                                               if ( e != "" ) ]
         #
         logging.info("CGI access by: %s / \"%s\" member of %s" %
                                    (authDict['username'], authDict['fullname'],
@@ -802,6 +803,7 @@ def ovrd_auth_cern_sso():
         return authDict
     try:
         userId = json.loads( myData )['data'][0]['id']
+        logging.debug("SSO/Identity = %s" % userId)
     except (json.JSONDecodeError, KeyError, IndexError) as excptn:
         logging.error("Failed to decode user identity, %s" % str(excptn))
         #
@@ -834,7 +836,7 @@ def ovrd_auth_cern_sso():
                                                      str(authDict['egroups'])))
         return authDict
     try:
-        authDict['egroups'] = [ e['groupIdentifier'] for e in \
+        authDict['egroups'] = [ e['groupIdentifier'].lower() for e in \
                                                  json.loads( myData )['data'] ]
     except (json.JSONDecodeError, KeyError, IndexError) as excptn:
         logging.error("Failed to decode e-group list, %s" % str(excptn))
@@ -919,43 +921,47 @@ def ovrd_html_override(authDict, cgiMTRC, siteFacility, cgiSITE):
     for group in authDict['egroups']:
         if ( len(group) < 13 ):
             continue
-        if (( group[:4] != "cms-" ) or ( group[4:6].isupper() != True ) or
-            ( group[6] != "_" ) or ( group[-5:] != "-exec" )):
+        if (( group[:4] != "cms-" ) or ( group[6] != "_" ) or
+            ( group[-5:] != "-exec" )):
             continue
-        viewFlag = True
         facility = group[4:-5]
+        facilityStrng = facility
         siteStrng = "nothing"
         for site in siteFacility:
-            if ( siteFacility[site] != facility ):
+            if ( siteFacility[site].lower() != facility ):
                 continue
+            viewFlag = True
             siteAuth.add( site )
+            facilityStrng = siteFacility[site]
             if ( siteStrng == "nothing" ):
                 siteStrng = "%s" % site
             else:
                 siteStrng += ", %s" % site
         print(("<TR>\n   <TD>\n<TD VALIGN=\"top\" NOWRAP><B>Executive</B> of" +
                " &nbsp;\n   <TD VALIGN=\"top\" NOWRAP>%s &nbsp; <I>(allows t" +
-               "o change %s)</I>") % (facility, siteStrng))
+               "o change %s)</I>") % (facilityStrng, siteStrng))
     for group in authDict['egroups']:
         if ( len(group) < 14 ):
             continue
-        if (( group[:4] != "cms-" ) or ( group[4:6].isupper() != True ) or
-            ( group[6] != "_" ) or ( group[-6:] != "-admin" )):
+        if (( group[:4] != "cms-" ) or ( group[6] != "_" ) or
+            ( group[-6:] != "-admin" )):
             continue
-        viewFlag = True
         facility = group[4:-6]
+        facilityStrng = facility
         siteStrng = "nothing"
         for site in siteFacility:
-            if ( siteFacility[site] != facility ):
+            if ( siteFacility[site].lower() != facility ):
                 continue
+            viewFlag = True
             siteAuth.add( site )
+            facilityStrng = siteFacility[site]
             if ( siteStrng == "nothing" ):
                 siteStrng = "%s" % site
             else:
                 siteStrng += ", %s" % site
         print(("<TR>\n   <TD>\n<TD VALIGN=\"top\" NOWRAP><B>Admin</B> of &nb" +
                "sp;\n   <TD VALIGN=\"top\" NOWRAP>%s &nbsp; <I>(allows to ch" +
-               "ange %s)</I>") % (facility, siteStrng))
+               "ange %s)</I>") % (facilityStrng, siteStrng))
     #
     print("</TABLE>\n<BR>\n<P>\n\n")
     #
@@ -1109,14 +1115,14 @@ def ovrd_post_override(authDict, cgiMTRC, siteFacility, cgiSITE, cgiPOST):
                     if ( site == overrideEntry['name'] ):
                          authFlag = True
         elif (( len(group) >= 13 ) and
-              ( group[:4] == "cms-" ) and ( group[4:6].isupper() == True ) and
-              ( group[6] == "_" ) and ( group[-5:] == "-exec" )):
-            if ( siteFacility[ overrideEntry['name'] ] == group[4:-5] ):
+              ( group[:4] == "cms-" ) and ( group[6] == "_" ) and
+              ( group[-5:] == "-exec" )):
+            if ( siteFacility[ overrideEntry['name'] ].lower() == group[4:-5] ):
                 authFlag = True
         elif (( len(group) >= 14 ) and
-              ( group[:4] == "cms-" ) and ( group[4:6].isupper() == True ) and
-              ( group[6] == "_" ) and ( group[-6:] == "-admin" )):
-            if ( siteFacility[ overrideEntry['name'] ] == group[4:-6] ):
+              ( group[:4] == "cms-" ) and ( group[6] == "_" ) and
+              ( group[-6:] == "-admin" )):
+            if ( siteFacility[ overrideEntry['name'] ].lower() == group[4:-6] ):
                 authFlag = True
     if ( authFlag == False ):
         logging.critical(("User \"%s\" not authorized to change %s of CMS si" +
@@ -1264,43 +1270,47 @@ def ovrd_html_capacity(authDict, siteFacility, federationNames, cgiSITE):
     for group in authDict['egroups']:
         if ( len(group) < 13 ):
             continue
-        if (( group[:4] != "cms-" ) or ( group[4:6].isupper() != True ) or
-            ( group[6] != "_" ) or ( group[-5:] != "-exec" )):
+        if (( group[:4] != "cms-" ) or ( group[6] != "_" ) or
+            ( group[-5:] != "-exec" )):
             continue
-        viewFlag = True
         facility = group[4:-5]
+        facilityStrng = facility
         siteStrng = "nothing"
         for site in siteFacility:
-            if ( siteFacility[site] != facility ):
+            if ( siteFacility[site].lower() != facility ):
                 continue
+            viewFlag = True
             siteAuth.add( site )
+            facilityStrng = siteFacility[site]
             if ( siteStrng == "nothing" ):
                 siteStrng = "%s" % site
             else:
                 siteStrng += ", %s" % site
         print(("<TR>\n   <TD>\n<TD VALIGN=\"top\" NOWRAP><B>Executive</B> of" +
                " &nbsp;\n   <TD VALIGN=\"top\" NOWRAP>%s &nbsp; <I>(allows t" +
-               "o change %s)</I>") % (facility, siteStrng))
+               "o change %s)</I>") % (facilityStrng, siteStrng))
     for group in authDict['egroups']:
         if ( len(group) < 14 ):
             continue
-        if (( group[:4] != "cms-" ) or ( group[4:6].isupper() != True ) or
-            ( group[6] != "_" ) or ( group[-6:] != "-admin" )):
+        if (( group[:4] != "cms-" ) or ( group[6] != "_" ) or
+            ( group[-6:] != "-admin" )):
             continue
-        viewFlag = True
         facility = group[4:-6]
+        facilityStrng = facility
         siteStrng = "nothing"
         for site in siteFacility:
-            if ( siteFacility[site] != facility ):
+            if ( siteFacility[site].lower() != facility ):
                 continue
+            viewFlag = True
             siteAuth.add( site )
+            facilityStrng = siteFacility[site]
             if ( siteStrng == "nothing" ):
                 siteStrng = "%s" % site
             else:
                 siteStrng += ", %s" % site
         print(("<TR>\n   <TD>\n<TD VALIGN=\"top\" NOWRAP><B>Admin</B> of &nb" +
                "sp;\n   <TD VALIGN=\"top\" NOWRAP>%s &nbsp; <I>(allows to ch" +
-               "ange %s)</I>") % (facility, siteStrng))
+               "ange %s)</I>") % (facilityStrng, siteStrng))
     #
     print("</TABLE>\n<BR>\n<P>\n\n")
     #
@@ -1526,14 +1536,14 @@ def ovrd_post_capacity(authDict, siteFacility, federationNames,
                 authFlag = True
                 break
         elif (( len(group) >= 13 ) and
-              ( group[:4] == "cms-" ) and ( group[4:6].isupper() == True ) and
-              ( group[6] == "_" ) and ( group[-5:] == "-exec" )):
-            if ( siteFacility[ capacityEntry['name'] ] == group[4:-5] ):
+              ( group[:4] == "cms-" ) and ( group[6] == "_" ) and
+              ( group[-5:] == "-exec" )):
+            if ( siteFacility[ capacityEntry['name'].lower() ] == group[4:-5] ):
                 authFlag = True
         elif (( len(group) >= 14 ) and
-              ( group[:4] == "cms-" ) and ( group[4:6].isupper() == True ) and
-              ( group[6] == "_" ) and ( group[-6:] == "-admin" )):
-            if ( siteFacility[ capacityEntry['name'] ] == group[4:-6] ):
+              ( group[:4] == "cms-" ) and ( group[6] == "_" ) and
+              ( group[-6:] == "-admin" )):
+            if ( siteFacility[ capacityEntry['name'].lower() ] == group[4:-6] ):
                 authFlag = True
     if ( authFlag == False ):
         logging.critical(("User \"%s\" not authorized to change SiteCapacity" +

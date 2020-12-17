@@ -1349,7 +1349,8 @@ def admf_auth_cern_sso():
         authDict['fullname'] = myName
         #
         myGroup = os.environ['ADFS_GROUP']
-        authDict['egroups'] = [e for e in myGroup.split(";") if ( e != "" ) ]
+        authDict['egroups'] = [e.lower() for e in myGroup.split(";") \
+                                                               if ( e != "" ) ]
         #
         logging.info("CGI access by: %s / \"%s\" member of %s" %
                                    (authDict['username'], authDict['fullname'],
@@ -1384,7 +1385,7 @@ def admf_auth_cern_sso():
     ADMF_AT_HDR = {'Content-Type': "application/x-www-form-urlencoded"}
     ADMF_AT_DATA = {'grant_type': "client_credentials",
                     'client_id': "cmssst_cgi",
-                    'client_secret': "XXXXXXXX-XXXXXXXXX-XXXX-XXXXXXXXXXXX",
+                    'client_secret': "XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX",
                     'audience': "authorization-service-api"}
     try:
         requestObj = urllib.request.Request(ADMF_AT_URL,
@@ -1439,6 +1440,7 @@ def admf_auth_cern_sso():
         return authDict
     try:
         userId = json.loads( myData )['data'][0]['id']
+        logging.debug("SSO/Identity = %s" % userId)
     except (json.JSONDecodeError, KeyError, IndexError) as excptn:
         logging.error("Failed to decode user identity, %s" % str(excptn))
         #
@@ -1471,7 +1473,7 @@ def admf_auth_cern_sso():
                                                      str(authDict['egroups'])))
         return authDict
     try:
-        authDict['egroups'] = [ e['groupIdentifier'] for e in \
+        authDict['egroups'] = [ e['groupIdentifier'].lower() for e in \
                                                  json.loads( myData )['data'] ]
     except (json.JSONDecodeError, KeyError, IndexError) as excptn:
         logging.error("Failed to decode e-group list, %s" % str(excptn))
@@ -1551,7 +1553,6 @@ def admf_html_facility(authDict, facilityList, cgiFACLTY):
             descripton = "allows to view all"
         elif ( len(group) >= 13 ):
             if (( group[:4] == "cms-" ) and
-                ( group[4:6].isupper() == True ) and
                 ( group[6] == "_" )):
                 if ( group[-5:] == "-exec" ):
                     authExec.append( group[4:-5] )
@@ -1590,8 +1591,8 @@ def admf_html_facility(authDict, facilityList, cgiFACLTY):
         #
         for facility in displayList:
             if (( authView == False ) and 
-                ( facility not in authExec ) and
-                ( facility not in authAdmin )):
+                ( facility.lower() not in authExec ) and
+                ( facility.lower() not in authAdmin )):
                 continue
 
             if facility in facilityDict:
@@ -1603,7 +1604,8 @@ def admf_html_facility(authDict, facilityList, cgiFACLTY):
                 entry['exec'] = "cms-" + facility + "-exec@cern.ch"
                 entry['admin'] = "cms-" + facility + "-admin@cern.ch"
             #
-            if (( authCmsst == False ) and ( facility not in authExec )):
+            if (( authCmsst == False ) and
+                ( facility.lower() not in authExec )):
                 bckgnd = "#F4F4F4"
             else:
                 bckgnd = "#FFFFFF"
@@ -1672,7 +1674,7 @@ def admf_html_facility(authDict, facilityList, cgiFACLTY):
             if ( authCmsst ):
                 myReadonly = ""
                 myDisabled = ""
-            elif ( facility in authExec ):
+            elif ( facility.lower() in authExec ):
                 myReadonly = " READONLY"
                 myDisabled = ""
             else:
@@ -1806,9 +1808,9 @@ def admf_post_facility(authDict, cgiFACLTY, cgiPOST):
         if ( group in ADMF_AUTH_CMSSST ):
             myAuth = "cmssst"
             break
-        elif ( group == exeGroup ):
+        elif ( group == exeGroup.lower() ):
             myAuth = "exec"
-        elif (( group == admGroup ) and ( myAuth is None )):
+        elif (( group == admGroup.lower() ) and ( myAuth is None )):
             myAuth = "view"
         elif (( group in ADMF_AUTH_VIEW ) and ( myAuth is None )):
             myAuth = "view"
