@@ -2083,7 +2083,7 @@ if __name__ == '__main__':
             myYear, myMonth = time.gmtime( time.time() )[0:2]
             myQuarter = int( (myMonth - 1) / 3 ) + 1
             if ( myQuarter == 1 ):
-                previousQuarter = "%4.4dq$1.1d" % (myYear - 1, 4)
+                previousQuarter = "%4.4dq%1.1d" % (myYear - 1, 4)
             else:
                 previousQuarter = "%4.4dq%1.1d" % (myYear, myQuarter - 1)
         else:

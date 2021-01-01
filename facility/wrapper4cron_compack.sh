@@ -7,7 +7,7 @@ EXC_LOCK=""
 trap 'exit 1' 1 2 3 15
 trap '(/bin/rm -f ${EXC_LOCK}) 1> /dev/null 2>&1' 0
 
-EMAIL_ADDR="lammel@fnal.gov"
+EMAIL_ADDR="lammel@fnal.gov George.Alverson@cern.ch"
 # #############################################################################
 
 
@@ -89,13 +89,16 @@ fi
 `dirname $0`/adm_facility.py -a -vv
 #
 if [ -e `dirname $0`/log.txt ]; then
-   /usr/bin/Mail -s "$0 new compack" ${EMAIL_ADDR} < `dirname $0`/log.txt
-else
-   /bin/rm -f /tmp/cmssst_facilACK.txt 1>/dev/null 2>&1
-   /bin/ls -l /eos/user/c/cmssst/www/facility 1> /tmp/cmssst_facilACK.txt 2>&1
-   /usr/bin/Mail -s "$0 new compack" ${EMAIL_ADDR} < /tmp/cmssst_facilACK.txt
-   /bin/rm -f /tmp/cmssst_facilACK.txt 1>/dev/null 2>&1
+   /usr/bin/Mail -s "$0 new compack" lammel@fnal.gov < `dirname $0`/log.txt
 fi
+#
+#
+/bin/rm -f /tmp/cmssst_facilACK.txt 1>/dev/null 2>&1
+/bin/ls -1 /eos/user/c/cmssst/www/facility/compack_20??q?.xls | /usr/bin/awk -F/ 'BEGIN{f=""} {f=$NF} END{printf "https://cmssst.web.cern.ch/facility/%s",f}' 1> /tmp/cmssst_facilACK.txt 2>&1
+echo "" 1>>/tmp/cmssst_facilACK.txt 2>&1
+/bin/ls -l /eos/user/c/cmssst/www/facility 1>> /tmp/cmssst_facilACK.txt 2>&1
+/usr/bin/Mail -s "new computing acknowledgement" ${EMAIL_ADDR} < /tmp/cmssst_facilACK.txt
+/bin/rm -f /tmp/cmssst_facilACK.txt 1>/dev/null 2>&1
 # #############################################################################
 
 
