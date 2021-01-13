@@ -1215,7 +1215,8 @@ def evsam_evaluate(timebin):
         if ( downStatus != "ok" ):
             siteDetail = "%s: %s\n%s" % (downStatus, downDetail, siteDetail)
             if ( downStatus == "downtime" ):
-                if (( myStatus == "error" ) or ( myStatus == "unknown" )):
+                if (( myStatus is None ) or
+                    ( myStatus == "error" ) or ( myStatus == "unknown" )):
                     myStatus = "downtime"
                 myReliability = None
         #
