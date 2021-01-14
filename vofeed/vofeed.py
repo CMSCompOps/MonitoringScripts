@@ -50,7 +50,7 @@ import pydoop.hdfs
 
 
 
-VOFEED_VERSION = "v2.01.02"
+VOFEED_VERSION = "v2.01.03"
 # ########################################################################### #
 
 
@@ -1372,12 +1372,21 @@ if __name__ == '__main__':
             # loop over Rucio Storage Elements:
             for rseName in [ d['rse'] for d in rseClient.list_rses() ]:
                 #
+                # check if RSE is for testing/should be ignored in evaluations:
+                rseIgnore = False
+                try:
+                    rseAttributes = rseClient.list_rse_attributes(rseName)
+                    if ( rseAttributes['sitestatus_ignore'] == True ):
+                        rseIgnore = True
+                except (KeyError, rucio.common.exception.RucioException):
+                    pass
+                #
                 # get supported protocols for the RSE:
                 try:
                     rseProtocols = rseClient.get_protocols(rseName)
                 except rucio.common.exception.RSEProtocolNotSupported:
                     continue
-                rucioDict[rseName] = {}
+                rucioDict[rseName] = { 'ignore': rseIgnore }
         
                 # loop over protocols of RSE:
                 for rseProto in rseProtocols:
@@ -1488,8 +1497,17 @@ if __name__ == '__main__':
             if rseSite is None:
                 continue
 
+            # determine production status:
+            if ( rucioDict[rseName]['ignore'] == True ):
+                rseProduction = False
+            else:
+                rseProduction = True
+
             # loop over protocols of RSE:
             for rseProto in rucioDict[rseName]:
+                if ( rseProto == "ignore" ):
+                    continue
+                #
                 rseDict = rucioDict[rseName][rseProto]
                 rseHost = rseDict['hostname']
                 #
@@ -1513,7 +1531,8 @@ if __name__ == '__main__':
                     continue
                 service = { 'category': "SE", 'hostname': rseHost,
                             'flavour': rseFlavour,
-                            'endpoint': "%s:%d" % (rseHost, rseDict['port']) }
+                            'endpoint': "%s:%d" % (rseHost, rseDict['port']), 
+                            'production': rseProduction }
                 #
                 try:
                     service['gridsite'] = host2grid[ (rseHost, "SE") ]
