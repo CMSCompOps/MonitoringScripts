@@ -228,12 +228,12 @@ done
 
 # get Site Readiness Report web page as PNG file:
 # -----------------------------------------------
-/usr/bin/xvfb-run --server-args="-screen 0, 1600x1200x24" /usr/bin/CutyCapt --insecure --url=http://test-cmssst.web.cern.ch/sitereadiness/report.html --out=${TMP_FILE}
+/usr/bin/xvfb-run --server-args="-screen 0, 1600x1200x24" /usr/bin/CutyCapt --insecure --url=http://cmssst.web.cern.ch/sitereadiness/report.html --out=${TMP_FILE}
 if [ $? -ne 0 ]; then
    /bin/sleep 3
    /bin/rm -f ${TMP_FILE} 1>/dev/null 2>&1
    echo "failed to get site readiness report web page as png" >> ${ERR_FILE}
-   /usr/bin/xvfb-run --server-args="-screen 0, 1600x1200x24" /usr/bin/CutyCapt --insecure --url=http://test-cmssst.web.cern.ch/sitereadiness/report.html --out=${TMP_FILE} 1> ${ERR_FILE} 2>&1
+   /usr/bin/xvfb-run --server-args="-screen 0, 1600x1200x24" /usr/bin/CutyCapt --insecure --url=http://cmssst.web.cern.ch/sitereadiness/report.html --out=${TMP_FILE} 1> ${ERR_FILE} 2>&1
    RCX=$?
    if [ ${RCX} -ne 0 ]; then
       echo "CutyCapt retry failed too, rc=${RCX}" >> ${ERR_FILE}
@@ -265,12 +265,12 @@ if [ -f ${TMP_FILE} ]; then
    /bin/rm ${TMP_FILE}
 fi
 
-/usr/bin/xvfb-run --server-args="-screen 0, 1600x1200x24" /usr/bin/CutyCapt --insecure --url=http://test-cmssst.web.cern.ch/sitereadiness/sum_report.html --out=${TMP_FILE}
+/usr/bin/xvfb-run --server-args="-screen 0, 1600x1200x24" /usr/bin/CutyCapt --insecure --url=http://cmssst.web.cern.ch/sitereadiness/sum_report.html --out=${TMP_FILE}
 if [ $? -ne 0 ]; then
    /bin/sleep 3
    /bin/rm -f ${TMP_FILE} 1>/dev/null 2>&1
    echo "failed to get site readiness summary report page as png" >> ${ERR_FILE}
-   /usr/bin/xvfb-run --server-args="-screen 0, 1600x1200x24" /usr/bin/CutyCapt --insecure --url=http://test-cmssst.web.cern.ch/sitereadiness/sum_report.html --out=${TMP_FILE} 1> ${ERR_FILE} 2>&1
+   /usr/bin/xvfb-run --server-args="-screen 0, 1600x1200x24" /usr/bin/CutyCapt --insecure --url=http://cmssst.web.cern.ch/sitereadiness/sum_report.html --out=${TMP_FILE} 1> ${ERR_FILE} 2>&1
    RCX=$?
    if [ ${RCX} -ne 0 ]; then
       echo "CutyCapt retry failed too, rc=${RCX}" >> ${ERR_FILE}
