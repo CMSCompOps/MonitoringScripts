@@ -66,8 +66,7 @@ EVHC_BACKUP_DIR = "./junk"
 
 evhc_glbl_cmssites = []
     # list of CMS site names
-evhc_glbl_templates = { '203': {}, '204': {}, '205': {}, '206': {}, \
-                        '207': {}, '208': {}, '209': {}, '210': {}, '211': {} }
+evhc_glbl_templates = {}
     # dictionary: HC-id: {cmssites: ["", "", ...], jobs: True/Fales }
 evhc_glbl_jobcondor = []
     # list of dictionaries { 'time', 'site', 'status'}
@@ -260,6 +259,18 @@ def evhc_template_cfg():
     # ============
     hcConf = json.loads( myData )
     del myData
+
+
+    # use is_golden flagged templates in case of empty template list:
+    # ===============================================================
+    if ( len( evhc_glbl_templates ) == 0 ):
+        for tmpltID in hcConf:
+            try:
+                if ( hcConf[tmpltID]['is_golden'] == True ):
+                    evhc_glbl_templates[tmpltID] = {}
+            except KeyError as excptn:
+                logging.warning("Incomplete template dictionary, id=%s, %s" %
+                                                        (tmpltID, str(excptn)))
 
 
     # loop over predefined template ids and fill site list and jobs flag:
