@@ -143,7 +143,8 @@ class FTSmetric:
 
 
     @staticmethod
-    def classify(error_scope, error_code, error_message, link_name, file_size):
+    def classify(error_scope, error_code, error_message, link_name, \
+                 file_size, transfer_activity):
         """function to classify transfer results into counting classes"""
 
         error_lower = error_message.lower()
@@ -153,7 +154,15 @@ class FTSmetric:
         elif (( file_size >= 21474836480 ) or
               ( error_lower.find("certificate has expired") >= 0 ) or
               ( error_lower.find("operation canceled by user") >= 0 ) or
-              ( error_lower.find("path/url invalid") >= 0 )):
+              ( error_lower.find("path/url invalid") >= 0 ) or
+              ( error_lower.find("file exists and overwrite is not enabled") \
+                                                                       >= 0 )):
+            return "trn_usr"
+        elif (( transfer_activity == "ASO" ) and
+              (( error_lower.find("disk quota exceeded") >= 0 ) or
+               ( error_message.find("NoFreeSpaceException") >= 0 ) or
+               ( error_lower.find("not enough space") >= 0 ) or
+               ( error_lower.find("no free space") >= 0 ))):
             return "trn_usr"
         elif (( error_scope == "TRANSFER" ) and
               (( error_lower.find("no route to host") >= 0 ) or
@@ -384,7 +393,7 @@ class FTSmetric:
                 ( error_lower.find("stale file handle") >= 0 ) or
                 ( error_lower.find("failed to abort transfer") >= 0 ) or
                 ( error_lower.find("error in failed to open checksum") >= 0 ) or
-                ( error_lower.find("error in failed to read checksum") >= 0 )):
+                ( error_lower.find("error in failed to read checksum") >= 0 ) or                ( error_message.find("SURL is not pinned") >= 0 )):
                 return classfcn
         elif ( classfcn == "trn_err" ):
             if (( error_lower.find("no such file or directory") >= 0 ) or
@@ -998,7 +1007,8 @@ if __name__ == '__main__':
         # ################################################################### #
         FTS_HDFS_PREFIX = "/project/monitoring/archive/fts/raw/complete/"
         FTS_KEYS = ["src_hostname", "dst_hostname", "tr_error_scope",
-                    "t_error_code", "t__error_message", "f_size", "log_link" ]
+                    "t_error_code", "t__error_message", "f_size", "log_link",
+                    "activity" ]
 
         # prepare HDFS subdirectory list:
         # ===============================
@@ -1102,7 +1112,8 @@ if __name__ == '__main__':
                                         myJson['data']['t_error_code'],
                                         myJson['data']['t__error_message'],
                                         link,
-                                        myJson['data']['f_size'])
+                                        myJson['data']['f_size'],
+                                        myJson['data']['activity'])
                                     #
                                     # file size:
                                     nb = max(0, myJson['data']['f_size'])
