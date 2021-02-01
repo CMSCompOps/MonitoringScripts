@@ -1100,6 +1100,12 @@ if __name__ == '__main__':
                                               ( myJson['data']['t_error_code'],
                                      myJson['data']['t_final_transfer_state']))
                                     #
+                                    # make activity not mandatory:
+                                    try:
+                                        myActivity = myJson['data']['activity']
+                                    except:
+                                        myActivity = "unknown"
+                                    #
                                     # fix up log file URL:
                                     logfile = myJson['data']['log_link'].replace("Imperial-FTS-IPv6", "fts00.grid.hep.ph.ic.ac.uk")
                                     logfile = logfile.replace("FTS-MIT", "t3serv019.mit.edu")
@@ -1112,8 +1118,7 @@ if __name__ == '__main__':
                                         myJson['data']['t_error_code'],
                                         myJson['data']['t__error_message'],
                                         link,
-                                        myJson['data']['f_size'],
-                                        myJson['data']['activity'])
+                                        myJson['data']['f_size'], myActivity)
                                     #
                                     # file size:
                                     nb = max(0, myJson['data']['f_size'])
@@ -1132,7 +1137,7 @@ if __name__ == '__main__':
                                     else:
                                         linkInfo[tuple][link][result][0] += 1
                                         linkInfo[tuple][link][result][1] += nb
-                                except KeyError:
+                                except KeyError as excptn:
                                     logging.error(("Incomplete FTS record, f" +
                                                    "ile %s: %s") %
                                                        (fileName, str(excptn)))
