@@ -50,7 +50,7 @@ import pydoop.hdfs
 
 
 
-VOFEED_VERSION = "v2.01.03"
+VOFEED_VERSION = "v2.01.04"
 # ########################################################################### #
 
 
@@ -464,6 +464,8 @@ class vofeed:
                     srv['rpath'] = service['rpath']
                 if (( 'wpath' in service ) and ( 'wpath' not in srv )):
                     srv['wpath'] = service['wpath']
+                if (( 'endpoint' in service ) and ( 'endpoint' not in srv )):
+                    srv['endpoint'] = service['endpoint']
                 if ( srv['production'] == True ):
                     return
                 elif ( service['production'] == False ):
