@@ -1538,12 +1538,12 @@ def ovrd_post_capacity(authDict, siteFacility, federationNames,
         elif (( len(group) >= 13 ) and
               ( group[:4] == "cms-" ) and ( group[6] == "_" ) and
               ( group[-5:] == "-exec" )):
-            if ( siteFacility[ capacityEntry['name'].lower() ] == group[4:-5] ):
+            if ( siteFacility[ capacityEntry['name'] ].lower() == group[4:-5] ):
                 authFlag = True
         elif (( len(group) >= 14 ) and
               ( group[:4] == "cms-" ) and ( group[6] == "_" ) and
               ( group[-6:] == "-admin" )):
-            if ( siteFacility[ capacityEntry['name'].lower() ] == group[4:-6] ):
+            if ( siteFacility[ capacityEntry['name'] ].lower() == group[4:-6] ):
                 authFlag = True
     if ( authFlag == False ):
         logging.critical(("User \"%s\" not authorized to change SiteCapacity" +
