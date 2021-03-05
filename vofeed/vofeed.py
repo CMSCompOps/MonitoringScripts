@@ -50,7 +50,7 @@ import pydoop.hdfs
 
 
 
-VOFEED_VERSION = "v2.01.05"
+VOFEED_VERSION = "v2.01.06"
 # ########################################################################### #
 
 
@@ -1363,7 +1363,7 @@ if __name__ == '__main__':
         #
         os.environ["RUCIO_HOME"] = "/data/cmssst/packages"
 
-        logging.info("Fetching LFN-to-PFN translations from PhEDEx")
+        logging.info("Fetching storage endpoint and LFN-to-PFN from Rucio")
         try:
             rucioDict = {}
 
