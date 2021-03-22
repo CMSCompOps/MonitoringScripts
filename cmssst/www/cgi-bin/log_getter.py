@@ -1464,7 +1464,7 @@ def lget_maindvi_sam(cfg, docs):
     # ################################################################ #
     # prepare mainDVI section with CMS SAM evaluation according to cfg #
     # ################################################################ #
-    LGET_SAM3HEAT = "http://wlcg-sam-cms.cern.ch/templates/ember/#/historicalsmry/heatMap?profile=CMS_CRITICAL_FULL&start_time=%s&end_time=%s&%s=%s&time=manual&view=Test History"
+    LFTCH_SITEMON = "https://monit-grafana.cern.ch/d/m7XtZsEZk4/wlcg-sitemon-historical-tests?orgId=20&var-vo=cms&var-dst_tier=All%s&from=%d000&to=%d000"
     #
     siteRegex = re.compile(r"T\d_[A-Z]{2,2}_\w+")
 
@@ -1635,19 +1635,30 @@ def lget_maindvi_sam(cfg, docs):
                         if ( myDoc['status'] != "unknown" ):
                             sTIS = tbin * cfg['period']
                             eTIS = sTIS + cfg['period']
-                            sSTRNG = time.strftime("%Y/%m/%d %H:%M",
-                                                             time.gmtime(sTIS))
-                            eSTRNG = time.strftime("%Y/%m/%d %H:%M",
-                                                             time.gmtime(eTIS))
                             if ( myDoc['type'] == "site" ):
-                                sKEY = "site"
+                                sSel = ( "&var-dst_experiment_site=%s&var-ds" +
+                                         "t_hostname=All&var-service_flavour" +
+                                         "=All" ) % myDoc['name']
+                            elif ( myDoc['type'] == "CE" ):
+                                sSel = ( "&var-dst_experiment_site=All&var-d" +
+                                         "st_hostname=%s&var-service_flavour" +
+                                         "=HTCONDOR-CE&var-service_flavour=A" +
+                                         "RC-CE" ) % myDoc['name']
+                            elif ( myDoc['type'] == "XRD" ):
+                                sSel = ( "&var-dst_experiment_site=All&var-d" +
+                                         "st_hostname=%s&var-service_flavour" +
+                                         "=XROOTD" ) % myDoc['name']
                             else:
-                                sKEY = "hostname"
+                                sSel = ( "&var-dst_experiment_site=All&var-d" +
+                                         "st_hostname=%s&var-service_flavour" +
+                                         "=%s" ) % (myDoc['name'],
+                                                                 myDoc['type'])
                             myFile.write(("      <TR>\n         <TD COLSPAN=" +
                                           "\"2\"><A HREF=\"%s\"><I>Link to t" +
-                                          "est results in SAM3 dashboard</I>" +
-                                          "</A>\n") % (LGET_SAM3HEAT %
-                                        (sSTRNG, eSTRNG, sKEY, myDoc['name'])))
+                                          "he WLCG SiteMon Historical Tests " +
+                                          "dashboard</I></A>\n") %
+                                         (LFTCH_SITEMON %
+                                                     (sSel, (sTIS-900), eTIS)))
                         myFile.write("      </TABLE>\n      <BR>\n")
                     else:
                         myFile.write("   <TD>&nbsp;\n")
