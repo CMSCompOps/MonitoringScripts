@@ -1574,9 +1574,6 @@ if __name__ == '__main__':
                     identicalFlag = True
                     for doc in correctDocs[tbin]:
                         if doc not in monitDocs[tbin]:
-                            # add author information:
-                            if corr_cfg['author'] is not None:
-                                doc['author'] = corr_cfg['author']
                             identicalFlag = False
                     if ( identicalFlag ):
                         logging.debug(("filtering out (%d) with %d entries a" +
@@ -1586,17 +1583,8 @@ if __name__ == '__main__':
                     else:
                         cnt_docs += len( correctDocs[tbin] )
                 else:
-                    # add author information:
-                    if corr_cfg['author'] is not None:
-                        for doc in correctDocs[tbin]:
-                            if doc not in monitDocs[tbin]:
-                                doc['author'] = corr_cfg['author']
                     cnt_docs += len( correctDocs[tbin] )
             else:
-                # add author information:
-                if corr_cfg['author'] is not None:
-                    for doc in correctDocs[tbin]:
-                        doc['author'] = corr_cfg['author']
                 cnt_docs += len( correctDocs[tbin] )
     else:
         # filter out identical docs in each timebin:
@@ -1623,18 +1611,11 @@ if __name__ == '__main__':
                                                              myResID, myResST))
                         del correctDocs[tbin][index]
                     else:
-                        # add author information:
-                        if corr_cfg['author'] is not None:
-                            doc['author'] = corr_cfg['author']
                         cnt_docs += 1
                 if ( len(correctDocs[tbin]) == 0 ):
                     # no documents left in timebin:
                     del correctDocs[tbin]
             else:
-                # add author information:
-                if corr_cfg['author'] is not None:
-                    for doc in correctDocs[tbin]:
-                        doc['author'] = corr_cfg['author']
                 cnt_docs += len( correctDocs[tbin] )
 
 
