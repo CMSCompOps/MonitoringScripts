@@ -770,10 +770,11 @@ def admf_compose_json(facilityDict, time15bin):
             commaSiteFlag = True
         jsonString += "\n      ],\n"
         #
-        if myEntry['who'] is None:
-            jsonString += ("      \"who\": \"\",\n")
-        else:
-            jsonString += ("      \"who\": \"%s\",\n" % myEntry['who'])
+        #if myEntry['who'] is None:
+        #    jsonString += ("      \"who\": \"\",\n")
+        #else:
+        #    jsonString += ("      \"who\": \"%s\",\n" % myEntry['who'])
+        jsonString += ("      \"who\": \"\",\n")
         if myEntry['when'] is None:
             jsonString += ("      \"when\": \"\"\n   }\n }")
         else:

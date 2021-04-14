@@ -471,7 +471,7 @@ def capa_read_jsonfile():
 
 
 
-def capa_compose_json(capacityList, time15bin):
+def capa_compose_json(capacityList, time15bin, noWho):
     """function to compose a JSON string from the list of site capacities"""
     # ##################################################################### #
     # compose a JSON string from the list of capacity dictionaries provided #
@@ -552,7 +552,9 @@ def capa_compose_json(capacityList, time15bin):
                                            (spcStrng, tmpDict[myName]['when']))
         else:
             jsonString += "%s\"when\": null,\n" % spcStrng
-        if (( 'who' in tmpDict[myName] ) and
+        if ( noWho == True ):
+            jsonString += "%s\"who\": null\n" % spcStrng
+        elif (( 'who' in tmpDict[myName] ) and
             ( tmpDict[myName]['who'] is not None )):
             jsonString += ("%s\"who\": \"%s\"\n" %
                                             (spcStrng, tmpDict[myName]['who']))
@@ -719,7 +721,7 @@ def capa_update_jsonfile(siteList, pledgesDict, quotaDict, usageDict):
                     del tmpDict
                     #
                     #
-                    jsonString = capa_compose_json(capacityList, None)
+                    jsonString = capa_compose_json(capacityList, None, False)
                     #
                     myFile.seek(0)
                     myFile.write(jsonString)
@@ -920,7 +922,7 @@ def capa_monit_upload(metricDict):
     jsonString = "["
     commaFlag = False
     for t15bin in sorted( metricDict.keys() ):
-        mtrcString = capa_compose_json(metricDict[t15bin], t15bin)
+        mtrcString = capa_compose_json(metricDict[t15bin], t15bin, True)
         if ( commaFlag ):
             jsonString = ","
         jsonString += mtrcString[1:-3]
@@ -990,8 +992,8 @@ def capa_monit_write(metricDict, filename=None):
     jsonString = "["
     commaFlag = False
     for t15bin in sorted( metricDict.keys() ):
-        #mtrcString = capa_compose_json(metricDict[t15bin], None)
-        mtrcString = capa_compose_json(metricDict[t15bin], t15bin)
+        #mtrcString = capa_compose_json(metricDict[t15bin], None, True)
+        mtrcString = capa_compose_json(metricDict[t15bin], t15bin, True)
         if ( commaFlag ):
             jsonString = ","
         jsonString += mtrcString[1:-3]
