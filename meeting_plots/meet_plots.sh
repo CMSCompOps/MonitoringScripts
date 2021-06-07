@@ -288,7 +288,7 @@ fi
 # now cut out Tier-2 image:
 if [ -f ${TMP_FILE} ]; then
    if [ ! -f ${PLOT_DIR}/T2_sr.png ]; then
-      /usr/bin/convert -crop 1150x1364+7+365 ${TMP_FILE} ${PLOT_DIR}/T2_sr.png
+      /usr/bin/convert -crop 1150x1318+7+365 ${TMP_FILE} ${PLOT_DIR}/T2_sr.png
    else
       echo "T2_sr.png exist, skipping"
    fi
