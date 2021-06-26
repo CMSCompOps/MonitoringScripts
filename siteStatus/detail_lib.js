@@ -709,7 +709,7 @@ function writeTable(widthName) {
    // add a row/line in case there is a message:
    if ( myData.msg != '' ) {
       myTableStr += '<TR>\n   <TD COLSPAN="7" ALIGN="left"><SPAN STYLE="colo' +
-         'r:blue; font-weight:bold;">' + siteStatusInfo['msg'] + '</SPAN>\n';
+         'r:blue; font-weight:bold;">' + myData.msg + '</SPAN>\n';
    }
 
    // compose table trailer:

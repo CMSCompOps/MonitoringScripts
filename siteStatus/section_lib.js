@@ -378,7 +378,7 @@ function writePmonthTable() {
    // add a row/line in case there is a message:
    if ( myData.msg != '' ) {
       myTableStr += '<TR>\n   <TD COLSPAN="5" ALIGN="left"><SPAN STYLE="colo' +
-         'r:blue; font-weight:bold;">' + siteStatusInfo['msg'] + '</SPAN>\n';
+         'r:blue; font-weight:bold;">' + myData.msg + '</SPAN>\n';
    }
 
    // compose table trailer:
@@ -487,7 +487,7 @@ function writePweekTable() {
    // add a row/line in case there is a message:
    if ( myData.msg != '' ) {
       myTableStr += '<TR>\n   <TD COLSPAN="5" ALIGN="left"><SPAN STYLE="colo' +
-         'r:blue; font-weight:bold;">' + siteStatusInfo['msg'] + '</SPAN>\n';
+         'r:blue; font-weight:bold;">' + myData.msg + '</SPAN>\n';
    }
 
    // compose table trailer:
@@ -596,7 +596,7 @@ function writeYesterdayTable() {
    // add a row/line in case there is a message:
    if ( myData.msg != '' ) {
       myTableStr += '<TR>\n   <TD COLSPAN="5" ALIGN="left"><SPAN STYLE="colo' +
-         'r:blue; font-weight:bold;">' + siteStatusInfo['msg'] + '</SPAN>\n';
+         'r:blue; font-weight:bold;">' + myData.msg + '</SPAN>\n';
    }
 
    // compose table trailer:
@@ -703,7 +703,7 @@ function writeTodayTable() {
    // add a row/line in case there is a message:
    if ( myData.msg != '' ) {
       myTableStr += '<TR>\n   <TD COLSPAN="5" ALIGN="left"><SPAN STYLE="colo' +
-         'r:blue; font-weight:bold;">' + siteStatusInfo['msg'] + '</SPAN>\n';
+         'r:blue; font-weight:bold;">' + myData.msg + '</SPAN>\n';
    }
 
    // compose table trailer:
@@ -811,7 +811,7 @@ function writeFweekTable() {
    // add a row/line in case there is a message:
    if ( myData.msg != '' ) {
       myTableStr += '<TR>\n   <TD COLSPAN="5" ALIGN="left"><SPAN STYLE="colo' +
-         'r:blue; font-weight:bold;">' + siteStatusInfo['msg'] + '</SPAN>\n';
+         'r:blue; font-weight:bold;">' + myData.msg + '</SPAN>\n';
    }
 
    // compose table trailer:
