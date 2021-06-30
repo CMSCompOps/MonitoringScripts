@@ -896,19 +896,6 @@ def evsam_evaluate_service_status(etfResults, service):
                     max_time = result['time']
         else:
             pStat = "unknown"
-
-        #-LML patch for xrootd overload of PIC
-        if (( service['host'].find(".pic.es") > 0 ) and
-            (( probe == "org.cms.SE-xrootd-connection" ) or
-             ( probe == "org.cms.SE-xrootd-version" ) or
-             ( probe == "org.cms.SE-xrootd-read" ) or
-             ( probe == "org.cms.SE-xrootd-contain" ) or
-             ( probe == "org.cms.WN-xrootd-access-/cms/Role=lcgadmin" ) or
-             ( probe == "org.cms.WN-xrootd-fallback-/cms/Role=lcgadmin" )) and
-            (( pStat == "error" ) or ( pStat == "unknown" ))):
-            pStat = "warning"
-        #-LML patch for xrootd overload of PIC
-
         logging.log(9, "       probe status: %s" % pStat)
         #
         #
