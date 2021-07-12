@@ -22,6 +22,7 @@
 #    "disk_pledge": 26100.0,                 # by Rebus
 #    "disk_usable": 26100.0,
 #    "disk_experiment_use": 0.0,
+#    "disk_local_use": 0.0,
 #    "tape_pledge": 99000.0,
 #    "tape_usable": 99000.0,
 #    "when": "2019-Jan-17 22:12:00",
@@ -398,6 +399,111 @@ def capa_dynamo_quota():
 
 
 
+def capa_rucio_quotas():
+    # ##################################################################### #
+    # return dictionary of current experiment and local disk quota settings #
+    # in Rucio                                                              #
+    # ##################################################################### #
+    os.environ["RUCIO_HOME"] = "/eos/user/c/cmssst/packages"
+    #
+    import getpass
+    import rucio.client.client
+    import rucio.common.exception
+    #
+    siteRegex = re.compile(r"T\d_[A-Z]{2,2}_\w+")
+
+    logging.info("Fetching experiment/local disk quota settings from Rucio")
+    quotaDict = {}
+    #
+    try:
+        # initialize Rucio client for current username:
+        myUser = getpass.getuser()
+        rcoClient=rucio.client.client.Client(account=myUser)
+
+        # loop over Rucio Storage Elements:
+        for rseName in [ d['rse'] for d in rcoClient.list_rses()
+                                  if ( d['rse_type'] == "DISK" ) ]:
+            # filter out all but "real" "production" RSEs:
+            try:
+                rseAttributes = rcoClient.list_rse_attributes(rseName)
+                if ( rseAttributes['cms_type'] != "real" ):
+                    continue
+                if ( rseAttributes['sitestatus_ignore'] == True ):
+                    continue
+            except (KeyError, rucio.common.exception.RucioException):
+                pass
+
+            # get total space, "static" RSE usage:
+            rseUsages = rcoClient.get_rse_usage(rseName, {'source': "static"})
+            try:
+                myValue = next(iter(rseUsages))['total']
+                if ( myValue is not None ):
+                    # convert to TeraBytes with 100 GB precision
+                    totalSpc = int( myValue / 100000000000 ) / 10.0
+                else:
+                    totalSpc = 0.0
+            except (TypeError, KeyError, StopIteration, \
+                    rucio.common.exception.RucioException):
+                totalSpc = 0.0
+
+            # derive sitename from RSE name:
+            if (( rseName.endswith('_Disk') ) or
+                ( rseName.endswith('_Ceph') )):
+                mySite = rseName[:-5]
+            else:
+                mySite = rseName
+
+            # get local space, limit of lowercase(sitename)_local_users account:
+            rseAccount = mySite.lower() + "_local_users"
+            if ( len(rseAccount) > 25 ):
+               rseAccount = mySite.lower() + "_local"
+               if ( len(rseAccount) > 25 ):
+                   rseAccount = mySite[:19].lower() + "_local"
+            try:
+                myValue = next(iter(rcoClient.get_account_limits(rseAccount,
+                                                   rseName, "local").values()))
+                if ( myValue is not None ):
+                    # convert to TeraBytes with 100 GB precision
+                    lclQuota = int( myValue / 100000000000 ) / 10.0
+                else:
+                    lclQuota = 0.0
+            except (TypeError, StopIteration, \
+                    rucio.common.exception.RucioException):
+                lclQuota = 0.0
+
+            expQuota = max(0.0, totalSpc - lclQuota)
+
+            # check site naming convention
+            if ( siteRegex.match( mySite ) is None ):
+                logging.warning(("RSE %s (real/production) with %.1f/%.1f qu" \
+                                 "ota") % (rseName, expQuota, lclQuota))
+                continue
+            logging.debug("RSE %s experiment %.1f / local %.1f quotas" % \
+                                                 (rseName, expQuota, lclQuota))
+            try:
+                if ( quotaDict[ mySite ] == (0.0, 0.0) ):
+                    quotaDict[ mySite ] = (expQuota, lclQuota)
+                elif (( expQuota != 0.0 ) or ( lclQuota != 0.0 )):
+                    logging.warning(("Multiple disk quotas for site %s (%.1f" \
+                                     "/%.1f) and (%.1f/%.1f)") % (mySite,
+                                     quotaDict[ mySite ][0],
+                                     quotaDict[ mySite ][1],
+                                     expQuota, lclQuota))
+                    # choose RSE with larger quota for experiment use:
+                    if ( expQuota > quotaDict[ mySite ][0] ):
+                        quotaDict[ mySite ] = (expQuota, lclQuota)
+            except KeyError:
+                # first RSE for site:
+                quotaDict[ mySite ] = (expQuota, lclQuota)
+    except Exception as excptn:
+        logging.error(("Failed to fetch experiment/local disk quota from Ruc" \
+                       "io: %s") % str(excptn))
+    #
+    return quotaDict
+# ########################################################################### #
+
+
+
 def capa_read_jsonfile():
     """read SiteCapacity and return contents as dictionary of dictionaries"""
     # ####################################################################### #
@@ -457,6 +563,8 @@ def capa_read_jsonfile():
             myEntry['disk_usable'] = 0.0
         if 'disk_experiment_use' not in myEntry:
             myEntry['disk_experiment_use'] = 0.0
+        if 'disk_local_use' not in myEntry:
+            myEntry['disk_local_use'] = 0.0
         if 'tape_pledge' not in myEntry:
             myEntry['tape_pledge'] = 0.0
         if 'tape_usable' not in myEntry:
@@ -538,7 +646,7 @@ def capa_compose_json(capacityList, time15bin, noWho):
             else:
                 jsonString += "%s\"%s\": 0,\n" % (spcStrng, cpctyKey)
         for cpctyKey in ['disk_pledge', 'disk_usable', 'disk_experiment_use', \
-                         'tape_pledge', 'tape_usable' ]:
+                         'disk_local_use', 'tape_pledge', 'tape_usable' ]:
             if (( cpctyKey in tmpDict[myName] ) and
                 ( tmpDict[myName][cpctyKey] is not None )):
                 jsonString += ("%s\"%s\": %.1f,\n" %
@@ -655,12 +763,54 @@ def capa_update_jsonfile(siteList, pledgesDict, quotaDict, usageDict):
                         if myKey not in siteList:
                             continue
                         if myKey in tmpDict:
-                            tmpDict[myKey]['disk_experiment_use'] = \
+                            if (( type( quotaDict[myKey] ) is tuple ) or
+                                ( type( quotaDict[myKey] ) is list )):
+                                # experiment and local quota in Rucio:
+                                tmpDict[myKey]['disk_experiment_use'] = \
+                                                            quotaDict[myKey][0]
+                                tmpDict[myKey]['disk_local_use'] = \
+                                                            quotaDict[myKey][1]
+                                logging.log(15, ("Experiment/local disk quot" \
+                                                "a for %s updated to: %.1f/" \
+                                                "%.1f") % (myKey,
+                                     quotaDict[myKey][0], quotaDict[myKey][1]))
+                            else:
+                                # experiment quota in DDM:
+                                tmpDict[myKey]['disk_experiment_use'] = \
                                                                quotaDict[myKey]
-                            logging.log(15, ("Experiment disk quota for %s u" +
-                                             "pdated to %.1f") % (myKey,
+                                logging.log(15, ("Experiment disk quota for " \
+                                                 "%s updated to %.1f") % (myKey,
                                                              quotaDict[myKey]))
-                        elif ( quotaDict[myKey] <= 0.0 ):
+                        elif (( type( quotaDict[myKey] ) is tuple ) or
+                              ( type( quotaDict[myKey] ) is list )):
+                            if (( quotaDict[myKey][0] > 0.0 ) or
+                                ( quotaDict[myKey][1] > 0.0 )):
+                                # experiment and local quota in Rucio:
+                                capacityList.append( {
+                                    'name':                     myKey,
+                                    'wlcg_federation_name':     None,
+                                    'wlcg_federation_fraction': 1.000,
+                                    'hs06_pledge':              0,
+                                    'hs06_per_core':            10.000,
+                                    'core_usable':              0,
+                                    'core_max_used':            0,
+                                    'core_production':          0,
+                                    'core_cpu_intensive':       0,
+                                    'core_io_intensive':        0,
+                                    'disk_pledge':              0.0,
+                                    'disk_usable':              0.0,
+                                    'disk_experiment_use': quotaDict[myKey][0],
+                                    'disk_local_use':      quotaDict[myKey][1],
+                                    'tape_pledge':              0.0,
+                                    'tape_usable':              0.0,
+                                    'when':                     None,
+                                    'who':                      None } )
+                                logging.log(15, ("Experiment/local disk quot" \
+                                                "a for %s set to: %.1f/%.1f") %
+                                                (myKey, quotaDict[myKey][0],
+                                                          quotaDict[myKey][1]))
+                        elif ( quotaDict[myKey] > 0.0 ):
+                            # experiment quota in DDM:
                             capacityList.append( {
                                 'name':                     myKey,
                                 'wlcg_federation_name':     None,
@@ -674,7 +824,8 @@ def capa_update_jsonfile(siteList, pledgesDict, quotaDict, usageDict):
                                 'core_io_intensive':        0,
                                 'disk_pledge':              0.0,
                                 'disk_usable':              0.0,
-                                'disk_experiment_use':      quotaDict[myKey],
+                                'disk_experiment_use':    quotaDict[myKey],
+                                'disk_local_use':           0.0,
                                 'tape_pledge':              0.0,
                                 'tape_usable':              0.0,
                                 'when':                     None,
@@ -712,6 +863,7 @@ def capa_update_jsonfile(siteList, pledgesDict, quotaDict, usageDict):
                                 'disk_pledge':              0.0,
                                 'disk_usable':              0.0,
                                 'disk_experiment_use':      0.0,
+                                'disk_local_use':           0.0,
                                 'tape_pledge':              0.0,
                                 'tape_usable':              0.0,
                                 'when':                     None,
@@ -835,6 +987,8 @@ def capa__monit_fetch(time15bin=None):
                                     myData['wlcg_federation_name'] = None
                                 if 'wlcg_federation_fraction' not in myData:
                                     myData['wlcg_federation_fraction'] = None
+                                if 'disk_local_use' not in myData:
+                                    myData['disk_local_use'] = 0.0
                                 if 'tape_pledge' not in myData:
                                     myData['tape_pledge'] = 0.0
                                 if 'tape_usable' not in myData:
@@ -1061,7 +1215,7 @@ if __name__ == '__main__':
     parserObj.add_argument("-q", dest="quota", default=False,
                                  action="store_true",
                                  help="fetch/update experiment disk quota fr" +
-                                 "om Dynamo/DDM")
+                                 "om Rucio")
     parserObj.add_argument("-u", dest="usage", default=False,
                                  action="store_true",
                                  help="fetch/update max core usage from Elas" +
@@ -1119,10 +1273,10 @@ if __name__ == '__main__':
         pledgeDict = capa_cric_pledges()
     #
     #
-    # fetch experiment disk quota setting from Dynamo if requested:
+    # fetch experiment disk quota setting from Rucio if requested:
     quotaDict = None
     if ( argStruct.quota ):
-        quotaDict = capa_dynamo_quota()
+        quotaDict = capa_rucio_quotas()
     #
     #
     # fetch maximum number of cores provided by sites if requested:
