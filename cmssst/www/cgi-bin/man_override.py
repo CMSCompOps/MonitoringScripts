@@ -113,7 +113,9 @@ OVRD_CAPACITY_DESC = {
                                 "from Rebus)",
     'disk_usable':              "Disk space in TBytes usable by CMS",
     'disk_experiment_use':      "Disk space in TBytes available for experi" + \
-                                "ment use (auto-filled from DDM)",
+                                "ment use (auto-filled from Rucio)",
+    'disk_local_use':           "Disk space in TBytes available for local " + \
+                                "use (auto-filled from Rucio)",
     'tape_pledge':              "Tape space pledge in TBytes (auto-filled " + \
                                 "from Rebus)",
     'tape_usable':              "Tape space in TBytes usable by CMS",
@@ -414,6 +416,8 @@ def ovrd_read_jsonfile(cgiMTRC):
                 entry['disk_usable'] = 0.0
             if 'disk_experiment_use' not in entry:
                 entry['disk_experiment_use'] = 0.0
+            if 'disk_local_use' not in entry:
+                entry['disk_local_use'] = 0.0
             if 'tape_pledge' not in entry:
                 entry['tape_pledge'] = 0.0
             if 'tape_usable' not in entry:
@@ -507,7 +511,7 @@ def ovrd_compose_capacity(capacityList):
             else:
                 jsonString += ("   \"%s\": 0,\n" % cpctyKey)
         for cpctyKey in ['disk_pledge', 'disk_usable', 'disk_experiment_use', \
-                         'tape_pledge', 'tape_usable' ]:
+                         'disk_local_use', 'tape_pledge', 'tape_usable' ]:
             if (( cpctyKey in entry ) and ( entry[cpctyKey] is not None )):
                 jsonString += ("   \"%s\": %.1f,\n" %
                                                    (cpctyKey, entry[cpctyKey]))
@@ -678,6 +682,7 @@ def ovrd_append_log(cgiMTRC, entry):
                               entry['core_io_intensive'], entry['disk_pledge'],
                               entry['disk_usable'],
                               entry['disk_experiment_use'],
+                              entry['disk_local_use'],
                               entry['tape_pledge'], entry['tape_usable'],
                               entry['when'], entry['who']))
             #
@@ -1242,6 +1247,7 @@ def ovrd_html_capacity(authDict, siteFacility, federationNames, cgiSITE):
                      'core_production': 0,   'core_cpu_intensive': 0,
                      'core_io_intensive': 0, 'disk_pledge': 0.0,
                      'disk_usable': 0.0,     'disk_experiment_use': 0.0,
+                     'disk_local_use': 0.0,
                      'tape_pledge': 0.0,     'tape_usable': 0.0,
                      'when': "never", 'who': "anybody" }
     #
@@ -1430,6 +1436,10 @@ def ovrd_html_capacity(authDict, siteFacility, federationNames, cgiSITE):
                    "N=\"0\" NAME=\"disk_experiment_use\" VALUE=\"%.1f\" READ" +
                    "ONLY>%s<BR>") % (entry['disk_experiment_use'],
                                     OVRD_CAPACITY_DESC['disk_experiment_use']))
+            print(("      <INPUT TYPE=\"number\" SIZE=\"12\" STEP=\"0.5\" MI" +
+                   "N=\"0\" NAME=\"disk_local_use\" VALUE=\"%.1f\" READONLY>" +
+                   "%s<BR>") % (entry['disk_local_use'],
+                                         OVRD_CAPACITY_DESC['disk_local_use']))
             if entry['wlcg_federation_name'] is None:
                 print(("      <INPUT ID=\"%s:tape_pledge\" TYPE=\"number\" S" +
                        "IZE=\"12\" STEP=\"0.5\" MIN=\"0\" NAME=\"tape_pledge" +
@@ -1477,6 +1487,7 @@ def ovrd_post_capacity(authDict, siteFacility, federationNames,
                      'core_production': 0,   'core_cpu_intensive': 0,
                      'core_io_intensive': 0, 'disk_pledge': 0.0,
                      'disk_usable': 0.0,     'disk_experiment_use': 0.0,
+                     'disk_local_use': 0.0,
                      'tape_pledge': 0.0,     'tape_usable': 0.0,
                      'when': "never", 'who': "anybody" }
 
@@ -1505,7 +1516,9 @@ def ovrd_post_capacity(authDict, siteFacility, federationNames,
         capacityEntry['disk_usable'] = \
                            int( 2.0 * float( cgiPOST['disk_usable'][0] )) / 2.0
         capacityEntry['disk_experiment_use'] = \
-                   int( 2.0 * float( cgiPOST['disk_experiment_use'][0] )) / 2.0
+                 int( 10.0 * float( cgiPOST['disk_experiment_use'][0] )) / 10.0
+        capacityEntry['disk_local_use'] = \
+                      int( 10.0 * float( cgiPOST['disk_local_use'][0] )) / 10.0
         capacityEntry['tape_pledge'] = \
                            int( 2.0 * float( cgiPOST['tape_pledge'][0] )) / 2.0
         capacityEntry['tape_usable'] = \
@@ -1653,6 +1666,9 @@ def ovrd_post_capacity(authDict, siteFacility, federationNames,
            "NAME=\"disk_experiment_use\" VALUE=\"%.1f\" READONLY>%s<BR>") %
           (entry['disk_experiment_use'],
                                     OVRD_CAPACITY_DESC['disk_experiment_use']))
+    print(("      <INPUT TYPE=\"number\" SIZE=\"12\" STEP=\"0.5\" MIN=\"0\" " +
+           "NAME=\"disk_local_use\" VALUE=\"%.1f\" READONLY>%s<BR>") %
+          (entry['disk_local_use'], OVRD_CAPACITY_DESC['disk_local_use']))
     if entry['wlcg_federation_name'] is None:
         print(("      <INPUT ID=\"%s:tape_pledge\" TYPE=\"number\" SIZE=\"12" +
                "\" STEP=\"0.5\" MIN=\"0\" NAME=\"tape_pledge\" VALUE=\"%.1f" +
