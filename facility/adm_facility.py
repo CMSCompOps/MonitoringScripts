@@ -50,6 +50,7 @@ import json
 import gzip
 import re
 import html
+import ssl
 import urllib.request, urllib.parse
 import http
 import argparse
@@ -75,8 +76,8 @@ ADMF_CACHE = "/eos/user/c/cmssst/www/cache/"
 #ADMF_ACKNWLDG_PUBL = "./"
 #ADMF_CACHE = "/afs/cern.ch/user/l/lammel/cms/site_support/monit/cache/"
 #
-ADMF_CERTIFICATE_CRT = "/eos/home-c/cmssst/private/x509up_u79522"
-ADMF_CERTIFICATE_KEY = "/eos/home-c/cmssst/private/x509up_u79522"
+ADMF_CERTIFICATE_CRT = "/eos/user/c/cmssst/private/x509up_u79522"
+ADMF_CERTIFICATE_KEY = "/eos/user/c/cmssst/private/x509up_u79522"
 #
 ADMF_AUTH_CMSSST = [ "cms-comp-ops-site-support-team" ]
 ADMF_AUTH_VIEW   = [ "cms-zh", "cms-members", "cms-authorized-users" ]

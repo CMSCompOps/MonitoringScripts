@@ -38,6 +38,7 @@ import fcntl
 import time, calendar
 import json
 import re
+import ssl
 import urllib.request, urllib.parse
 import argparse
 import logging
@@ -138,8 +139,8 @@ OVRD_CGIURL = "https://cmssst.web.cern.ch/cgi-bin/set"
 #
 OVRD_CACHE = "/eos/user/c/cmssst/www/cache"
 #
-OVRD_CERTIFICATE_CRT = "/eos/home-c/cmssst/private/x509up_u79522"
-OVRD_CERTIFICATE_KEY = "/eos/home-c/cmssst/private/x509up_u79522"
+OVRD_CERTIFICATE_CRT = "/eos/user/c/cmssst/private/x509up_u79522"
+OVRD_CERTIFICATE_KEY = "/eos/user/c/cmssst/private/x509up_u79522"
 # ########################################################################### #
 
 
