@@ -50,7 +50,7 @@ import pydoop.hdfs
 
 
 
-VOFEED_VERSION = "v2.01.06"
+VOFEED_VERSION = "v2.01.07"
 # ########################################################################### #
 
 
@@ -81,7 +81,9 @@ class vofeed:
             'SRMv1':                          "SRM",
             'globus-GRIDFTP':                 "SRM",
             'GridFtp':                        "SRM",
-            'webdav':                         "",
+            'webdav':                         "WEBDAV",
+            'WebDAV':                         "WEBDAV",
+            'WEBDAV':                         "WEBDAV",
             'XROOTD':                         "XROOTD",
             'XRootD':                         "XROOTD",
             'XRootD.Redirector':              "XROOTD",
@@ -109,6 +111,7 @@ class vofeed:
             'ARC-CE':        "CE",
             'HTCONDOR-CE':   "CE",
             'SRM':           "SE",
+            'WEBDAV':        "SE",
             'XROOTD':        "XRD",
             'perfSONAR':     "perfSONAR",
             'site':          "site"
@@ -837,9 +840,10 @@ if __name__ == '__main__':
             return self.do_open(self.getConnection, req)
 
         def getConnection(self, host, timeout=90):
-            return http.client.HTTPSConnection(host,
-                                               key_file=VOFD_CERTIFICATE_KEY,
-                                               cert_file=VOFD_CERTIFICATE_CRT)
+            myContext = ssl.SSLContext()
+            myContext.load_cert_chain(VOFD_CERTIFICATE_CRT,
+                                      VOFD_CERTIFICATE_KEY)
+            return http.client.HTTPSConnection(host, context=myContext)
 
 
 
@@ -861,7 +865,11 @@ if __name__ == '__main__':
  
         logging.info("Fetching CMS site information from CRIC")
         try:
-            with urllib.request.urlopen(URL_CRIC_SITES) as urlHandle:
+            myContext = ssl.SSLContext()
+            myContext.load_cert_chain(VOFD_CERTIFICATE_CRT,
+                                      VOFD_CERTIFICATE_KEY)
+            with urllib.request.urlopen(URL_CRIC_SITES,
+                                        context=myContext) as urlHandle:
                 urlCharset = urlHandle.headers.get_content_charset()
                 if urlCharset is None:
                     urlCharset = "utf-8"
@@ -1525,18 +1533,20 @@ if __name__ == '__main__':
                 elif ( rseProto == "gsiftp" ):
                     rseFlavour="SRM"
                 elif ( rseProto == "root" ):
-                    rseFlavour="XRootD"
+                    rseFlavour="XROOTD"
                 elif ( rseProto == "davs" ):
-                    rseFlavour="WebDAV"
+                    rseFlavour="WEBDAV"
                 elif ( rseProto == "https" ):
-                    rseFlavour="WebDAV"
+                    rseFlavour="WEBDAV"
+                else:
+                    continue
                 #
-                if ( rseFlavour != "SRM"):
-                    # skip non SRMv2 for the time being
+                if ( rseFlavour == "XROOTD" ):
+                    # skip XROOTD for the time being
                     continue
                 service = { 'category': "SE", 'hostname': rseHost,
                             'flavour': rseFlavour,
-                            'endpoint': "%s:%d" % (rseHost, rseDict['port']), 
+                            'endpoint': "%s:%d" % (rseHost, rseDict['port']),
                             'production': rseProduction }
                 #
                 try:
