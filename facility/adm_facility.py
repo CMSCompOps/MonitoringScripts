@@ -75,6 +75,9 @@ ADMF_CACHE = "/eos/user/c/cmssst/www/cache/"
 #ADMF_ACKNWLDG_PUBL = "./"
 #ADMF_CACHE = "/afs/cern.ch/user/l/lammel/cms/site_support/monit/cache/"
 #
+ADMF_CERTIFICATE_CRT = "/eos/home-c/cmssst/private/x509up_u79522"
+ADMF_CERTIFICATE_KEY = "/eos/home-c/cmssst/private/x509up_u79522"
+#
 ADMF_AUTH_CMSSST = [ "cms-comp-ops-site-support-team" ]
 ADMF_AUTH_VIEW   = [ "cms-zh", "cms-members", "cms-authorized-users" ]
 # ########################################################################### #
@@ -245,7 +248,11 @@ def admf_cric_facility():
 
     logging.info("Fetching CMS facility information from CRIC")
     try:
-        with urllib.request.urlopen(URL_CRIC_FACILITY) as urlHandle:
+        myContext = ssl.SSLContext()
+        myContext.load_cert_chain(ADMF_CERTIFICATE_CRT,
+                                  ADMF_CERTIFICATE_KEY)
+        with urllib.request.urlopen(URL_CRIC_FACILITY,
+                                    context=myContext) as urlHandle:
             urlCharset = urlHandle.headers.get_content_charset()
             if urlCharset is None:
                 urlCharset = "utf-8"

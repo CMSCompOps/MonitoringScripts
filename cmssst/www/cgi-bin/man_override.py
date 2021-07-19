@@ -137,6 +137,9 @@ OVRD_FILE_PATH = {
 OVRD_CGIURL = "https://cmssst.web.cern.ch/cgi-bin/set"
 #
 OVRD_CACHE = "/eos/user/c/cmssst/www/cache"
+#
+OVRD_CERTIFICATE_CRT = "/eos/home-c/cmssst/private/x509up_u79522"
+OVRD_CERTIFICATE_KEY = "/eos/home-c/cmssst/private/x509up_u79522"
 # ########################################################################### #
 
 
@@ -152,7 +155,11 @@ def ovrd_cric_facility():
 
     logging.info("Fetching CMS site information from CRIC")
     try:
-        with urllib.request.urlopen(URL_CRIC_SITES) as urlHandle:
+        myContext = ssl.SSLContext()
+        myContext.load_cert_chain(OVRD_CERTIFICATE_CRT,
+                                  OVRD_CERTIFICATE_KEY)
+        with urllib.request.urlopen(URL_CRIC_SITES,
+                                    context=myContext) as urlHandle:
             urlCharset = urlHandle.headers.get_content_charset()
             if urlCharset is None:
                 urlCharset = "utf-8"
@@ -245,7 +252,11 @@ def ovrd_cric_federation():
 
     logging.info("Fetching WLCG federation information from CRIC")
     try:
-        with urllib.request.urlopen(URL_CRIC_FEDRN) as urlHandle:
+        myContext = ssl.SSLContext()
+        myContext.load_cert_chain(OVRD_CERTIFICATE_CRT,
+                                  OVRD_CERTIFICATE_KEY)
+        with urllib.request.urlopen(URL_CRIC_FEDRN,
+                                    context=myContext) as urlHandle:
             urlCharset = urlHandle.headers.get_content_charset()
             if urlCharset is None:
                 urlCharset = "utf-8"

@@ -58,6 +58,9 @@ CAPA_LOCK_PATH = "/eos/home-c/cmssst/www/capacity/update.lock"
 CAPA_FILE_PATH = "/eos/home-c/cmssst/www/capacity/SiteCapacity.json"
 CAPA_CACHE_DIR = "/data/cmssst/MonitoringScripts/capacity/cache"
 CAPA_BCKUP_DIR = "/data/cmssst/MonitoringScripts/capacity/failed"
+
+CAPA_CERTIFICATE_CRT = "/tmp/x509up_u79522"
+CAPA_CERTIFICATE_KEY = "/tmp/x509up_u79522"
 # ########################################################################### #
 
 
@@ -72,7 +75,11 @@ def capa_cric_cmssites():
 
     logging.info("Fetching CMS site list from CRIC")
     try:
-        with urllib.request.urlopen(URL_CRIC_SITES) as urlHandle:
+        myContext = ssl.SSLContext()
+        myContext.load_cert_chain(CAPA_CERTIFICATE_CRT,
+                                  CAPA_CERTIFICATE_KEY)
+        with urllib.request.urlopen(URL_CRIC_SITES,
+                                        context=myContext) as urlHandle:
             urlCharset = urlHandle.headers.get_content_charset()
             if urlCharset is None:
                 urlCharset = "utf-8"
