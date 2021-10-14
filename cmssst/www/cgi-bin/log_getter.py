@@ -1897,7 +1897,7 @@ def lget_maindvi_fts(cfg, docs):
     # ################################################################ #
     # prepare mainDVI section with CMS FTS evaluation according to cfg #
     # ################################################################ #
-    LGET_FTSDASHB = "https://monit-grafana.cern.ch/d/000000420/fts-transfers-30-days?orgId=20&from=%d000&to=%d000&var-group_by=endpnt&var-vo=cms&var-src_country=All&var-dst_country=All&var-src_site=All&var-dst_site=All&var-fts_server=All&var-bin=$__auto_interval_bin"
+    LGET_FTSDASHB = "https://monit-grafana.cern.ch/d/CIjJHKdGk/fts-transfers?orgId=20&from=%d000&to=%d000&var-group_by=endpnt&var-bin=1h&var-vo=cms&var-src_country=All&var-dst_country=All&var-src_site=All&var-dst_site=All&var-fts_server=All&var-protocol=All&var-staging=All"
     #
     siteRegex = re.compile(r"T\d_[A-Z]{2,2}_\w+")
 
@@ -2053,8 +2053,8 @@ def lget_maindvi_fts(cfg, docs):
                                       "ent id\n         <TD BGCOLOR=\"%s\" N" +
                                       "OWRAP>%s\n") %
                                      (myColour, myDoc['***DOCID***']))
-                        sTIS = tbin * cfg['period']
-                        eTIS = sTIS + cfg['period']
+                        sTIS = 3600 * int( (tbin * cfg['period']) / 3600 )
+                        eTIS = 3600 * int( (sTIS + cfg['period']+3599) / 3600 )
                         if ( myDoc['type'] == "site" ):
                             myFile.write(("      <TR>\n         <TD COLSPAN=" +
                                           "\"2\"><A HREF=\"%s&var-include=%s" +
@@ -2064,17 +2064,15 @@ def lget_maindvi_fts(cfg, docs):
                                                                 myDoc['name']))
                         elif ( myDoc['type'] == "destination" ):
                             myFile.write(("      <TR>\n         <TD COLSPAN=" +
-                                          "\"2\"><A HREF=\"%s&var-filters=ds" +
-                                          "t_hostname|=|%s\"><I>Link to tran" +
-                                          "sfers in Grafana FTS dashboard</I" +
-                                          "></A>\n") % ((LGET_FTSDASHB %
+                                          "\"2\"><A HREF=\"%s&var-filters=da" +
+                                          "ta.dst_hostname|=|%s\"><I>Link to" +                                           " transfers in Grafana FTS dashboa" +
+                                          "rd</I></A>\n") % ((LGET_FTSDASHB %
                                                  (sTIS, eTIS)), myDoc['name']))
                         elif ( myDoc['type'] == "source" ):
                             myFile.write(("      <TR>\n         <TD COLSPAN=" +
-                                          "\"2\"><A HREF=\"%s&var-filters=sr" +
-                                          "c_hostname|=|%s\"><I>Link to tran" +
-                                          "sfers in Grafana FTS dashboard</I" +
-                                          "></A>\n") % ((LGET_FTSDASHB %
+                                          "\"2\"><A HREF=\"%s&var-filters=da" +
+                                          "ta.src_hostname|=|%s\"><I>Link to" +                                           " transfers in Grafana FTS dashboa" +
+                                          "rd</I></A>\n") % ((LGET_FTSDASHB %
                                                  (sTIS, eTIS)), myDoc['name']))
                         myFile.write("      </TABLE>\n      <BR>\n")
                     else:
@@ -2405,7 +2403,7 @@ def lget_maindvi_links(cfg, docs):
     # ################################################################## #
     # prepare mainDVI section with CMS Link evaluations according to cfg #
     # ################################################################## #
-    LGET_FTSDASHB = "https://monit-grafana.cern.ch/d/000000420/fts-transfers-30-days?orgId=20&from=%d000&to=%d000&var-group_by=endpnt&var-vo=cms&var-src_country=All&var-dst_country=All&var-src_site=All&var-dst_site=All&var-fts_server=All&var-bin=$__auto_interval_bin"
+    LGET_FTSDASHB = "https://monit-grafana.cern.ch/d/CIjJHKdGk/fts-transfers?orgId=20&from=%d000&to=%d000&var-group_by=endpnt&var-bin=1h&var-vo=cms&var-src_country=All&var-dst_country=All&var-src_site=All&var-dst_site=All&var-fts_server=All&var-protocol=All&var-staging=All"
     #
     siteRegex = re.compile(r"T\d_[A-Z]{2,2}_\w+")
 
@@ -2755,8 +2753,8 @@ def lget_maindvi_links(cfg, docs):
                                     time.strftime("%Y-%m-%d %H:%M:%S",
                        time.gmtime(int(siteDocs[site]['***VERSION***']/1000))),
                               clss, siteDocs[site]['***DOCID***']))
-                sTIS = tbin * cfg['period']
-                eTIS = sTIS + cfg['period']
+                sTIS = 3600 * int( (tbin * cfg['period']) / 3600 )
+                eTIS = 3600 * int( (sTIS + cfg['period'] + 3599) / 3600 )
                 myFile.write(("<TR>\n   <TD COLSPAN=" + "\"2\"><A HREF=\"%s&" +
                               "var-include=%s\"><I>Link to transfers in Graf" +
                               "ana FTS dashboard</I></A>\n") %
@@ -2814,12 +2812,12 @@ def lget_maindvi_links(cfg, docs):
                                     time.strftime("%Y-%m-%d %H:%M:%S",
                       time.gmtime(int(srcDocs[source]['***VERSION***']/1000))),
                               clss, srcDocs[source]['***DOCID***']))
-                sTIS = tbin * cfg['period']
-                eTIS = sTIS + cfg['period']
+                sTIS = 3600 * int( (tbin * cfg['period']) / 3600 )
+                eTIS = 3600 * int( (sTIS + cfg['period'] + 3599) / 3600 )
                 myFile.write(("<TR>\n   <TD COLSPAN=" + "\"2\"><A HREF=\"%s&" +
-                              "var-filters=src_hostname|=|%s\"><I>Link to tr" +
-                              "ansfers in Grafana FTS dashboard</I></A>\n") %
-                             ((LGET_FTSDASHB % (sTIS, eTIS)),
+                              "var-filters=data.src_hostname|=|%s\"><I>Link " +
+                              "to transfers in Grafana FTS dashboard</I></A>" +
+                              "\n") % ((LGET_FTSDASHB % (sTIS, eTIS)),
                                                       srcDocs[source]['name']))
                 myFile.write("</TABLE>\n\n")
             myFile.write("<P>\n<HR>\n\n")
@@ -2873,12 +2871,12 @@ def lget_maindvi_links(cfg, docs):
                                     time.strftime("%Y-%m-%d %H:%M:%S",
                         time.gmtime(int(dstDocs[dest]['***VERSION***']/1000))),
                               clss, dstDocs[dest]['***DOCID***']))
-                sTIS = tbin * cfg['period']
-                eTIS = sTIS + cfg['period']
+                sTIS = 3600 * int( (tbin * cfg['period']) / 3600 )
+                eTIS = 3600 * int( (sTIS + cfg['period'] + 3599) / 3600 )
                 myFile.write(("<TR>\n   <TD COLSPAN=" + "\"2\"><A HREF=\"%s&" +
-                              "var-filters=dst_hostname|=|%s\"><I>Link to tr" +
-                              "ansfers in Grafana FTS dashboard</I></A>\n") %
-                             ((LGET_FTSDASHB % (sTIS, eTIS)),
+                              "var-filters=data.dst_hostname|=|%s\"><I>Link " +
+                              "to transfers in Grafana FTS dashboard</I></A>" +
+                              "\n") % ((LGET_FTSDASHB % (sTIS, eTIS)),
                                                         dstDocs[dest]['name']))
                 myFile.write("</TABLE>\n\n")
             myFile.write("<P>\n<HR>\n\n")
