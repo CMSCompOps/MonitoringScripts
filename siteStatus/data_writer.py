@@ -1752,7 +1752,10 @@ def sswp_ggus():
     # loop over ticket elements:
     for ticket in tickets.findall('ticket'):
         ticketid = ticket.find('Ticket-ID').text
-        cmssite = ticket.find('CMS_Site').text
+        try:
+            cmssite = ticket.find('CMS_Site').text
+        except (KeyError, AttributeError):
+            cmssite = None
         if not cmssite:
            continue
         created  = ticket.findtext('Creation_Date', '')     # time is in UTC
