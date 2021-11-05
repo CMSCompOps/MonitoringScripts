@@ -50,7 +50,7 @@ import pydoop.hdfs
 
 
 
-VOFEED_VERSION = "v2.01.07"
+VOFEED_VERSION = "v2.01.08"
 # ########################################################################### #
 
 
@@ -1386,11 +1386,16 @@ if __name__ == '__main__':
                 rseIgnore = False
                 try:
                     rseAttributes = rseClient.list_rse_attributes(rseName)
-                    if (( rseAttributes['cms_type'] != "real" ) and
-                        ( rseAttributes['cms_type'] != "test" )):
+                    if ( rseAttributes['cms_type'] == "real" ):
+                        rseIgnore = False
+                    elif ( rseAttributes['cms_type'] == "test" ):
+                        rseIgnore = True
+                    else:
                         continue
                     if ( rseAttributes['sitestatus_ignore'] == True ):
                         rseIgnore = True
+                    elif ( rseAttributes['sitestatus_ignore'] == False ):
+                        rseIgnore = False
                 except (KeyError, rucio.common.exception.RucioException):
                     pass
                 #
