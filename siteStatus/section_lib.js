@@ -44,6 +44,34 @@ var siteMetricOrder = [ "Downtime", "SAM1day", "HC1day", "FTS1day",
                         "Summary",
                         "***LINE***",
                         "**Elmnts**" ];
+var srvcMetricLabel = { SAMservice:       "SAM Service Status",
+                        FTSsource:        "FTS Endpoint (from)",
+                        FTSdestination:   "FTS Endpoint (to)" };
+var srvcMetricOrder = [ "Downtime",
+                        "SAMservice",
+                        "FTSsource", "FTSdestination",
+                        "***LINE***",
+                        "ETF_SRM-GetPFNFromTFC", "ETF_SRM-VOLsDir",
+                           "ETF_SRM-VOPut", "ETF_SRM-VOLs",
+                           "ETF_SRM-VOGetTURLs", "ETF_SRM-VOGet",
+                           "ETF_SRM-VODel", "ETF_SRM-AllCMS",
+                        "ETF_SE-WebDAV-1connection", "ETF_SE-WebDAV-2ssl",
+                           "ETF_SE-WebDAV-3extension",
+                           "ETF_SE-WebDAV-4crt-read",
+                           "ETF_SE-WebDAV-5open-access",
+                           "ETF_SE-WebDAV-6crt-write",
+                           "ETF_SE-WebDAV-7macaroon",
+                           "ETF_SE-WebDAV-9summary",
+                        "ETF_SE-xrootd-version", "ETF_SE-xrootd-connection",
+                           "ETF_SE-xrootd-read", "ETF_SE-xrootd-contain",
+                        "ETF_CONDOR-JobSubmit",
+                           "ETF_WN-env", "ETF_WN-basic", "ETF_WN-cvmfs",
+                           "ETF_WN-squid", "ETF_WN-frontier",
+                           "ETF_WN-isolation",
+                           "ETF_WN-xrootd-access", "ETF_WN-xrootd-fallback",
+                           "ETF_WN-analysis", "ETF_WN-mc",
+                        "ETF_DNS-IPv6",
+                        "***Othr***" ];
 
 
 
@@ -355,21 +383,53 @@ function writePmonthTable() {
             eName = myData.elements[cnt].host + '/' + myData.elements[cnt].type;
             eName = eName.replace(' ', '');
             // loop over metrics of element:
-            for ( var mName in myData.elements[cnt].metrics ) {
-               if ( mName in siteMetricLabel ) {
-                  myTableStr += '<TR>\n   <TD NOWRAP ALIGN="left"> &nbsp &nb' +
-                     'sp ' + siteMetricLabel[mName] +
-                     '\n   <TD NOWRAP>&nbsp;\n';
-               } else {
-                  myTableStr += '<TR>\n   <TD NOWRAP ALIGN="left"> &nbsp &nb' +
-                     'sp ' + mName + '\n   <TD NOWRAP>&nbsp;\n';
+            for ( var iCnt=0; iCnt < srvcMetricOrder.length; iCnt+=1 ) {
+               if ( srvcMetricOrder[iCnt] == "***LINE***" ) {
+                  myTableStr += '<TR>\n   <TD COLSPAN="5" bgcolor="#000000" ' +
+                     'STYLE="border-left:24px solid white; line-height:2px;"' +
+                     '>&nbsp;</DIV>\n<TR>\n   <TD COLSPAN="5" bgcolor="#FFFF' +
+                     'FF" STYLE="line-height:2px;">&nbsp;\n';
+               } else if ( srvcMetricOrder[iCnt] in
+                                               myData.elements[cnt].metrics ) {
+                  if ( srvcMetricOrder[iCnt] in srvcMetricLabel ) {
+                     myTableStr += '<TR>\n   <TD NOWRAP ALIGN="left"> &nbsp ' +
+                        '&nbsp ' + srvcMetricLabel[ srvcMetricOrder[iCnt] ] +
+                        '\n   <TD NOWRAP>&nbsp;\n';
+                  } else {
+                     myTableStr += '<TR>\n   <TD NOWRAP ALIGN="left"> &nbsp ' +
+                        '&nbsp ' + srvcMetricOrder[iCnt] + '\n   <TD NOWRAP>' +
+                        '&nbsp;\n';
+                  }
+                  myTableStr += '   <TD COLSPAN="3"><A HREF="javascript:void' +
+                     '(0);" ID="' + srvcMetricOrder[iCnt] + '/pmonth/' +
+                     myData.elements[cnt].host + '/' +
+                     myData.elements[cnt].type +
+                     '" ONMOUSEDOWN="canvas_clicked(this, event)"><CANVAS ID' +
+                     '="c' + 'nvs_' + eName + '_' + srvcMetricOrder[iCnt] +
+                     '_s1" WIDTH="782" HEIGHT="18"></CANVAS><\A>\n';
+               } else if ( srvcMetricOrder[iCnt] == "***Othr***" ) {
+                  // loop over element metrics not in srvcMetricOrder:
+                  for ( var mName in myData.elements[cnt].metrics ) {
+                     if ( srvcMetricOrder.indexOf(mName) >= 0 ) {
+                        continue;
+                     }
+                     if ( mName in srvcMetricLabel ) {
+                        myTableStr += '<TR>\n   <TD NOWRAP ALIGN="left"> &nb' +
+                           'sp &nbsp ' + srvcMetricLabel[mName] +
+                           '\n   <TD NOWRAP>&nbsp;\n';
+                     } else {
+                        myTableStr += '<TR>\n   <TD NOWRAP ALIGN="left"> &nb' +
+                           'sp &nbsp ' + mName + '\n   <TD NOWRAP>&nbsp;\n';
+                     }
+                     myTableStr += '   <TD COLSPAN="3"><A HREF="javascript:v' +
+                        'oid(0);" ID="' + mName + '/pmonth/' +
+                        myData.elements[cnt].host + '/' +
+                        myData.elements[cnt].type +
+                        '" ONMOUSEDOWN="canvas_clicked(this, event)"><CANVAS' +
+                        ' ID="cnvs_' + eName + '_' + mName + '_s1" WIDTH="78' +
+                        '2" HEIGHT="18"></CANVAS><\A>\n';
+                  }
                }
-               myTableStr += '   <TD COLSPAN="3"><A HREF="javascript:void(0)' +
-                  ';" ID="' + mName + '/pmonth/' + myData.elements[cnt].host +
-                  '/' + myData.elements[cnt].type +
-                  '" ONMOUSEDOWN="canvas_clicked(this, event)"><CANVAS ID="c' +
-                  'nvs_' + eName + '_' + mName + '_s1" WIDTH="782" HEIGHT="1' +
-                  '8"></CANVAS><\A>\n';
             }
          }
       }
@@ -464,21 +524,53 @@ function writePweekTable() {
             eName = myData.elements[cnt].host + '/' + myData.elements[cnt].type;
             eName = eName.replace(' ', '');
             // loop over metrics of element:
-            for ( var mName in myData.elements[cnt].metrics ) {
-               if ( mName in siteMetricLabel ) {
-                  myTableStr += '<TR>\n   <TD NOWRAP ALIGN="left"> &nbsp &nb' +
-                     'sp ' + siteMetricLabel[mName] +
-                     '\n   <TD NOWRAP>&nbsp;\n';
-               } else {
-                  myTableStr += '<TR>\n   <TD NOWRAP ALIGN="left"> &nbsp &nb' +
-                     'sp ' + mName + '\n   <TD NOWRAP>&nbsp;\n';
+            for ( var iCnt=0; iCnt < srvcMetricOrder.length; iCnt+=1 ) {
+               if ( srvcMetricOrder[iCnt] == "***LINE***" ) {
+                  myTableStr += '<TR>\n   <TD COLSPAN="5" bgcolor="#000000" ' +
+                     'STYLE="border-left:24px solid white; line-height:2px;"' +
+                     '>&nbsp;</DIV>\n<TR>\n   <TD COLSPAN="5" bgcolor="#FFFF' +
+                     'FF" STYLE="line-height:2px;">&nbsp;\n';
+               } else if ( srvcMetricOrder[iCnt] in
+                                               myData.elements[cnt].metrics ) {
+                  if ( srvcMetricOrder[iCnt] in srvcMetricLabel ) {
+                     myTableStr += '<TR>\n   <TD NOWRAP ALIGN="left"> &nbsp ' +
+                        '&nbsp ' + srvcMetricLabel[ srvcMetricOrder[iCnt] ] +
+                        '\n   <TD NOWRAP>&nbsp;\n';
+                  } else {
+                     myTableStr += '<TR>\n   <TD NOWRAP ALIGN="left"> &nbsp ' +
+                        '&nbsp ' + srvcMetricOrder[iCnt] + '\n   <TD NOWRAP>' +
+                        '&nbsp;\n';
+                  }
+                  myTableStr += '   <TD COLSPAN="3"><A HREF="javascript:void' +
+                     '(0);" ID="' + srvcMetricOrder[iCnt] + '/pweek/' +
+                     myData.elements[cnt].host + '/' +
+                     myData.elements[cnt].type +
+                     '" ONMOUSEDOWN="canvas_clicked(this, event)"><CANVAS ID' +
+                     '="cnvs_' + eName + '_' + srvcMetricOrder[iCnt] +
+                     '_s2" WIDTH="730" HEIGHT="18"></CANVAS></A>\n';
+               } else if ( srvcMetricOrder[iCnt] == "***Othr***" ) {
+                  // loop over element metrics not in srvcMetricOrder:
+                  for ( var mName in myData.elements[cnt].metrics ) {
+                     if ( srvcMetricOrder.indexOf(mName) >= 0 ) {
+                        continue;
+                     }
+                     if ( mName in srvcMetricLabel ) {
+                        myTableStr += '<TR>\n   <TD NOWRAP ALIGN="left"> &nb' +
+                           'sp &nbsp ' + srvcMetricLabel[mName] +
+                           '\n   <TD NOWRAP>&nbsp;\n';
+                     } else {
+                        myTableStr += '<TR>\n   <TD NOWRAP ALIGN="left"> &nb' +
+                           'sp &nbsp ' + mName + '\n   <TD NOWRAP>&nbsp;\n';
+                     }
+                     myTableStr += '   <TD COLSPAN="3"><A HREF="javascript:v' +
+                        'oid(0);" ID="' + mName + '/pweek/' +
+                        myData.elements[cnt].host + '/' +
+                        myData.elements[cnt].type +
+                        '" ONMOUSEDOWN="canvas_clicked(this, event)"><CANVAS' +
+                        ' ID="cnvs_' + eName + '_' + mName +
+                        '_s2" WIDTH="730" HEIGHT="18"></CANVAS></A>\n';
+                  }
                }
-               myTableStr += '   <TD COLSPAN="3"><A HREF="javascript:void(0)' +
-                  ';" ID="' + mName + '/pweek/' + myData.elements[cnt].host +
-                  '/' + myData.elements[cnt].type +
-                  '" ONMOUSEDOWN="canvas_clicked(this, event)"><CANVAS ID="c' +
-                  'nvs_' + eName + '_' + mName + '_s2" WIDTH="730" HEIGHT="1' +
-                  '8"></CANVAS></A>\n';
             }
          }
       }
@@ -573,21 +665,53 @@ function writeYesterdayTable() {
             eName = myData.elements[cnt].host + '/' + myData.elements[cnt].type;
             eName = eName.replace(' ', '');
             // loop over metrics of element:
-            for ( var mName in myData.elements[cnt].metrics ) {
-               if ( mName in siteMetricLabel ) {
-                  myTableStr += '<TR>\n   <TD NOWRAP ALIGN="left"> &nbsp &nb' +
-                     'sp ' + siteMetricLabel[mName] +
-                     '\n   <TD NOWRAP>&nbsp;\n';
-               } else {
-                  myTableStr += '<TR>\n   <TD NOWRAP ALIGN="left"> &nbsp &nb' +
-                     'sp ' + mName + '\n   <TD NOWRAP>&nbsp;\n';
+            for ( var iCnt=0; iCnt < srvcMetricOrder.length; iCnt+=1 ) {
+               if ( srvcMetricOrder[iCnt] == "***LINE***" ) {
+                  myTableStr += '<TR>\n   <TD COLSPAN="5" bgcolor="#000000" ' +
+                     'STYLE="border-left:24px solid white; line-height:2px;"' +
+                     '>&nbsp;</DIV>\n<TR>\n   <TD COLSPAN="5" bgcolor="#FFFF' +
+                     'FF" STYLE="line-height:2px;">&nbsp;\n';
+               } else if ( srvcMetricOrder[iCnt] in
+                                               myData.elements[cnt].metrics ) {
+                  if ( srvcMetricOrder[iCnt] in srvcMetricLabel ) {
+                     myTableStr += '<TR>\n   <TD NOWRAP ALIGN="left"> &nbsp ' +
+                        '&nbsp ' + srvcMetricLabel[ srvcMetricOrder[iCnt] ] +
+                        '\n   <TD NOWRAP>&nbsp;\n';
+                  } else {
+                     myTableStr += '<TR>\n   <TD NOWRAP ALIGN="left"> &nbsp ' +
+                        '&nbsp ' + srvcMetricOrder[iCnt] + '\n   <TD NOWRAP>' +
+                        '&nbsp;\n';
+                  }
+                  myTableStr += '   <TD COLSPAN="3"><A HREF="javascript:void' +
+                     '(0);" ID="' + srvcMetricOrder[iCnt] + '/yrday/' +
+                     myData.elements[cnt].host + '/' +
+                     myData.elements[cnt].type +
+                     '" ONMOUSEDOWN="canvas_clicked(this, event)"><CANVAS ID' +
+                     '="cnvs_' + eName + '_' + srvcMetricOrder[iCnt] +
+                     '_s3" WIDTH="626" HEIGHT="18"></CANVAS></A>\n';
+               } else if ( srvcMetricOrder[iCnt] == "***Othr***" ) {
+                  // loop over element metrics not in srvcMetricOrder:
+                  for ( var mName in myData.elements[cnt].metrics ) {
+                     if ( srvcMetricOrder.indexOf(mName) >= 0 ) {
+                        continue;
+                     }
+                     if ( mName in srvcMetricLabel ) {
+                        myTableStr += '<TR>\n   <TD NOWRAP ALIGN="left"> &nb' +
+                           'sp &nbsp ' + srvcMetricLabel[mName] +
+                           '\n   <TD NOWRAP>&nbsp;\n';
+                     } else {
+                        myTableStr += '<TR>\n   <TD NOWRAP ALIGN="left"> &nb' +
+                           'sp &nbsp ' + mName + '\n   <TD NOWRAP>&nbsp;\n';
+                     }
+                     myTableStr += '   <TD COLSPAN="3"><A HREF="javascript:v' +
+                        'oid(0);" ID="' + mName + '/yrday/' +
+                        myData.elements[cnt].host + '/' +
+                        myData.elements[cnt].type +
+                        '" ONMOUSEDOWN="canvas_clicked(this, event)"><CANVAS' +
+                        ' ID="cnvs_' + eName + '_' + mName +
+                        '_s3" WIDTH="626" HEIGHT="18"></CANVAS></A>\n';
+                  }
                }
-               myTableStr += '   <TD COLSPAN="3"><A HREF="javascript:void(0)' +
-                  ';" ID="' + mName + '/yrday/' + myData.elements[cnt].host +
-                  '/' + myData.elements[cnt].type +
-                  '" ONMOUSEDOWN="canvas_clicked(this, event)"><CANVAS ID="c' +
-                  'nvs_' + eName + '_' + mName + '_s3" WIDTH="626" HEIGHT="1' +
-                  '8"></CANVAS></A>\n';
             }
          }
       }
@@ -680,21 +804,53 @@ function writeTodayTable() {
             eName = myData.elements[cnt].host + '/' + myData.elements[cnt].type;
             eName = eName.replace(' ', '');
             // loop over metrics of element:
-            for ( var mName in myData.elements[cnt].metrics ) {
-               if ( mName in siteMetricLabel ) {
-                  myTableStr += '<TR>\n   <TD NOWRAP ALIGN="left"> &nbsp &nb' +
-                     'sp ' + siteMetricLabel[mName] +
-                     '\n   <TD NOWRAP>&nbsp;\n';
-               } else {
-                  myTableStr += '<TR>\n   <TD NOWRAP ALIGN="left"> &nbsp &nb' +
-                     'sp ' + mName + '\n   <TD NOWRAP>&nbsp;\n';
+            for ( var iCnt=0; iCnt < srvcMetricOrder.length; iCnt+=1 ) {
+               if ( srvcMetricOrder[iCnt] == "***LINE***" ) {
+                  myTableStr += '<TR>\n   <TD COLSPAN="5" bgcolor="#000000" ' +
+                     'STYLE="border-left:24px solid white; line-height:2px;"' +
+                     '>&nbsp;</DIV>\n<TR>\n   <TD COLSPAN="5" bgcolor="#FFFF' +
+                     'FF" STYLE="line-height:2px;">&nbsp;\n';
+               } else if ( srvcMetricOrder[iCnt] in
+                                               myData.elements[cnt].metrics ) {
+                  if ( srvcMetricOrder[iCnt] in srvcMetricLabel ) {
+                     myTableStr += '<TR>\n   <TD NOWRAP ALIGN="left"> &nbsp ' +
+                        '&nbsp ' + srvcMetricLabel[ srvcMetricOrder[iCnt] ] +
+                        '\n   <TD NOWRAP>&nbsp;\n';
+                  } else {
+                     myTableStr += '<TR>\n   <TD NOWRAP ALIGN="left"> &nbsp ' +
+                        '&nbsp ' + srvcMetricOrder[iCnt] + '\n   <TD NOWRAP>' +
+                        '&nbsp;\n';
+                  }
+                  myTableStr += '   <TD COLSPAN="3"><A HREF="javascript:void' +
+                     '(0);" ID="' + srvcMetricOrder[iCnt] + '/today/' +
+                     myData.elements[cnt].host + '/' +
+                     myData.elements[cnt].type +
+                     '" ONMOUSEDOWN="canvas_clicked(this, event)"><CANVAS ID' +
+                     '="cnvs_' + eName + '_' + srvcMetricOrder[iCnt] +
+                     '_s4" WIDTH="626" HEIGHT="18"></CANVAS></A>\n';
+               } else if ( srvcMetricOrder[iCnt] == "***Othr***" ) {
+                  // loop over element metrics not in srvcMetricOrder:
+                  for ( var mName in myData.elements[cnt].metrics ) {
+                     if ( srvcMetricOrder.indexOf(mName) >= 0 ) {
+                        continue;
+                     }
+                     if ( mName in srvcMetricLabel ) {
+                        myTableStr += '<TR>\n   <TD NOWRAP ALIGN="left"> &nb' +
+                           'sp &nbsp ' + srvcMetricLabel[mName] +
+                           '\n   <TD NOWRAP>&nbsp;\n';
+                     } else {
+                        myTableStr += '<TR>\n   <TD NOWRAP ALIGN="left"> &nb' +
+                           'sp &nbsp ' + mName + '\n   <TD NOWRAP>&nbsp;\n';
+                     }
+                     myTableStr += '   <TD COLSPAN="3"><A HREF="javascript:v' +
+                        'oid(0);" ID="' + mName + '/today/' +
+                        myData.elements[cnt].host + '/' +
+                        myData.elements[cnt].type +
+                        '" ONMOUSEDOWN="canvas_clicked(this, event)"><CANVAS' +
+                        ' ID="cnvs_' + eName + '_' + mName +
+                        '_s4" WIDTH="626" HEIGHT="18"></CANVAS></A>\n';
+                  }
                }
-               myTableStr += '   <TD COLSPAN="3"><A HREF="javascript:void(0)' +
-                  ';" ID="' + mName + '/today/' + myData.elements[cnt].host +
-                  '/' + myData.elements[cnt].type +
-                  '" ONMOUSEDOWN="canvas_clicked(this, event)"><CANVAS ID="c' +
-                  'nvs_' + eName + '_' + mName + '_s4" WIDTH="626" HEIGHT="1' +
-                  '8"></CANVAS></A>\n';
             }
          }
       }
@@ -788,21 +944,53 @@ function writeFweekTable() {
             eName = myData.elements[cnt].host + '/' + myData.elements[cnt].type;
             eName = eName.replace(' ', '');
             // loop over metrics of element:
-            for ( var mName in myData.elements[cnt].metrics ) {
-               if ( mName in siteMetricLabel ) {
-                  myTableStr += '<TR>\n   <TD NOWRAP ALIGN="left"> &nbsp &nb' +
-                     'sp ' + siteMetricLabel[mName] +
-                     '\n   <TD NOWRAP>&nbsp;\n';
-               } else {
-                  myTableStr += '<TR>\n   <TD NOWRAP ALIGN="left"> &nbsp &nb' +
-                     'sp ' + mName + '\n   <TD NOWRAP>&nbsp;\n';
+            for ( var iCnt=0; iCnt < srvcMetricOrder.length; iCnt+=1 ) {
+               if ( srvcMetricOrder[iCnt] == "***LINE***" ) {
+                  myTableStr += '<TR>\n   <TD COLSPAN="5" bgcolor="#000000" ' +
+                     'STYLE="border-left:24px solid white; line-height:2px;"' +
+                     '>&nbsp;</DIV>\n<TR>\n   <TD COLSPAN="5" bgcolor="#FFFF' +
+                     'FF" STYLE="line-height:2px;">&nbsp;\n';
+               } else if ( srvcMetricOrder[iCnt] in
+                                               myData.elements[cnt].metrics ) {
+                  if ( srvcMetricOrder[iCnt] in srvcMetricLabel ) {
+                     myTableStr += '<TR>\n   <TD NOWRAP ALIGN="left"> &nbsp ' +
+                        '&nbsp ' + srvcMetricLabel[ srvcMetricOrder[iCnt] ] +
+                        '\n   <TD NOWRAP>&nbsp;\n';
+                  } else {
+                     myTableStr += '<TR>\n   <TD NOWRAP ALIGN="left"> &nbsp ' +
+                        '&nbsp ' + srvcMetricOrder[iCnt] + '\n   <TD NOWRAP>' +
+                        '&nbsp;\n';
+                  }
+                  myTableStr += '   <TD COLSPAN="3"><A HREF="javascript:void' +
+                     '(0);" ID="' + srvcMetricOrder[iCnt] + '/fweek/' +
+                     myData.elements[cnt].host + '/' +
+                     myData.elements[cnt].type +
+                     '" ONMOUSEDOWN="canvas_clicked(this, event)"><CANVAS ID' +
+                     '="cnvs_' + eName + '_' + srvcMetricOrder[iCnt] +
+                     '_s5" WIDTH="730" HEIGHT="18"></CANVAS></A>\n';
+               } else if ( srvcMetricOrder[iCnt] == "***Othr***" ) {
+                  // loop over element metrics not in srvcMetricOrder:
+                  for ( var mName in myData.elements[cnt].metrics ) {
+                     if ( srvcMetricOrder.indexOf(mName) >= 0 ) {
+                        continue;
+                     }
+                     if ( mName in srvcMetricLabel ) {
+                        myTableStr += '<TR>\n   <TD NOWRAP ALIGN="left"> &nb' +
+                           'sp &nbsp ' + srvcMetricLabel[mName] +
+                           '\n   <TD NOWRAP>&nbsp;\n';
+                     } else {
+                        myTableStr += '<TR>\n   <TD NOWRAP ALIGN="left"> &nb' +
+                           'sp &nbsp ' + mName + '\n   <TD NOWRAP>&nbsp;\n';
+                     }
+                     myTableStr += '   <TD COLSPAN="3"><A HREF="javascript:v' +
+                        'oid(0);" ID="' + mName + '/fweek/' +
+                        myData.elements[cnt].host + '/' +
+                        myData.elements[cnt].type +
+                        '" ONMOUSEDOWN="canvas_clicked(this, event)"><CANVAS' +
+                        ' ID="cnvs_' + eName + '_' + mName +
+                        '_s5" WIDTH="730" HEIGHT="18"></CANVAS></A>\n';
+                  }
                }
-               myTableStr += '   <TD COLSPAN="3"><A HREF="javascript:void(0)' +
-                  ';" ID="' + mName + '/fweek/' + myData.elements[cnt].host +
-                  '/' + myData.elements[cnt].type +
-                  '" ONMOUSEDOWN="canvas_clicked(this, event)"><CANVAS ID="c' +
-                  'nvs_' + eName + '_' + mName + '_s5" WIDTH="730" HEIGHT="1' +
-                  '8"></CANVAS></A>\n';
             }
          }
       }

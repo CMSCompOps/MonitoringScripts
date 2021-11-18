@@ -44,6 +44,34 @@ var siteMetricOrder = [ "Downtime", "SAM1day", "HC1day", "FTS1day",
                         "Summary",
                         "***LINE***",
                         "**Elmnts**" ];
+var srvcMetricLabel = { SAMservice:       "SAM Service Status",
+                        FTSsource:        "FTS Endpoint (from)",
+                        FTSdestination:   "FTS Endpoint (to)" };
+var srvcMetricOrder = [ "Downtime",
+                        "SAMservice",
+                        "FTSsource", "FTSdestination",
+                        "***LINE***",
+                        "ETF_SRM-GetPFNFromTFC", "ETF_SRM-VOLsDir",
+                           "ETF_SRM-VOPut", "ETF_SRM-VOLs",
+                           "ETF_SRM-VOGetTURLs", "ETF_SRM-VOGet",
+                           "ETF_SRM-VODel", "ETF_SRM-AllCMS",
+                        "ETF_SE-WebDAV-1connection", "ETF_SE-WebDAV-2ssl",
+                           "ETF_SE-WebDAV-3extension",
+                           "ETF_SE-WebDAV-4crt-read",
+                           "ETF_SE-WebDAV-5open-access",
+                           "ETF_SE-WebDAV-6crt-write", 
+                           "ETF_SE-WebDAV-7macaroon",
+                           "ETF_SE-WebDAV-9summary",
+                        "ETF_SE-xrootd-version", "ETF_SE-xrootd-connection",
+                           "ETF_SE-xrootd-read", "ETF_SE-xrootd-contain",
+                        "ETF_CONDOR-JobSubmit",
+                           "ETF_WN-env", "ETF_WN-basic", "ETF_WN-cvmfs",
+                           "ETF_WN-squid", "ETF_WN-frontier",
+                           "ETF_WN-isolation",
+                           "ETF_WN-xrootd-access", "ETF_WN-xrootd-fallback",
+                           "ETF_WN-analysis", "ETF_WN-mc",
+                        "ETF_DNS-IPv6",
+                        "***Othr***" ];
 var sizeCnvs;
 var noBins;
 
@@ -282,7 +310,7 @@ function canvas_clicked(id, event) {
    return false;
 }
 
-function writeTable(widthName) {
+function writeTable() {
 
    var myWidth = 1600;
    if ( window.innerWidth ) {
@@ -619,88 +647,208 @@ function writeTable(widthName) {
             eName = myData.elements[cnt].host + '/' + myData.elements[cnt].type;
             eName = eName.replace(' ', '');
             // loop over metrics of element:
-            for ( var mName in myData.elements[cnt].metrics ) {
-               if ( mName in siteMetricLabel ) {
-                  myTableStr += '<TR>\n   <TD NOWRAP ALIGN="left"> &nbsp &nb' +
-                     'sp ' + siteMetricLabel[mName] +
-                     '\n   <TD NOWRAP>&nbsp;\n';
-               } else {
-                  myTableStr += '<TR>\n   <TD NOWRAP ALIGN="left"> &nbsp &nb' +
-                     'sp ' + mName + '\n   <TD NOWRAP>&nbsp;\n';
+            for ( var iCnt=0; iCnt < srvcMetricOrder.length; iCnt+=1 ) {
+               if ( srvcMetricOrder[iCnt] == "***LINE***" ) {
+                  myTableStr += '<TR>\n   <TD COLSPAN="7" bgcolor="#000000" ' +
+                     'STYLE="border-left:24px solid white; line-height:2px;"' +
+                     '>&nbsp;</DIV>\n<TR>\n   <TD COLSPAN="7" bgcolor="#FFFF' +
+                     'FF" STYLE="line-height:2px;">&nbsp;\n';
+               } else if ( srvcMetricOrder[iCnt] in
+                                               myData.elements[cnt].metrics ) {
+                  if ( srvcMetricOrder[iCnt] in srvcMetricLabel ) {
+                     myTableStr += '<TR>\n   <TD NOWRAP ALIGN="left"> &nbsp ' +
+                        '&nbsp ' + srvcMetricLabel[ srvcMetricOrder[iCnt] ] +
+                        '\n   <TD NOWRAP>&nbsp;\n';
+                  } else {
+                     myTableStr += '<TR>\n   <TD NOWRAP ALIGN="left"> &nbsp ' +
+                        '&nbsp ' + srvcMetricOrder[iCnt] + '\n   <TD NOWRAP>' +
+                        '&nbsp;\n';
+                  }
+                  // second, previous month's, column:
+                  myTableStr += '   <TD><A CLASS="toolTip1" ' + 'HREF="javas' +
+                     'cript:void(0);" ID="' + srvcMetricOrder[iCnt] +
+                     '/pmonth/' + myData.elements[cnt].host + '/' +
+                     myData.elements[cnt].type + '" ONMOUSEDOWN="canvas_clic' +
+                     'ked(this, event)"><CANVAS ID="cnvs_' + eName + '_' +
+                     srvcMetricOrder[iCnt] + '_s1" WIDTH="' + sizeCnvs[0] +
+                     '" HEIGHT="18"></CANVAS><SPAN><TABLE WIDTH="100%" BORDE' +
+                     'R="0" CELLPADDING="0" CELLSPACING="0"><TR><TD COLSPAN=' +
+                     '"2" ALIGN="center"><B>Previous Month of ' +
+                     srvcMetricOrder[iCnt] + '</B><TR><TD COLSPAN="2">&nbsp;' +
+                     '<TR><TD COLSPAN="2"><CANVAS ID="cnvs_' + eName + '_' +
+                     srvcMetricOrder[iCnt] + '_m1" WIDTH="' + sizeMagn[0] +
+                     '" HEIGHT="36"></CANVAS><TR><TD ALIGN="left">' +
+                     dateString2(myData.time - 38 * 86400) + '<TD ALIGN="rig' +
+                     'ht">' + dateString2(myData.time - 9 * 86400) +
+                     '</TABLE></SPAN></A>\n';
+                  // third, previous week's, column:
+                  myTableStr += '   <TD><A CLASS="toolTip2" ' + 'HREF="javas' +
+                     'cript:void(0);" ID="' + srvcMetricOrder[iCnt] +
+                     '/pweek/' + myData.elements[cnt].host + '/' +
+                     myData.elements[cnt].type + '" ONMOUSEDOWN="canvas_clic' +
+                     'ked(this, event)"><CANVAS ID="cnvs_' + eName + '_' +
+                     srvcMetricOrder[iCnt] + '_s2" WIDTH="' + sizeCnvs[1] +
+                     '" HEIGHT="18"></CANVAS><SPAN><TABLE WIDTH="100%" BORDE' +
+                     'R="0" CELLPADDING="0" CELLSPACING="0"><TR><TD COLSPAN=' +
+                     '"2" ALIGN="center"><B>Previous Week of ' +
+                     srvcMetricOrder[iCnt] + '</B><TR><TD COLSPAN="2">&nbsp;' +
+                     '<TR><TD COLSPAN="2"><CANVAS ID="cnvs_' + eName + '_' +
+                     srvcMetricOrder[iCnt] + '_m2" WIDTH="' + sizeMagn[1] +
+                     '" HEIGHT="36"></CANVAS><TR><TD ALIGN="left">' +
+                     dateString2(myData.time - 8 * 86400) + '<TD ALIGN="righ' +
+                     't">' + dateString2(myData.time - 2 * 86400) +
+                     '</TABLE></SPAN></A>\n';
+                  // fourth, yesterday's, column:
+                  myTableStr += '   <TD><A CLASS="toolTip3" ' + 'HREF="javas' +
+                     'cript:void(0);" ID="' + srvcMetricOrder[iCnt] +
+                     '/yrday/' + myData.elements[cnt].host + '/' +
+                     myData.elements[cnt].type + '" ONMOUSEDOWN="canvas_clic' +
+                     'ked(this, event)"><CANVAS ID="cnvs_' + eName + '_' +
+                     srvcMetricOrder[iCnt] + '_s3" WIDTH="' + sizeCnvs[2] +
+                     '" HEIGHT="18"></CANVAS><SPAN><TABLE WIDTH="100%" BORDE' +
+                     'R="0" CELLPADDING="0" CELLSPACING="0"><TR><TD COLSPAN=' +
+                     '"2" ALIGN="center"><B>Yesterday (' +
+                     dateString2(myData.time - 86400) + ') of ' +
+                     srvcMetricOrder[iCnt] + '</B><TR><TD COLSPAN="2">&nbsp;' +
+                     '<TR><TD COLSPAN="2"><CANVAS ID="cnvs_' + eName + '_' +
+                     srvcMetricOrder[iCnt] + '_m3" WIDTH="' + sizeMagn[2] +
+                     '" HEIGHT="36"></CANVAS><TR><TD ALIGN="left">00:00<TD A' +
+                     'LIGN="right">24:00</TABLE></SPAN></A>\n';
+                  // fifth, today's, column:
+                  myTableStr += '   <TD><A CLASS="toolTip4" ' + 'HREF="javas' +
+                     'cript:void(0);" ID="' + srvcMetricOrder[iCnt] +
+                     '/today/' + myData.elements[cnt].host + '/' +
+                     myData.elements[cnt].type + '" ONMOUSEDOWN="canvas_clic' +
+                     'ked(this, event)"><CANVAS ID="cnvs_' + eName + '_' +
+                     srvcMetricOrder[iCnt] + '_s4" WIDTH="' + sizeCnvs[3] +
+                     '" HEIGHT="18"></CANVAS><SPAN><TABLE WIDTH="100%" BORDE' +
+                     'R="0" CELLPADDING="0" CELLSPACING="0"><TR><TD COLSPAN=' +
+                     '"2" ALIGN="center"><B>Today (' +
+                     dateString2( myData.time ) + ') of ' +
+                     srvcMetricOrder[iCnt] + '</B><TR><TD COLSPAN="2">&nbsp;' +
+                     '<TR><TD COLSPAN="2"><CANVAS ID="cnvs_' + eName + '_' +
+                     srvcMetricOrder[iCnt] + '_m4" WIDTH="' + sizeMagn[3] +
+                     '" HEIGHT="36"></CANVAS><TR><TD ALIGN="left">00:00<TD A' +
+                     'LIGN="right">24:00</TABLE></SPAN></A>\n';
+                  // sixth, following week's column:
+                  myTableStr += '   <TD><A CLASS="toolTip5" ' + 'HREF="javas' +
+                     'cript:void(0);" ID="' + srvcMetricOrder[iCnt] +
+                     '/fweek/' + myData.elements[cnt].host + '/' +
+                     myData.elements[cnt].type + '" ONMOUSEDOWN="canvas_clic' +
+                     'ked(this, event)"><CANVAS ID="cnvs_' + eName + '_' +
+                     srvcMetricOrder[iCnt] + '_s5" WIDTH="' + sizeCnvs[4] +
+                     '" HEIGHT="18"></CANVAS><SPAN><TABLE WIDTH="100%" BORDE' +
+                     'R="0" CELLPADDING="0" CELLSPACING="0"><TR><TD COLSPAN=' +
+                     '"2" ALIGN="center"><B>Following Week of ' +
+                     srvcMetricOrder[iCnt] + '</B><TR><TD COLSPAN="2">&nbsp;' +
+                     '<TR><TD COLSPAN="2"><CANVAS ID="cnvs_' + eName + '_' +
+                     srvcMetricOrder[iCnt] + '_m5" WIDTH="' + sizeMagn[4] +
+                     '" HEIGHT="36"></CANVAS><TR><TD ALIGN="left">' +
+                     dateString2( myData.time + 1 * 86400 ) + '<TD ALIGN="ri' +
+                     'ght">' + dateString2( myData.time + 7 * 86400 ) +
+                     '</TABLE></SPAN></A>\n';
+               } else if ( srvcMetricOrder[iCnt] == "***Othr***" ) {
+                  // loop over element metrics not in srvcMetricOrder:
+                  for ( var mName in myData.elements[cnt].metrics ) {
+                     if ( srvcMetricOrder.indexOf(mName) >= 0 ) {
+                        continue;
+                     }
+                     if ( mName in srvcMetricLabel ) {
+                        myTableStr += '<TR>\n   <TD NOWRAP ALIGN="left"> &nb' +
+                           'sp &nbsp ' + srvcMetricLabel[mName] +
+                           '\n   <TD NOWRAP>&nbsp;\n';
+                     } else {
+                        myTableStr += '<TR>\n   <TD NOWRAP ALIGN="left"> &nb' +
+                           'sp &nbsp ' + mName + '\n   <TD NOWRAP>&nbsp;\n';
+                     }
+                     // second, previous month's, column:
+                     myTableStr += '   <TD><A CLASS="toolTip1" ' +
+                        'HREF="javascript:void(0);" ID="' + mName +
+                        '/pmonth/' + myData.elements[cnt].host + '/' +
+                        myData.elements[cnt].type + '" ONMOUSEDOWN="canvas_c' +
+                        'licked(this, event)"><CANVAS ID="cnvs_' + eName +
+                        '_' + mName + '_s1" WIDTH="' + sizeCnvs[0] +
+                        '" HEIGHT="18"></CANVAS><SPAN><TABLE WIDTH="100%" BO' +
+                        'RDER="0" CELLPADDING="0" CELLSPACING="0"><TR><TD CO' +
+                        'LSPAN="2" ALIGN="center"><B>Previous Month of ' +
+                        mName + '</B><TR><TD COLSPAN="2">&nbsp;<TR><TD COLSP' +
+                        'AN="2"><CANVAS ID="cnvs_' + eName + '_' + mName +
+                        '_m1" WIDTH="' + sizeMagn[0] +
+                        '" HEIGHT="36"></CANVAS><TR><TD ALIGN="left">' +
+                        dateString2(myData.time - 38 * 86400) +
+                        '<TD ALIGN="right">' +
+                        dateString2(myData.time - 9 * 86400) +
+                        '</TABLE></SPAN></A>\n';
+                     // third, previous week's, column:
+                     myTableStr += '   <TD><A CLASS="toolTip2" ' +
+                        'HREF="javascript:void(0);" ID="' + mName + '/pweek/' +
+                        myData.elements[cnt].host + '/' +
+                        myData.elements[cnt].type + '" ONMOUSEDOWN="canvas_c' +
+                        'licked(this, event)"><CANVAS ID="cnvs_' + eName +
+                        '_' + mName + '_s2" WIDTH="' + sizeCnvs[1] +
+                        '" HEIGHT="18"></CANVAS><SPAN><TABLE WIDTH="100%" BO' +
+                        'RDER="0" CELLPADDING="0" CELLSPACING="0"><TR><TD CO' +
+                        'LSPAN="2" ALIGN="center"><B>Previous Week of ' +
+                        mName + '</B><TR><TD COLSPAN="2">&nbsp;<TR><TD COLSP' +
+                        'AN="2"><CANVAS ID="cnvs_' + eName + '_' + mName +
+                        '_m2" WIDTH="' + sizeMagn[1] +
+                        '" HEIGHT="36"></CANVAS><TR><TD ALIGN="left">' +
+                        dateString2(myData.time - 8 * 86400) +
+                        '<TD ALIGN="right">' +
+                        dateString2(myData.time - 2 * 86400) +
+                        '</TABLE></SPAN></A>\n';
+                     // fourth, yesterday's, column:
+                     myTableStr += '   <TD><A CLASS="toolTip3" ' +
+                        'HREF="javascript:void(0);" ID="' + mName + '/yrday/' +
+                        myData.elements[cnt].host + '/' +
+                        myData.elements[cnt].type + '" ONMOUSEDOWN="canvas_c' +
+                        'licked(this, event)"><CANVAS ID="cnvs_' + eName +
+                        '_' + mName + '_s3" WIDTH="' + sizeCnvs[2] +
+                        '" HEIGHT="18"></CANVAS><SPAN><TABLE WIDTH="100%" BO' +
+                        'RDER="0" CELLPADDING="0" CELLSPACING="0"><TR><TD CO' +
+                        'LSPAN="2" ALIGN="center"><B>Yesterday (' +
+                        dateString2(myData.time - 86400) + ') of ' + mName +
+                        '</B><TR><TD COLSPAN="2">&nbsp;<TR><TD COLSPAN="2"><' +
+                        'CANVAS ID="cnvs_' + eName + '_' + mName +
+                        '_m3" WIDTH="' + sizeMagn[2] +
+                        '" HEIGHT="36"></CANVAS><TR><TD ALIGN="left">00:00<T' +
+                        'D ALIGN="right">24:00</TABLE></SPAN></A>\n';
+                     // fifth, today's, column:
+                     myTableStr += '   <TD><A CLASS="toolTip4" ' +
+                        'HREF="javascript:void(0);" ID="' + mName + '/today/' +
+                        myData.elements[cnt].host + '/' +
+                        myData.elements[cnt].type + '" ONMOUSEDOWN="canvas_c' +
+                        'licked(this, event)"><CANVAS ID="cnvs_' + eName +
+                        '_' + mName + '_s4" WIDTH="' + sizeCnvs[3] +
+                        '" HEIGHT="18"></CANVAS><SPAN><TABLE WIDTH="100%" BO' +
+                        'RDER="0" CELLPADDING="0" CELLSPACING="0"><TR><TD CO' +
+                        'LSPAN="2" ALIGN="center"><B>Today (' +
+                        dateString2( myData.time ) + ') of ' + mName +
+                        '</B><TR><TD COLSPAN="2">&nbsp;<TR><TD COLSPAN="2"><' +
+                        'CANVAS ID="cnvs_' + eName + '_' + mName +
+                        '_m4" WIDTH="' + sizeMagn[3] + '" HEIGHT="36"></CANV' +
+                        'AS><TR><TD ALIGN="left">00:00<TD ALIGN="right">24:0' +
+                        '0</TABLE></SPAN></A>\n';
+                     // sixth, following week's column:
+                     myTableStr += '   <TD><A CLASS="toolTip5" ' +
+                        'HREF="javascript:void(0);" ID="' + mName + '/fweek/' +
+                        myData.elements[cnt].host + '/' +
+                        myData.elements[cnt].type + '" ONMOUSEDOWN="canvas_c' +
+                        'licked(this, event)"><CANVAS ID="cnvs_' + eName +
+                        '_' + mName + '_s5" WIDTH="' + sizeCnvs[4] +
+                        '" HEIGHT="18"></CANVAS><SPAN><TABLE WIDTH="100%" BO' +
+                        'RDER="0" CELLPADDING="0" CELLSPACING="0"><TR><TD CO' +
+                        'LSPAN="2" ALIGN="center"><B>Following Week of ' +
+                        mName + '</B><TR><TD COLSPAN="2">&nbsp;<TR><TD COLSP' +
+                        'AN="2"><CANVAS ID="cnvs_' + eName + '_' + mName +
+                        '_m5" WIDTH="' + sizeMagn[4] + '" HEIGHT="36"></CANV' +
+                        'AS><TR><TD ALIGN="left">' +
+                        dateString2( myData.time + 1 * 86400 ) +
+                        '<TD ALIGN="right">' +
+                        dateString2( myData.time + 7 * 86400 ) +
+                        '</TABLE></SPAN></A>\n';
+                  }
                }
-               // second, previous month's, column:
-               myTableStr += '   <TD><A CLASS="toolTip1" ' +
-                  'HREF="javascript:void(0);" ID="' + mName + '/pmonth/' +
-                  myData.elements[cnt].host + '/' + myData.elements[cnt].type +
-                  '" ONMOUSEDOWN="canvas_clicked(this, event)"><CANVAS ID="c' +
-                  'nvs_' + eName + '_' + mName + '_s1" WIDTH="' + sizeCnvs[0] +
-                  '" HEIGHT="18"></CANVAS><SPAN><TABLE WIDTH="100%" BORDER="' +
-                  '0" CELLPADDING="0" CELLSPACING="0"><TR><TD COLSPAN="2" AL' +
-                  'IGN="center"><B>Previous Month of ' + mName + '</B><TR><T' +
-                  'D COLSPAN="2">&nbsp;<TR><TD COLSPAN="2"><CANVAS ID="cnvs_' +
-                  eName + '_' + mName + '_m1" WIDTH="' + sizeMagn[0] +
-                  '" HEIGHT="36"></CANVAS><TR><TD ALIGN="left">' +
-                  dateString2(myData.time - 38 * 86400) + '<TD ALIGN="right"' +
-                  '>' + dateString2(myData.time - 9 * 86400) +
-                  '</TABLE></SPAN></A>\n';
-               // third, previous week's, column:
-               myTableStr += '   <TD><A CLASS="toolTip2" ' +
-                  'HREF="javascript:void(0);" ID="' + mName + '/pweek/' +
-                  myData.elements[cnt].host + '/' + myData.elements[cnt].type +
-                  '" ONMOUSEDOWN="canvas_clicked(this, event)"><CANVAS ID="c' +
-                  'nvs_' + eName + '_' + mName + '_s2" WIDTH="' + sizeCnvs[1] +
-                  '" HEIGHT="18"></CANVAS><SPAN><TABLE WIDTH="100%" BORDER="' +
-                  '0" CELLPADDING="0" CELLSPACING="0"><TR><TD COLSPAN="2" AL' +
-                  'IGN="center"><B>Previous Week of ' + mName + '</B><TR><TD' +
-                  ' COLSPAN="2">&nbsp;<TR><TD COLSPAN="2"><CANVAS ID="cnvs_' +
-                  eName + '_' + mName + '_m2" WIDTH="' + sizeMagn[1] +
-                  '" HEIGHT="36"></CANVAS><TR><TD ALIGN="left">' +
-                  dateString2(myData.time - 8 * 86400) + '<TD ALIGN="right">' +
-                  dateString2(myData.time - 2 * 86400) +
-                  '</TABLE></SPAN></A>\n';
-               // fourth, yesterday's, column:
-               myTableStr += '   <TD><A CLASS="toolTip3" ' +
-                  'HREF="javascript:void(0);" ID="' + mName + '/yrday/' +
-                  myData.elements[cnt].host + '/' + myData.elements[cnt].type +
-                  '" ONMOUSEDOWN="canvas_clicked(this, event)"><CANVAS ID="c' +
-                  'nvs_' + eName + '_' + mName + '_s3" WIDTH="' + sizeCnvs[2] +
-                  '" HEIGHT="18"></CANVAS><SPAN><TABLE WIDTH="100%" BORDER="' +
-                  '0" CELLPADDING="0" CELLSPACING="0"><TR><TD COLSPAN="2" AL' +
-                  'IGN="center"><B>Yesterday (' +
-                  dateString2(myData.time - 86400) + ') of ' + mName +
-                  '</B><TR><TD COLSPAN="2">&nbsp;<TR><TD COLSPAN="2"><CANVAS' +
-                  ' ID="cnvs_' + eName + '_' + mName + '_m3" WIDTH="' +
-                  sizeMagn[2] + '" HEIGHT="36"></CANVAS><TR><TD ALIGN="left"' +
-                  '>00:00<TD ALIGN="right">24:00</TABLE></SPAN></A>\n';
-               // fifth, today's, column:
-               myTableStr += '   <TD><A CLASS="toolTip4" ' +
-                  'HREF="javascript:void(0);" ID="' + mName + '/today/' +
-                  myData.elements[cnt].host + '/' + myData.elements[cnt].type +
-                  '" ONMOUSEDOWN="canvas_clicked(this, event)"><CANVAS ID="c' +
-                  'nvs_' + eName + '_' + mName + '_s4" WIDTH="' + sizeCnvs[3] +
-                  '" HEIGHT="18"></CANVAS><SPAN><TABLE WIDTH="100%" BORDER="' +
-                  '0" CELLPADDING="0" CELLSPACING="0"><TR><TD COLSPAN="2" AL' +
-                  'IGN="center"><B>Today (' + dateString2( myData.time ) +
-                  ') of ' + mName + '</B><TR><TD COLSPAN="2">&nbsp;<TR><TD C' +
-                  'OLSPAN="2"><CANVAS ID="cnvs_' + eName + '_' + mName +
-                  '_m4" WIDTH="' + sizeMagn[3] + '" HEIGHT="36"></CANVAS><TR' +
-                  '><TD ALIGN="left">00:00<TD ALIGN="right">24:00</TABLE></S' +
-                  'PAN></A>\n';
-               // sixth, following week's column:
-               myTableStr += '   <TD><A CLASS="toolTip5" ' +
-                  'HREF="javascript:void(0);" ID="' + mName + '/fweek/' +
-                  myData.elements[cnt].host + '/' + myData.elements[cnt].type +
-                  '" ONMOUSEDOWN="canvas_clicked(this, event)"><CANVAS ID="c' +
-                  'nvs_' + eName + '_' + mName + '_s5" WIDTH="' + sizeCnvs[4] +
-                  '" HEIGHT="18"></CANVAS><SPAN><TABLE WIDTH="100%" BORDER="' +
-                  '0" CELLPADDING="0" CELLSPACING="0"><TR><TD COLSPAN="2" AL' +
-                  'IGN="center"><B>Following Week of ' + mName + '</B><TR><T' +
-                  'D COLSPAN="2">&nbsp;<TR><TD COLSPAN="2"><CANVAS ID="cnvs_' +
-                  eName + '_' + mName + '_m5" WIDTH="' + sizeMagn[4] +
-                  '" HEIGHT="36"></CANVAS><TR><TD ALIGN="left">' +
-                  dateString2( myData.time + 1 * 86400 ) + '<TD ALIGN="right' +
-                  '">' + dateString2( myData.time + 7 * 86400 ) +
-                  '</TABLE></SPAN></A>\n';
             }
          }
       }
