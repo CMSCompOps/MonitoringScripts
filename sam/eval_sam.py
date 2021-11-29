@@ -9,7 +9,7 @@
 # ########################################################################### #
 # "data": {
 #      "name":     "T1_US_FNAL" | "cmsdcadisk01.fnal.gov",
-#      "type":     "site" | "CE" | "SRM" | XRD",
+#      "type":     "site" | "CE" | "SRM" | "WEBDAV" | XRD",
 #      "status":   "ok" | "warning" | "error" | "downtime" | "unknown"
 #      "availability": 0.000 | null,
 #      "reliability":  1.000 | null,
@@ -63,6 +63,7 @@ EVSAM_SERVICE_PROBES = {
     'SRM':    [ "org.cms.SRM-GetPFNFromTFC-/cms/Role=production",
                 "org.cms.SRM-VOPut-/cms/Role=production",
                 "org.cms.SRM-VOGet-/cms/Role=production" ],
+    'WEBDAV': [ "org.cms.SE-WebDAV-9summary" ],
     'XRD':    [ "org.cms.SE-xrootd-connection",
                 "org.cms.SE-xrootd-version",
                 "org.cms.SE-xrootd-read",
@@ -87,6 +88,9 @@ evsam_glbl_types = { 'CE': "CE",
                      'SRMv1': "SRM",
                      'globus-GRIDFTP': "SRM",
                      'GridFtp': "SRM",
+                     'webdav': "WEBDAV",
+                     'WebDAV': "WEBDAV",
+                     'WEBDAV': "WEBDAV",
                      'XRD': "XRD",
                      'XROOTD': "XRD",
                      'XRootD': "XRD",
@@ -94,7 +98,6 @@ evsam_glbl_types = { 'CE': "CE",
                      'XRootD origin server': "XRD",
                      'XRootD component': "XRD",
                      'org.squid-cache.Squid': "",
-                     'webdav': "",
                      'perfSONAR': "perfSONAR",
                      'net.perfSONAR.Bandwidth': "perfSONAR",
                      'net.perfSONAR.Latency': "perfSONAR",
@@ -1102,6 +1105,7 @@ def evsam_evaluate(timebin):
         siteDetail = ""
         ceStatus = None
         srmStatus = None
+        webdavStatus = None
         xrootdStatus = None
         for service in sorted(evsam_glbl_topology[site],
                               key=lambda k: [k['ctgry'], k['host'], k['type']]):
@@ -1159,6 +1163,19 @@ def evsam_evaluate(timebin):
                         elif (( myStatus == "warning" ) and
                               ( srmStatus == "ok" )):
                             srmStatus = "warning"
+                    elif ( service['ctgry'] == "WEBDAV" ):
+                        # all WebDAV endpoints must be working:
+                        if webdavStatus is None:
+                            webdavStatus = myStatus
+                        elif ( myStatus == "error" ):
+                            webdavStatus = "error"
+                        elif (( myStatus == "unknown" ) and
+                              (( webdavStatus == "warning" ) or
+                               ( webdavStatus == "ok" ))):
+                            webdavStatus = "unknown"
+                        elif (( myStatus == "warning" ) and
+                              ( webdavStatus == "ok" )):
+                            webdavStatus = "warning"
                     elif ( service['ctgry'] == "XRD" ):
                         # one xrootd-endpoint must be working:
                         if (( downStatus == "downtime" ) and
@@ -1180,19 +1197,19 @@ def evsam_evaluate(timebin):
         myStatus = None
         myAvailability = None
         if (( ceStatus == "error" ) or ( srmStatus == "error" ) or
-                                       ( xrootdStatus == "error" )):
+            ( webdavStatus == "error" ) or ( xrootdStatus == "error" )):
             myStatus = "error"
             myAvailability = 0.000
         elif (( ceStatus == "unknown" ) or ( srmStatus == "unknown" ) or
-                                           ( xrootdStatus == "unknown" )):
+              ( webdavStatus == "unknown" ) or ( xrootdStatus == "unknown" )):
             myStatus = "unknown"
             myAvailability = None
         elif (( ceStatus == "warning" ) or ( srmStatus == "warning" ) or
-                                           ( xrootdStatus == "warning" )):
+              ( webdavStatus == "warning" ) or ( xrootdStatus == "warning" )):
             myStatus = "warning"
             myAvailability = 1.000
         elif (( ceStatus == "ok" ) or ( srmStatus == "ok" ) or
-                                      ( xrootdStatus == "ok" )):
+              ( webdavStatus == "ok" ) or ( xrootdStatus == "ok" )):
             myStatus = "ok"
             myAvailability = 1.000
         myReliability = myAvailability

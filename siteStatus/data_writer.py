@@ -1590,7 +1590,8 @@ def sswp_vofeed():
     # ############################################################### #
     # fill sswp_sites site element array with grid element dictionary #
     # ############################################################### #
-    URL_VOFEED = "http://dashb-cms-vo-feed.cern.ch/dashboard/request.py/cmssitemapbdii"
+    #URL_VOFEED = "http://dashb-cms-vo-feed.cern.ch/dashboard/request.py/cmssitemapbdii"
+    URL_VOFEED = "http://cmssst.web.cern.ch/cmssst/vofeed/vofeed.xml"
 
     # get list of grid elements and grid sites from the VO-feed:
     # ==========================================================
@@ -3661,11 +3662,25 @@ def ssdw_monit_SAM_HC_FTS_SR():
                                         site = myJson['data']['name']
                                     elif ( myJson['data']['type'] == "source" ):
                                         label = "FTSsource"
-                                        site = myJson['data']['name'] + "/SRM"
+                                        typgrp = glbTopology.verifyType(
+                                              myJson['data']['name'], "WEBDAV")
+                                        if ( typgrp is None ):
+                                            site = myJson['data']['name'] + \
+                                                                         "/SRM"
+                                        else:
+                                            site = myJson['data']['name'] + \
+                                                                      "/WEBDAV"
                                     elif ( myJson['data']['type'] ==
                                                                "destination" ):
                                         label = "FTSdestination"
-                                        site = myJson['data']['name'] + "/SRM"
+                                        typgrp = glbTopology.verifyType(
+                                              myJson['data']['name'], "WEBDAV")
+                                        if ( typgrp is None ):
+                                            site = myJson['data']['name'] + \
+                                                                         "/SRM"
+                                        else:
+                                            site = myJson['data']['name'] + \
+                                                                      "/WEBDAV"
                                     else:
                                         continue
                                     period = metric[3:]
