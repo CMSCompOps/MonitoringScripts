@@ -23,8 +23,8 @@
 #             'queue':
 #             'batch':
 #             'production': true | false
-#             'rpath': [ "id", "path" ]
-#             'wpath': [ "id", "path" ]
+#             'paths': [ [ "id", "path" ], [ , ], ...]
+#             'rse':
 #         }, {
 #             ...
 #         }
@@ -50,7 +50,7 @@ import pydoop.hdfs
 
 
 
-VOFEED_VERSION = "v2.01.08"
+VOFEED_VERSION = "v2.02.00"
 # ########################################################################### #
 
 
@@ -189,30 +189,24 @@ class vofeed:
                 if ( ctgry == 'CE' ):
                     resources = service.findall('ce_resource')
                 elif ( ctgry == 'SE' ):
+                    if 'rse' in service.attrib:
+                        srvc['rse'] = service.attrib['rse']
                     resources = service.findall('se_resource')
                 else:
                     resources = []
                 #
-                if ( len(resources) <= 0 ):
-                    self.add1service(0, site, srvc)
-                else:
-                    for resource in resources:
-                        xsrvc = srvc.copy()
-                        if 'batch_system' in resource.attrib:
-                            xsrvc['batch'] = resource.attrib['batch_system']
-                        if 'queue' in resource.attrib:
-                            xsrvc['queue'] = resource.attrib['queue']
-                        if (( 'id' in resource.attrib ) and
-                            ( 'path' in resource.attrib )):
-                            if ( resource.attrib['id'][0:2] == "RD" ):
-                                xsrvc['rpath'] = (resource.attrib['id'],
-                                                  resource.attrib['path'])
-                            elif ( resource.attrib['id'][0:2] == "WR" ):
-                                xsrvc['wpath'] = (resource.attrib['id'],
-                                                  resource.attrib['path'])
-                        self.add1service(0, site, xsrvc)
-                        del xsrvc
-                #
+                for resource in resources:
+                    if 'batch_system' in resource.attrib:
+                        srvc['batch'] = resource.attrib['batch_system']
+                    if 'queue' in resource.attrib:
+                        srvc['queue'] = resource.attrib['queue']
+                    if (( 'id' in resource.attrib ) and
+                        ( 'path' in resource.attrib )):
+                        if ( 'paths' not in srvc ):
+                            srvc['paths'] = []
+                        srvc['paths'].append( (resource.attrib['id'],
+                                               resource.attrib['path']) )
+                self.add1service(0, site, srvc)
                 del srvc
 
         # link timestamp of the VO-feed to latest, 0 entry:
@@ -463,12 +457,48 @@ class vofeed:
         for srv in self.topo[timestamp][site]:
             if (( srv['hostname'] == service['hostname'] ) and
                 ( srv['flavour'] == service['flavour'] )):
-                if (( 'rpath' in service ) and ( 'rpath' not in srv )):
-                    srv['rpath'] = service['rpath']
-                if (( 'wpath' in service ) and ( 'wpath' not in srv )):
-                    srv['wpath'] = service['wpath']
-                if (( 'endpoint' in service ) and ( 'endpoint' not in srv )):
-                    srv['endpoint'] = service['endpoint']
+                if ( srv['production'] == service['production'] ):
+                    canUpdate = True
+                    if (( 'endpoint' in service ) and
+                        ( 'endpoint' not in srv )):
+                        srv['endpoint'] = service['endpoint']
+                    elif (( 'endpoint' in service ) and ( 'endpoint' in srv )):
+                        if ( srv['endpoint'] != service['endpoint'] ):
+                            canUpdate = False
+                    if (( 'rse' in service ) and ( 'rse' not in srv ) and
+                        ( canUpdate == True )):
+                        srv['rse'] = service['rse']
+                    elif (( 'rse' in service ) and ( 'rse' in srv ) and
+                          ( canUpdate == True )):
+                        if ( srv['rse'] != service['rse'] ):
+                            # yes, same endpoint belonging to more than one RSE
+                            if ( service['rse'].split("_")[-1] == "Tape" ):
+                                # add only "RD" paths, i.e. drop "WR" paths:
+                                if ( 'paths' in service ):
+                                    npath = len( service['paths'] )
+                                    for indx in range(npath-1, -1, -1):
+                                        if ( service['paths'][indx][0][:2] ==
+                                                                        "WR" ):
+                                            del service['paths'][indx]
+                            elif ( srv['rse'].split("_")[-1] == "Tape" ):
+                                # remove current "WR" paths:
+                                if ( 'paths' in srv ):
+                                    npath = len( srv['paths'] )
+                                    for indx in range(npath-1, -1, -1):
+                                        if ( srv['paths'][indx][0][:2] ==
+                                                                        "WR" ):
+                                            del srv['paths'][indx]
+                                # switch to non-Tape RSE:
+                                srv['rse'] = service['rse']
+                            elif ( len(srv['rse']) > len(service['rse']) ):
+                                # prefer shorter RSE names over longer:
+                                srv['rse'] = service['rse']
+                    if (( 'paths' in service ) and ( canUpdate == True )):
+                        if ( 'paths' not in srv ):
+                            srv['paths'] = []
+                        for path in service['paths']:
+                            if ( path not in srv['paths'] ):
+                                srv['paths'].append( path )
                 if ( srv['production'] == True ):
                     return
                 elif ( service['production'] == False ):
@@ -624,6 +654,8 @@ class vofeed:
                              % (srvc['hostname'], srvc['flavour'])
                 if 'endpoint' in srvc:
                     xmlString += " endpoint=\"%s\"" % srvc['endpoint']
+                if 'rse' in srvc:
+                    xmlString += " rse=\"%s\"" % srvc['rse']
                 if ( not srvc['production'] ):
                     xmlString += " production_status=\"false\""
                 if (( 'queue' in srvc ) and
@@ -639,20 +671,12 @@ class vofeed:
                       ( 'batch' in srvc )):
                     xmlString += (">\n         <ce_resource batch_system=\"" +
                                   "%s\"/>\n      </service>\n") % srvc['batch']
-                elif (( 'rpath' in srvc ) and ( 'wpath' in srvc )):
-                    xmlString += (">\n         <se_resource id=\"%s\" path=" +
-                                  "\"%s\"/>\n         <se_resource id=\"%s" +
-                                  "\" path=\"%s\"/>\n      </service>\n") % \
-                                 (srvc['rpath'][0], srvc['rpath'][1],
-                                  srvc['wpath'][0], srvc['wpath'][1])
-                elif ( 'rpath' in srvc ):
-                    xmlString += (">\n         <se_resource id=\"%s\" path=" +
-                                  "\"%s\"/>\n      </service>\n") % \
-                                 (srvc['rpath'][0], srvc['rpath'][1])
-                elif ( 'wpath' in srvc ):
-                    xmlString += (">\n         <se_resource id=\"%s\" path=" +
-                                  "\"%s\"/>\n      </service>\n") % \
-                                 (srvc['wpath'][0], srvc['wpath'][1])
+                elif ( 'paths' in srvc ):
+                    xmlString += ">\n"
+                    for path in srvc['paths']:
+                        xmlString += (("         <se_resource id=\"%s\" path" +
+                                       "=\"%s\"/>\n") % (path[0], path[1]))
+                    xmlString += "      </service>\n"
                 else:
                     xmlString += "/>\n"
             xmlString += ("      <group name=\"Tier-%s\" type=\"CMS_Tier\"/>" +
@@ -738,20 +762,27 @@ class vofeed:
                     if 'endpoint' in srvc:
                         jsonString += ",\n         \"endpoint\": \"%s\"" % \
                                       srvc['endpoint']
+                    if 'rse' in srvc:
+                        jsonString += ",\n         \"rse\": \"%s\"" % \
+                                      srvc['rse']
                     if 'queue' in srvc:
                         jsonString += ",\n         \"queue\": \"%s\"" % \
                                       srvc['queue']
                     if 'batch' in srvc:
                         jsonString += ",\n         \"batch\": \"%s\"" % \
                                       srvc['batch']
-                    if 'rpath' in srvc:
-                        jsonString += (",\n         \"rpath\": [\"%s\", \"%s" +
-                                       "\"]") % (srvc['rpath'][0],
-                                                 srvc['rpath'][1])
-                    if 'wpath' in srvc:
-                        jsonString += (",\n         \"wpath\": [\"%s\", \"%s" +
-                                       "\"]") % (srvc['wpath'][0],
-                                                 srvc['wpath'][1])
+                    if 'paths' in srvc:
+                        jsonString += ",\n         \"paths\": ["
+                        comma3Flag = False
+                        for path in srvc['paths']:
+                            if ( comma3Flag == False ):
+                                jsonString += ((" [\"%s\", \"%s\"]") %
+                                                            (path[0], path[1]))
+                            else:
+                                jsonString += ((",\n                    [\"" +
+                                         "%s\", \"%s\"]") % (path[0], path[1]))
+                            comma3Flag = True
+                        jsonString += " ]"
                     if not srvc['production']:
                         jsonString += ",\n         \"production\": false"
                     jsonString += "\n       }"
@@ -1552,6 +1583,7 @@ if __name__ == '__main__':
                 service = { 'category': "SE", 'hostname': rseHost,
                             'flavour': rseFlavour,
                             'endpoint': "%s:%d" % (rseHost, rseDict['port']),
+                            'rse': rseName,
                             'production': rseProduction }
                 #
                 try:
@@ -1564,7 +1596,7 @@ if __name__ == '__main__':
                     rseID = "RD"
                     if ( 'third_party_copy' in rseDict['wan'] ):
                         rseID += "3PCP"
-                    service['rpath'] = (rseID, rseDict['rpath'])
+                    service['paths'] = [ (rseID, rseDict['rpath']) ]
                 if (( rseDict['wpath'] is not None ) and
                     ( 'write' in rseDict['wan'] )):
                     rseID = "WR"
@@ -1572,15 +1604,16 @@ if __name__ == '__main__':
                         rseID += "DEL"
                     if ( 'third_party_copy' in rseDict['wan'] ):
                         rseID += "3PCP"
-                    service['wpath'] = (rseID, rseDict['wpath'])
+                    if ( 'paths' not in service ):
+                        service['paths'] = []
+                    service['paths'].append( (rseID, rseDict['wpath']) )
 
                 logging.debug("   site %s: hostname %s flavour %s" %
-                                                     (rseSite, rseHost, "SRM"))
+                                                (rseSite, rseHost, rseFlavour))
                 logging.log(9, "      %s" % str(service))
                 #
                 try:
-                    if ( 'write' in rseDict['wan'] ):
-                        vofeedObj.add1service(timestamp, rseSite, service)
+                    vofeedObj.add1service(timestamp, rseSite, service)
                 except:
                     pass
 
@@ -1633,14 +1666,14 @@ if __name__ == '__main__':
         # add service endpoints to CMS topology:
         # ======================================
         siteRegex = re.compile(r"T\d_[A-Z]{2,2}_\w+")
-        for endpoint in endpoints['data']:
-            if (( siteRegex.match( endpoint['site'] ) is None ) or
-                ( endpoint['endpoint'].count(".") < 2 )):
+        for entry in endpoints['data']:
+            if (( siteRegex.match( entry['site'] ) is None ) or
+                ( entry['endpoint'].count(".") < 2 )):
                 logging.error("Skipping bad endpoint entry, %s, %s (%s)" %
-                    (endpoint['site'], endpoint['endpoint'], endpoint['type']))
+                    (entry['site'], entry['endpoint'], entry['type']))
             else:
-                host = endpoint['endpoint'].split(":")[0].lower()
-                flavour = vofeed.type2flavour( endpoint['type'] )
+                host = entry['endpoint'].split(":")[0].lower()
+                flavour = vofeed.type2flavour( entry['type'] )
                 ctgry = vofeed.flavour2category( flavour )
                 service = { 'category': ctgry, 'hostname': host,
                             'flavour': flavour }
@@ -1648,16 +1681,22 @@ if __name__ == '__main__':
                     service['gridsite'] = host2grid[ (host, ctgry) ]
                 except KeyError:
                     pass
-                if ( host != endpoint['endpoint'] ):
-                    service['endpoint'] = endpoint['endpoint']
-                if ( endpoint['usage'] == "test" ):
+                if ( host != entry['endpoint'] ):
+                    service['endpoint'] = entry['endpoint']
+                if ( entry['usage'] == "test" ):
                     service['production'] = False
+                if ( 'paths' in entry ):
+                    service['paths'] = []
+                    for path in entry['paths']:
+                        service['paths'].append( (path[0], path[1]) )
+                elif ( flavour == "XROOTD" ):
+                   service['paths'] = [ ("RD", "/store/mc/SAM/") ]
                 logging.debug("   site %s: hostname %s flavour %s" %
-                              (endpoint['site'], host, "SRM"))
+                                                (entry['site'], host, flavour))
                 logging.log(9, "      %s" % str(service))
                 #
                 try:
-                    vofeedObj.add1service(timestamp, endpoint['site'], service)
+                    vofeedObj.add1service(timestamp, entry['site'], service)
                 except:
                     pass
         #
