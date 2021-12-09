@@ -14,7 +14,8 @@
 # },
 # "data": {
 #      "name":    "T1_US_FNAL" | "cmsdcadisk01.fnal.gov___eoscmsftp.cern.ch",
-#      "type":    "site" | "source" | "destination" | "link",
+#      "type":    "site" | "rse" | "GSIFTP-source" | "WEBDAV-source" |
+#                  "GSIFTP-destination" | "GSIFTP-link",
 #      "status":  "ok" | "warning" | "error" | "unknown"
 #      "quality": 0.000 | null,
 #      "detail":  "ok: 2 files, 46.7 GB [...]\n
@@ -103,7 +104,7 @@ class FTSmetric:
 
 
     @staticmethod
-    def hosts2link(source_host=None, destination_host=None):
+    def hosts2protolink(source_host=None, destination_host=None, protocol=None):
         """function to compose a link string from source/destination hosts"""
         if (( source_host is None ) or ( destination_host is None )):
             logging.error("Missing host name(s) to compose link")
@@ -119,10 +120,28 @@ class FTSmetric:
             logging.error("Bad destination host name: %s" % destination_host)
             return None
         #
-        link = source_host.lower() + "___" + destination_host.lower()
-        link = link.replace(" ", "")
+        if ( protocol is None ):
+            logging.error("No protocol name provided, %s___%s" %
+                                               (source_host, destination_host))
+            return None
+        elif ( protocol.upper() == "SRM" ):
+            protocol = "GSIFTP"
+        elif ( protocol.upper() == "DAVS" ):
+            protocol = "WEBDAV"
+        elif ( protocol.upper() == "ROOT" ):
+            protocol = "XROOTD"
+            # exclude xrootd endpoint for the time beeing
+            return None
+        elif (( protocol.upper() != "GSIFTP" ) and
+              ( protocol.upper() != "WEBDAV" )):
+            logging.error("Unsupported protocol name: %s" % protocol)
+            return None
         #
-        linkRegex = re.compile(r"^(([a-z0-9\-]+)\.)+[a-z0-9\-]+___(([a-z0-9\-]+)\.)+[a-z0-9\-]+$")
+        link = source_host.lower() + "___" + protocol.upper() + "___" + \
+                                                       destination_host.lower()
+        #
+        link = link.replace(" ", "")
+        linkRegex = re.compile(r"^(([a-z0-9\-]+)\.)+[a-z0-9\-]+___([A-Z]+___)*(([a-z0-9\-]+)\.)+[a-z0-9\-]+$")
         if linkRegex.match(link) is None:
             logging.error("Bad link name composed: %s" % link)
             return None
@@ -130,16 +149,43 @@ class FTSmetric:
 
 
     @staticmethod
-    def link2hosts(link_name=None):
+    def protolink2hosts(link_name=None):
         """function to extract source/destinaton hosts from a link name"""
+        linkRegex = re.compile(r"^(([a-z0-9\-]+)\.)+[a-z0-9\-]+___([A-Z]+___)*(([a-z0-9\-]+)\.)+[a-z0-9\-]+$")
+
         if link_name is None:
-            return [None, None]
+            return [None, None, None]
         #
-        linkRegex = re.compile(r"^(([a-z0-9\-]+)\.)+[a-z0-9\-]+___(([a-z0-9\-]+)\.)+[a-z0-9\-]+$")
-        if linkRegex.match(link_name) is None:
+        matchObj = linkRegex.match(link_name)
+        if ( matchObj is None ):
             logging.error("Bad link name: %s" % link_name)
-            return [None, None]
-        return link_name.split("___")
+            src = dst = proto = None
+        elif ( matchObj.group(3) is None ):
+            src, dst = link_name.split("___")
+            proto = None
+        else:
+            src, proto, dst = link_name.split("___")
+        #
+        return [src, dst, proto]
+
+
+    @staticmethod
+    def protolink2link(protocol_link=None):
+        """function to extract source/destinaton hosts from a link name"""
+        linkRegex = re.compile(r"^(([a-z0-9\-]+)\.)+[a-z0-9\-]+___([A-Z]+___)*(([a-z0-9\-]+)\.)+[a-z0-9\-]+$")
+
+        if protocol_link is None:
+            return None
+        #
+        matchObj = linkRegex.match(protocol_link)
+        if ( matchObj is None ):
+            logging.error("Bad protocol link name: %s" % protocol_link)
+            return None
+        elif ( matchObj.group(3) is None ):
+            return protocol_link
+        else:
+            src, proto, dst = protocol_link.split("___")
+            return src + "___" + dst
 
 
     @staticmethod
@@ -147,29 +193,32 @@ class FTSmetric:
                  file_size, transfer_activity):
         """function to classify transfer results into counting classes"""
 
-        error_lower = error_message.lower()
+        eMsg = error_message
+        eLwr = error_message.lower()
         #
         if ( error_code == 0 ):
             return "trn_ok"
         elif (( file_size >= 21474836480 ) or
-              ( error_lower.find("certificate has expired") >= 0 ) or
-              ( error_lower.find("operation canceled by user") >= 0 ) or
-              ( error_lower.find("path/url invalid") >= 0 ) or
-              ( error_lower.find("file exists and overwrite is not enabled") \
-                                                                       >= 0 )):
+              ( eLwr.find("certificate has expired") >= 0 ) or
+              ( eLwr.find("operation canceled by user") >= 0 ) or
+              ( eLwr.find("path/url invalid") >= 0 ) or
+              ( eLwr.find("file exists and overwrite is not enabled") >= 0 ) or
+              ( eLwr.find("request cancellation was requested") >= 0 )):
             return "trn_usr"
         elif (( transfer_activity == "ASO" ) and
-              (( error_lower.find("disk quota exceeded") >= 0 ) or
-               ( error_message.find("NoFreeSpaceException") >= 0 ) or
-               ( error_lower.find("not enough space") >= 0 ) or
-               ( error_lower.find("no free space") >= 0 ))):
+              (( eLwr.find("disk quota exceeded") >= 0 ) or
+               ( eMsg.find("NoFreeSpaceException") >= 0 ) or
+               ( eLwr.find("not enough space") >= 0 ) or
+               ( eLwr.find("no free space") >= 0 ) or
+               (( eLwr.find("copy failed with mode 3rd push") >= 0 ) and
+                ( eMsg.find("507 status code: 507") >= 0 )))):
             return "trn_usr"
         elif (( error_scope == "TRANSFER" ) and
-              (( error_lower.find("no route to host") >= 0 ) or
-               ( error_lower.find("could not open connection to") >= 0 ) or
-               ( error_lower.find("unable to connect") >= 0 ) or
-               ( error_lower.find("failed to connect") >= 0 ) or
-               ( error_lower.find("network is unreachable") >= 0 ))):
+              (( eLwr.find("no route to host") >= 0 ) or
+               ( eLwr.find("could not open connection to") >= 0 ) or
+               ( eLwr.find("unable to connect") >= 0 ) or
+               ( eLwr.find("failed to connect") >= 0 ) or
+               ( eLwr.find("network is unreachable") >= 0 ))):
             return "trn_err"
         #
         #
@@ -181,22 +230,22 @@ class FTSmetric:
             classfcn = "src_err"
         elif ( error_message[:11] == "DESTINATION" ):
             classfcn = "dst_err"
-        elif (( error_message.find("SOURCE") > 0 ) and
-              ( error_message.find("DESTINATION") < 0 )):
+        elif (( eMsg.find("SOURCE") > 0 ) and
+              ( eMsg.find("DESTINATION") < 0 )):
             classfcn = "src_err"
-        elif (( error_message.find("DESTINATION") > 0 ) and
-              ( error_message.find("SOURCE") < 0 )):
+        elif (( eMsg.find("DESTINATION") > 0 ) and
+              ( eMsg.find("SOURCE") < 0 )):
             classfcn = "dst_err"
         else:
             classfcn = "trn_err"
             #
             #
-            src_host, dst_host = FTSmetric.link2hosts(link_name)
+            src_host, dst_host = FTSmetric.protolink2hosts(link_name)[:2]
             #
             try:
                 domain = src_host.split(".",1)[-1]
-                if (( error_lower.find(src_host) >= 0 ) or
-                    ( error_lower.find(domain) >= 0 )):
+                if (( eLwr.find(src_host) >= 0 ) or
+                    ( eLwr.find(domain) >= 0 )):
                     classfcn = "src_err"
                 else:
                     ipaddrList = socket.getaddrinfo(src_host, None,
@@ -211,16 +260,16 @@ class FTSmetric:
                         else:
                             continue
                         ipAddr = tuple[4][0]
-                        if (( error_lower.find(ipAddr) >= 0 ) or
-                            ( error_lower.find(domain) >= 0 )):
+                        if (( eLwr.find(ipAddr) >= 0 ) or
+                            ( eLwr.find(domain) >= 0 )):
                             classfcn = "src_err"
             except (TypeError, socket.gaierror, AttributeError):
                 pass
             #
             try:
                 domain = dst_host.split(".",1)[-1]
-                if (( error_lower.find(dst_host) >= 0 ) or
-                    ( error_lower.find(domain) >= 0 )):
+                if (( eLwr.find(dst_host) >= 0 ) or
+                    ( eLwr.find(domain) >= 0 )):
                     if ( classfcn == "src_err" ):
                         classfcn = "trn_err"
                     else:
@@ -238,8 +287,8 @@ class FTSmetric:
                         else:
                             continue
                         ipAddr = tuple[4][0]
-                        if (( error_lower.find(ipAddr) >= 0 ) or
-                            ( error_lower.find(domain) >= 0 )):
+                        if (( eLwr.find(ipAddr) >= 0 ) or
+                            ( eLwr.find(domain) >= 0 )):
                             if ( classfcn == "src_err" ):
                                 classfcn = "trn_err"
                             else:
@@ -257,20 +306,21 @@ class FTSmetric:
                 return "src_perm"
             elif ( error_code ==   2 ):
                 return "src_miss"
-            elif (( error_lower.find("credential") >= 0 ) or
-                  ( error_lower.find("permission denied") >= 0 ) or
-                  ( error_lower.find("insufficient user privileges") >= 0 ) or
-                  ( error_message.find("Authorization denied") >= 0 ) or
-                  ( error_lower.find("establishing access rights") >= 0 ) or
-                  ( error_lower.find("authorization error") >= 0 ) or
-                  ( error_lower.find("certificate issued for a diff") >= 0 )):
+            elif (( eLwr.find("credential") >= 0 ) or
+                  ( eLwr.find("permission denied") >= 0 ) or
+                  ( eLwr.find("insufficient user privileges") >= 0 ) or
+                  ( eMsg.find("Authorization denied") >= 0 ) or
+                  ( eLwr.find("establishing access rights") >= 0 ) or
+                  ( eLwr.find("authorization error") >= 0 ) or
+                  ( eLwr.find("certificate issued for a diff") >= 0 ) or
+                  ( eMsg.find("does not allow setting up correct ACL") >= 0 )):
                 return "src_perm"
-            elif (( error_lower.find("no such file or directory") >= 0 ) or
-                  ( error_lower.find("file not found") >= 0 ) or
-                  ( error_lower.find("file is unavailable") >= 0 ) or
-                  ( error_lower.find("file is not online") >= 0 ) or
-                  ( error_lower.find("no read pools online") >= 0 ) or
-                  ( error_lower.find("file invalidated while queuing") >= 0 )):
+            elif (( eLwr.find("no such file or directory") >= 0 ) or
+                  ( eLwr.find("file not found") >= 0 ) or
+                  ( eLwr.find("file is unavailable") >= 0 ) or
+                  ( eLwr.find("file is not online") >= 0 ) or
+                  ( eLwr.find("no read pools online") >= 0 ) or
+                  ( eLwr.find("file invalidated while queuing") >= 0 )):
                 return "src_miss"
             #
             if ( logging.getLogger().level > 25 ):
@@ -280,31 +330,32 @@ class FTSmetric:
         #
         elif ( classfcn == "trn_err" ):
             # sub-classify transfer further: _tout, _err (+ _ok, _usr)
-            if (( error_lower.find("operation timed out") >= 0 ) or
-                ( error_lower.find("connection timed out") >= 0 ) or
-                ( error_lower.find("idle timeout") >= 0 ) or
-                ( error_lower.find("performance marker timeout") >= 0 ) or
-                ( error_lower.find("timeout expired") >= 0 )):
+            if (( eLwr.find("operation timed out") >= 0 ) or
+                ( eLwr.find("connection timed out") >= 0 ) or
+                ( eLwr.find("idle timeout") >= 0 ) or
+                ( eLwr.find("performance marker timeout") >= 0 ) or
+                ( eLwr.find("timeout expired") >= 0 )):
                 return "trn_tout"
-            elif ( error_lower.find("file not found") >= 0 ):
+            elif ( eLwr.find("file not found") >= 0 ):
                 return "src_miss"
-            elif (( error_message.find("File exists") >= 0 ) or
-                  ( error_lower.find("rm() fail") >= 0 ) or
-                  ( error_lower.find("impossible to unlink") >= 0 )):
+            elif (( eMsg.find("File exists") >= 0 ) or
+                  ( eLwr.find("rm() fail") >= 0 ) or
+                  ( eLwr.find("impossible to unlink") >= 0 )):
                 return "dst_perm"
-            elif ( error_lower.find("mkdir") >= 0 ):
+            elif ( eLwr.find("mkdir") >= 0 ):
                 return "dst_path"
-            elif (( error_lower.find("disk quota exceeded") >= 0 ) or
-                  ( error_lower.find("all pools are full") >= 0 ) or
-                  ( error_lower.find("unable to reserve space") >= 0 ) or
-                  ( error_message.find("NoFreeSpaceException") >= 0 ) or
-                  ( error_lower.find("no write pools online") >= 0 ) or
-                  ( error_lower.find("no space left on device") >= 0 ) or
-                  ( error_lower.find("not enough space") >= 0 ) or
-                  ( error_lower.find("no free space") >= 0 ) or
-                  ( error_lower.find("unable to get quota space") >= 0 )):
+            elif (( eLwr.find("disk quota exceeded") >= 0 ) or
+                  ( eLwr.find("all pools are full") >= 0 ) or
+                  ( eLwr.find("unable to reserve space") >= 0 ) or
+                  ( eMsg.find("NoFreeSpaceException") >= 0 ) or
+                  ( eLwr.find("no write pools online") >= 0 ) or
+                  ( eLwr.find("no space left on device") >= 0 ) or
+                  ( eLwr.find("not enough space") >= 0 ) or
+                  ( eLwr.find("no free space") >= 0 ) or
+                  ( eLwr.find("unable to get quota space") >= 0 ) or
+                  ( eLwr.find("status code: 507,") >= 0 )):
                 return "dst_spce"
-            elif ( error_message.find("error in write into HDFS") >= 0 ):
+            elif ( eMsg.find("error in write into HDFS") >= 0 ):
                 return "dst_err"
             #
             if ( logging.getLogger().level > 25 ):
@@ -328,32 +379,42 @@ class FTSmetric:
                   ( error_code ==  28 ) or
                   ( error_code == 122 )):
                 return "dst_spce"
-            elif (( error_message.find("Operation not permitted") >= 0 ) or
-                  ( error_message.find("Permission denied") >= 0 ) or
-                  ( error_message.find("Device or resource busy") >= 0 ) or
-                  ( error_message.find("File exists") >= 0 ) or
-                  ( error_message.find("Read-only file system") >= 0 ) or
-                  ( error_message.find("Authorization denied") >= 0 ) or
-                  ( error_lower.find("authentication failed") >= 0 ) or
-                  ( error_lower.find("system error in unlink") >= 0 ) or
-                  ( error_lower.find("login incorrect") >= 0 ) or
-                  ( error_lower.find("certificate verify failed") >= 0 ) or
-                  ( error_lower.find("authentication negotiation") >= 0 ) or
-                  ( error_lower.find("commands denied") >= 0 )):
+            elif (( eMsg.find("Operation not permitted") >= 0 ) or
+                  ( eMsg.find("Permission denied") >= 0 ) or
+                  ( eMsg.find("Device or resource busy") >= 0 ) or
+                  ( eMsg.find("File exists") >= 0 ) or
+                  ( eMsg.find("Read-only file system") >= 0 ) or
+                  ( eMsg.find("Authorization denied") >= 0 ) or
+                  ( eLwr.find("authentication failed") >= 0 ) or
+                  ( eLwr.find("system error in unlink") >= 0 ) or
+                  ( eLwr.find("login incorrect") >= 0 ) or
+                  ( eLwr.find("certificate verify failed") >= 0 ) or
+                  ( eLwr.find("authentication negotiation") >= 0 ) or
+                  ( eLwr.find("commands denied") >= 0 ) or
+                  ( eMsg.find("rejected PUT: 403 Forbidden") >= 0 ) or
+                  ( eLwr.find("subject alternative names") >= 0 ) or
+                  ( eLwr.find("status code: 403,") >= 0 ) or
+                  (( eLwr.find("peers certificate") >= 0 ) and
+                   ( eLwr.find("was rejected") >= 0 ))):
                 return "dst_perm"
-            elif (( error_message.find("No such file or directory") >= 0 ) or
-                  ( error_message.find("No such device") >= 0 ) or
-                  ( error_message.find("Not a directory") >= 0 ) or
-                  ( error_message.find("MAKE_PARENT") >= 0 ) or
-                  ( error_message.find("][Mkdir][") >= 0 )):
+            elif (( eMsg.find("No such file or directory") >= 0 ) or
+                  ( eMsg.find("No such device") >= 0 ) or
+                  ( eMsg.find("Not a directory") >= 0 ) or
+                  ( eMsg.find("MAKE_PARENT") >= 0 ) or
+                  ( eMsg.find("][Mkdir][") >= 0 )):
                 return "dst_path"
-            elif (( error_message.find("File table overflow") >= 0 ) or
-                  ( error_message.find("No space left on device") >= 0 ) or
-                  ( error_lower.find("quota exceeded") >= 0 ) or
-                  ( error_lower.find("no free space") >= 0 ) or
-                  ( error_lower.find("unable to get quota space") >= 0 ) or
-                  ( error_lower.find("space management step") >= 0 )):
+            elif (( eMsg.find("File table overflow") >= 0 ) or
+                  ( eMsg.find("No space left on device") >= 0 ) or
+                  ( eLwr.find("quota exceeded") >= 0 ) or
+                  ( eLwr.find("no free space") >= 0 ) or
+                  ( eLwr.find("unable to get quota space") >= 0 ) or
+                  ( eLwr.find("space management step") >= 0 ) or
+                  ( eLwr.find("status code: 507,") >= 0 )):
                 return "dst_spce"
+            elif (( eLwr.find("copy failed with mode 3rd push") >= 0 ) and
+                  (( eMsg.find("No valid CRL was found for the CA") >= 0 ) or
+                   ( eMsg.find("(category: CRL)") >= 0 ))):
+                return "src_err"
             #
             if ( logging.getLogger().level > 25 ):
                 return classfcn
@@ -362,152 +423,168 @@ class FTSmetric:
         #
         #
         if ( classfcn == "src_err" ):
-            if (( error_lower.find("communication error") >= 0 ) or
-                ( error_lower.find("connection reset") >= 0 ) or
-                ( error_lower.find("connection closed") >= 0 ) or
-                ( error_lower.find("unable to connect") >= 0 ) or
-                ( error_lower.find("could not connect to") >= 0 ) or
-                ( error_lower.find("timed out") >= 0 ) or
-                ( error_lower.find("timeout") >= 0 ) or
-                ( error_lower.find("problem while connected to") >= 0 ) or
-                ( error_lower.find("incompatible with current file") >= 0 ) or
-                ( error_message.find("internal HDFS error") >= 0 ) or
-                ( error_message.find("error in reading from HDFS") >= 0 ) or
-                ( error_message.find(" 451 End") >= 0 ) or
-                ( error_lower.find("open file for checksumming") >= 0 ) or
-                ( error_lower.find("operation was aborted") >= 0 ) or
-                ( error_lower.find("an end of file occurred") >= 0 ) or
-                ( error_lower.find("commands denied") >= 0 ) or
-                ( error_lower.find("checksum do not match") >= 0 ) or
-                ( error_lower.find("checksum mismatch") >= 0 ) or
-                ( error_lower.find("protocol(s) not supported") >= 0 ) or
-                ( error_lower.find("internal server error") >= 0 ) or
-                ( error_message.find("Broken pipe") >= 0 ) or
-                ( error_message.find("Unable to build the TURL") >= 0 ) or
-                ( error_message.find("TTL exceeded") >= 0 ) or
-                ( error_lower.find("operation canceled") >= 0 ) or
-                ( error_lower.find("input/output error") >= 0 ) or
-                ( error_lower.find("connection limit exceeded") >= 0 ) or
-                ( error_lower.find("local filesystem has problems") >= 0 ) or
-                ( error_lower.find("failed to pin file") >= 0 ) or
-                ( error_lower.find("stale file handle") >= 0 ) or
-                ( error_lower.find("failed to abort transfer") >= 0 ) or
-                ( error_lower.find("error in failed to open checksum") >= 0 ) or
-                ( error_lower.find("error in failed to read checksum") >= 0 ) or                ( error_message.find("SURL is not pinned") >= 0 )):
+            if (( eLwr.find("communication error") >= 0 ) or
+                ( eLwr.find("connection reset") >= 0 ) or
+                ( eLwr.find("connection closed") >= 0 ) or
+                ( eLwr.find("unable to connect") >= 0 ) or
+                ( eLwr.find("could not connect to") >= 0 ) or
+                ( eLwr.find("timed out") >= 0 ) or
+                ( eLwr.find("timeout") >= 0 ) or
+                ( eLwr.find("problem while connected to") >= 0 ) or
+                ( eLwr.find("incompatible with current file") >= 0 ) or
+                ( eMsg.find("internal HDFS error") >= 0 ) or
+                ( eMsg.find("error in reading from HDFS") >= 0 ) or
+                ( eMsg.find(" 451 End") >= 0 ) or
+                ( eLwr.find("open file for checksumming") >= 0 ) or
+                ( eLwr.find("operation was aborted") >= 0 ) or
+                ( eLwr.find("an end of file occurred") >= 0 ) or
+                ( eLwr.find("commands denied") >= 0 ) or
+                ( eLwr.find("checksum do not match") >= 0 ) or
+                ( eLwr.find("checksum mismatch") >= 0 ) or
+                ( eLwr.find("protocol(s) not supported") >= 0 ) or
+                ( eLwr.find("internal server error") >= 0 ) or
+                ( eMsg.find("Broken pipe") >= 0 ) or
+                ( eMsg.find("Unable to build the TURL") >= 0 ) or
+                ( eMsg.find("TTL exceeded") >= 0 ) or
+                ( eLwr.find("operation canceled") >= 0 ) or
+                ( eLwr.find("input/output error") >= 0 ) or
+                ( eLwr.find("connection limit exceeded") >= 0 ) or
+                ( eLwr.find("local filesystem has problems") >= 0 ) or
+                ( eLwr.find("failed to pin file") >= 0 ) or
+                ( eLwr.find("stale file handle") >= 0 ) or
+                ( eLwr.find("failed to abort transfer") >= 0 ) or
+                ( eLwr.find("error in failed to open checksum") >= 0 ) or
+                ( eLwr.find("error in failed to read checksum") >= 0 ) or
+                ( eMsg.find("SURL is not pinned") >= 0 ) or
+                ( eLwr.find("connection was closed by server") >= 0 ) or
+                ( eMsg.find("SOURCE CHECKSUM") >= 0 ) or
+                ( eMsg.find("Result Invalid read in request") >= 0 ) or
+                ( eMsg.find("Secure connection truncated") >= 0 ) or
+                ( eMsg.find("Unexpected server error: 500") >= 0 )):
                 return classfcn
         elif ( classfcn == "trn_err" ):
-            if (( error_lower.find("no such file or directory") >= 0 ) or
-                ( error_lower.find("unable to open file") >= 0 ) or
-                ( error_lower.find("login failed") >= 0 ) or
-                ( error_lower.find("login incorrect") >= 0 ) or
-                ( error_lower.find("transfer failed") >= 0 ) or
-                ( error_lower.find("checksum mismatch") >= 0 ) or
-                ( error_lower.find("connection reset") >= 0 ) or
-                ( error_lower.find("connection timed out") >= 0 ) or
-                ( error_lower.find("internal timeout") >= 0 ) or
-                ( error_message.find("internal HDFS error") >= 0 ) or
-                ( error_lower.find("an end of file occurred") >= 0 ) or
-                ( error_lower.find("protocol family not supported") >= 0 ) or
-                ( error_lower.find("problem while connected to") >= 0 ) or
-                ( error_lower.find("no such file or directory") >= 0 ) or
-                ( error_lower.find("authentication failed") >= 0 ) or
-                ( error_lower.find("upload aborted") >= 0 ) or
-                ( error_lower.find("operation canceled") >= 0 ) or
-                ( error_lower.find("operation was aborted") >= 0 ) or
-                ( error_lower.find("aborting transfer") >= 0 ) or
-                ( error_lower.find("input/output error") >= 0 ) or
-                ( error_lower.find("an unknown error occurred") >= 0 ) or
-                ( error_lower.find("transfer was forcefully killed") >= 0 ) or
-                ( error_lower.find("stream ended before eod") >= 0 ) or
-                ( error_lower.find("file size mismatch") >= 0 ) or
-                ( error_lower.find("internal server error") >= 0 ) or
-                ( error_lower.find("operation not permitted") >= 0 ) or
-                ( error_message.find("Permission denied") >= 0 ) or
-                ( error_message.find("Broken pipe") >= 0 ) or
-                ( error_message.find("Invalid argument") >= 0 ) or
-                ( error_message.find("SSL handshake problem") >= 0 ) or
-                ( error_message.find("IPC failed") >= 0 ) or
-                ( error_message.find(" 501 Port number") >= 0 ) or
-                ( error_message.find(" 500 Authorization error") >= 0 ) or
-                ( error_message.find(" 500 End") >= 0 ) or
-                ( error_message.find(" 530 Login denied") >= 0 ) or
-                ( error_message.find(" 451 End") >= 0 ) or
-                ( error_message.find(" 451 Failed to deliver Pool") >= 0 ) or
-                ( error_message.find(" 451 FTP proxy did not shut") >= 0 ) or
-                ( error_message.find(" 451 General problem") >= 0 ) or
-                ( error_message.find(" 451 Post-processing failed") >= 0 ) or
-                ( error_message.find(" 431 Internal error") >= 0 ) or
-                ( error_lower.find("failed to deliver pnfs") >= 0 ) or
-                ( error_lower.find("block with unknown descriptor") >= 0 ) or
-                ( error_lower.find("certificate verify failed") >= 0 ) or
-                ( error_lower.find("transfer has been aborted") >= 0 ) or
-                ( error_lower.find("transfer cancelled") >= 0 ) or
-                ( error_lower.find("handle not in the proper state") >= 0 ) or
-                ( error_lower.find("error closing xrootd file handle") >= 0 ) or
-                ( error_lower.find("stream was closed") >= 0 ) or
-                ( error_lower.find("failed to open file") >= 0 ) or
-                ( error_lower.find("copy failed with mode 3rd p") >= 0 ) or
-                ( error_lower.find("connection limit exceeded") >= 0 ) or
-                ( error_lower.find("error while searching for end") >= 0 ) or
-                ( error_lower.find("stale file handle") >= 0 ) or
-                ( error_lower.find("could not verify credential") >= 0 ) or
-                ( error_lower.find("redirect limit has been reached") >= 0 ) or
-                ( error_lower.find("operation expired") >= 0 ) or
-                ( error_lower.find("invalid address") >= 0 ) or
-                ( error_lower.find("upload not yet completed") >= 0 ) or
-                ( error_lower.find("cannot allocate memory") >= 0 ) or
-                ( error_lower.find("does not exist") >= 0 )):
+            if (( eLwr.find("no such file or directory") >= 0 ) or
+                ( eLwr.find("unable to open file") >= 0 ) or
+                ( eLwr.find("login failed") >= 0 ) or
+                ( eLwr.find("login incorrect") >= 0 ) or
+                ( eLwr.find("transfer failed") >= 0 ) or
+                ( eLwr.find("checksum mismatch") >= 0 ) or
+                ( eLwr.find("connection reset") >= 0 ) or
+                ( eLwr.find("connection timed out") >= 0 ) or
+                ( eLwr.find("internal timeout") >= 0 ) or
+                ( eMsg.find("internal HDFS error") >= 0 ) or
+                ( eLwr.find("an end of file occurred") >= 0 ) or
+                ( eLwr.find("protocol family not supported") >= 0 ) or
+                ( eLwr.find("problem while connected to") >= 0 ) or
+                ( eLwr.find("no such file or directory") >= 0 ) or
+                ( eLwr.find("authentication failed") >= 0 ) or
+                ( eLwr.find("upload aborted") >= 0 ) or
+                ( eLwr.find("operation canceled") >= 0 ) or
+                ( eLwr.find("operation was aborted") >= 0 ) or
+                ( eLwr.find("aborting transfer") >= 0 ) or
+                ( eLwr.find("input/output error") >= 0 ) or
+                ( eLwr.find("an unknown error occurred") >= 0 ) or
+                ( eLwr.find("transfer was forcefully killed") >= 0 ) or
+                ( eLwr.find("stream ended before eod") >= 0 ) or
+                ( eLwr.find("file size mismatch") >= 0 ) or
+                ( eLwr.find("internal server error") >= 0 ) or
+                ( eLwr.find("operation not permitted") >= 0 ) or
+                ( eMsg.find("Permission denied") >= 0 ) or
+                ( eMsg.find("Broken pipe") >= 0 ) or
+                ( eMsg.find("Invalid argument") >= 0 ) or
+                ( eMsg.find("SSL handshake problem") >= 0 ) or
+                ( eMsg.find("IPC failed") >= 0 ) or
+                ( eMsg.find(" 501 Port number") >= 0 ) or
+                ( eMsg.find(" 500 Authorization error") >= 0 ) or
+                ( eMsg.find(" 500 End") >= 0 ) or
+                ( eMsg.find(" 530 Login denied") >= 0 ) or
+                ( eMsg.find(" 451 End") >= 0 ) or
+                ( eMsg.find(" 451 Failed to deliver Pool") >= 0 ) or
+                ( eMsg.find(" 451 FTP proxy did not shut") >= 0 ) or
+                ( eMsg.find(" 451 General problem") >= 0 ) or
+                ( eMsg.find(" 451 Post-processing failed") >= 0 ) or
+                ( eMsg.find(" 431 Internal error") >= 0 ) or
+                ( eLwr.find("failed to deliver pnfs") >= 0 ) or
+                ( eLwr.find("block with unknown descriptor") >= 0 ) or
+                ( eLwr.find("certificate verify failed") >= 0 ) or
+                ( eLwr.find("transfer has been aborted") >= 0 ) or
+                ( eLwr.find("transfer cancelled") >= 0 ) or
+                ( eLwr.find("handle not in the proper state") >= 0 ) or
+                ( eLwr.find("error closing xrootd file handle") >= 0 ) or
+                ( eLwr.find("stream was closed") >= 0 ) or
+                ( eLwr.find("failed to open file") >= 0 ) or
+                ( eLwr.find("copy failed with mode 3rd p") >= 0 ) or
+                ( eLwr.find("connection limit exceeded") >= 0 ) or
+                ( eLwr.find("error while searching for end") >= 0 ) or
+                ( eLwr.find("stale file handle") >= 0 ) or
+                ( eLwr.find("could not verify credential") >= 0 ) or
+                ( eLwr.find("redirect limit has been reached") >= 0 ) or
+                ( eLwr.find("operation expired") >= 0 ) or
+                ( eLwr.find("invalid address") >= 0 ) or
+                ( eLwr.find("upload not yet completed") >= 0 ) or
+                ( eLwr.find("cannot allocate memory") >= 0 ) or
+                ( eLwr.find("does not exist") >= 0 ) or
+                ( eMsg.find("Copy failed with mode streamed") >= 0 ) or
+                ( eMsg.find("Transfer forcefully killed") >= 0 )):
                 return classfcn
         elif ( classfcn == "dst_err" ):
-            if (( error_lower.find("communication error") >= 0 ) or
-                ( error_lower.find("no route to host") >= 0 ) or
-                ( error_lower.find("could not open connection to") >= 0 ) or
-                ( error_lower.find("unable to connect") >= 0 ) or
-                ( error_lower.find("no route to host") >= 0 ) or
-                ( error_lower.find("connection refused") >= 0 ) or
-                ( error_lower.find("connection reset") >= 0 ) or
-                ( error_lower.find("connection closed") >= 0 ) or
-                ( error_lower.find("timed out") >= 0 ) or
-                ( error_lower.find("timeout") >= 0 ) or
-                ( error_lower.find("operation canceled") >= 0 ) or
-                ( error_lower.find("problem while connected to") >= 0 ) or
-                ( error_lower.find("incompatible with current file") >= 0 ) or
-                ( error_message.find("internal HDFS error") >= 0 ) or
-                ( error_message.find("error in write into HDFS") >= 0 ) or
-                ( error_message.find("Failed to close file in HDFS") >= 0 ) or
-                ( error_message.find(" 500 End") >= 0 ) or
-                ( error_message.find(" 451 End") >= 0 ) or
-                ( error_message.find("ERROR: deadlock detected") >= 0 ) or
-                ( error_message.find(" 451 Failed to deliver Pool") >= 0 ) or
-                ( error_lower.find("unable to open file") >= 0 ) or
-                ( error_lower.find("no data available") >= 0 ) or
-                ( error_lower.find("file size mismatch") >= 0 ) or
-                ( error_lower.find("checksum mismatch") >= 0 ) or
-                ( error_lower.find("internal server error") >= 0 ) or
-                ( error_lower.find("an end of file occurred") >= 0 ) or
-                ( error_message.find("][SRM_FILE_LIFETIME_EXPIRED]") >= 0 ) or
-                ( error_message.find("][SRM_INTERNAL_ERROR]") >= 0 ) or
-                ( error_message.find("][SRM_REQUEST_INPROGRESS]") >= 0 ) or
-                ( error_message.find("][SRM_ABORTED]") >= 0 ) or
-                ( error_message.find("][SRM_REQUEST_TIMED_OUT]") >= 0 ) or
-                ( error_message.find("][SRM_FAILURE]") >= 0 ) or
-                ( error_message.find("Broken pipe") >= 0 ) or
-                ( error_lower.find("request aborted") >= 0 ) or
-                ( error_lower.find("operation was aborted") >= 0 ) or
-                ( error_lower.find("checksum value required") >= 0 ) or
-                ( error_lower.find("protocol(s) not supported") >= 0 ) or
-                ( error_lower.find("unknown error occurred") >= 0 ) or
-                ( error_lower.find("service unavailable") >= 0 ) or
-                ( error_message.find("Unable to build the TURL") >= 0 ) or
-                ( error_lower.find("input/output error") >= 0 ) or
-                ( error_lower.find("connection limit exceeded") >= 0 ) or
-                ( error_lower.find("unexpected server error") >= 0 ) or
-                ( error_lower.find("too many queued requests") >= 0 ) or
-                ( error_lower.find("upload not yet completed") >= 0 ) or
-                ( error_lower.find("no such request") >= 0 ) or
-                ( error_lower.find("failed to process") >= 0 ) or
-                ( error_lower.find("unable to write replica") >= 0 ) or
-                ( error_lower.find("handshake_failure; redirections") >= 0 )):
+            if (( eLwr.find("communication error") >= 0 ) or
+                ( eLwr.find("no route to host") >= 0 ) or
+                ( eLwr.find("could not open connection to") >= 0 ) or
+                ( eLwr.find("unable to connect") >= 0 ) or
+                ( eLwr.find("no route to host") >= 0 ) or
+                ( eLwr.find("connection refused") >= 0 ) or
+                ( eLwr.find("connection reset") >= 0 ) or
+                ( eLwr.find("connection closed") >= 0 ) or
+                ( eLwr.find("timed out") >= 0 ) or
+                ( eLwr.find("timeout") >= 0 ) or
+                ( eLwr.find("operation canceled") >= 0 ) or
+                ( eLwr.find("problem while connected to") >= 0 ) or
+                ( eLwr.find("incompatible with current file") >= 0 ) or
+                ( eMsg.find("internal HDFS error") >= 0 ) or
+                ( eMsg.find("error in write into HDFS") >= 0 ) or
+                ( eMsg.find("Failed to close file in HDFS") >= 0 ) or
+                ( eMsg.find(" 500 End") >= 0 ) or
+                ( eMsg.find(" 451 End") >= 0 ) or
+                ( eMsg.find("ERROR: deadlock detected") >= 0 ) or
+                ( eMsg.find(" 451 Failed to deliver Pool") >= 0 ) or
+                ( eLwr.find("unable to open file") >= 0 ) or
+                ( eLwr.find("no data available") >= 0 ) or
+                ( eLwr.find("file size mismatch") >= 0 ) or
+                ( eLwr.find("checksum mismatch") >= 0 ) or
+                ( eLwr.find("internal server error") >= 0 ) or
+                ( eLwr.find("an end of file occurred") >= 0 ) or
+                ( eMsg.find("][SRM_FILE_LIFETIME_EXPIRED]") >= 0 ) or
+                ( eMsg.find("][SRM_INTERNAL_ERROR]") >= 0 ) or
+                ( eMsg.find("][SRM_REQUEST_INPROGRESS]") >= 0 ) or
+                ( eMsg.find("][SRM_ABORTED]") >= 0 ) or
+                ( eMsg.find("][SRM_REQUEST_TIMED_OUT]") >= 0 ) or
+                ( eMsg.find("][SRM_FAILURE]") >= 0 ) or
+                ( eMsg.find("Broken pipe") >= 0 ) or
+                ( eLwr.find("request aborted") >= 0 ) or
+                ( eLwr.find("operation was aborted") >= 0 ) or
+                ( eLwr.find("checksum value required") >= 0 ) or
+                ( eLwr.find("protocol(s) not supported") >= 0 ) or
+                ( eLwr.find("unknown error occurred") >= 0 ) or
+                ( eLwr.find("service unavailable") >= 0 ) or
+                ( eMsg.find("Unable to build the TURL") >= 0 ) or
+                ( eLwr.find("input/output error") >= 0 ) or
+                ( eLwr.find("connection limit exceeded") >= 0 ) or
+                ( eLwr.find("unexpected server error") >= 0 ) or
+                ( eLwr.find("too many queued requests") >= 0 ) or
+                ( eLwr.find("upload not yet completed") >= 0 ) or
+                ( eLwr.find("no such request") >= 0 ) or
+                ( eLwr.find("failed to process") >= 0 ) or
+                ( eLwr.find("unable to write replica") >= 0 ) or
+                ( eLwr.find("handshake_failure; redirections") >= 0 ) or
+                ( eMsg.find("ADLER32 not supported") >= 0 ) or
+                ( eMsg.find("NoHttpResponseException while pushing") >= 0 ) or
+                ( eMsg.find("IllegalStateException while pushing") >= 0 ) or
+                ( eLwr.find("connection was closed by server") >= 0 ) or
+                ( eLwr.find("secure connection truncated") >= 0 ) or
+                ( eMsg.find("OpenSSL SSL_connect") >= 0 ) or
+                ( eMsg.find("Result Invalid read in request") >= 0 ) or
+                ( eMsg.find("Could not connect to server") >= 0 )):
                 return classfcn
         if error_message not in FTSmetric.staticErrorList:
             FTSmetric.staticErrorList.append( error_message )
@@ -761,7 +838,7 @@ class FTSmetric:
         # ################################################################# #
         # metric is a tuple of metric-name and time-bin: ("fts1day", 16954) #
         # name is a site (Tn_CC_*), source (*.*.*), destination (*.*.*), or #
-        # link (*.*.*___*.*.*) name                                         #
+        # link (*.*.*___*.*.*),(*.*.*___PROTOCOL___*.*.*) name              #
         # clss is site, source, destination, or link                        #
         # return value is the status of the evaluation or None              #
         # ###################################################################
@@ -780,7 +857,7 @@ class FTSmetric:
         # ################################################################# #
         # metric is a tuple of metric-name and time-bin: ("fts1day", 16954) #
         # name is a site (Tn_CC_*), source (*.*.*), destination (*.*.*), or #
-        # link (*.*.*___*.*.*) name                                         #
+        # link (*.*.*___*.*.*),(*.*.*___PROTOCOL___*.*.*) name              #
         # clss is site, source, destination, or link                        #
         # return value is the evaluation dictionary {'name':,'status':,...} #
         # ###################################################################
@@ -813,7 +890,7 @@ class FTSmetric:
 
     def add1entry(self, metric, entry):
         """function to add an additional link/site entry to a metric"""
-        linkRegex = re.compile(r"^(([a-z0-9\-]+)\.)+[a-z0-9\-]+___(([a-z0-9\-]+)\.)+[a-z0-9\-]+$")
+        linkRegex = re.compile(r"^(([a-z0-9\-]+)\.)+[a-z0-9\-]+___([A-Z]+___)*(([a-z0-9\-]+)\.)+[a-z0-9\-]+$")
         hostRegex = re.compile(r"^(([a-z0-9\-]+)\.)+[a-z0-9\-]+$")
         siteRegex = re.compile(r"T\d_[A-Z]{2,2}_\w+")
         #
@@ -824,19 +901,29 @@ class FTSmetric:
                              str(entry))
         #
         entry = entry.copy()
-        if ( entry['type'] == "link" ):
+        if (( entry['type'] == "link" ) or
+            ( entry['type'] == "GSIFTP-link" ) or
+            ( entry['type'] == "WEBDAV-link" ) or
+            ( entry['type'] == "XROOTD-link" )):
             if ( linkRegex.match( entry['name'] ) is None ):
                 raise ValueError("Illegal link name %s" % entry['name'])
             entry['name'] = entry['name'].lower()
         elif (( entry['type'] == "source" ) or
-              ( entry['type'] == "destination" )):
+              ( entry['type'] == "destination" ) or
+              ( entry['type'] == "GSIFTP-source" ) or
+              ( entry['type'] == "GSIFTP-destination" ) or
+              ( entry['type'] == "WEBDAV-source" ) or
+              ( entry['type'] == "WEBDAV-destination" ) or
+              ( entry['type'] == "XROOTD-source" ) or
+              ( entry['type'] == "XROOTD-destination" )):
             if ( hostRegex.match( entry['name'] ) is None ):
                 raise ValueError("Illegal source/destination name %s" %
                                  entry['name'])
             entry['name'] = entry['name'].lower()
-        elif ( entry['type'] == "site" ):
+        elif (( entry['type'] == "rse" ) or
+              ( entry['type'] == "site" )):
              if ( siteRegex.match( entry['name'] ) is None ):
-                 raise ValueError("Illegal site name %s" % entry['name'])
+                 raise ValueError("Illegal RSE/site name %s" % entry['name'])
         else:
             raise ValueError("Illegal type \"%s\" of name \"%s\"" % 
                              (entry['type'], entry['name']))
@@ -885,7 +972,12 @@ class FTSmetric:
                                 "   \"type_prefix\": \"raw\",\n" +
                                 "   \"data\": {\n") % (metric[0], timestamp)
             #
-            for type in ["link", "source", "destination", "site"]:
+            for type in ["link", "GSIFTP-link", "WEBDAV-link", "XROOTD-link",
+                         "source", "destination",
+                         "GSIFTP-source", "GSIFTP-destination",
+                         "WEBDAV-source", "WEBDAV-destination",
+                         "XROOTD-source", "XROOTD-destination",
+                         "rse", "site"]:
                 tmpDict = {e['name']:e for e in self.mtrc[metric] \
                                                      if ( e['type'] == type ) }
                 #
@@ -929,34 +1021,63 @@ class FTSmetric:
             #
             file.write("================================================\nLi" +
                        "nk Matrix:\n")
-            hostList = set()
+            gsiftpHostList = set()
+            webdavHostList = set()
             lnkDict = {}
             for entry in self.mtrc[metric]:
-                if ( entry['type'] != "link" ):
+                if (( entry['type'] != "link" ) and
+                    ( entry['type'] != "GSIFTP-link" ) and
+                    ( entry['type'] != "WEBDAV-link" ) and
+                    ( entry['type'] != "XROOTD-link" )):
                     continue
                 lnkDict[ entry['name'] ] = entry
                 if ( entry['status'] == "unknown" ):
                     continue
-                src_host, dst_host = FTSmetric.link2hosts(entry['name'])
-                hostList.add(src_host)
-                hostList.add(dst_host)
-            hostList = sorted(hostList)
-            for src_host in hostList:
+                src_host, dst_host, protocol = \
+                                       FTSmetric.protolink2hosts(entry['name'])
+                if ( protocol == "GSIFTP" ):
+                    gsiftpHostList.add(src_host)
+                    gsiftpHostList.add(dst_host)
+                elif ( protocol == "WEBDAV" ):
+                    webdavHostList.add(src_host)
+                    webdavHostList.add(dst_host)
+            file.write("GSIftp:\n")
+            gsiftpHostList = sorted(gsiftpHostList)
+            for src_host in gsiftpHostList:
                 strng = ""
-                for dst_host in hostList:
+                for dst_host in gsiftpHostList:
                     if ( dst_host == src_host ):
                         strng += "*"
                     else:
-                        link = src_host + "___" + dst_host
+                        link = src_host + "___GSIFTP___" + dst_host
+                        try:
+                            strng += STATUS_CHAR[ lnkDict[link]['status'] ]
+                        except KeyError:
+                            strng += "-"
+                file.write("%-24s: %s\n" % (src_host, strng))
+            file.write("WebDAV:\n")
+            webdavHostList = sorted(webdavHostList)
+            for src_host in webdavHostList:
+                strng = ""
+                for dst_host in webdavHostList:
+                    if ( dst_host == src_host ):
+                        strng += "*"
+                    else:
+                        link = src_host + "___WEBDAV___" + dst_host
                         try:
                             strng += STATUS_CHAR[ lnkDict[link]['status'] ]
                         except KeyError:
                             strng += "-"
                 file.write("%-24s: %s\n" % (src_host, strng))
             del lnkDict
-            del hostList
+            del gsiftpHostList
+            del webdavHostList
             #
-            for type in ["link", "source", "destination", "site"]:
+            for type in ["link", "GSIFTP-link", "WEBDAV-link", "XROOTD-link",
+                         "source", "destination",
+                         "GSIFTP-source", "GSIFTP-destination",
+                         "WEBDAV-source", "WEBDAV-destination",
+                         "XROOTD-source", "XROOTD-destination", "rse", "site"]:
                 file.write("-----------------------------------------------\n")
                 tmpDict = {e['name']:e for e in self.mtrc[metric] \
                                                      if ( e['type'] == type ) }
@@ -1008,7 +1129,7 @@ if __name__ == '__main__':
         FTS_HDFS_PREFIX = "/project/monitoring/archive/fts/raw/complete/"
         FTS_KEYS = ["src_hostname", "dst_hostname", "tr_error_scope",
                     "t_error_code", "t__error_message", "f_size", "log_link",
-                    "activity" ]
+                    "activity", "protocol" ]
 
         # prepare HDFS subdirectory list:
         # ===============================
@@ -1071,20 +1192,16 @@ if __name__ == '__main__':
                                               ['tr_timestamp_complete']/900000)
                                     if bin15m not in bins15min:
                                         continue
-                                    #-LML patch for Vanderbilt test endpoint:
-                                    if (( myJson['data']['src_url'].find("gridftp-vanderbilt.sites.opensciencegrid.org:2814") >= 0 ) or
-                                        ( myJson['data']['dst_url'].find("gridftp-vanderbilt.sites.opensciencegrid.org:2814") >= 0 )):
-                                        continue
-                                    #-LML patch end
                                     #
                                     # dictionary key is a tuple:
                                     tuple = ("fts15min", bin15m)
                                     #
                                     # link name:
-                                    link = FTSmetric.hosts2link(
+                                    plink = FTSmetric.hosts2protolink(
                                         myJson['data']['src_hostname'],
-                                        myJson['data']['dst_hostname'])
-                                    if link is None:
+                                        myJson['data']['dst_hostname'],
+                                        myJson['data']['protocol'])
+                                    if plink is None:
                                         continue
                                     #
                                     # concistency check:
@@ -1117,7 +1234,7 @@ if __name__ == '__main__':
                                         myJson['data']['tr_error_scope'],
                                         myJson['data']['t_error_code'],
                                         myJson['data']['t__error_message'],
-                                        link,
+                                        plink,
                                         myJson['data']['f_size'], myActivity)
                                     #
                                     # file size:
@@ -1128,15 +1245,15 @@ if __name__ == '__main__':
                                     if tuple not in linkInfo:
                                         # first timebin entry:
                                         linkInfo[tuple] = {}
-                                    if link not in linkInfo[tuple]:
-                                        # first link entry:
-                                        linkInfo[tuple][link] = {}
-                                    if result not in linkInfo[tuple][link]:
-                                        linkInfo[tuple][link][result] = \
+                                    if plink not in linkInfo[tuple]:
+                                        # first protolink entry:
+                                        linkInfo[tuple][plink] = {}
+                                    if result not in linkInfo[tuple][plink]:
+                                        linkInfo[tuple][plink][result] = \
                                                                [1, nb, logfile]
                                     else:
-                                        linkInfo[tuple][link][result][0] += 1
-                                        linkInfo[tuple][link][result][1] += nb
+                                        linkInfo[tuple][plink][result][0] += 1
+                                        linkInfo[tuple][plink][result][1] += nb
                                 except KeyError as excptn:
                                     logging.error(("Incomplete FTS record, f" +
                                                    "ile %s: %s") %
@@ -1161,9 +1278,9 @@ if __name__ == '__main__':
 
         cnt = 0
         for tuple in linkInfo:
-            for link in linkInfo[tuple]:
-                for classfcn in linkInfo[tuple][link]:
-                    cnt += linkInfo[tuple][link][classfcn][0]
+            for plink in linkInfo[tuple]:
+                for classfcn in linkInfo[tuple][plink]:
+                    cnt += linkInfo[tuple][plink][classfcn][0]
         logging.info("   found %d file transfers in %d timebins in MonIT" %
                                                           (cnt, len(linkInfo)))
         return linkInfo
@@ -1284,7 +1401,7 @@ if __name__ == '__main__':
 
 
     def eval_status(mtrcObj, linkDict, vofd):
-        """function to evaluate FTS link, endpoint, and site transfer status"""
+        """function to evaluate FTS link, endpoint, RSE, and site status"""
         # ################################################################### #
         # for each time bin in the linkDict evaluate the quality and status   #
         # of each link and derive a site status considering the storage       #
@@ -1319,90 +1436,92 @@ if __name__ == '__main__':
             #
             mtrcObj.add1metric(key)
             #
-            src_hosts = {}
-            dst_hosts = {}
+            srcList = {}
+            dstList = {}
             #
-            for link in linkDict[key]:
-                src_host, dst_host = FTSmetric.link2hosts(link)
+            for plink in linkDict[key]:
+                src_host, dst_host, protocol = FTSmetric.protolink2hosts(plink)
                 if (( src_host is None ) or ( dst_host is None )):
                     continue
                 if ( src_host == dst_host ):
                     continue
-                if src_host not in src_hosts:
-                    src_hosts[ src_host ] = {}
-                if dst_host not in dst_hosts:
-                    dst_hosts[ dst_host ] = {}
+                sEndpnt = src_host + "/" + protocol
+                dEndpnt = dst_host + "/" + protocol
+                if sEndpnt not in srcList:
+                    srcList[ sEndpnt ] = {}
+                if dEndpnt not in dstList:
+                    dstList[ dEndpnt ] = {}
                 #
                 detail = ""
                 #
                 f_ok = f_trn = f_src = f_dst = 0
                 b_ok = b_trn = b_src = b_dst = 0
-                for classfcn in linkDict[key][link]:
+                for classfcn in linkDict[key][plink]:
                     if ( classfcn == "trn_ok" ):
-                        f_ok  += linkDict[key][link][classfcn][0]
-                        b_ok  += linkDict[key][link][classfcn][1]
+                        f_ok  += linkDict[key][plink][classfcn][0]
+                        b_ok  += linkDict[key][plink][classfcn][1]
                     elif ( classfcn == "trn_usr" ):
                         pass
                     elif ( classfcn[:4] == "trn_" ):
-                        f_trn += linkDict[key][link][classfcn][0]
-                        b_trn += linkDict[key][link][classfcn][1]
+                        f_trn += linkDict[key][plink][classfcn][0]
+                        b_trn += linkDict[key][plink][classfcn][1]
                     elif ( classfcn[:4] == "src_" ):
-                        f_src += linkDict[key][link][classfcn][0]
-                        b_src += linkDict[key][link][classfcn][1]
+                        f_src += linkDict[key][plink][classfcn][0]
+                        b_src += linkDict[key][plink][classfcn][1]
                     elif ( classfcn[:4] == "dst_" ):
-                        f_dst += linkDict[key][link][classfcn][0]
-                        b_dst += linkDict[key][link][classfcn][1]
+                        f_dst += linkDict[key][plink][classfcn][0]
+                        b_dst += linkDict[key][plink][classfcn][1]
                     #
                     if ( detail is not "" ):
                         detail += "\n"
                     detail += ("%s: %d files, %.1f GB [%s]" %
                                (CLASSIFICATION_STRING[classfcn],
-                                linkDict[key][link][classfcn][0],
-                                linkDict[key][link][classfcn][1]/1073741824,
-                                linkDict[key][link][classfcn][2]))
+                                linkDict[key][plink][classfcn][0],
+                                linkDict[key][plink][classfcn][1]/1073741824,
+                                linkDict[key][plink][classfcn][2]))
                     #
                     if ( classfcn[:4] == "src_" ):
-                        if classfcn not in src_hosts[ src_host ]:
-                            src_hosts[ src_host ][classfcn] = [0, 0]
-                        src_hosts[ src_host ][classfcn][0] += \
-                                               linkDict[key][link][classfcn][0]
-                        src_hosts[ src_host ][classfcn][1] += \
-                                               linkDict[key][link][classfcn][1]
+                        if classfcn not in srcList[ sEndpnt ]:
+                            srcList[ sEndpnt ][classfcn] = [0, 0]
+                        srcList[ sEndpnt ][classfcn][0] += \
+                                              linkDict[key][plink][classfcn][0]
+                        srcList[ sEndpnt ][classfcn][1] += \
+                                              linkDict[key][plink][classfcn][1]
                         #
-                        if 'src_err' not in dst_hosts[ dst_host ]:
-                            dst_hosts[ dst_host ]['src_err'] = [0, 0]
-                        dst_hosts[ dst_host ]['src_err'][0] += \
-                                               linkDict[key][link][classfcn][0]
-                        dst_hosts[ dst_host ]['src_err'][1] += \
-                                               linkDict[key][link][classfcn][1]
+                        if 'src_err' not in dstList[ dEndpnt ]:
+                            dstList[ dEndpnt ]['src_err'] = [0, 0]
+                        dstList[ dEndpnt ]['src_err'][0] += \
+                                              linkDict[key][plink][classfcn][0]
+                        dstList[ dEndpnt ]['src_err'][1] += \
+                                              linkDict[key][plink][classfcn][1]
                     elif ( classfcn[:4] == "trn_" ):
-                        if classfcn not in src_hosts[ src_host ]:
-                            src_hosts[ src_host ][classfcn] = [0, 0]
-                        src_hosts[ src_host ][classfcn][0] += \
-                                               linkDict[key][link][classfcn][0]
-                        src_hosts[ src_host ][classfcn][1] += \
-                                               linkDict[key][link][classfcn][1]
+                        if classfcn not in srcList[ sEndpnt ]:
+                            srcList[ sEndpnt ][classfcn] = [0, 0]
+                        srcList[ sEndpnt ][classfcn][0] += \
+                                              linkDict[key][plink][classfcn][0]
+                        srcList[ sEndpnt ][classfcn][1] += \
+                                              linkDict[key][plink][classfcn][1]
                         #
-                        if classfcn not in dst_hosts[ dst_host ]:
-                            dst_hosts[ dst_host ][classfcn] = [0, 0]
-                        dst_hosts[ dst_host ][classfcn][0] += \
-                                               linkDict[key][link][classfcn][0]
-                        dst_hosts[ dst_host ][classfcn][1] += \
-                                               linkDict[key][link][classfcn][1]
+                        if classfcn not in dstList[ dEndpnt ]:
+                            dstList[ dEndpnt ][classfcn] = [0, 0]
+                        dstList[ dEndpnt ][classfcn][0] += \
+                                              linkDict[key][plink][classfcn][0]
+                        dstList[ dEndpnt ][classfcn][1] += \
+                                              linkDict[key][plink][classfcn][1]
                     elif ( classfcn[:4] == "dst_" ):
-                        if 'dst_err' not in src_hosts[ src_host ]:
-                            src_hosts[ src_host ]['dst_err'] = [0, 0]
-                        src_hosts[ src_host ]['dst_err'][0] += \
-                                               linkDict[key][link][classfcn][0]
-                        src_hosts[ src_host ]['dst_err'][1] += \
-                                               linkDict[key][link][classfcn][1]
+                        if 'dst_err' not in srcList[ sEndpnt ]:
+                            srcList[ sEndpnt ]['dst_err'] = [0, 0]
+                        srcList[ sEndpnt ]['dst_err'][0] += \
+                                              linkDict[key][plink][classfcn][0]
+                        srcList[ sEndpnt ]['dst_err'][1] += \
+                                              linkDict[key][plink][classfcn][1]
                         #
-                        if classfcn not in dst_hosts[ dst_host ]:
-                            dst_hosts[ dst_host ][classfcn] = [0, 0]
-                        dst_hosts[ dst_host ][classfcn][0] += \
-                                               linkDict[key][link][classfcn][0]
-                        dst_hosts[ dst_host ][classfcn][1] += \
-                                               linkDict[key][link][classfcn][1]
+                        if classfcn not in dstList[ dEndpnt ]:
+                            dstList[ dEndpnt ][classfcn] = [0, 0]
+                        dstList[ dEndpnt ][classfcn][0] += \
+                                              linkDict[key][plink][classfcn][0]
+                        dstList[ dEndpnt ][classfcn][1] += \
+                                              linkDict[key][plink][classfcn][1]
                 #
                 # calculate link quality and derive status:
                 f_total = f_ok + f_trn + f_src + f_dst
@@ -1420,7 +1539,9 @@ if __name__ == '__main__':
                 except ZeroDivisionError:
                     quality = 0.000
                     status = "unknown"
-                mtrcObj.add1entry(key, { 'name': link, 'type': "link",
+                link = FTSmetric.protolink2link(plink)
+                mtrcObj.add1entry(key, { 'name': link,
+                                         'type': protocol + "-link",
                                          'status': status, 'quality': quality,
                                          'detail': detail } )
                 #
@@ -1439,7 +1560,7 @@ if __name__ == '__main__':
                 except ZeroDivisionError:
                     quality = 0.000
                     status = "unknown"
-                src_hosts[src_host][dst_host] = {
+                srcList[ sEndpnt ][ dEndpnt ] = {
                     'quality': quality, 'status': status,
                     'f_ok': f_ok, 'f_total': f_total,
                     'b_ok': b_ok, 'b_total': b_ok + b_trn + b_src }
@@ -1459,7 +1580,7 @@ if __name__ == '__main__':
                 except ZeroDivisionError:
                     quality = 0.000
                     status = "unknown"
-                dst_hosts[dst_host][src_host] = {
+                dstList[ dEndpnt ][ sEndpnt ] = {
                     'quality': quality, 'status': status,
                     'f_ok': f_ok, 'f_total': f_total,
                     'b_ok': b_ok, 'b_total': b_ok + b_trn + b_dst }
@@ -1467,20 +1588,19 @@ if __name__ == '__main__':
             #
             # identify bad source endpoints:
             bad_src = []
-            for src_host in src_hosts:
+            for sEndpnt in srcList:
                 warn_f_ok = warn_f_total = warn_b_ok = warn_b_total = 0
                 cnt_bad = cnt_links = 0
-                for dst_host in src_hosts[src_host]:
-                    if ( dst_host.count(".") < 2 ):
+                for dEndpnt in srcList[sEndpnt]:
+                    if ( dEndpnt.count(".") < 2 ):
                         continue
-                    if ( src_hosts[src_host][dst_host]['status'] == "warning" ):
-                        warn_f_ok    += src_hosts[src_host][dst_host]['f_ok']
-                        warn_f_total += src_hosts[src_host][dst_host]['f_total']
-                        warn_b_ok    += src_hosts[src_host][dst_host]['b_ok']
-                        warn_b_total += src_hosts[src_host][dst_host]['b_total']
-                    elif ( src_hosts[src_host][dst_host]['status'] !=
-                                                                   "unknown" ):
-                        if ( src_hosts[src_host][dst_host]['quality'] < 0.250 ):
+                    if ( srcList[sEndpnt][dEndpnt]['status'] == "warning" ):
+                        warn_f_ok    += srcList[sEndpnt][dEndpnt]['f_ok']
+                        warn_f_total += srcList[sEndpnt][dEndpnt]['f_total']
+                        warn_b_ok    += srcList[sEndpnt][dEndpnt]['b_ok']
+                        warn_b_total += srcList[sEndpnt][dEndpnt]['b_total']
+                    elif ( srcList[sEndpnt][dEndpnt]['status'] != "unknown" ):
+                        if ( srcList[sEndpnt][dEndpnt]['quality'] < 0.250 ):
                             cnt_bad += 1
                         cnt_links += 1
                 # handle sum of unknown entries like a site:
@@ -1495,39 +1615,38 @@ if __name__ == '__main__':
                 try:
                     if ( (cnt_bad - 1) / cnt_links > 0.750 ):
                         # bad source endpoint
-                        bad_src.append(src_host)
+                        bad_src.append(sEndpnt)
                         logging.log(15, "      bad source endpoint %s: %d / %d"
-                                              % (src_host, cnt_bad, cnt_links))
-                        for dst_host in src_hosts[src_host]:
-                            if ( dst_host.count(".") < 2 ):
+                                               % (sEndpnt, cnt_bad, cnt_links))
+                        for dEndpnt in srcList[sEndpnt]:
+                            if ( dEndpnt.count(".") < 2 ):
                                 continue
                             logging.debug(("      dst: %s: %.3f %s %d/%d fil" +
-                                           "es %.1f/%.1f GB") % (dst_host,
-                          src_hosts[src_host][dst_host]['quality'],
-                          src_hosts[src_host][dst_host]['status'],
-                          src_hosts[src_host][dst_host]['f_ok'],
-                          src_hosts[src_host][dst_host]['f_total'],
-                          src_hosts[src_host][dst_host]['b_ok']/1073741824,
-                          src_hosts[src_host][dst_host]['b_total']/1073741824))
+                                           "es %.1f/%.1f GB") % (dEndpnt,
+                          srcList[sEndpnt][dEndpnt]['quality'],
+                          srcList[sEndpnt][dEndpnt]['status'],
+                          srcList[sEndpnt][dEndpnt]['f_ok'],
+                          srcList[sEndpnt][dEndpnt]['f_total'],
+                          srcList[sEndpnt][dEndpnt]['b_ok']/1073741824,
+                          srcList[sEndpnt][dEndpnt]['b_total']/1073741824))
                 except ZeroDivisionError:
                     pass
             #
             # identify bad destination endpoints:
             bad_dst = []
-            for dst_host in dst_hosts:
+            for dEndpnt in dstList:
                 warn_f_ok = warn_f_total = warn_b_ok = warn_b_total = 0
                 cnt_bad = cnt_links = 0
-                for src_host in dst_hosts[dst_host]:
-                    if ( src_host.count(".") < 2 ):
+                for sEndpnt in dstList[dEndpnt]:
+                    if ( sEndpnt.count(".") < 2 ):
                         continue
-                    if ( dst_hosts[dst_host][src_host]['status'] == "warning" ):
-                        warn_f_ok    += dst_hosts[dst_host][src_host]['f_ok']
-                        warn_f_total += dst_hosts[dst_host][src_host]['f_total']
-                        warn_b_ok    += dst_hosts[dst_host][src_host]['b_ok']
-                        warn_b_total += dst_hosts[dst_host][src_host]['b_total']
-                    elif ( dst_hosts[dst_host][src_host]['status'] !=
-                                                                   "unknown" ):
-                        if ( dst_hosts[dst_host][src_host]['quality'] < 0.250 ):
+                    if ( dstList[dEndpnt][sEndpnt]['status'] == "warning" ):
+                        warn_f_ok    += dstList[dEndpnt][sEndpnt]['f_ok']
+                        warn_f_total += dstList[dEndpnt][sEndpnt]['f_total']
+                        warn_b_ok    += dstList[dEndpnt][sEndpnt]['b_ok']
+                        warn_b_total += dstList[dEndpnt][sEndpnt]['b_total']
+                    elif ( dstList[dEndpnt][sEndpnt]['status'] != "unknown" ):
+                        if ( dstList[dEndpnt][sEndpnt]['quality'] < 0.250 ):
                             cnt_bad += 1
                         cnt_links += 1
                 # handle sum of unknown entries like a site:
@@ -1542,68 +1661,66 @@ if __name__ == '__main__':
                 try:
                     if ( (cnt_bad - 1) / cnt_links > 0.750 ):
                         # bad destination endpoint
-                        bad_dst.append(dst_host)
+                        bad_dst.append(dEndpnt)
                         logging.log(15, ("      bad destination endpoint %s:" +
-                                  " %d / %d") % (dst_host, cnt_bad, cnt_links))
-                        for src_host in dst_hosts[dst_host]:
-                            if ( src_host.count(".") < 2 ):
+                                   " %d / %d") % (dEndpnt, cnt_bad, cnt_links))
+                        for sEndpnt in dstList[dEndpnt]:
+                            if ( sEndpnt.count(".") < 2 ):
                                 continue
                             logging.debug(("      src: %s: %.3f %s %d/%d fil" +
-                                           "es %.1f/%.1f GB") % (src_host,
-                          dst_hosts[dst_host][src_host]['quality'],
-                          dst_hosts[dst_host][src_host]['status'],
-                          dst_hosts[dst_host][src_host]['f_ok'],
-                          dst_hosts[dst_host][src_host]['f_total'],
-                          dst_hosts[dst_host][src_host]['b_ok']/1073741824,
-                          dst_hosts[dst_host][src_host]['b_total']/1073741824))
+                                           "es %.1f/%.1f GB") % (sEndpnt,
+                          dstList[dEndpnt][sEndpnt]['quality'],
+                          dstList[dEndpnt][sEndpnt]['status'],
+                          dstList[dEndpnt][sEndpnt]['f_ok'],
+                          dstList[dEndpnt][sEndpnt]['f_total'],
+                          dstList[dEndpnt][sEndpnt]['b_ok']/1073741824,
+                          dstList[dEndpnt][sEndpnt]['b_total']/1073741824))
                 except ZeroDivisionError:
                     pass
             #
             #
             # evaluate source endpoints (excluding bad destination endpoints):
             # ================================================================
-            for src_host in src_hosts:
+            for sEndpnt in srcList:
                 sum_quality = 0
                 f_total = 0
                 warn_f_ok = warn_f_total = warn_b_ok = warn_b_total = 0
                 cnt_links = 0
                 cnt_unknown = cnt_ok = cnt_warning = cnt_error = cnt_bad = 0
                 err_strng = ""
-                for hst in src_hosts[src_host]:
-                    if ( hst.count(".") >= 2 ):
-                        if hst in bad_dst:
+                for phst in srcList[sEndpnt]:
+                    if ( phst.count(".") >= 2 ):
+                        if phst in bad_dst:
                             cnt_bad += 1
                             continue
-                        if ( src_hosts[src_host][hst]['status'] == "unknown" ):
+                        if ( srcList[sEndpnt][phst]['status'] == "unknown" ):
                             cnt_unknown += 1
-                        elif ( src_hosts[src_host][hst]['status'] ==
-                                                                   "warning" ):
+                        elif ( srcList[sEndpnt][phst]['status'] == "warning" ):
                             # prefer host summary over link level evaluation
-                            warn_f_ok    += src_hosts[src_host][hst]['f_ok']
-                            warn_f_total += src_hosts[src_host][hst]['f_total']
-                            warn_b_ok    += src_hosts[src_host][hst]['b_ok']
-                            warn_b_total += src_hosts[src_host][hst]['b_total']
+                            warn_f_ok    += srcList[sEndpnt][phst]['f_ok']
+                            warn_f_total += srcList[sEndpnt][phst]['f_total']
+                            warn_b_ok    += srcList[sEndpnt][phst]['b_ok']
+                            warn_b_total += srcList[sEndpnt][phst]['b_total']
                             cnt_warning += 1
                         else:
-                            sum_quality += src_hosts[src_host][hst]['quality']
-                            if ( src_hosts[src_host][hst]['status'] == "ok" ):
+                            sum_quality += srcList[sEndpnt][phst]['quality']
+                            if ( srcList[sEndpnt][phst]['status'] == "ok" ):
                                 cnt_ok += 1
-                            elif ( src_hosts[src_host][hst]['status'] ==
+                            elif ( srcList[sEndpnt][phst]['status'] ==
                                                                      "error" ):
                                 cnt_error += 1
                             cnt_links += 1
-                        f_total += src_hosts[src_host][hst]['f_total']
-                    elif (( hst in CLASSIFICATION_STRING ) and
-                          ( hst != "trn_ok" )):
+                        f_total += srcList[sEndpnt][phst]['f_total']
+                    elif (( phst in CLASSIFICATION_STRING ) and
+                          ( phst != "trn_ok" )):
                         if ( err_strng != "" ):
-                            err_strng += ","
-                        err_strng += " %s: %d" % (CLASSIFICATION_STRING[hst],
-                                                  src_hosts[src_host][hst][0])
+                            err_strng += ", "
+                        err_strng += "%s: %d" % (CLASSIFICATION_STRING[phst],
+                                                  srcList[sEndpnt][phst][0])
                 # handle sum of warning entries like a site:
                 try:
-                    warn_quality = round( max( warn_f_ok / warn_f_total ,
+                    sum_quality += round( max( warn_f_ok / warn_f_total ,
                                                warn_b_ok / warn_b_total ), 3)
-                    sum_quality += warn_quality
                     if ( ((warn_f_ok - 1) / warn_f_total) > 0.500 ):
                         cnt_ok += 1
                     elif ( ((warn_f_ok + 1) / warn_f_total) < 0.500 ):
@@ -1623,71 +1740,72 @@ if __name__ == '__main__':
                 except ZeroDivisionError:
                     quality = 0.000
                     status = "unknown"
-                src_hosts[src_host]['links'] = (cnt_ok, cnt_warning, cnt_error,
+                srcList[sEndpnt]['links'] = (cnt_ok, cnt_warning, cnt_error,
                                                           cnt_unknown, cnt_bad)
-                src_hosts[src_host]['quality'] = quality
-                src_hosts[src_host]['status'] = status
+                srcList[sEndpnt]['quality'] = quality
+                srcList[sEndpnt]['status'] = status
                 #
-                if src_host in bad_src:
+                if sEndpnt in bad_src:
                     detail = "excluded from destination endpoint evaluation\n"
                 else:
                     detail = ""
-                if 'trn_ok' in src_hosts[src_host]:
-                    detail += ("Transfer: %d files, %.3f TB ok" %
-                               (src_hosts[src_host]['trn_ok'][0],
-                                src_hosts[src_host]['trn_ok'][1]/1099511627776))
+                if 'trn_ok' in srcList[sEndpnt]:
+                    detail += ("Transfer: %d files, %.3f TB ok\n" %
+                               (srcList[sEndpnt]['trn_ok'][0],
+                                srcList[sEndpnt]['trn_ok'][1]/1099511627776))
                 else:
-                    detail += "Transfer: 0 files, 0.000 TB ok"
+                    detail += "Transfer: 0 files, 0.000 TB ok\n"
                 if ( err_strng == "" ):
                     err_strng = "none"
-                detail += "\nErrors: %s" % err_strng
-                detail += (("\nLinks: %d ok, %d warning, %d error, %d unknow" +
+                detail += "Errors: %s\n" % err_strng
+                detail += (("Links: %d ok, %d warning, %d error, %d unknow" +
                             "n, %d bad-destination") % (cnt_ok, cnt_warning,
                                               cnt_error, cnt_unknown, cnt_bad))
-                mtrcObj.add1entry(key, { 'name': src_host, 'type': "source",
+                host, proto = (sEndpnt.split("/") + [""])[0:2]
+                mtrcObj.add1entry(key, { 'name': host,
+                                         'type': proto + "-source",
                                          'status': status, 'quality': quality,
                                          'detail': detail } )
             #
             #
             # evaluate destination endpoints (excluding bad source endpoints):
             # ================================================================
-            for dst_host in dst_hosts:
+            for dEndpnt in dstList:
                 sum_quality = 0
                 f_total = 0
                 warn_f_ok = warn_f_total = warn_b_ok = warn_b_total = 0
                 cnt_links = 0
                 cnt_unknown = cnt_ok = cnt_warning = cnt_error = cnt_bad = 0
                 err_strng = ""
-                for hst in dst_hosts[dst_host]:
-                    if ( hst.count(".") >= 2 ):
-                        if hst in bad_src:
+                for phst in dstList[dEndpnt]:
+                    if ( phst.count(".") >= 2 ):
+                        if phst in bad_src:
                             cnt_bad += 1
                             continue
-                        if ( dst_hosts[dst_host][hst]['status'] == "unknown" ):
+                        if ( dstList[dEndpnt][phst]['status'] == "unknown" ):
                             cnt_unknown += 1
-                        elif ( dst_hosts[dst_host][hst]['status'] ==
-                                                                   "warning" ):
+                        elif ( dstList[dEndpnt][phst]['status'] == "warning" ):
                             # prefer host summary over link level evaluation
-                            warn_f_ok    += dst_hosts[dst_host][hst]['f_ok']
-                            warn_f_total += dst_hosts[dst_host][hst]['f_total']
-                            warn_b_ok    += dst_hosts[dst_host][hst]['b_ok']
-                            warn_b_total += dst_hosts[dst_host][hst]['b_total']
+                            warn_f_ok    += dstList[dEndpnt][phst]['f_ok']
+                            warn_f_total += dstList[dEndpnt][phst]['f_total']
+                            warn_b_ok    += dstList[dEndpnt][phst]['b_ok']
+                            warn_b_total += dstList[dEndpnt][phst]['b_total']
                             cnt_warning += 1
                         else:
-                            sum_quality += dst_hosts[dst_host][hst]['quality']
-                            if ( dst_hosts[dst_host][hst]['status'] == "ok" ):
+                            sum_quality += dstList[dEndpnt][phst]['quality']
+                            if ( dstList[dEndpnt][phst]['status'] == "ok" ):
                                 cnt_ok += 1
-                            elif ( dst_hosts[dst_host][hst]['status'] ==
+                            elif ( dstList[dEndpnt][phst]['status'] ==
                                                                      "error" ):
                                 cnt_error += 1
                             cnt_links += 1
-                        f_total += dst_hosts[dst_host][hst]['f_total']
-                    elif (( hst in CLASSIFICATION_STRING ) and
-                          ( hst != "trn_ok" )):
+                        f_total += dstList[dEndpnt][phst]['f_total']
+                    elif (( phst in CLASSIFICATION_STRING ) and
+                          ( phst != "trn_ok" )):
                         if ( err_strng != "" ):
-                            err_strng += ","
-                        err_strng += (" %s: %d" % (CLASSIFICATION_STRING[hst],
-                                                  dst_hosts[dst_host][hst][0]))
+                            err_strng += ", "
+                        err_strng += ("%s: %d" % (CLASSIFICATION_STRING[phst],
+                                                  dstList[dEndpnt][phst][0]))
                 # handle sum of warning entries like a site:
                 try:
                     warn_quality = round( max( warn_f_ok / warn_f_total ,
@@ -1712,143 +1830,372 @@ if __name__ == '__main__':
                 except ZeroDivisionError:
                     quality = 0.000
                     status = "unknown"
-                dst_hosts[dst_host]['links'] = (cnt_ok, cnt_warning, cnt_error,
+                dstList[dEndpnt]['links'] = (cnt_ok, cnt_warning, cnt_error,
                                                           cnt_unknown, cnt_bad)
-                dst_hosts[dst_host]['quality'] = quality
-                dst_hosts[dst_host]['status'] = status
+                dstList[dEndpnt]['quality'] = quality
+                dstList[dEndpnt]['status'] = status
                 #
-                if dst_host in bad_dst:
+                if dEndpnt in bad_dst:
                     detail = "excluded from source endpoint evaluation\n"
                 else:
                     detail = ""
-                if 'trn_ok' in dst_hosts[dst_host]:
-                    detail += ("Transfer: %d files, %.3f TB ok" %
-                               (dst_hosts[dst_host]['trn_ok'][0],
-                                dst_hosts[dst_host]['trn_ok'][1]/1099511627776))
+                if 'trn_ok' in dstList[dEndpnt]:
+                    detail += ("Transfer: %d files, %.3f TB ok\n" %
+                               (dstList[dEndpnt]['trn_ok'][0],
+                                dstList[dEndpnt]['trn_ok'][1]/1099511627776))
                 else:
-                    detail += "Transfer: 0 files, 0.000 TB ok"
+                    detail += "Transfer: 0 files, 0.000 TB ok\n"
                 if ( err_strng == "" ):
                     err_strng = "none"
-                detail += "\nErrors: %s" % err_strng
-                detail += (("\nLinks: %d ok, %d warning, %d error, %d unknow" +
+                detail += "Errors: %s\n" % err_strng
+                detail += (("Links: %d ok, %d warning, %d error, %d unknow" +
                            "n, %d bad-source") % (cnt_ok, cnt_warning,
                                               cnt_error, cnt_unknown, cnt_bad))
-                mtrcObj.add1entry(key, { 'name': dst_host,
-                                         'type': "destination",
+                host, proto = (dEndpnt.split("/") + [""])[0:2]
+                mtrcObj.add1entry(key, { 'name': host,
+                                         'type': proto + "-destination",
                                          'status': status, 'quality': quality,
                                          'detail': detail } )
             #
             #
-            # evaluate site status:
-            # =====================
+            # evaluate Rucio Storage Element, RSE, and site status:
+            # =====================================================
             for vofdtime in vofdTimes:
                 if ( vofdtime <= startTIS ):
                     break
             #
             # loop over CMS sites:
             for cms_site in sorted( vofd.sites(vofdtime) ):
-                quality = 1.000
-                status = None
-                src_ok = src_warning = src_error = src_unknown = src_bad = 0
-                dst_ok = dst_warning = dst_error = dst_unknown = dst_bad = 0
+                #
+                # get a list of RSEs at the site:
+                rse_dict = {}
+                for srvc in vofd.services(vofdtime, cms_site, None):
+                    if ( srvc['production'] != True ):
+                        continue
+                    try:
+                        rse_name = srvc['rse']
+                    except KeyError:
+                        if ( srvc['category'] != "SE" ):
+                            continue
+                        rse_name = cms_site + "_Undefined"
+                    if ( rse_name not in rse_dict ):
+                        rse_dict[ rse_name ] = []
+                    rse_dict[ rse_name ].append( srvc )
+                if ( len( rse_dict ) == 0 ):
+                    # site without storage endpoints
+                    continue
+                #
+                # evaluate site:
+                site_quality = 1.000
+                site_status = None
+                rse_strng = ""
+                #
+                # loop over RSEs of site:
+                for rse_name in sorted( rse_dict ):
+                    #
+                    # evaluate RSE:
+                    src_quality = 0.000
+                    src_links = 0
+                    src_unknown = src_ok = src_warn = src_error = src_bad = 0
+                    dst_quality = 0.000
+                    dst_links = 0
+                    dst_unknown = dst_ok = dst_warn = dst_error = dst_bad = 0
+                    src_classfcn = { 'trn_ok': [0,0], 'foreign': 0 }
+                    dst_classfcn = { 'trn_ok': [0,0], 'foreign': 0 }
+                    hst_strng = ""
+                    #
+                    # loop over endpoints of RSE:
+                    for srvc in rse_dict[ rse_name ]:
+                        host = srvc['hostname']
+                        proto = srvc['flavour']
+                        if ( proto == "SRM" ):
+                            proto = "GSIFTP"
+                        endpnt = host + "/" + proto
+                        #
+                        #
+                        # host/proto of RSE as source:
+                        try:
+                            src_status = srcList[endpnt]['status']
+                            for phst in srcList[endpnt]:
+                                w_f_ok = w_f_tot = w_b_ok = w_b_tot = 0
+                                if ( phst.count(".") >= 2 ):
+                                    if phst in bad_dst:
+                                        src_bad += 1
+                                        continue
+                                    if ( srcList[endpnt][phst]['status'] ==
+                                                                   "unknown" ):
+                                        src_unknown += 1
+                                    elif ( srcList[endpnt][phst]['status'] ==
+                                                                   "warning" ):
+                                        # prefer host summary over link level
+                                        w_f_ok  += \
+                                                  srcList[endpnt][phst]['f_ok']
+                                        w_f_tot += \
+                                               srcList[endpnt][phst]['f_total']
+                                        w_b_ok  += \
+                                                  srcList[endpnt][phst]['b_ok']
+                                        w_b_tot += \
+                                               srcList[endpnt][phst]['b_total']
+                                        src_warn += 1
+                                    else:
+                                        src_quality += \
+                                               srcList[endpnt][phst]['quality']
+                                        if ( srcList[endpnt][phst]['status']
+                                                                     == "ok" ):
+                                            src_ok += 1
+                                        elif ( srcList[endpnt][phst]['status']
+                                                                  == "error" ):
+                                            src_error += 1
+                                        src_links += 1
+                                elif ( phst == 'trn_ok' ):
+                                    src_classfcn[phst][0] += \
+                                                       srcList[endpnt][phst][0]
+                                    src_classfcn[phst][1] += \
+                                                       srcList[endpnt][phst][1]
+                                elif ( phst == 'dst_err' ):
+                                    src_classfcn['foreign'] += \
+                                                       srcList[endpnt][phst][0]
+                                elif ( phst in CLASSIFICATION_STRING ):
+                                    if phst in src_classfcn:
+                                        src_classfcn[phst] += \
+                                                       srcList[endpnt][phst][0]
+                                    else:
+                                        src_classfcn[phst] = \
+                                                       srcList[endpnt][phst][0]
+                            # handle sum of warning entries like a site:
+                            try:
+                                src_quality += round( max(w_f_ok / w_f_tot,
+                                                          w_b_ok / w_b_tot), 3)
+                                if ( ((w_f_ok - 1) / w_f_tot) > 0.500 ):
+                                    src_ok += 1
+                                elif ( ((w_f_ok + 1) / w_f_tot) < 0.500 ):
+                                    src_error += 1
+                                src_links += 1
+                            except ZeroDivisionError:
+                                pass
+                        except KeyError:
+                            src_status = "unknown"
+                        #
+                        # host/proto of RSE as destination:
+                        try:
+                            for phst in dstList[endpnt]:
+                                w_f_ok = w_f_tot = w_b_ok = w_b_tot = 0
+                                if ( phst.count(".") >= 2 ):
+                                    if phst in bad_src:
+                                        dst_bad += 1
+                                        continue
+                                    if ( dstList[endpnt][phst]['status'] ==
+                                                                   "unknown" ):
+                                        dst_unknown += 1
+                                    elif ( dstList[endpnt][phst]['status'] ==
+                                                                   "warning" ):
+                                        # prefer host summary over link level
+                                        w_f_ok  += \
+                                                  dstList[endpnt][phst]['f_ok']
+                                        w_f_tot += \
+                                               dstList[endpnt][phst]['f_total']
+                                        w_b_ok  += \
+                                                  dstList[endpnt][phst]['b_ok']
+                                        w_b_tot += \
+                                               dstList[endpnt][phst]['b_total']
+                                        dst_warn += 1
+                                    else:
+                                        dst_quality += \
+                                               dstList[endpnt][phst]['quality']
+                                        if ( dstList[endpnt][phst]['status']
+                                                                     == "ok" ):
+                                            dst_ok += 1
+                                        elif ( dstList[endpnt][phst]['status']
+                                                                  == "error" ):
+                                            dst_error += 1
+                                        dst_links += 1
+                                    dst_status = dstList[endpnt]['status']
+                                elif ( phst == 'trn_ok' ):
+                                    dst_classfcn[phst][0] += \
+                                                       dstList[endpnt][phst][0]
+                                    dst_classfcn[phst][1] += \
+                                                       dstList[endpnt][phst][1]
+                                elif ( phst == 'src_err' ):
+                                    dst_classfcn['foreign'] += \
+                                                       dstList[endpnt][phst][0]
+                                elif phst in CLASSIFICATION_STRING:
+                                    if phst in dst_classfcn:
+                                        dst_classfcn[phst] += \
+                                                       dstList[endpnt][phst][0]
+                                    else:
+                                        dst_classfcn[phst] = \
+                                                       dstList[endpnt][phst][0]
+                            # handle sum of warning entries like a site:
+                            try:
+                                dst_quality += round( max(w_f_ok / w_f_tot,
+                                                          w_b_ok / w_b_tot), 3)
+                                if ( ((w_f_ok - 1) / w_f_tot) > 0.500 ):
+                                    dst_ok += 1
+                                elif ( ((w_f_ok + 1) / w_f_tot) < 0.500 ):
+                                    dst_error += 1
+                                dst_links += 1
+                            except ZeroDivisionError:
+                                pass
+                        except KeyError:
+                            dst_status = "unknown"
+                        hst_strng += ("%s-host %s: %s/%s\n" % (proto, host,
+                                                       src_status, dst_status))
+                    #
+                    try:
+                        rse_src_quality = round( max( src_ok/src_links,
+                                                      src_quality/src_links), 3)
+                        if ( ((src_ok - 1) / src_links) > 0.500 ):
+                            rse_src_status = "ok"
+                        elif ( ((src_ok + 1) / src_links) < 0.500 ):
+                            rse_src_status = "error"
+                        else:
+                            rse_src_status = "warning"
+                    except ZeroDivisionError:
+                        rse_src_quality = 0.000
+                        rse_src_status = "unknown"
+                    rse_status = rse_src_status
+                    try:
+                        rse_dst_quality = round( max( dst_ok/dst_links,
+                                                      dst_quality/dst_links), 3)
+                        rse_quality = min( rse_src_quality, rse_dst_quality )
+                        if ( ((dst_ok - 1) / dst_links) > 0.500 ):
+                            rse_dst_status = "ok"
+                        elif ( ((dst_ok + 1) / dst_links) < 0.500 ):
+                            rse_dst_status = "error"
+                            rse_status = "error"
+                        else:
+                            rse_dst_status = "warning"
+                            if ( rse_status == "ok" ):
+                                rse_status = "warning"
+                    except ZeroDivisionError:
+                        rse_quality = 0.000
+                        rse_dst_status = "unknown"
+                        if ( rse_status != "error" ):
+                            rse_status = "unknown"
+                    detail = (("Transfer (from/to): %d/%d files, %.3f/%.3f " +
+                                "TB ok\n") % (src_classfcn['trn_ok'][0],
+                                      dst_classfcn['trn_ok'][0],
+                                      src_classfcn['trn_ok'][1]/1099511627776,
+                                      dst_classfcn['trn_ok'][1]/1099511627776))
+                    err_strng = ""
+                    for cls in CLASSIFICATION_STRING:
+                        if (( cls == 'trn_ok' ) or
+                            (( cls not in src_classfcn ) and
+                             ( cls not in dst_classfcn ))):
+                            continue
+                        try:
+                            src_files = src_classfcn[cls]
+                        except KeyError:
+                            src_files = 0
+                        try:
+                            dst_files = dst_classfcn[cls]
+                        except KeyError:
+                            dst_files = 0
+                        if ( err_strng != "" ):
+                            err_strng += ", "
+                        err_strng += ("%s: %d/%d" % \
+                            (CLASSIFICATION_STRING[cls], src_files, dst_files))
+                    if (( src_classfcn['foreign'] > 0 ) or
+                        ( dst_classfcn['foreign'] > 0 )):
+                        if ( err_strng != "" ):
+                            err_strng += ", "
+                        err_strng += ("foreign: %d/%d" %
+                            (src_classfcn['foreign'], dst_classfcn['foreign']))
+                    if ( err_strng == "" ):
+                        err_strng = "none"
+                    detail += "Errors: %s\n" % err_strng
+                    detail += (("Links: %d/%d ok, %d/%d warning, %d/%d error" +
+                                ", %d/%d unknown, %d/%d bad-destination\n") % \
+                               (src_ok, dst_ok, src_warn, dst_warn, src_error,
+                        dst_error, src_unknown, dst_unknown, src_bad, dst_bad))
+                    detail += hst_strng
+                    detail += ("From/To: %s/%s" % (rse_src_status,
+                                                               rse_dst_status))
+                    mtrcObj.add1entry(key, { 'name': rse_name, 'type': "rse",
+                                             'status': rse_status,
+                                             'quality': rse_quality,
+                                             'detail': detail } )
+                    #
+                    site_quality = min( site_quality, rse_quality )
+                    if ( site_status is None ):
+                        site_status = rse_status
+                    elif ( rse_status == "error" ):
+                        site_status = "error"
+                    elif (( rse_status == "unknown" ) and
+                          ( site_status != error )):
+                        site_status = "unknown"
+                    elif (( rse_status == "warning" ) and
+                          ( site_status == "ok" )):
+                        site_status = "warning"
+                    rse_strng += ("RSE %s: %s (%s/%s)\n" % (rse_name,
+                                   rse_status, rse_src_status, rse_dst_status))
+                #
+                # evaluate site:
+                src_unknown = src_ok = src_warning = src_error = src_bad = 0
+                dst_unknown = dst_ok = dst_warning = dst_error = dst_bad = 0
                 src_classfcn = { 'trn_ok': [0,0], 'foreign': 0 }
                 dst_classfcn = { 'trn_ok': [0,0], 'foreign': 0 }
                 hst_strng = ""
-                for srvc in vofd.services(vofdtime, cms_site, "SE"):
-                    host = srvc['hostname']
+                for tuple in sorted( set( [ (e['hostname'], e['flavour']) \
+                                  for k in rse_dict for e in rse_dict[k] ] ) ):
+                    host = tuple[0]
+                    proto = tuple[1]
+                    if ( proto == "SRM" ):
+                        proto = "GSIFTP"
+                    endpnt = host + "/" + proto
                     #
-                    # transfers from the host, i.e. host as source:
-                    src_status = None
-                    if host in src_hosts:
+                    # transfers from the host:
+                    try:
+                        src_status = srcList[endpnt]['status']
                         try:
-                            if status is None:
-                                status = src_hosts[host]['status']
-                            elif ( src_hosts[host]['status'] == "error" ):
-                                status = "error"
-                            elif (( src_hosts[host]['status'] == "unknown" ) and
-                                  ( status != "error" )):
-                                status = "unknown"
-                            elif (( src_hosts[host]['status'] == "warning" ) and
-                                  ( status == "ok" )):
-                                status = "warning"
-                            src_status = src_hosts[host]['status']
-                            quality = min(quality, src_hosts[host]['quality'])
-                            src_ok      += src_hosts[host]['links'][0]
-                            src_warning += src_hosts[host]['links'][1]
-                            src_error   += src_hosts[host]['links'][2]
-                            src_unknown += src_hosts[host]['links'][3]
-                            src_bad     += src_hosts[host]['links'][4]
+                            src_ok       += srcList[endpnt]['links'][0]
+                            src_warning  += srcList[endpnt]['links'][1]
+                            src_error    += srcList[endpnt]['links'][2]
+                            src_unknown  += srcList[endpnt]['links'][3]
+                            src_bad      += srcList[endpnt]['links'][4]
                         except KeyError:
-                            if ( status != "error" ):
-                                status = "unknown"
-                            src_status = "unknown"
-                            quality = 0.000
-                        for cls in src_hosts[host]:
+                            pass
+                        for cls in srcList[endpnt]:
                             if ( cls == 'trn_ok' ):
-                                src_classfcn[cls][0] += src_hosts[host][cls][0]
-                                src_classfcn[cls][1] += src_hosts[host][cls][1]
+                                src_classfcn[cls][0] += srcList[endpnt][cls][0]
+                                src_classfcn[cls][1] += srcList[endpnt][cls][1]
                             elif ( cls == 'dst_err' ):
                                 src_classfcn['foreign'] += \
-                                                        src_hosts[host][cls][0]
+                                                        srcList[endpnt][cls][0]
                             elif cls in CLASSIFICATION_STRING:
                                 if cls in src_classfcn:
-                                    src_classfcn[cls] += src_hosts[host][cls][0]
+                                    src_classfcn[cls] += srcList[endpnt][cls][0]
                                 else:
-                                    src_classfcn[cls] = src_hosts[host][cls][0]
-                    #
-                    # transfers to the host, i.e. host as destination:
-                    dst_status = None
-                    if host in dst_hosts:
+                                    src_classfcn[cls] = srcList[endpnt][cls][0]
+                    except KeyError:
+                        src_status = "unknown"
+                    # transfers to the host:
+                    try:
+                        dst_status = dstList[endpnt]['status']
                         try:
-                            if status is None:
-                                status = dst_hosts[host]['status']
-                            elif ( dst_hosts[host]['status'] == "error" ):
-                                status = "error"
-                            elif (( dst_hosts[host]['status'] == "unknown" ) and
-                                  ( status != "error" )):
-                                status = "unknown"
-                            elif (( dst_hosts[host]['status'] == "warning" ) and
-                                  ( status == "ok" )):
-                                status = "warning"
-                            dst_status = dst_hosts[host]['status']
-                            quality = min(quality, dst_hosts[host]['quality'])
-                            dst_ok      += dst_hosts[host]['links'][0]
-                            dst_warning += dst_hosts[host]['links'][1]
-                            dst_error   += dst_hosts[host]['links'][2]
-                            dst_unknown += dst_hosts[host]['links'][3]
-                            dst_bad     += dst_hosts[host]['links'][4]
+                            dst_ok       += dstList[endpnt]['links'][0]
+                            dst_warning  += dstList[endpnt]['links'][1]
+                            dst_error    += dstList[endpnt]['links'][2]
+                            dst_unknown  += dstList[endpnt]['links'][3]
+                            dst_bad      += dstList[endpnt]['links'][4]
                         except KeyError:
-                            if ( status != "error" ):
-                                status = "unknown"
-                            dst_status = "unknown"
-                            quality = 0.000
-                        for cls in dst_hosts[host]:
+                            pass
+                        for cls in dstList[endpnt]:
                             if ( cls == 'trn_ok' ):
-                                dst_classfcn[cls][0] += dst_hosts[host][cls][0]
-                                dst_classfcn[cls][1] += dst_hosts[host][cls][1]
+                                dst_classfcn[cls][0] += dstList[endpnt][cls][0]
+                                dst_classfcn[cls][1] += dstList[endpnt][cls][1]
                             elif ( cls == 'src_err' ):
                                 dst_classfcn['foreign'] += \
-                                                        dst_hosts[host][cls][0]
+                                                        dstList[endpnt][cls][0]
                             elif cls in CLASSIFICATION_STRING:
                                 if cls in dst_classfcn:
-                                    dst_classfcn[cls] += dst_hosts[host][cls][0]
+                                    dst_classfcn[cls] += dstList[endpnt][cls][0]
                                 else:
-                                    dst_classfcn[cls] = dst_hosts[host][cls][0]
-                    if (( src_status is None ) and ( dst_status is None )):
-                        continue
-                    if src_status is None:
-                        src_status = "unknown"
-                        if ( status != "error" ):
-                            status = "unknown"
-                        quality = 0.000
-                    if dst_status is None:
+                                    dst_classfcn[cls] = dstList[endpnt][cls][0]
+                    except KeyError:
                         dst_status = "unknown"
-                        if ( status != "error" ):
-                            status = "unknown"
-                        quality = 0.000
-                    hst_strng += "%s: %s/%s\n" % (host, src_status, dst_status)
-                if status is None:
-                    continue
+                    hst_strng += "%s-host %s: %s/%s\n" % (proto, host,
+                                                        src_status, dst_status)
                 detail = (("Transfer (from/to): %d/%d files, %.3f/%.3f TB ok" +
                            "\n") % (src_classfcn['trn_ok'][0],
                                     dst_classfcn['trn_ok'][0],
@@ -1864,18 +2211,20 @@ if __name__ == '__main__':
                         src_files = src_classfcn[cls]
                     except KeyError:
                         src_files = 0
-                    try: 
+                    try:
                         dst_files = dst_classfcn[cls]
                     except KeyError:
                         dst_files = 0
                     if ( err_strng != "" ):
-                            err_strng += ","
-                    err_strng += (" %s: %d/%d" % (CLASSIFICATION_STRING[cls],
+                        err_strng += ", "
+                    err_strng += ("%s: %d/%d" % (CLASSIFICATION_STRING[cls],
                                                          src_files, dst_files))
                 if (( src_classfcn['foreign'] > 0 ) or
                     ( dst_classfcn['foreign'] > 0 )):
-                    err_strng += " foreign: %d/%d" % (src_classfcn['foreign'],
-                                                      dst_classfcn['foreign'])
+                    if ( err_strng != "" ):
+                        err_strng += ", "
+                    err_strng += "foreign: %d/%d" % (src_classfcn['foreign'],
+                                                       dst_classfcn['foreign'])
                 if ( err_strng == "" ):
                     err_strng = "none"
                 detail += "Errors: %s\n" % err_strng
@@ -1884,7 +2233,8 @@ if __name__ == '__main__':
                            dst_ok, src_warning, dst_warning, src_error,
                            dst_error, src_unknown, dst_unknown, src_bad,
                            dst_bad)
-                detail += hst_strng[:-1]
+                detail += hst_strng
+                detail += rse_strng[:-1]
                 mtrcObj.add1entry(key, { 'name': cms_site, 'type': "site",
                                          'status': status, 'quality': quality,
                                          'detail': detail } )
@@ -1925,12 +2275,12 @@ if __name__ == '__main__':
         docs = json.loads(jsonString)
         ndocs = len(docs)
         successFlag = True
-        for myOffset in range(0, ndocs, 2048):
+        for myOffset in range(0, ndocs, 1024):
             if ( myOffset > 0 ):
                 # give importer time to process documents
-                time.sleep(1.500)
+                time.sleep(2.500)
             # MonIT upload channel can handle at most 10,000 docs at once
-            dataString = json.dumps( docs[myOffset:min(ndocs,myOffset+2048)] )
+            dataString = json.dumps( docs[myOffset:min(ndocs,myOffset+1024)] )
             #
             try:
                 # MonIT needs a document array and without newline characters:
@@ -1941,13 +2291,13 @@ if __name__ == '__main__':
                 if ( responseObj.status != http.HTTPStatus.OK ):
                     logging.error(("Failed to upload JSON [%d:%d] string to " +
                                    "MonIT, %d \"%s\"") %
-                                  (myOffset, min(ndocs,myOffset+2048),
+                                  (myOffset, min(ndocs,myOffset+1024),
                                    responseObj.status, responseObj.reason))
                     successFlag = False
                 responseObj.close()
             except urllib.error.URLError as excptn:
                 logging.error("Failed to upload JSON [%d:%d], %s" %
-                             (myOffset, min(ndocs,myOffset+2048), str(excptn)))
+                             (myOffset, min(ndocs,myOffset+1024), str(excptn)))
                 successFlag = False
         del docs
 
