@@ -980,6 +980,8 @@ class FTSmetric:
                          "rse", "site"]:
                 tmpDict = {e['name']:e for e in self.mtrc[metric] \
                                                      if ( e['type'] == type ) }
+                logging.log(15, "Composing %d %s for %d" % (len(tmpDict), type,
+                                                                    timestamp))
                 #
                 for name in sorted( tmpDict.keys() ):
                     if commaFlag:
@@ -2122,7 +2124,7 @@ if __name__ == '__main__':
                     elif ( rse_status == "error" ):
                         site_status = "error"
                     elif (( rse_status == "unknown" ) and
-                          ( site_status != error )):
+                          ( site_status != "error" )):
                         site_status = "unknown"
                     elif (( rse_status == "warning" ) and
                           ( site_status == "ok" )):
