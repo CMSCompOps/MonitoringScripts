@@ -2238,7 +2238,8 @@ if __name__ == '__main__':
                 detail += hst_strng
                 detail += rse_strng[:-1]
                 mtrcObj.add1entry(key, { 'name': cms_site, 'type': "site",
-                                         'status': status, 'quality': quality,
+                                         'status': site_status,
+                                         'quality': quality,
                                          'detail': detail } )
 
         return
