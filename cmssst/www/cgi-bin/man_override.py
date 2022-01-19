@@ -686,7 +686,7 @@ def ovrd_append_log(cgiMTRC, entry):
                                      entry['when'], entry['who'], entry['why'])
             else:
                 logString = (("%s\t%s:%s:%d:%.3f:%d:%d:%d:%d:%d:%.1f:%.1f:" +
-                              "%.1f:%.1f:%.1f\t%s\t%s\n") %
+                              "%.1f:%.1f:%.1f:%.1f\t%s\t%s\n") %
                              (site, federation, fraction, entry['hs06_pledge'],
                               entry['hs06_per_core'], entry['core_usable'],
                               entry['core_max_used'], entry['core_production'],
