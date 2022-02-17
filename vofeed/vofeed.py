@@ -50,7 +50,7 @@ import pydoop.hdfs
 
 
 
-VOFEED_VERSION = "v2.02.00p"
+VOFEED_VERSION = "v2.02.00"
 # ########################################################################### #
 
 
@@ -1612,10 +1612,6 @@ if __name__ == '__main__':
                                                 (rseSite, rseHost, rseFlavour))
                 logging.log(9, "      %s" % str(service))
                 #
-                #-LML patch
-                if ( service['hostname'] == "webdav.echo.stfc.ac.uk" ):
-                    service['production'] = False
-                #-LML patch
                 try:
                     vofeedObj.add1service(timestamp, rseSite, service)
                 except:
