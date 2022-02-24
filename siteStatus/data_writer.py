@@ -1685,7 +1685,7 @@ def sswp_ggus():
     # ########################################################### #
     # fill sswp_sites site ggus array with GGUS ticket informaton #
     # ########################################################### #
-    URL_GGUS_TICKET = 'https://ggus.eu/?mode=ticket_search&show_columns_check%5B%5D=CMS_SITE&show_columns_check%5B%5D=DATE_OF_CREATION&ticket_id=&su_hierarchy=0&vo=cms&cms_site=&specattrib=none&status=open&typeofproblem=all&ticket_category=all&date_type=creation+date&tf_radio=1&timeframe=any&orderticketsby=REQUEST_ID&orderhow=desc&search_submit=GO!&writeFormat=XML'
+    URL_GGUS_TICKET = 'https://ggus.eu/?mode=ticket_search&show_columns_check%5B0%5D=CMS_SITE&show_columns_check%5B1%5D=Involve_CMS_Site&show_columns_check%5B2%5D=DATE_OF_CREATION&ticket_id=&su_hierarchy=0&vo=cms&cms_site=&specattrib=none&status=open&typeofproblem=all&ticket_category=all&date_type=creation+date&tf_radio=1&timeframe=any&orderticketsby=REQUEST_ID&orderhow=desc&search_submit=GO!&writeFormat=XML'
 
     # get list of all tickets for VO CMS from GGUS:
     # =============================================
@@ -1761,7 +1761,12 @@ def sswp_ggus():
         except (KeyError, AttributeError):
             cmssite = None
         if not cmssite:
-           continue
+            try:
+                cmssite = ticket.find('Involve_CMS_Site').text
+            except (KeyError, AttributeError):
+                cmssite = None
+        if not cmssite:
+            continue
         created  = ticket.findtext('Creation_Date', '')     # time is in UTC
         ts = time.strptime(created + ' UTC', "%Y-%m-%d %H:%M:%S %Z")
         tis = calendar.timegm(ts)
@@ -3660,6 +3665,15 @@ def ssdw_monit_SAM_HC_FTS_SR():
                                     if ( myJson['data']['type'] == "site" ):
                                         label = "FTSsite"
                                         site = myJson['data']['name']
+                                    elif ( myJson['data']['type'] ==
+                                                             "GSIFTP-source" ):
+                                        label = "FTSsource"
+                                        site = myJson['data']['name'] + "/SRM"
+                                    elif ( myJson['data']['type'] ==
+                                                             "WEBDAV-source" ):
+                                        label = "FTSsource"
+                                        site = myJson['data']['name'] + \
+                                                                      "/WEBDAV"
                                     elif ( myJson['data']['type'] == "source" ):
                                         label = "FTSsource"
                                         typgrp = glbTopology.verifyType(
@@ -3669,6 +3683,15 @@ def ssdw_monit_SAM_HC_FTS_SR():
                                                                          "/SRM"
                                         else:
                                             site = myJson['data']['name'] + \
+                                                                      "/WEBDAV"
+                                    elif ( myJson['data']['type'] ==
+                                                        "GSIFTP-destination" ):
+                                        label = "FTSdestination"
+                                        site = myJson['data']['name'] + "/SRM"
+                                    elif ( myJson['data']['type'] ==
+                                                        "WEBDAV-destination" ):
+                                        label = "FTSdestination"
+                                        site = myJson['data']['name'] + \
                                                                       "/WEBDAV"
                                     elif ( myJson['data']['type'] ==
                                                                "destination" ):
