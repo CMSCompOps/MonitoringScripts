@@ -1688,7 +1688,7 @@ def lget_url4hc(inputString):
     # replace brackets with a job job reference with hyperlink to the job log #
     # ####################################################################### #
     LGET_HCJOB_URL = ("https://cmsweb.cern.ch/scheddmon/%s/" +
-                                                 "cmsprd/%s/job_out.%s.%s.txt")
+                                                 "sciaba/%s/job_out.%s.%s.txt")
     brRegex = re.compile(r"^\w+@[a-zA-Z_-]+(\d+)\.\S+ (\S+) (\d+) (\d+)$")
     #
     myHTML = ""

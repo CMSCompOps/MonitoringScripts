@@ -19,7 +19,7 @@
 #                   1 Failed, %s [...]"
 # }
 # https://cmsweb.cern.ch/crabserver/ui/task/<CRAB Workflow>
-# https://cmsweb.cern.ch/scheddmon/0122/cmsprd/<CRAB Workflow>/job_out.15.0.txt
+# https://cmsweb.cern.ch/scheddmon/0122/sciaba/<CRAB Workflow>/job_out.15.0.txt
 #                               <schedd#>            <CRAB_Id>.<CRAB_Retry>.txt
 # globalJobId   = crab3@vocms0107.cern.ch#36373065.0#1552585123
 # CRAB_Workflow = 190314_153237:sciaba_crab_HC-98-T2_AT_Vienna-72573-20190313044506
