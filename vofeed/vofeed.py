@@ -50,7 +50,7 @@ import pydoop.hdfs
 
 
 
-VOFEED_VERSION = "v2.02.01"
+VOFEED_VERSION = "v2.02.02"
 # ########################################################################### #
 
 
@@ -1232,6 +1232,8 @@ if __name__ == '__main__':
                     ceType = "CREAM-CE"
                 elif classAd['GLIDEIN_GridType'] == 'nordugrid':
                     ceType = "ARC-CE"
+                elif classAd['GLIDEIN_GridType'] == 'arc':
+                    ceType = "ARC-CE"
                 elif classAd['GLIDEIN_GridType'] == 'condor':
                     ceType = "HTCONDOR-CE"
                 elif ( classAd['GLIDEIN_GridType'].find('gt') == 0 ):
@@ -1566,7 +1568,7 @@ if __name__ == '__main__':
                 if (( rseHost == \
                            "gridftp-vanderbilt.sites.opensciencegrid.org" ) and
                     ( rseProto == "gsiftp" )):
-                    # copy command not implemented 
+                    # copy command not implemented
                     try:
                         rseDict['wan'].remove('third_party_copy')
                     except ValueError:
