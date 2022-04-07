@@ -778,15 +778,14 @@ def admf_compose_json(facilityDict, time15bin):
             commaSiteFlag = True
         jsonString += "\n      ],\n"
         #
-        #if myEntry['who'] is None:
-        #    jsonString += ("      \"who\": \"\",\n")
-        #else:
-        #    jsonString += ("      \"who\": \"%s\",\n" % myEntry['who'])
-        jsonString += ("      \"who\": \"\",\n")
+        if myEntry['who'] is None:
+            jsonString += ("      \"who\": \"\",\n")
+        else:
+            jsonString += ("      \"who\": \"%s\",\n" % myEntry['who'])
         if myEntry['when'] is None:
             jsonString += ("      \"when\": \"\"\n   }\n }")
         else:
-            jsonString += ("      \"when\": \"%s\"\n }" % myEntry['when'])
+            jsonString += ("      \"when\": \"%s\"\n   }\n }" % myEntry['when'])
         commaFlag = True
     jsonString += "\n]\n"
 
@@ -2083,6 +2082,10 @@ if __name__ == '__main__':
         #
         # read current FacilityInfo:
         facilityDict = admf_read_jsonfile()
+        #
+        # scramble usernames for MonIT upload:
+        for fclty in facilityDict:
+            facilityDict[fclty]['who'] = "someone"
         #
         # upload SiteCapacity data as needed:
         admf_monit_upload( facilityDict, now15m )
