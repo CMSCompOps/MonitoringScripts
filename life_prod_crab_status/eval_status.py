@@ -1550,20 +1550,20 @@ if __name__ == '__main__':
                     if ( theDay >= mtrc[1] ):
                         nStatus = manOverride['status']
                         detail = "Life: manual override by %s (%s)" % \
-                                       (manOverride['who'], manOverride['why'])
+                                                ("someone", manOverride['why'])
                     else:
                         newOverride = { 'name': site, 'status': None }
                 elif ( manOverride['mode'] == "toggle" ):
                     if ( nStatus != manOverride['status'] ):
                         nStatus = manOverride['status']
                         detail = "Life: manual override by %s (%s)" % \
-                                       (manOverride['who'], manOverride['why'])
+                                                ("someone", manOverride['why'])
                     else:
                         newOverride = { 'name': site, 'status': None }
                 else:
                     nStatus = manOverride['status']
                     detail = "Life: manual override by %s (%s)" % \
-                                       (manOverride['who'], manOverride['why'])
+                                                ("someone", manOverride['why'])
                     newOverride = None
             except KeyError:
                 pass
@@ -1637,7 +1637,7 @@ if __name__ == '__main__':
         # get list of sites for evaluation from latest Site Readiness metric:
         # ===================================================================
         mtrc = srObj.metrics()[-1]
-        siteList = sorted( set( srObj.sites( mtrc ) +
+        siteList = sorted( set( srObj.sites( mtrc ) + \
                                 list( overrideDict.keys() ) ) )
 
 
@@ -1743,20 +1743,20 @@ if __name__ == '__main__':
                     if ( theDay >= mtrc[1] ):
                         nStatus = manOverride['status']
                         detail = "Prod: manual override by %s (%s)" % \
-                                       (manOverride['who'], manOverride['why'])
+                                                ("someone", manOverride['why'])
                     else:
                         newOverride = { 'name': site, 'status': None }
                 elif ( manOverride['mode'] == "toggle" ):
                     if ( nStatus != manOverride['status'] ):
                         nStatus = manOverride['status']
                         detail = "Prod: manual override by %s (%s)" % \
-                                       (manOverride['who'], manOverride['why'])
+                                                ("someone", manOverride['why'])
                     else:
                         newOverride = { 'name': site, 'status': None }
                 else:
                     nStatus = manOverride['status']
                     detail = "Prod: manual override by %s (%s)" % \
-                                       (manOverride['who'], manOverride['why'])
+                                                ("someone", manOverride['why'])
                     newOverride = None
             except KeyError:
                 pass
@@ -1821,7 +1821,7 @@ if __name__ == '__main__':
         # get list of sites for evaluation from latest Site Readiness metric:
         # ===================================================================
         mtrc = srObj.metrics()[-1]
-        siteList = sorted( set( srObj.sites( mtrc ) +
+        siteList = sorted( set( srObj.sites( mtrc ) + \
                                 list( overrideDict.keys() ) ) )
 
 
@@ -1894,20 +1894,20 @@ if __name__ == '__main__':
                     if ( theDay >= mtrc[1] ):
                         nStatus = manOverride['status']
                         detail = "Crab: manual override by %s (%s)" % \
-                                       (manOverride['who'], manOverride['why'])
+                                                ("someone", manOverride['why'])
                     else:
                         newOverride = { 'name': site, 'status': None }
                 elif ( manOverride['mode'] == "toggle" ):
                     if ( nStatus != manOverride['status'] ):
                         nStatus = manOverride['status']
                         detail = "Crab: manual override by %s (%s)" % \
-                                       (manOverride['who'], manOverride['why'])
+                                                ("someone", manOverride['why'])
                     else:
                         newOverride = { 'name': site, 'status': None }
                 else:
                     nStatus = manOverride['status']
                     detail = "Crab: manual override by %s (%s)" % \
-                                       (manOverride['who'], manOverride['why'])
+                                                ("someone", manOverride['why'])
                     newOverride = None
             except KeyError:
                 pass
