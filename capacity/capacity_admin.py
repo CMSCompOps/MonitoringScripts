@@ -669,13 +669,13 @@ def capa_compose_json(capacityList, time15bin, noWho):
         else:
             jsonString += "%s\"when\": null,\n" % spcStrng
         if ( noWho == True ):
-            jsonString += "%s\"who\": null\n" % spcStrng
+            jsonString += "%s\"who\": \"\"\n" % spcStrng
         elif (( 'who' in tmpDict[myName] ) and
             ( tmpDict[myName]['who'] is not None )):
             jsonString += ("%s\"who\": \"%s\"\n" %
                                             (spcStrng, tmpDict[myName]['who']))
         else:
-            jsonString += "%s\"who\": null\n" % spcStrng
+            jsonString += "%s\"who\": \"\"\n" % spcStrng
         if time15bin is not None:
             jsonString += "   }\n }"
         else:
