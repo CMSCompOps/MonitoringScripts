@@ -2085,7 +2085,7 @@ if __name__ == '__main__':
         #
         # scramble usernames for MonIT upload:
         for fclty in facilityDict:
-            facilityDict[fclty]['who'] = "someone"
+            facilityDict[fclty]['who'] = ""
         #
         # upload SiteCapacity data as needed:
         admf_monit_upload( facilityDict, now15m )
