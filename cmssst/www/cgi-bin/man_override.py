@@ -205,7 +205,7 @@ def ovrd_cric_facility():
              cacheUpdate = True
         #
         if ( cacheUpdate ):
-            jsonString = "["
+            jsonString = "{"
             commaFlag = False
             for site in siteDict:
                 if commaFlag:
@@ -214,7 +214,7 @@ def ovrd_cric_facility():
                     jsonString += "\n"
                 jsonString += "   \"%s\": \"%s\"" % ( site, siteDict[site] )
                 commaFlag = True
-            jsonString += "\n]\n"
+            jsonString += "\n}\n"
             #
             try:
                 with open(cacheFile + "_new", 'w') as myFile:
