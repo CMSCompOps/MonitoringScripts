@@ -211,7 +211,8 @@ class FTSmetric:
                ( eLwr.find("not enough space") >= 0 ) or
                ( eLwr.find("no free space") >= 0 ) or
                (( eLwr.find("copy failed with mode 3rd push") >= 0 ) and
-                ( eMsg.find("507 status code: 507") >= 0 )))):
+                ( eMsg.find("507 status code: 507") >= 0 )) or
+               ( eMsg.find("Insufficient Storage") >= 0 ))):
             return "trn_usr"
         elif (( error_scope == "TRANSFER" ) and
               (( eLwr.find("no route to host") >= 0 ) or
@@ -353,7 +354,8 @@ class FTSmetric:
                   ( eLwr.find("not enough space") >= 0 ) or
                   ( eLwr.find("no free space") >= 0 ) or
                   ( eLwr.find("unable to get quota space") >= 0 ) or
-                  ( eLwr.find("status code: 507,") >= 0 )):
+                  ( eLwr.find("status code: 507,") >= 0 ) or
+                  ( eMsg.find("Insufficient Storage") >= 0 )):
                 return "dst_spce"
             elif ( eMsg.find("error in write into HDFS") >= 0 ):
                 return "dst_err"
@@ -2119,16 +2121,19 @@ if __name__ == '__main__':
                                              'detail': detail } )
                     #
                     site_quality = min( site_quality, rse_quality )
-                    if ( site_status is None ):
-                        site_status = rse_status
-                    elif ( rse_status == "error" ):
-                        site_status = "error"
-                    elif (( rse_status == "unknown" ) and
-                          ( site_status != "error" )):
-                        site_status = "unknown"
-                    elif (( rse_status == "warning" ) and
-                          ( site_status == "ok" )):
-                        site_status = "warning"
+                    if (( rse_name != "T1_RU_JINR_Tape" ) and
+                        ( rse_name != "T1_US_FNAL_Tape" )):
+                        # patch for broken _Tape LoadTest
+                        if ( site_status is None ):
+                            site_status = rse_status
+                        elif ( rse_status == "error" ):
+                            site_status = "error"
+                        elif (( rse_status == "unknown" ) and
+                              ( site_status != "error" )):
+                            site_status = "unknown"
+                        elif (( rse_status == "warning" ) and
+                              ( site_status == "ok" )):
+                            site_status = "warning"
                     rse_strng += ("RSE %s: %s (%s/%s)\n" % (rse_name,
                                    rse_status, rse_src_status, rse_dst_status))
                 #
