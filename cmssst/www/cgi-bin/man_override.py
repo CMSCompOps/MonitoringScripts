@@ -111,12 +111,16 @@ OVRD_CAPACITY_DESC = {
     'core_io_intensive':        "Max number of cores to be used for I/O in" + \
                                 "tensive jobs",
     'disk_pledge':              "Disk space pledge in TBytes (auto-filled " + \
-                                "from Rebus)",
+                                "from Rebus if federation is set)",
     'disk_usable':              "Disk space in TBytes usable by CMS",
     'disk_experiment_use':      "Disk space in TBytes available for experi" + \
                                 "ment use (auto-filled from Rucio)",
+    'disk_experiment_fraction': "Percent of disk space for experiment use " + \
+                                "(auto-calculated)",
     'disk_local_use':           "Disk space in TBytes available for local " + \
                                 "use (auto-filled from Rucio)",
+    'disk_reserved_free':       "Disk space in TBytes reserved for /store/" + \
+                                "unmerged (auto-filled from Rucio)",
     'tape_pledge':              "Tape space pledge in TBytes (auto-filled " + \
                                 "from Rebus)",
     'tape_usable':              "Tape space in TBytes usable by CMS",
@@ -245,11 +249,11 @@ def ovrd_cric_facility():
 
 
 
-def ovrd_cric_federation():
+def ovrd_cric_federation_pledge():
     # ########################################## #
     # return list of valid WLCG federation names #
     # ########################################## #
-    URL_CRIC_FEDRN = "https://wlcg-cric.cern.ch/api/core/federation/query/?json"
+    URL_CRIC_FEDRN = "https://wlcg-cric.cern.ch/api/core/federation/query/?json&vo=cms&preset=current"
 
     logging.info("Fetching WLCG federation information from CRIC")
     try:
@@ -264,37 +268,43 @@ def ovrd_cric_federation():
             myData = urlHandle.read().decode( urlCharset )
         #
         # sanity check:
-        if ( len(myData) < 16384 ):
+        if ( len(myData) < 4096 ):
             raise ValueError("WLCG federation query result failed sanity check")
         #
         # decode JSON:
         myDict = json.loads( myData )
         del myData
         #
-        # loop over entries and add WLCG federation name to list:
-        federationList = set()
+        # loop over entries and add WLCG federation name and pledges to dict:
+        federationDict = {}
         for myEntry in myDict:
             federation = None
-            support = None
+            pledge = [ 0, 0, 0 ]
             try:
                 federation = myDict[ myEntry ]['name']
-                for voName in myDict[ myEntry ]['vos']:
-                    if ( voName[:3].lower() == "cms" ):
-                        support = "cms"
-                        break
-                if (( federation is None ) or ( federation == "" ) or
-                    ( support is None )):
+                try:
+                   pledge[0] = myDict[ myEntry ]['pledges']['cms']['CPU']
+                except KeyError:
+                   pass
+                try:
+                   pledge[1] = myDict[ myEntry ]['pledges']['cms']['Disk']
+                except KeyError:
+                   pass
+                try:
+                   pledge[2] = myDict[ myEntry ]['pledges']['cms']['Tape']
+                except KeyError:
+                   pass
+                if (( federation is None ) or ( federation == "" )):
                     continue
             except KeyError:
                 continue
             #
-            federationList.add( federation )
+            federationDict[ federation ] = pledge
         del myDict
-        federationList = sorted( federationList )
         #
         #
         # update cache:
-        cacheFile = OVRD_CACHE + "/cric_federation.json"
+        cacheFile = OVRD_CACHE + "/cric_federation_pledge.json"
         cacheUpdate = False
         try:
              myAge = time.time() - os.stat(cacheFile)[stat.ST_MTIME]
@@ -304,16 +314,15 @@ def ovrd_cric_federation():
              cacheUpdate = True
         #
         if ( cacheUpdate ):
-            jsonString = "{\n   \"Federations\": ["
+            jsonString = "{"
             commaFlag = False
-            for federation in federationList:
+            for federation in sorted( federationDict.keys() ):
                 if commaFlag:
-                    jsonString += ", "
-                else:
-                    jsonString += " "
-                jsonString += "\"%s\"" % federation
+                    jsonString += ","
+                jsonString += "\n   \'%s\': %s" % (federation,
+                                               str(federationDict[federation]))
                 commaFlag = True
-            jsonString += " ]\n}\n"
+            jsonString += "\n}\n"
             #
             try:
                 with open(cacheFile + "_new", 'w') as myFile:
@@ -327,7 +336,7 @@ def ovrd_cric_federation():
         logging.error("Failed to fetch WLCG federation info from CRIC: %s" %
                                                                    str(excptn))
         #
-        cacheFile = OVRD_CACHE + "/cric_federation.json"
+        cacheFile = OVRD_CACHE + "/cric_federation_pledge.json"
         try:
             with open(cacheFile, 'rt') as myFile:
                 myData = myFile.read()
@@ -335,16 +344,11 @@ def ovrd_cric_federation():
             # decode JSON:
             federationDict = json.loads( myData )
             del myData
-            #
-            federationList = set()
-            for federation in federationDict['Federations']:
-                federationList.add( federation )
-            federationList = sorted( federationList )
         except:
             logging.critical("Failed to read WLCG federation information cache")
             raise
         #
-    return federationList
+    return federationDict
 # ########################################################################### #
 
 
@@ -430,6 +434,8 @@ def ovrd_read_jsonfile(cgiMTRC):
                 entry['disk_experiment_use'] = 0.0
             if 'disk_local_use' not in entry:
                 entry['disk_local_use'] = 0.0
+            if 'disk_reserved_free' not in entry:
+                entry['disk_reserved_free'] = 0.00
             if 'tape_pledge' not in entry:
                 entry['tape_pledge'] = 0.0
             if 'tape_usable' not in entry:
@@ -523,13 +529,25 @@ def ovrd_compose_capacity(capacityList):
             else:
                 jsonString += ("   \"%s\": 0,\n" % cpctyKey)
         for cpctyKey in ['disk_pledge', 'disk_usable', 'disk_experiment_use', \
-                         'disk_local_use', 'tape_pledge', 'tape_usable' ]:
+                         'disk_local_use' ]:
             if (( cpctyKey in entry ) and ( entry[cpctyKey] is not None )):
                 jsonString += ("   \"%s\": %.1f,\n" %
                                                    (cpctyKey, entry[cpctyKey]))
             else:
                 jsonString += ("   \"%s\": 0.0,\n" % cpctyKey)
-        
+        if (( 'disk_reserved_free' in entry ) and
+            ( entry['disk_reserved_free'] is not None )):
+            jsonString += ("   \"%s\": %.2f,\n" %
+                           ("disk_reserved_free", entry['disk_reserved_free']))
+        else:
+            jsonString += ("   \"%s\": 0.00,\n" % "disk_reserved_free")
+        for cpctyKey in [ 'tape_pledge', 'tape_usable' ]:
+            if (( cpctyKey in entry ) and ( entry[cpctyKey] is not None )):
+                jsonString += ("   \"%s\": %.1f,\n" %
+                                                   (cpctyKey, entry[cpctyKey]))
+            else:
+                jsonString += ("   \"%s\": 0.0,\n" % cpctyKey)
+
         if (( 'when' in entry ) and ( entry['when'] is not None )):
             jsonString += ("   \"when\": \"%s\",\n" % entry['when'])
         else:
@@ -686,7 +704,7 @@ def ovrd_append_log(cgiMTRC, entry):
                                      entry['when'], entry['who'], entry['why'])
             else:
                 logString = (("%s\t%s:%s:%d:%.3f:%d:%d:%d:%d:%d:%.1f:%.1f:" +
-                              "%.1f:%.1f:%.1f:%.1f\t%s\t%s\n") %
+                              "%.1f:%.1f:%.2f:%.1f:%.1f\t%s\t%s\n") %
                              (site, federation, fraction, entry['hs06_pledge'],
                               entry['hs06_per_core'], entry['core_usable'],
                               entry['core_max_used'], entry['core_production'],
@@ -695,6 +713,7 @@ def ovrd_append_log(cgiMTRC, entry):
                               entry['disk_usable'],
                               entry['disk_experiment_use'],
                               entry['disk_local_use'],
+                              entry['disk_reserved_free'],
                               entry['tape_pledge'], entry['tape_usable'],
                               entry['when'], entry['who']))
             #
@@ -1249,7 +1268,7 @@ def ovrd_post_override(authDict, cgiMTRC, siteFacility, cgiSITE, cgiPOST):
 
 
 
-def ovrd_html_capacity(authDict, siteFacility, federationNames, cgiSITE):
+def ovrd_html_capacity(authDict, siteFacility, federationPledge, cgiSITE):
     """write main section of HTML capacity page to stdout"""
     # ####################################################################### #
     OVRD_NOENTRY = { 'name': None,           'wlcg_federation_name': None,
@@ -1259,7 +1278,7 @@ def ovrd_html_capacity(authDict, siteFacility, federationNames, cgiSITE):
                      'core_production': 0,   'core_cpu_intensive': 0,
                      'core_io_intensive': 0, 'disk_pledge': 0.0,
                      'disk_usable': 0.0,     'disk_experiment_use': 0.0,
-                     'disk_local_use': 0.0,
+                     'disk_local_use': 0.0,  'disk_reserved_free': 0.00,
                      'tape_pledge': 0.0,     'tape_usable': 0.0,
                      'when': "never", 'who': "anybody" }
     #
@@ -1372,24 +1391,30 @@ def ovrd_html_capacity(authDict, siteFacility, federationNames, cgiSITE):
                    "VALIGN=\"TOP\" NOWRAP>\n      <B>%s</B>&nbsp;\n   <TD VA" +
                    "LIGN=\"TOP\" NOWRAP>\n      <SELECT ID=\"%s:wlcg_federat" +
                    "ion_name\" NAME=\"wlcg_federation_name\" onchange=\"hand" +
-                   "lePledge(this.id, this.value)\">\n         <OPTION VALUE" +
-                   "=\"*none*\"%s></OPTION>") %
-                            (bckgnd, OVRD_CGIURL, site, site, site, slctnInfo))
-            for federation in federationNames:
+                   "lePledge(this.id)\">\n         <OPTION VALUE=\"*none*:%d" +
+                   ":%d:%d\"%s></OPTION>") %
+                  (bckgnd, OVRD_CGIURL, site, site, site, entry['hs06_pledge'],
+                        entry['disk_pledge'], entry['tape_pledge'], slctnInfo))
+            for federation in sorted( federationPledge.keys() ):
+                pledge = federationPledge[federation]
                 if ( entry['wlcg_federation_name'] == federation ):
-                    print(("         <OPTION VALUE=\"%s\" SELECTED>%s</OPTIO" +
-                           "N>") % (federation, federation))
+                    print(("         <OPTION VALUE=\"%s:%d:%d:%d\" SELECTED>" +
+                           "%s</OPTION>") % (federation,
+                                             pledge[0], pledge[1], pledge[2],
+                                             federation))
                 else:
-                    print(("         <OPTION VALUE=\"%s\">%s</OPTION>") %
-                                                      (federation, federation))
+                    print(("         <OPTION VALUE=\"%s:%d:%d:%d\">%s</OPTIO" +
+                           "N>") % (federation,
+                                  pledge[0], pledge[1], pledge[2], federation))
             print("      </SELECT>%s<BR>" %
                                     OVRD_CAPACITY_DESC['wlcg_federation_name'])
             #
             if entry['wlcg_federation_name'] is None:
                print(("      <INPUT ID=\"%s:wlcg_federation_fraction\" TYPE=" +
-                      "\"number\" STEP=\"0.001\" MIN=\"0.000\" NAME=\"wlcg_f" +
-                      "ederation_fraction\" VALUE=\"%.3f\" READONLY>%s<BR>")
-                     % (site, entry['wlcg_federation_fraction'],
+                      "\"number\" SIZE=\"12\" STEP=\"0.001\" MIN=\"0.000\" N" +
+                      "AME=\"wlcg_federation_fraction\" VALUE=\"%.3f\" oncha" +
+                      "nge=\"handlePledge(this.id)\" READONLY>%s<BR>") %
+                     (site, entry['wlcg_federation_fraction'],
                                OVRD_CAPACITY_DESC['wlcg_federation_fraction']))
                print(("      <INPUT ID=\"%s:hs06_pledge\" TYPE=\"number\" SI" +
                       "ZE=\"12\" STEP=\"1\" MIN=\"0\" NAME=\"hs06_pledge\" V" +
@@ -1397,8 +1422,9 @@ def ovrd_html_capacity(authDict, siteFacility, federationNames, cgiSITE):
                                             OVRD_CAPACITY_DESC['hs06_pledge']))
             else:
                print(("      <INPUT ID=\"%s:wlcg_federation_fraction\" TYPE=" +
-                      "\"number\" STEP=\"0.001\" MIN=\"0.000\" NAME=\"wlcg_f" +
-                      "ederation_fraction\" VALUE=\"%.3f\">%s<BR>") %
+                      "\"number\" SIZE=\"12\" STEP=\"0.001\" MIN=\"0.000\" N" +
+                      "AME=\"wlcg_federation_fraction\" VALUE=\"%.3f\" oncha" +
+                      "nge=\"handlePledge(this.id)\">%s<BR>") %
                      (site, entry['wlcg_federation_fraction'],
                                OVRD_CAPACITY_DESC['wlcg_federation_fraction']))
                print(("      <INPUT ID=\"%s:hs06_pledge\" TYPE=\"number\" SI" +
@@ -1406,8 +1432,8 @@ def ovrd_html_capacity(authDict, siteFacility, federationNames, cgiSITE):
                       "ALUE=\"%d\" READONLY>%s<BR>") %
                      (site, entry['hs06_pledge'],
                                             OVRD_CAPACITY_DESC['hs06_pledge']))
-            print(("      <INPUT TYPE=\"number\" STEP=\"0.001\" SIZE=\"9\" N" +
-                   "AME=\"hs06_per_core\" VALUE=\"%.3f\">%s<BR>") %
+            print(("      <INPUT TYPE=\"number\" STEP=\"0.001\" SIZE=\"12\" " +
+                   "NAME=\"hs06_per_core\" VALUE=\"%.3f\">%s<BR>") %
                  (entry['hs06_per_core'], OVRD_CAPACITY_DESC['hs06_per_core']))
             print(("      <INPUT ID=\"%s:core_usable\" TYPE=\"number\" SIZE=" +
                    "\"12\" STEP=\"1\" MIN=\"0\" NAME=\"core_usable\" VALUE=" +
@@ -1448,10 +1474,37 @@ def ovrd_html_capacity(authDict, siteFacility, federationNames, cgiSITE):
                    "N=\"0\" NAME=\"disk_experiment_use\" VALUE=\"%.1f\" READ" +
                    "ONLY>%s<BR>") % (entry['disk_experiment_use'],
                                     OVRD_CAPACITY_DESC['disk_experiment_use']))
+            if ( entry['disk_usable'] > 0.0 ):
+                frctn = int( 10000.0 * entry['disk_experiment_use'] /
+                                                 entry['disk_usable'] ) / 100.0
+            elif ( entry['disk_pledge'] > 0.0 ):
+                frctn = int( 10000.0 * entry['disk_experiment_use'] /
+                                                 entry['disk_pledge'] ) / 100.0
+            else:
+                frctn = 0.0
+            if (( frctn >= 85.0 ) or
+                (( frctn >= 75.0 ) and ( site[0:2] != "T1" ))):
+                color = "#E8FFE8"
+            elif (( frctn >= 75.0 ) or
+                  (( frctn >= 66.6 ) and ( site[0:2] != "T1" ))):
+                color = "#FFFFE8"
+            elif ( frctn > 0.0 ):
+                color = "#FFF0F8"
+            else:
+                color = "#DCDCDC"
+            print(("      <INPUT TYPE=\"number\" SIZE=\"12\" STEP=\"0.01\" M" +
+                   "IN=\"0\" MAX=\"100\" NAME=\"disk_experiment_fraction\" V" +
+                   "ALUE=\"%.2f\" READONLY style=\"background-color: %s\">%s" +
+                   "<BR>") % (frctn, color,
+                               OVRD_CAPACITY_DESC['disk_experiment_fraction']))
             print(("      <INPUT TYPE=\"number\" SIZE=\"12\" STEP=\"0.5\" MI" +
                    "N=\"0\" NAME=\"disk_local_use\" VALUE=\"%.1f\" READONLY>" +
                    "%s<BR>") % (entry['disk_local_use'],
                                          OVRD_CAPACITY_DESC['disk_local_use']))
+            print(("      <INPUT TYPE=\"number\" SIZE=\"12\" STEP=\"0.01\" M" +
+                   "IN=\"0\" NAME=\"disk_reserved_free\" VALUE=\"%.2f\" READ" +
+                   "ONLY>%s<BR>") % (entry['disk_reserved_free'],
+                                     OVRD_CAPACITY_DESC['disk_reserved_free']))
             if entry['wlcg_federation_name'] is None:
                 print(("      <INPUT ID=\"%s:tape_pledge\" TYPE=\"number\" S" +
                        "IZE=\"12\" STEP=\"0.5\" MIN=\"0\" NAME=\"tape_pledge" +
@@ -1488,7 +1541,7 @@ def ovrd_html_capacity(authDict, siteFacility, federationNames, cgiSITE):
 
 
 
-def ovrd_post_capacity(authDict, siteFacility, federationNames,
+def ovrd_post_capacity(authDict, siteFacility, federationPledge,
                                                              cgiSITE, cgiPOST):
     """set capacity and write main section of HTML update page to stdout"""
     # ####################################################################### #
@@ -1499,7 +1552,7 @@ def ovrd_post_capacity(authDict, siteFacility, federationNames,
                      'core_production': 0,   'core_cpu_intensive': 0,
                      'core_io_intensive': 0, 'disk_pledge': 0.0,
                      'disk_usable': 0.0,     'disk_experiment_use': 0.0,
-                     'disk_local_use': 0.0,
+                     'disk_local_use': 0.0,  'disk_reserved_free': 0.00,
                      'tape_pledge': 0.0,     'tape_usable': 0.0,
                      'when': "never", 'who': "anybody" }
 
@@ -1508,7 +1561,7 @@ def ovrd_post_capacity(authDict, siteFacility, federationNames,
     try:
         capacityEntry['name'] = cgiSITE
         capacityEntry['wlcg_federation_name'] = \
-                                             cgiPOST['wlcg_federation_name'][0]
+                               cgiPOST['wlcg_federation_name'][0].split(":")[0]
         if ( capacityEntry['wlcg_federation_name'] == "*none*" ):
             capacityEntry['wlcg_federation_name'] = None
         capacityEntry['wlcg_federation_fraction'] = \
@@ -1531,6 +1584,8 @@ def ovrd_post_capacity(authDict, siteFacility, federationNames,
                  int( 10.0 * float( cgiPOST['disk_experiment_use'][0] )) / 10.0
         capacityEntry['disk_local_use'] = \
                       int( 10.0 * float( cgiPOST['disk_local_use'][0] )) / 10.0
+        capacityEntry['disk_reserved_free'] = \
+                int( 100.0 * float( cgiPOST['disk_reserved_free'][0] )) / 100.0
         capacityEntry['tape_pledge'] = \
                            int( 2.0 * float( cgiPOST['tape_pledge'][0] )) / 2.0
         capacityEntry['tape_usable'] = \
@@ -1548,7 +1603,7 @@ def ovrd_post_capacity(authDict, siteFacility, federationNames,
         return
     #
     if (( capacityEntry['wlcg_federation_name'] is not None ) and
-        ( capacityEntry['wlcg_federation_name'] not in federationNames )):
+        ( capacityEntry['wlcg_federation_name'] not in federationPledge )):
         logging.critical("Illegal federation name, \"%s\"" %
                                     str(capacityEntry['wlcg_federation_name']))
         return
@@ -1608,23 +1663,27 @@ def ovrd_post_capacity(authDict, siteFacility, federationNames,
            "ded\" action=\"%s/SiteCapacity/%s\">\n   <TD VALIGN=\"TOP\" NOWR" +
            "AP>\n      <B>%s</B>&nbsp;\n   <TD VALIGN=\"TOP\" NOWRAP>\n     " +
            " <SELECT ID=\"%s:wlcg_federation_name\" NAME=\"wlcg_federation_n" +
-           "ame\" onchange=\"handlePledge(this.id, this.value)\">\n         " +
-           "<OPTION VALUE=\"*none*\"%s></OPTION>") %
-                           (OVRD_CGIURL, cgiSITE, cgiSITE, cgiSITE, slctnInfo))
-    for federation in federationNames:
+           "ame\" onchange=\"handlePledge(this.id)\">\n         " +
+           "<OPTION VALUE=\"*none*:%d:%d:%d\"%s></OPTION>") %
+          (OVRD_CGIURL, cgiSITE, cgiSITE, cgiSITE, entry['hs06_pledge'],
+                        entry['disk_pledge'], entry['tape_pledge'], slctnInfo))
+    for federation in sorted( federationPledge.keys() ):
+        pledge = federationPledge[federation]
         if ( entry['wlcg_federation_name'] == federation ):
-            print(("         <OPTION VALUE=\"%s\" SELECTED>%s</OPTION>") %
-                                                      (federation, federation))
+            print(("         <OPTION VALUE=\"%s:%d:%d:%d\" SELECTED>%s</OPTI" +
+                   "ON>") % (federation, pledge[0], pledge[1], pledge[2],
+                                                                   federation))
         else:
-            print(("         <OPTION VALUE=\"%s\">%s</OPTION>") %
-                                                      (federation, federation))
+            print(("         <OPTION VALUE=\"%s:%d:%d:%d\">%s</OPTION>") %
+                     (federation, pledge[0], pledge[1], pledge[2], federation))
     print("      </SELECT>%s<BR>" %
                                     OVRD_CAPACITY_DESC['wlcg_federation_name'])
     #
     if entry['wlcg_federation_name'] is None:
        print(("      <INPUT ID=\"%s:wlcg_federation_fraction\" TYPE=\"number" +
-              "\" STEP=\"0.001\" MIN=\"0.000\" NAME=\"wlcg_federation_fracti" +
-              "on\" VALUE=\"%.3f\" READONLY>%s<BR>") %
+              "\" SIZE=\"12\" STEP=\"0.001\" MIN=\"0.000\" NAME=\"wlcg_feder" +
+              "ation_fraction\" VALUE=\"%.3f\" onchange=\"handlePledge(this." +
+              "id)\" READONLY>%s<BR>") %
              (cgiSITE, entry['wlcg_federation_fraction'],
                                OVRD_CAPACITY_DESC['wlcg_federation_fraction']))
        print(("      <INPUT ID=\"%s:hs06_pledge\" TYPE=\"number\" SIZE=\"12" +
@@ -1633,16 +1692,16 @@ def ovrd_post_capacity(authDict, siteFacility, federationNames,
                                             OVRD_CAPACITY_DESC['hs06_pledge']))
     else:
        print(("      <INPUT ID=\"%s:wlcg_federation_fraction\" TYPE=\"number" +
-              "\" STEP=\"0.001\" MIN=\"0.000\" NAME=\"wlcg_federation_fracti" +
-              "on\" VALUE=\"%.3f\">%s<BR>") %
-             (cgiSITE, entry['wlcg_federation_fraction'],
+              "\" SIZE=\"12\" STEP=\"0.001\" MIN=\"0.000\" NAME=\"wlcg_feder" +
+              "ation_fraction\" VALUE=\"%.3f\" onchange=\"handlePledge(this." +
+              "id)\">%s<BR>") % (cgiSITE, entry['wlcg_federation_fraction'],
                                OVRD_CAPACITY_DESC['wlcg_federation_fraction']))
        print(("      <INPUT ID=\"%s:hs06_pledge\" TYPE=\"number\" SIZE=\"12" +
               "\" STEP=\"1\" MIN=\"0\" NAME=\"hs06_pledge\" VALUE=\"%d\" REA" +
               "DONLY>%s<BR>") % (cgiSITE, entry['hs06_pledge'],
                                             OVRD_CAPACITY_DESC['hs06_pledge']))
-    print(("      <INPUT TYPE=\"number\" STEP=\"0.001\" SIZE=\"9\" NAME=\"hs" +
-           "06_per_core\" VALUE=\"%.3f\">%s<BR>") %
+    print(("      <INPUT TYPE=\"number\" STEP=\"0.001\" SIZE=\"12\" NAME=\"h" +
+           "s06_per_core\" VALUE=\"%.3f\">%s<BR>") %
                  (entry['hs06_per_core'], OVRD_CAPACITY_DESC['hs06_per_core']))
     print(("      <INPUT ID=\"%s:core_usable\" TYPE=\"number\" SIZE=\"12\" S" +
            "TEP=\"1\" MIN=\"0\" NAME=\"core_usable\" VALUE=\"%d\" onchange=" +
@@ -1678,9 +1737,36 @@ def ovrd_post_capacity(authDict, siteFacility, federationNames,
            "NAME=\"disk_experiment_use\" VALUE=\"%.1f\" READONLY>%s<BR>") %
           (entry['disk_experiment_use'],
                                     OVRD_CAPACITY_DESC['disk_experiment_use']))
+    if ( entry['disk_usable'] > 0.0 ):
+        frctn = int( 10000.0 * entry['disk_experiment_use'] /
+                                                 entry['disk_usable'] ) / 100.0
+    elif ( entry['disk_pledge'] > 0.0 ):
+        frctn = int( 10000.0 * entry['disk_experiment_use'] /
+                                                 entry['disk_pledge'] ) / 100.0
+    else:
+        frctn = 0.0
+    if (( frctn >= 85.0 ) or
+        (( frctn >= 75.0 ) and ( site[0:2] != "T1" ))):
+        color = "#E8FFE8"
+    elif (( frctn >= 75.0 ) or
+          (( frctn >= 66.6 ) and ( site[0:2] != "T1" ))):
+        color = "#FFFFE8"
+    elif ( frctn > 0.0 ):
+        color = "#FFF0F8"
+    else:
+        color = "#DCDCDC"
+    print(("      <INPUT TYPE=\"number\" SIZE=\"12\" STEP=\"0.01\" MIN=\"0\"" +
+           " MAX=\"100\" NAME=\"disk_experiment_fraction\" VALUE=\"%.2f\" RE" +
+           "ADONLY style=\"background-color: %s\">%s<BR>") % (frctn, color,
+                               OVRD_CAPACITY_DESC['disk_experiment_fraction']))
+
     print(("      <INPUT TYPE=\"number\" SIZE=\"12\" STEP=\"0.5\" MIN=\"0\" " +
            "NAME=\"disk_local_use\" VALUE=\"%.1f\" READONLY>%s<BR>") %
           (entry['disk_local_use'], OVRD_CAPACITY_DESC['disk_local_use']))
+    print(("      <INPUT TYPE=\"number\" SIZE=\"12\" STEP=\"0.01\" MIN=\"0\"" +
+           " NAME=\"disk_reserved_free\" VALUE=\"%.2f\" READONLY>%s<BR>") %
+          (entry['disk_reserved_free'],
+                                     OVRD_CAPACITY_DESC['disk_reserved_free']))
     if entry['wlcg_federation_name'] is None:
         print(("      <INPUT ID=\"%s:tape_pledge\" TYPE=\"number\" SIZE=\"12" +
                "\" STEP=\"0.5\" MIN=\"0\" NAME=\"tape_pledge\" VALUE=\"%.1f" +
@@ -1731,21 +1817,35 @@ def ovrd_html_trailer(cgiMTRC, msgLog):
     if ( cgiMTRC == "SiteCapacity" ):
         print("\n<SCRIPT type=\"text/javascript\" language=\"javascript\">\n" +
               "   \"use strict\";\n\n" +
-              "   function handlePledge(fieldID, fieldVALUE) {\n      var cI" +
+              "   function handlePledge(fieldID) {\n      var cI" +
               "ndx = fieldID.indexOf(':');\n      if ( cIndx == -1 ) cIndx =" +
               " fieldID.length;\n      var stemID = fieldID.substr(0, cIndx)" +
-              ";\n      if ( fieldVALUE == '*none*' ) {\n         document.g" +
-              "etElementById(stemID + ':wlcg_federation_fraction').readOnly " +
-              "= true;\n         document.getElementById(stemID + ':hs06_ple" +
-              "dge').readOnly = false;\n         document.getElementById(ste" +
-              "mID + ':disk_pledge').readOnly = false;\n         document.ge" +
-              "tElementById(stemID + ':tape_pledge').readOnly = false;\n    " +
-              "  } else {\n         document.getElementById(stemID + ':wlcg_" +
-              "federation_fraction').readOnly = false;\n         document.ge" +
-              "tElementById(stemID + ':hs06_pledge').readOnly = true;\n     " +
-              "    document.getElementById(stemID + ':disk_pledge').readOnly" +
-              " = true;\n         document.getElementById(stemID + ':tape_pl" +
-              "edge').readOnly = true;\n      }\n   };\n\n" +
+              ";\n      var fedArry = document.getElementById(stemID + ':wlc" +
+              "g_federation_name').value.split(':');\n      var fedName = fe" +
+              "dArry[0];\n      var pldgArry = fedArry.concat([0,0,0]).slice" +
+              "(1,4);\n      if ( fedName == '*none*' ) {\n         document" +
+              ".getElementById(stemID + ':wlcg_federation_fraction').readOnl" +
+              "y = true;\n         document.getElementById(stemID + ':hs06_p" +
+              "ledge').readOnly = false;\n         document.getElementById(s" +
+              "temID + ':disk_pledge').readOnly = false;\n         document." +
+              "getElementById(stemID + ':tape_pledge').readOnly = false;\n  " +
+              "       document.getElementById(stemID + ':hs06_pledge').value" +
+              " = pldgArry[0];\n         document.getElementById(stemID + ':" +
+              "disk_pledge').value = pldgArry[1];\n         document.getElem" +
+              "entById(stemID + ':tape_pledge').value = pldgArry[2];\n      " +
+              "} else {\n         document.getElementById(stemID + ':wlcg_fe" +
+              "deration_fraction').readOnly = false;\n         var frctn = d" +
+              "ocument.getElementById(stemID + ':wlcg_federation_fraction')." +
+              "value;\n         document.getElementById(stemID + ':hs06_pled" +
+              "ge').value = parseInt( (frctn * pldgArry[0]) + 0.5 );\n      " +
+              "   document.getElementById(stemID + ':disk_pledge').value = p" +
+              "arseInt(2.0 * (frctn * pldgArry[1])) / 2.0;\n         documen" +
+              "t.getElementById(stemID + ':tape_pledge').value = parseInt(2." +
+              "0 * (frctn * pldgArry[2])) / 2.0;\n         document.getEleme" +
+              "ntById(stemID + ':hs06_pledge').readOnly = true;\n         do" +
+              "cument.getElementById(stemID + ':disk_pledge').readOnly = tru" +
+              "e;\n         document.getElementById(stemID + ':tape_pledge')" +
+              ".readOnly = true;\n      }\n   };\n\n" +
               "   function updateProd(fieldID, fieldVALUE) {\n      var cInd" +
               "x = fieldID.indexOf(':');\n      if ( cIndx == -1 ) cIndx = f" +
               "ieldID.length;\n      var stemID = fieldID.substr(0, cIndx);" +
@@ -1847,13 +1947,13 @@ if __name__ == '__main__':
         #
         if ( cgiMTRC == "SiteCapacity" ):
             # get WLCG federation list:
-            federationList = ovrd_cric_federation()
+            federationPledge = ovrd_cric_federation_pledge()
             #
             #
             if ( cgiMTHD == "GET" ):
-                ovrd_html_capacity(authDict, siteFacility, federationList, cgiSITE)
+                ovrd_html_capacity(authDict, siteFacility, federationPledge, cgiSITE)
             elif ( cgiMTHD == "POST" ):
-                ovrd_post_capacity(authDict, siteFacility, federationList, cgiSITE, cgiPOST)
+                ovrd_post_capacity(authDict, siteFacility, federationPledge, cgiSITE, cgiPOST)
         else:
             #
             #
