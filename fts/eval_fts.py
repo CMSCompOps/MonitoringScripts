@@ -1627,12 +1627,12 @@ if __name__ == '__main__':
                                 continue
                             logging.debug(("      dst: %s: %.3f %s %d/%d fil" +
                                            "es %.1f/%.1f GB") % (dEndpnt,
-                          srcList[sEndpnt][dEndpnt]['quality'],
-                          srcList[sEndpnt][dEndpnt]['status'],
-                          srcList[sEndpnt][dEndpnt]['f_ok'],
-                          srcList[sEndpnt][dEndpnt]['f_total'],
-                          srcList[sEndpnt][dEndpnt]['b_ok']/1073741824,
-                          srcList[sEndpnt][dEndpnt]['b_total']/1073741824))
+                              srcList[sEndpnt][dEndpnt]['quality'],
+                              srcList[sEndpnt][dEndpnt]['status'],
+                              srcList[sEndpnt][dEndpnt]['f_ok'],
+                              srcList[sEndpnt][dEndpnt]['f_total'],
+                              srcList[sEndpnt][dEndpnt]['b_ok']/1073741824,
+                              srcList[sEndpnt][dEndpnt]['b_total']/1073741824))
                 except ZeroDivisionError:
                     pass
             #
@@ -1673,12 +1673,12 @@ if __name__ == '__main__':
                                 continue
                             logging.debug(("      src: %s: %.3f %s %d/%d fil" +
                                            "es %.1f/%.1f GB") % (sEndpnt,
-                          dstList[dEndpnt][sEndpnt]['quality'],
-                          dstList[dEndpnt][sEndpnt]['status'],
-                          dstList[dEndpnt][sEndpnt]['f_ok'],
-                          dstList[dEndpnt][sEndpnt]['f_total'],
-                          dstList[dEndpnt][sEndpnt]['b_ok']/1073741824,
-                          dstList[dEndpnt][sEndpnt]['b_total']/1073741824))
+                              dstList[dEndpnt][sEndpnt]['quality'],
+                              dstList[dEndpnt][sEndpnt]['status'],
+                              dstList[dEndpnt][sEndpnt]['f_ok'],
+                              dstList[dEndpnt][sEndpnt]['f_total'],
+                              dstList[dEndpnt][sEndpnt]['b_ok']/1073741824,
+                              dstList[dEndpnt][sEndpnt]['b_total']/1073741824))
                 except ZeroDivisionError:
                     pass
             #
@@ -1920,8 +1920,8 @@ if __name__ == '__main__':
                         # host/proto of RSE as source:
                         try:
                             src_status = srcList[endpnt]['status']
+                            warn_f_ok = warn_f_tot = warn_b_ok = warn_b_tot = 0
                             for phst in srcList[endpnt]:
-                                w_f_ok = w_f_tot = w_b_ok = w_b_tot = 0
                                 if ( phst.count(".") >= 2 ):
                                     if phst in bad_dst:
                                         src_bad += 1
@@ -1932,13 +1932,13 @@ if __name__ == '__main__':
                                     elif ( srcList[endpnt][phst]['status'] ==
                                                                    "warning" ):
                                         # prefer host summary over link level
-                                        w_f_ok  += \
+                                        warn_f_ok  += \
                                                   srcList[endpnt][phst]['f_ok']
-                                        w_f_tot += \
+                                        warn_f_tot += \
                                                srcList[endpnt][phst]['f_total']
-                                        w_b_ok  += \
+                                        warn_b_ok  += \
                                                   srcList[endpnt][phst]['b_ok']
-                                        w_b_tot += \
+                                        warn_b_tot += \
                                                srcList[endpnt][phst]['b_total']
                                         src_warn += 1
                                     else:
@@ -1968,11 +1968,12 @@ if __name__ == '__main__':
                                                        srcList[endpnt][phst][0]
                             # handle sum of warning entries like a site:
                             try:
-                                src_quality += round( max(w_f_ok / w_f_tot,
-                                                          w_b_ok / w_b_tot), 3)
-                                if ( ((w_f_ok - 1) / w_f_tot) > 0.500 ):
+                                src_quality += round(
+                                                max(warn_f_ok / warn_f_tot,
+                                                    warn_b_ok / warn_b_tot), 3)
+                                if ( ((warn_f_ok - 1) / warn_f_tot) > 0.500 ):
                                     src_ok += 1
-                                elif ( ((w_f_ok + 1) / w_f_tot) < 0.500 ):
+                                elif ( ((warn_f_ok + 1) / warn_f_tot) < 0.500 ):
                                     src_error += 1
                                 src_links += 1
                             except ZeroDivisionError:
@@ -1982,8 +1983,9 @@ if __name__ == '__main__':
                         #
                         # host/proto of RSE as destination:
                         try:
+                            dst_status = dstList[endpnt]['status']
+                            warn_f_ok = warn_f_tot = warn_b_ok = warn_b_tot = 0
                             for phst in dstList[endpnt]:
-                                w_f_ok = w_f_tot = w_b_ok = w_b_tot = 0
                                 if ( phst.count(".") >= 2 ):
                                     if phst in bad_src:
                                         dst_bad += 1
@@ -1994,13 +1996,13 @@ if __name__ == '__main__':
                                     elif ( dstList[endpnt][phst]['status'] ==
                                                                    "warning" ):
                                         # prefer host summary over link level
-                                        w_f_ok  += \
+                                        warn_f_ok  += \
                                                   dstList[endpnt][phst]['f_ok']
-                                        w_f_tot += \
+                                        warn_f_tot += \
                                                dstList[endpnt][phst]['f_total']
-                                        w_b_ok  += \
+                                        warn_b_ok  += \
                                                   dstList[endpnt][phst]['b_ok']
-                                        w_b_tot += \
+                                        warn_b_tot += \
                                                dstList[endpnt][phst]['b_total']
                                         dst_warn += 1
                                     else:
@@ -2013,7 +2015,6 @@ if __name__ == '__main__':
                                                                   == "error" ):
                                             dst_error += 1
                                         dst_links += 1
-                                    dst_status = dstList[endpnt]['status']
                                 elif ( phst == 'trn_ok' ):
                                     dst_classfcn[phst][0] += \
                                                        dstList[endpnt][phst][0]
@@ -2031,11 +2032,12 @@ if __name__ == '__main__':
                                                        dstList[endpnt][phst][0]
                             # handle sum of warning entries like a site:
                             try:
-                                dst_quality += round( max(w_f_ok / w_f_tot,
-                                                          w_b_ok / w_b_tot), 3)
-                                if ( ((w_f_ok - 1) / w_f_tot) > 0.500 ):
+                                dst_quality += round(
+                                                max(warn_f_ok / warn_f_tot,
+                                                    warn_b_ok / warn_b_tot), 3)
+                                if ( ((warn_f_ok - 1) / warn_f_tot) > 0.500 ):
                                     dst_ok += 1
-                                elif ( ((w_f_ok + 1) / w_f_tot) < 0.500 ):
+                                elif ( ((warn_f_ok + 1) / warn_f_tot) < 0.500 ):
                                     dst_error += 1
                                 dst_links += 1
                             except ZeroDivisionError:
