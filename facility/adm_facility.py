@@ -116,11 +116,16 @@ ADMF_TIMEZONES = { 'AT': [ ( "+00:00", "UTC" ),
                    'CN': [ ( "+00:00", "UTC" ),
                            ( "+08:00", "Asia/Shanghai" ),
                            ( "+06:00", "Asia/Urumqi" ) ],
+                   'CY': [ ( "+00:00", "UTC" ),
+                           ( "+02:00", "Asia/Nicosia" ),
+                           ( "+02:00", "Asia/Famagusta" ) ],
                    'DE': [ ( "+00:00", "UTC" ),
                            ( "+01:00", "Europe/Berlin" ),
                            ( "+01:00", "Europe/Busingen" ) ],
                    'EE': [ ( "+00:00", "UTC" ),
                            ( "+02:00", "Europe/Tallinn" ) ],
+                   'EG': [ ( "+00:00", "UTC" ),
+                           ( "+02:00", "Africa/Cairo" ) ],
                    'ES': [ ( "+00:00", "UTC" ),
                            ( "+01:00", "Europe/Madrid" ),
                            ( "+01:00", "Africa/Ceuta" ),
@@ -143,6 +148,8 @@ ADMF_TIMEZONES = { 'AT': [ ( "+00:00", "UTC" ),
                            ( "+01:00", "Europe/Rome" ) ],
                    'KR': [ ( "+00:00", "UTC" ),
                            ( "+09:00", "Asia/Seoul" ) ],
+                   'LB': [ ( "+00:00", "UTC" ),
+                           ( "+02:00", "Asia/Beirut" ) ],
                    'LV': [ ( "+00:00", "UTC" ),
                            ( "+02:00", "Europe/Riga" ) ],
                    'MX': [ ( "+00:00", "UTC" ),
@@ -1991,10 +1998,10 @@ def admf_html_trailer(msgLog):
 
 def admf_make_tzlist():
     import  pytz, datetime
-    ADMF_COUNTRIES = [ "AT", "BE", "BG", "BR", "BY", "CH", "CN", "DE", "EE",
-                       "ES", "FI", "FR", "GR", "HR", "HU", "IN", "IR", "IT",
-                       "KR", "LV", "MX", "PK", "PL", "PT", "RU", "TH", "TR",
-                       "TW", "UA", "UK", "US" ]
+    ADMF_COUNTRIES = [ "AT", "BE", "BG", "BR", "BY", "CH", "CN", "CY", "DE",
+                       "EE", "EG", "ES", "FI", "FR", "GR", "HR", "HU", "IN",
+                       "IR", "IT", "KR", "LB", "LV", "MX", "PK", "PL", "PT",
+                       "RU", "TH", "TR", "TW", "UA", "UK", "US" ]
     # no CMS sites in southern hemisphere with daylight-savings timezone
     noDayLightSavingsDate = datetime.datetime(2020,1,1)
     print("ADMF_TIMEZONES = {")
