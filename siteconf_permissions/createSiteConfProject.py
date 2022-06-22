@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 import gitlab
 from gitlab.exceptions import GitlabCreateError
+from gitlab.exceptions import GitlabHttpError
 
 import sys
 import logging
