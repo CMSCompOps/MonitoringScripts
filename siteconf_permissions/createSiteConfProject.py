@@ -85,6 +85,7 @@ if __name__ == "__main__":
 
     logging.info("Enabling emails on push service")
     service = project.services.get("emails-on-push")
+    service.active = True
     service.recipients = "cms-comp-ops-site-support-team@cern.ch"
     service.save()
 
