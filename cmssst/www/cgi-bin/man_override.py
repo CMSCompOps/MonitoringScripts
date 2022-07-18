@@ -1108,7 +1108,9 @@ def ovrd_post_override(authDict, cgiMTRC, siteFacility, cgiSITE, cgiPOST):
         overrideEntry['status'] = cgiPOST['status'][0]
         if ( overrideEntry['status'] == "auto" ):
             overrideEntry['status'] = None
-        overrideEntry['mode'] = cgiPOST['mode'][0]
+            overrideEntry['mode'] = None
+        else:
+            overrideEntry['mode'] = cgiPOST['mode'][0]
         overrideEntry['when'] = time.strftime("%Y-%b-%d %H:%M:%S",
                                                       time.gmtime(time.time()))
         overrideEntry['who'] = authDict['username']
