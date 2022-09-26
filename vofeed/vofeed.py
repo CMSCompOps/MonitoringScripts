@@ -1165,8 +1165,7 @@ if __name__ == '__main__':
                 # convert list of classAd objects into list of dictionaries:
                 myData = []
                 for classAd in classAds:
-                    if (( classAd['GLIDEIN_Gatekeeper'] == "" ) or 
-                        ( classAd['GLIDEIN_Gatekeeper'][-8:] == ".invalid" )):
+                    if ( classAd['GLIDEIN_Gatekeeper'] == "" ):
                         continue
                     try:
                         globusRSL = classAd['GLIDEIN_GlobusRSL']
@@ -1231,6 +1230,8 @@ if __name__ == '__main__':
                 gkeeper = classAd['GLIDEIN_Gatekeeper'].split()[-1]
                 gkeeper = gkeeper.split("://")[-1]
                 host = gkeeper.split(":")[0].lower()
+                if ( host[-8:] == ".invalid" ):
+                    continue
                 if classAd['GLIDEIN_GridType'] == 'cream':
                     ceType = "CREAM-CE"
                 elif classAd['GLIDEIN_GridType'] == 'nordugrid':
