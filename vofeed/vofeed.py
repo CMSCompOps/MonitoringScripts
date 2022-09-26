@@ -50,7 +50,7 @@ import pydoop.hdfs
 
 
 
-VOFEED_VERSION = "v2.02.02"
+VOFEED_VERSION = "v2.02.03"
 # ########################################################################### #
 
 
@@ -1165,6 +1165,9 @@ if __name__ == '__main__':
                 # convert list of classAd objects into list of dictionaries:
                 myData = []
                 for classAd in classAds:
+                    if (( classAd['GLIDEIN_Gatekeeper'] == "" ) or 
+                        ( classAd['GLIDEIN_Gatekeeper'][-8:] == ".invalid" )):
+                        continue
                     try:
                         globusRSL = classAd['GLIDEIN_GlobusRSL']
                     except KeyError:
