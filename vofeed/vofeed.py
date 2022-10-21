@@ -50,7 +50,7 @@ import pydoop.hdfs
 
 
 
-VOFEED_VERSION = "v2.02.03"
+VOFEED_VERSION = "v2.02.04"
 # ########################################################################### #
 
 
@@ -1577,6 +1577,14 @@ if __name__ == '__main__':
                         rseDict['wan'].remove('third_party_copy')
                     except ValueError:
                         pass
+                    try:
+                        rseDict['wan'].remove('third_party_copy_read')
+                    except ValueError:
+                        pass
+                    try:
+                        rseDict['wan'].remove('third_party_copy_write')
+                    except ValueError:
+                        pass
                 #
                 if ( rseProto == "srm" ):
                     rseFlavour = "SRM"
@@ -1608,7 +1616,8 @@ if __name__ == '__main__':
                 if (( rseDict['rpath'] is not None ) and
                     ( 'read' in rseDict['wan'] )):
                     rseID = "RD"
-                    if ( 'third_party_copy' in rseDict['wan'] ):
+                    if (( 'third_party_copy_read' in rseDict['wan'] ) and
+                        ( 'third_party_copy_write' in rseDict['wan'] )):
                         rseID += "3PCP"
                     service['paths'] = [ (rseID, rseDict['rpath']) ]
                 if (( rseDict['wpath'] is not None ) and
