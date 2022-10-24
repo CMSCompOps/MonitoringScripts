@@ -7,7 +7,7 @@
 #                                                                             #
 # 2022-Aug-30 Stephan Lammel                                                  #
 # #############################################################################
-URLS="http://cvmfs-stratum-zero.cern.ch/cvmfs/cms.cern.ch/.cvmfspublished http://oasis.opensciencegrid.org:8000/cvmfs/oasis.opensciencegrid.org/.cvmfspublished"
+URLS="http://cvmfs-stratum-zero.cern.ch/cvmfs/cms.cern.ch/.cvmfspublished http://oasis.opensciencegrid.org:8000/cvmfs/oasis.opensciencegrid.org/.cvmfspublished http://oasis-replica.opensciencegrid.org:8000/cvmfs/singularity.opensciencegrid.org/.cvmfspublished"
 DIRS="/eos/user/c/cmssst/www/cvmfs/"
 #
 umask 022
