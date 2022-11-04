@@ -44,6 +44,11 @@ fi
 
 
 
+# start new revisions summary file:
+/bin/rm -f ${DIRS}/revisions.txt_new 1>/dev/null 2>&1
+/bin/touch ${DIRS}/revisions.txt_new
+
+
 # fetch manifest for repositories:
 for URL in ${URLS}; do
    REPO=`echo "${URL}" | /usr/bin/awk -F/ '{print $(NF-1);exit}'`
@@ -65,6 +70,10 @@ for URL in ${URLS}; do
       continue
    fi
 
+   # update revisions summary file:
+   REV=`/usr/bin/awk '$0 ~ /^S/ {print int(substr($0,2));exit}' ${AREA}/new.cvmfspublished`
+   echo "${REPO} ${REV}" 1>>  ${DIRS}/revisions.txt_new
+
    NOW=`/usr/bin/date +"%s"`
    TSP=`/usr/bin/awk -v now=${NOW} 'BEGIN{t=now} $0 ~ /^T/ {t=int(substr($0,2))} END{print int(now-t)}' ${AREA}/new.cvmfspublished`
    TDL=`/usr/bin/awk -v tsp=${TSP} 'BEGIN{t=900} $0 ~ /^D/ {t=2*int(substr($0,2))} END{print int(t-tsp)}' ${AREA}/new.cvmfspublished`
@@ -83,5 +92,14 @@ for URL in ${URLS}; do
       echo -e "<Files \".cvmfspublished\">\n   Header set Cache-Control \"public, max-age=3600\"\n   Header set Access-Control-Max-Age 3600\n</Files>" 1> ${AREA}/.htaccess 2>/dev/null
    fi
 done
+
+
+# mv new revisions summary file into place:
+/bin/mv ${DIRS}/revisions.txt_new ${DIRS}/revisions.txt
+RC=$?
+if [ ${EXITCODE} -eq 0 ]; then
+   EXITCODE=${RC}
+fi
+
 
 exit ${EXITCODE}
