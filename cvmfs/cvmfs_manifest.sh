@@ -100,6 +100,9 @@ RC=$?
 if [ ${EXITCODE} -eq 0 ]; then
    EXITCODE=${RC}
 fi
+if [ ! -e ${DIRS}/.htaccess ]; then
+   echo -e "<Files \"revisions.txt\">\n   ForceType 'text/plain; charset=UTF-8'\n   Header set Cache-Control \"public, max-age=3600\"\n   Header set Access-Control-Max-Age 3600\n</Files>" 1> ${DIRS}/.htaccess 2>/dev/null
+fi
 
 
 exit ${EXITCODE}
