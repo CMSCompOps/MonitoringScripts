@@ -1452,10 +1452,11 @@ def evsam_compose_json():
             hdrString = ((",\n {\n   \"producer\": \"cmssst\",\n" +
                                  "   \"type\": \"ssbmetric\",\n" +
                                  "   \"path\": \"%s\",\n" +
+                                 "   \"monit_hdfs_path\": \"%s\",\n" +
                                  "   \"timestamp\": %d,\n" +
                                  "   \"type_prefix\": \"raw\",\n" +
                                  "   \"data\": {\n") %
-                         (metric, ((timebin*interval) + (interval/2)) * 1000))
+                  (metric, metric, ((timebin*interval) + (interval/2)) * 1000))
             #
             for result in evsam_glbl_evaluations[ key ]:
                 #logging.log(9, "      %s / %s status: %s" % (result['name'],
@@ -1522,9 +1523,12 @@ def evsam_monit_upload():
     docs = json.loads(jsonString)
     ndocs = len(docs)
     successFlag = True
-    for myOffset in range(0, ndocs, 2048):
+    for myOffset in range(0, ndocs, 1024):
+        if ( myOffset > 0 ):
+            # give importer time to process documents
+            time.sleep(2.500)
         # MonIT upload channel can handle at most 10,000 docs at once
-        dataString = json.dumps( docs[myOffset:min(ndocs,myOffset+2048)] )
+        dataString = json.dumps( docs[myOffset:min(ndocs,myOffset+1024)] )
         #
         try:
             # MonIT needs a document array and without newline characters:
@@ -1535,13 +1539,13 @@ def evsam_monit_upload():
             if ( responseObj.status != http.HTTPStatus.OK ):
                 logging.error(("Failed to upload JSON [%d:%d] string to MonI" +
                                "T, %d \"%s\"") %
-                              (myOffset, min(ndocs,myOffset+2048),
+                              (myOffset, min(ndocs,myOffset+1024),
                                responseObj.status, responseObj.reason))
                 successFlag = False
             responseObj.close()
         except urllib.error.URLError as excptn:
             logging.error("Failed to upload JSON [%d:%d], %s" %
-                             (myOffset, min(ndocs,myOffset+2048), str(excptn)))
+                             (myOffset, min(ndocs,myOffset+1024), str(excptn)))
             successFlag = False
     del docs
 

@@ -23,6 +23,7 @@
 #    "disk_usable": 26100.0,
 #    "disk_experiment_use": 0.0,
 #    "disk_local_use": 0.0,
+#    "disk_reserved_free": 0.00,
 #    "tape_pledge": 99000.0,
 #    "tape_usable": 99000.0,
 #    "when": "2019-Jan-17 22:12:00",
@@ -481,6 +482,18 @@ def capa_rucio_quotas():
 
             expQuota = max(0.0, totalSpc - lclQuota)
 
+            # get minimum/reserved free space of the RSE = /store/unmerged
+            rseLimits = rcoClient.get_rse_limits(rseName)
+            try:
+                myValue = rseLimits['MinFreeSpace']
+                if ( myValue is not None ):
+                    # convert to TeraBytes with 100 GB precision
+                    reservedSpc = int( myValue / 10000000000 ) / 100.0
+                else:
+                    reservedSpc = 0.0
+            except (TypeError, KeyError, rucio.common.exception.RucioException):
+                reservedSpc = 0.0
+
             # check site naming convention
             if ( siteRegex.match( mySite ) is None ):
                 logging.warning(("RSE %s (real/production) with %.1f/%.1f qu" \
@@ -489,8 +502,8 @@ def capa_rucio_quotas():
             logging.debug("RSE %s experiment %.1f / local %.1f quotas" % \
                                                  (rseName, expQuota, lclQuota))
             try:
-                if ( quotaDict[ mySite ] == (0.0, 0.0) ):
-                    quotaDict[ mySite ] = (expQuota, lclQuota)
+                if ( quotaDict[ mySite ] == (0.0, 0.0, 0.00) ):
+                    quotaDict[ mySite ] = (expQuota, lclQuota, reservedSpc)
                 elif (( expQuota != 0.0 ) or ( lclQuota != 0.0 )):
                     logging.warning(("Multiple disk quotas for site %s (%.1f" \
                                      "/%.1f) and (%.1f/%.1f)") % (mySite,
@@ -499,10 +512,10 @@ def capa_rucio_quotas():
                                      expQuota, lclQuota))
                     # choose RSE with larger quota for experiment use:
                     if ( expQuota > quotaDict[ mySite ][0] ):
-                        quotaDict[ mySite ] = (expQuota, lclQuota)
+                        quotaDict[ mySite ] = (expQuota, lclQuota, reservedSpc)
             except KeyError:
                 # first RSE for site:
-                quotaDict[ mySite ] = (expQuota, lclQuota)
+                quotaDict[ mySite ] = (expQuota, lclQuota, reservedSpc)
     except Exception as excptn:
         logging.error(("Failed to fetch experiment/local disk quota from Ruc" \
                        "io: %s") % str(excptn))
@@ -573,6 +586,8 @@ def capa_read_jsonfile():
             myEntry['disk_experiment_use'] = 0.0
         if 'disk_local_use' not in myEntry:
             myEntry['disk_local_use'] = 0.0
+        if 'disk_reserved_free' not in myEntry:
+            myEntry['disk_reserved_free'] = 0.00
         if 'tape_pledge' not in myEntry:
             myEntry['tape_pledge'] = 0.0
         if 'tape_usable' not in myEntry:
@@ -601,6 +616,7 @@ def capa_compose_json(capacityList, time15bin, noWho):
         hdrString = ((",\n {\n   \"producer\": \"cmssst\",\n" +
                              "   \"type\": \"ssbmetric\",\n" +
                              "   \"path\": \"scap15min\",\n" +
+                             "   \"monit_hdfs_path\": \"scap15min\",\n" +
                              "   \"timestamp\": %d000,\n" +
                              "   \"type_prefix\": \"raw\",\n" +
                              "   \"data\": {\n") % timestamp)
@@ -654,14 +670,26 @@ def capa_compose_json(capacityList, time15bin, noWho):
             else:
                 jsonString += "%s\"%s\": 0,\n" % (spcStrng, cpctyKey)
         for cpctyKey in ['disk_pledge', 'disk_usable', 'disk_experiment_use', \
-                         'disk_local_use', 'tape_pledge', 'tape_usable' ]:
+                         'disk_local_use' ]:
             if (( cpctyKey in tmpDict[myName] ) and
                 ( tmpDict[myName][cpctyKey] is not None )):
                 jsonString += ("%s\"%s\": %.1f,\n" %
                                (spcStrng, cpctyKey, tmpDict[myName][cpctyKey]))
             else:
                 jsonString += "%s\"%s\": 0.0,\n" % (spcStrng, cpctyKey)
-        
+        if (( 'disk_reserved_free' in tmpDict[myName] ) and
+            ( tmpDict[myName]['disk_reserved_free'] is not None )):
+            jsonString += ("%s\"%s\": %.2f,\n" % (spcStrng,
+                  "disk_reserved_free", tmpDict[myName]['disk_reserved_free']))
+        else:
+            jsonString += "%s\"%s\": 0.00,\n" % (spcStrng,"disk_reserved_free")
+        for cpctyKey in ['tape_pledge', 'tape_usable' ]:
+            if (( cpctyKey in tmpDict[myName] ) and
+                ( tmpDict[myName][cpctyKey] is not None )):
+                jsonString += ("%s\"%s\": %.1f,\n" %
+                               (spcStrng, cpctyKey, tmpDict[myName][cpctyKey]))
+            else:
+                jsonString += "%s\"%s\": 0.0,\n" % (spcStrng, cpctyKey)
         if (( 'when' in tmpDict[myName] ) and
             ( tmpDict[myName]['when'] is not None )):
             jsonString += ("%s\"when\": \"%s\",\n" %
@@ -778,10 +806,13 @@ def capa_update_jsonfile(siteList, pledgesDict, quotaDict, usageDict):
                                                             quotaDict[myKey][0]
                                 tmpDict[myKey]['disk_local_use'] = \
                                                             quotaDict[myKey][1]
-                                logging.log(15, ("Experiment/local disk quot" \
-                                                "a for %s updated to: %.1f/" \
-                                                "%.1f") % (myKey,
-                                     quotaDict[myKey][0], quotaDict[myKey][1]))
+                                tmpDict[myKey]['disk_reserved_free'] = \
+                                                            quotaDict[myKey][2]
+                                logging.log(15, ("Experiment/local/reserved " \
+                                                 "disk quota for %s updated " \
+                                                 "to: %.1f/%.1f/%.2f") % \
+                                                 (myKey, quotaDict[myKey][0],
+                                     quotaDict[myKey][1], quotaDict[myKey][2]))
                             else:
                                 # experiment quota in DDM:
                                 tmpDict[myKey]['disk_experiment_use'] = \
@@ -809,14 +840,16 @@ def capa_update_jsonfile(siteList, pledgesDict, quotaDict, usageDict):
                                     'disk_usable':              0.0,
                                     'disk_experiment_use': quotaDict[myKey][0],
                                     'disk_local_use':      quotaDict[myKey][1],
+                                    'disk_reserved_free':  quotaDict[myKey][2],
                                     'tape_pledge':              0.0,
                                     'tape_usable':              0.0,
                                     'when':                     None,
                                     'who':                      None } )
-                                logging.log(15, ("Experiment/local disk quot" \
-                                                "a for %s set to: %.1f/%.1f") %
-                                                (myKey, quotaDict[myKey][0],
-                                                          quotaDict[myKey][1]))
+                                logging.log(15, ("Experiment/local/reserved " \
+                                                 "disk quota for %s set to: " \
+                                                 "%.1f/%.1f/%.2f") % (myKey,
+                                                 quotaDict[myKey][0],
+                                     quotaDict[myKey][1], quotaDict[myKey][2]))
                         elif ( quotaDict[myKey] > 0.0 ):
                             # experiment quota in DDM:
                             capacityList.append( {
@@ -834,6 +867,7 @@ def capa_update_jsonfile(siteList, pledgesDict, quotaDict, usageDict):
                                 'disk_usable':              0.0,
                                 'disk_experiment_use':    quotaDict[myKey],
                                 'disk_local_use':           0.0,
+                                'disk_reserved_free':       0.00,
                                 'tape_pledge':              0.0,
                                 'tape_usable':              0.0,
                                 'when':                     None,
@@ -872,6 +906,7 @@ def capa_update_jsonfile(siteList, pledgesDict, quotaDict, usageDict):
                                 'disk_usable':              0.0,
                                 'disk_experiment_use':      0.0,
                                 'disk_local_use':           0.0,
+                                'disk_reserved_free':       0.00,
                                 'tape_pledge':              0.0,
                                 'tape_usable':              0.0,
                                 'when':                     None,
@@ -997,6 +1032,8 @@ def capa__monit_fetch(time15bin=None):
                                     myData['wlcg_federation_fraction'] = None
                                 if 'disk_local_use' not in myData:
                                     myData['disk_local_use'] = 0.0
+                                if 'disk_reserved_free' not in myData:
+                                    myData['disk_reserved_free'] = 0.00
                                 if 'tape_pledge' not in myData:
                                     myData['tape_pledge'] = 0.0
                                 if 'tape_usable' not in myData:
@@ -1104,12 +1141,12 @@ def capa_monit_upload(metricDict):
     docs = json.loads(jsonString)
     ndocs = len(docs)
     successFlag = True
-    for myOffset in range(0, ndocs, 2048):
+    for myOffset in range(0, ndocs, 1024):
         if ( myOffset > 0 ):
             # give importer time to process documents
-            time.sleep(1.500)
+            time.sleep(2.500)
         # MonIT upload channel can handle at most 10,000 docs at once
-        dataString = json.dumps( docs[myOffset:min(ndocs,myOffset+2048)] )
+        dataString = json.dumps( docs[myOffset:min(ndocs,myOffset+1024)] )
         #
         try:
             # MonIT needs a document array and without newline characters:
@@ -1120,13 +1157,13 @@ def capa_monit_upload(metricDict):
             if ( responseObj.status != http.HTTPStatus.OK ):
                 logging.error(("Failed to upload JSON [%d:%d] string to MonI" +
                                "T, %d \"%s\"") %
-                              (myOffset, min(ndocs,myOffset+2048),
+                              (myOffset, min(ndocs,myOffset+1024),
                                responseObj.status, responseObj.reason))
                 successFlag = False
             responseObj.close()
         except urllib.error.URLError as excptn:
             logging.error("Failed to upload JSON [%d:%d], %s" %
-                             (myOffset, min(ndocs,myOffset+2048), str(excptn)))
+                             (myOffset, min(ndocs,myOffset+1024), str(excptn)))
             successFlag = False
     del docs
 

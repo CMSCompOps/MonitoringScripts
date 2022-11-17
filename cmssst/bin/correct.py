@@ -61,6 +61,9 @@ corr_glbl_types = { 'CE': "CE",
                     'SRM.nearline': "SRM",
                     'globus-GRIDFTP': "SRM",
                     'GridFtp': "SRM",
+                    'webdav': "WEBDAV",
+                    'WebDAV': "WEBDAV",
+                    'WEBDAV': "WEBDAV",
                     'XROOTD': "XROOTD",
                     'XRootD': "XROOTD",
                     'XRootD.Redirector': "XROOTD",
@@ -606,6 +609,7 @@ def corr_compose_vofeed_json(timestamp, topology):
     hdrString = ((",\n {\n   \"producer\": \"cmssst\",\n" +
                          "   \"type\": \"ssbmetric\",\n" +
                          "   \"path\": \"vofeed15min\",\n" +
+                         "   \"monit_hdfs_path\": \"vofeed15min\",\n" +
                          "   \"timestamp\": %d000,\n" +
                          "   \"type_prefix\": \"raw\",\n" +
                          "   \"data\": {\n") % timestamp)
@@ -671,6 +675,7 @@ def corr_compose_down_json(timestamp, downtimes):
     hdrString = ((",\n {\n   \"producer\": \"cmssst\",\n" +
                          "   \"type\": \"ssbmetric\",\n" +
                          "   \"path\": \"down15min\",\n" +
+                         "   \"monit_hdfs_path\": \"down15min\",\n" +
                          "   \"timestamp\": %d000,\n" +
                          "   \"type_prefix\": \"raw\",\n" +
                          "   \"data\": {\n") % timestamp)
@@ -716,9 +721,10 @@ def corr_compose_sam_json(metric, timestamp, results):
     hdrString = ((",\n {\n   \"producer\": \"cmssst\",\n" +
                          "   \"type\": \"ssbmetric\",\n" +
                          "   \"path\": \"%s\",\n" +
+                         "   \"monit_hdfs_path\": \"%s\",\n" +
                          "   \"timestamp\": %d000,\n" +
                          "   \"type_prefix\": \"raw\",\n" +
-                         "   \"data\": {\n") % (metric, timestamp))
+                         "   \"data\": {\n") % (metric, metric, timestamp))
 
     commaFlag = False
     for doc in sorted(results, key=lambda k: [k['name'], k['type'],
@@ -769,9 +775,10 @@ def corr_compose_hc_json(metric, timestamp, results):
     hdrString = ((",\n {\n   \"producer\": \"cmssst\",\n" +
                          "   \"type\": \"ssbmetric\",\n" +
                          "   \"path\": \"%s\",\n" +
+                         "   \"monit_hdfs_path\": \"%s\",\n" +
                          "   \"timestamp\": %d000,\n" +
                          "   \"type_prefix\": \"raw\",\n" +
-                         "   \"data\": {\n") % (metric, timestamp))
+                         "   \"data\": {\n") % (metric, metric, timestamp))
 
     commaFlag = False
     for doc in sorted(results, key=lambda k: [k['name'], k['status']]):
@@ -810,15 +817,21 @@ def corr_compose_fts_json(metric, timestamp, results):
     # #################################################################### #
     # write JSON string with FTS result list that can be uploaded to MonIT #
     # #################################################################### #
-    SORT_ORDER = {"link": 0, "source": 1, "destination": 2, "site": 3}
+    SORT_ORDER = {"link": 1, "GSIFTP-link": 2, "WEBDAV-link": 3,
+                  "XROOTD-link": 4, "source": 5, "destination": 6,
+                  "GSIFTP-source": 7, "GSIFTP-destination": 8,
+                  "WEBDAV-source": 9, "WEBDAV-destination": 10,
+                  "XROOTD-source": 11, "XROOTD-destination": 12,
+                  "rse": 13, "site": 14}
 
     jsonString = "["
     hdrString = ((",\n {\n   \"producer\": \"cmssst\",\n" +
                          "   \"type\": \"ssbmetric\",\n" +
                          "   \"path\": \"%s\",\n" +
+                         "   \"monit_hdfs_path\": \"%s\",\n" +
                          "   \"timestamp\": %d000,\n" +
                          "   \"type_prefix\": \"raw\",\n" +
-                         "   \"data\": {\n") % (metric, timestamp))
+                         "   \"data\": {\n") % (metric, metric, timestamp))
 
     commaFlag = False
     for doc in sorted(results, key=lambda k: [SORT_ORDER[k['type']],k['name']]):
@@ -862,9 +875,10 @@ def corr_compose_sr_json(metric, timestamp, results):
     hdrString = ((",\n {\n   \"producer\": \"cmssst\",\n" +
                          "   \"type\": \"ssbmetric\",\n" +
                          "   \"path\": \"%s\",\n" +
+                         "   \"monit_hdfs_path\": \"%s\",\n" +
                          "   \"timestamp\": %d000,\n" +
                          "   \"type_prefix\": \"raw\",\n" +
-                         "   \"data\": {\n") % (metric, timestamp))
+                         "   \"data\": {\n") % (metric, metric, timestamp))
 
     commaFlag = False
     for doc in sorted(results, key=lambda k: k['name']):
@@ -907,6 +921,7 @@ def corr_compose_sts_json(timestamp, results):
     hdrString = ((",\n {\n   \"producer\": \"cmssst\",\n" +
                          "   \"type\": \"ssbmetric\",\n" +
                          "   \"path\": \"sts15min\",\n" +
+                         "   \"monit_hdfs_path\": \"sts15min\",\n" +
                          "   \"timestamp\": %d000,\n" +
                          "   \"type_prefix\": \"raw\",\n" +
                          "   \"data\": {\n") % timestamp)
@@ -960,6 +975,7 @@ def corr_compose_scap_json(timestamp, results):
     hdrString = ((",\n {\n   \"producer\": \"cmssst\",\n" +
                          "   \"type\": \"ssbmetric\",\n" +
                          "   \"path\": \"scap15min\",\n" +
+                         "   \"monit_hdfs_path\": \"scap15min\",\n" +
                          "   \"timestamp\": %d000,\n" +
                          "   \"type_prefix\": \"raw\",\n" +
                          "   \"data\": {\n") % timestamp)
@@ -1351,12 +1367,12 @@ def corr_monit_upload(cfg, docDict):
     docs = json.loads(jsonString)
     ndocs = len(docs)
     successFlag = True
-    for myOffset in range(0, ndocs, 4096):
+    for myOffset in range(0, ndocs, 1024):
         if ( myOffset > 0 ):
             # give importer time to process documents
-            time.sleep(1.500)
+            time.sleep(2.500)
         # MonIT upload channel can handle at most 10,000 docs at once
-        dataString = json.dumps( docs[myOffset:min(ndocs,myOffset+4096)] )
+        dataString = json.dumps( docs[myOffset:min(ndocs,myOffset+1024)] )
         #
         try:
             # MonIT needs a document array and without newline characters:
@@ -1367,13 +1383,13 @@ def corr_monit_upload(cfg, docDict):
             if ( responseObj.status != http.HTTPStatus.OK ):
                 logging.error(("Failed to upload JSON [%d:%d] string to MonI" +
                                "T, %d \"%s\"") %
-                              (myOffset, min(ndocs,myOffset+4096),
+                              (myOffset, min(ndocs,myOffset+1024),
                                responseObj.status, responseObj.reason))
                 successFlag = False
             responseObj.close()
         except urllib.error.URLError as excptn:
             logging.error("Failed to upload JSON [%d:%d], %s" %
-                             (myOffset, min(ndocs,myOffset+4096), str(excptn)))
+                             (myOffset, min(ndocs,myOffset+1024), str(excptn)))
             successFlag = False
     del docs
 

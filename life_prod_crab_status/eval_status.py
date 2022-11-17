@@ -54,8 +54,8 @@ import pydoop.hdfs
 
 
 
-EVSTS_BACKUP_DIR = "./junk"
-#EVSTS_BACKUP_DIR = "/data/cmssst/MonitoringScripts/life_prod_crab_status/failed"
+#EVSTS_BACKUP_DIR = "./junk"
+EVSTS_BACKUP_DIR = "/data/cmssst/MonitoringScripts/life_prod_crab_status/failed"
 # ########################################################################### #
 
 
@@ -403,6 +403,7 @@ class StatusMetric:
             hdrString = (",\n {\n   \"producer\": \"cmssst\",\n" +
                                 "   \"type\": \"ssbmetric\",\n" +
                                 "   \"path\": \"sts15min\",\n" +
+                                "   \"monit_hdfs_path\": \"sts15min\",\n" +
                                 "   \"timestamp\": %d000,\n" +
                                 "   \"type_prefix\": \"raw\",\n" +
                                 "   \"data\": {\n") % timestamp
@@ -1245,8 +1246,8 @@ if __name__ == '__main__':
     def read_override(filename):
         """read in override file and return contents in dictionary"""
         # ################################################################ #
-        LOCK_FILE = "./cache/status.lock"
-        #LOCK_FILE = "/eos/home-c/cmssst/www/override/status.lock"
+        #LOCK_FILE = "./cache/status.lock"
+        LOCK_FILE = "/eos/home-c/cmssst/www/override/status.lock"
 
         remainWait = 3.0
         while ( remainWait > 0.0 ):
@@ -1352,8 +1353,8 @@ if __name__ == '__main__':
         # "name" is mandatory, if status is None the existing entry will be #
         # removed from the file                                             #
         # ################################################################# #
-        LOCK_FILE = "./cache/status.lock"
-        #LOCK_FILE = "/eos/home-c/cmssst/www/override/status.lock"
+        #LOCK_FILE = "./cache/status.lock"
+        LOCK_FILE = "/eos/home-c/cmssst/www/override/status.lock"
         siteRegex = re.compile(r"T\d_[A-Z]{2,2}_\w+")
         #
         if ( siteRegex.match( entry['name'] ) is None ):
@@ -1965,12 +1966,12 @@ if __name__ == '__main__':
         docs = json.loads(jsonString)
         ndocs = len(docs)
         successFlag = True
-        for myOffset in range(0, ndocs, 2048):
+        for myOffset in range(0, ndocs, 1024):
             if ( myOffset > 0 ):
                 # give importer time to process documents
-                time.sleep(1.500)
+                time.sleep(2.500)
             # MonIT upload channel can handle at most 10,000 docs at once
-            dataString = json.dumps( docs[myOffset:min(ndocs,myOffset+2048)] )
+            dataString = json.dumps( docs[myOffset:min(ndocs,myOffset+1024)] )
             #
             try:
                 # MonIT needs a document array and without newline characters:
@@ -1981,13 +1982,13 @@ if __name__ == '__main__':
                 if ( responseObj.status != http.HTTPStatus.OK ):
                     logging.error(("Failed to upload JSON [%d:%d] string to " +
                                    "MonIT, %d \"%s\"") %
-                                  (myOffset, min(ndocs,myOffset+2048),
+                                  (myOffset, min(ndocs,myOffset+1024),
                                    responseObj.status, responseObj.reason))
                     successFlag = False
                 responseObj.close()
             except urllib.error.URLError as excptn:
                 logging.error("Failed to upload JSON [%d:%d], %s" %
-                             (myOffset, min(ndocs,myOffset+2048), str(excptn)))
+                             (myOffset, min(ndocs,myOffset+1024), str(excptn)))
                 successFlag = False
         del docs
 
@@ -2120,10 +2121,10 @@ if __name__ == '__main__':
         # ############################################################## #
         # write ProdStatus information as SSB metric file for production #
         # ############################################################## #
-        PRODSTS_FILE = "./junk/ProdStatus.txt"
-        PRODSTS_COPY = None
-        #PRODSTS_FILE = "/afs/cern.ch/user/c/cmssst/www/ssb_metric/ProdStatus.txt"
-        #PRODSTS_COPY = "/eos/home-c/cmssst/www/ssb_metric/ProdStatus.txt"
+        #PRODSTS_FILE = "./junk/ProdStatus.txt"
+        #PRODSTS_COPY = None
+        PRODSTS_FILE = "/afs/cern.ch/user/c/cmssst/www/ssb_metric/ProdStatus.txt"
+        PRODSTS_COPY = "/eos/home-c/cmssst/www/ssb_metric/ProdStatus.txt"
 
         logging.info("Writing ProdStatus SSB JSON file")
 
@@ -2197,11 +2198,11 @@ if __name__ == '__main__':
         # ############################################################## #
         # write CrabStatus information as usableSites.json file for CRAB #
         # ############################################################## #
-        USABLE_FILE = "./junk/usableSites.json"
-        USABLE_COPY = None
+        #USABLE_FILE = "./junk/usableSites.json"
+        #USABLE_COPY = None
         #USABLE_FILE = "/afs/cern.ch/user/c/cmssst/www/ssb_metric/usableSites.json"
-        #USABLE_FILE = "/afs/cern.ch/user/c/cmssst/www/analysis/usableSites.json"
-        #USABLE_COPY = "/eos/home-c/cmssst/www/ssb_metric/usableSites.json"
+        USABLE_FILE = "/afs/cern.ch/user/c/cmssst/www/analysis/usableSites.json"
+        USABLE_COPY = "/eos/home-c/cmssst/www/ssb_metric/usableSites.json"
 
         logging.info("Writing CRAB usableSites JSON file")
 

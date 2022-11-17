@@ -50,7 +50,7 @@ import pydoop.hdfs
 
 
 
-VOFEED_VERSION = "v2.02.04"
+VOFEED_VERSION = "v2.02.07"
 # ########################################################################### #
 
 
@@ -708,6 +708,7 @@ class vofeed:
         hdrString = (",\n {\n   \"producer\": \"cmssst\",\n" +
                             "   \"type\": \"ssbmetric\",\n" +
                             "   \"path\": \"vofeed15min\",\n" +
+                            "   \"monit_hdfs_path\": \"vofeed15min\",\n" +
                             "   \"timestamp\": %d000,\n" +
                             "   \"type_prefix\": \"raw\",\n" +
                             "   \"data\": {\n") % timestamp

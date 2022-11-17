@@ -893,10 +893,11 @@ def evhc_compose_json():
             hdrString = ((",\n {\n   \"producer\": \"cmssst\",\n" +
                                  "   \"type\": \"ssbmetric\",\n" +
                                  "   \"path\": \"%s\",\n" +
+                                 "   \"monit_hdfs_path\": \"%s\",\n" +
                                  "   \"timestamp\": %d,\n" +
                                  "   \"type_prefix\": \"raw\",\n" +
                                  "   \"data\": {\n") %
-                         (metric, ((timebin*interval) + (interval/2)) * 1000))
+                  (metric, metric, ((timebin*interval) + (interval/2)) * 1000))
             #
             for result in sorted(evhc_glbl_evaluations[ key ],
                                  key=lambda k: k['name']):

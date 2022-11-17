@@ -698,6 +698,7 @@ def admf_compose_json(facilityDict, time15bin):
     hdrString = ((",\n {\n   \"producer\": \"cmssst\",\n" +
                          "   \"type\": \"ssbmetric\",\n" +
                          "   \"path\": \"facil15min\",\n" +
+                         "   \"monit_hdfs_path\": \"facil15min\",\n" +
                          "   \"timestamp\": %d000,\n" +
                          "   \"type_prefix\": \"raw\",\n" +
                          "   \"data\": {\n") % timestamp)
@@ -831,7 +832,7 @@ def admf_monit_upload(facilityDict, time15bin):
     for myOffset in range(0, ndocs, 1024):
         if ( myOffset > 0 ):
             # give importer time to process documents
-            time.sleep(1.500)
+            time.sleep(2.500)
         # MonIT upload channel can handle at most 10,000 docs at once
         dataString = json.dumps( docs[myOffset:min(ndocs,myOffset+1024)] )
         #

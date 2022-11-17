@@ -507,9 +507,11 @@ class SReadinessMetric:
             hdrString = (",\n {\n   \"producer\": \"cmssst\",\n" +
                                 "   \"type\": \"ssbmetric\",\n" +
                                 "   \"path\": \"%s\",\n" +
+                                "   \"monit_hdfs_path\": \"%s\",\n" +
                                 "   \"timestamp\": %d000,\n" +
                                 "   \"type_prefix\": \"raw\",\n" +
-                                "   \"data\": {\n") % (metric[0], timestamp)
+                                "   \"data\": {\n") % (metric[0], metric[0],
+                                                                     timestamp)
             #
             for entry in self.evaluations( metric ):
             #
@@ -1620,12 +1622,12 @@ if __name__ == '__main__':
         docs = json.loads(jsonString)
         ndocs = len(docs)
         successFlag = True
-        for myOffset in range(0, ndocs, 2048):
+        for myOffset in range(0, ndocs, 1024):
             if ( myOffset > 0 ):
                 # give importer time to process documents
-                time.sleep(1.500)
+                time.sleep(2.500)
             # MonIT upload channel can handle at most 10,000 docs at once
-            dataString = json.dumps( docs[myOffset:min(ndocs,myOffset+2048)] )
+            dataString = json.dumps( docs[myOffset:min(ndocs,myOffset+1024)] )
             #
             try:
                 # MonIT needs a document array and without newline characters:
@@ -1636,13 +1638,13 @@ if __name__ == '__main__':
                 if ( responseObj.status != http.HTTPStatus.OK ):
                     logging.error(("Failed to upload JSON [%d:%d] string to " +
                                    "MonIT, %d \"%s\"") %
-                                  (myOffset, min(ndocs,myOffset+2048),
+                                  (myOffset, min(ndocs,myOffset+1024),
                                    responseObj.status, responseObj.reason))
                     successFlag = False
                 responseObj.close()
             except urllib.error.URLError as excptn:
                 logging.error("Failed to upload JSON [%d:%d], %s" %
-                             (myOffset, min(ndocs,myOffset+2048), str(excptn)))
+                             (myOffset, min(ndocs,myOffset+1024), str(excptn)))
                 successFlag = False
         del docs
 
