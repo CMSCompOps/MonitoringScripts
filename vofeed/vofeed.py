@@ -50,7 +50,7 @@ import pydoop.hdfs
 
 
 
-VOFEED_VERSION = "v2.02.07"
+VOFEED_VERSION = "v2.03.00"
 # ########################################################################### #
 
 
@@ -285,8 +285,12 @@ class vofeed:
                             for myLine in fileObj:
                                 myJson = json.loads(myLine.decode('utf-8'))
                                 try:
-                                    if (( myJson['metadata']['path'] !=
-                                                             "vofeed15min" ) or
+                                    if ( "monit_hdfs_path" not
+                                                       in myJson['metadata'] ):
+                                        myJson['metadata']['monit_hdfs_path'] \
+                                                   = myJson['metadata']['path']
+                                    if (( myJson['metadata']['monit_hdfs_path']
+                                                          != "vofeed15min" ) or
                                         ( myJson['data']['vo'] != "CMS" )):
                                         continue
                                     tis = int(myJson['metadata']['timestamp']
@@ -1478,8 +1482,16 @@ if __name__ == '__main__':
                         #
                         # get RSE path of SAM write area:
                         try:
-                            rseWriteURL = next(iter( \
-                                rseClient.lfns2pfns(rseName,
+                            if ( rseScheme == "root" ):
+                                rseWriteURL = next(iter( \
+                                    rseClient.lfns2pfns(rseName,
+                                             ["cms://store/temp/user/cmssam/"],
+                                                  protocol_domain="wan",
+                                                  operation="write",
+                                                  scheme=rseScheme).values() ))
+                            else:
+                                rseWriteURL = next(iter( \
+                                    rseClient.lfns2pfns(rseName,
                                                   ["cms:/store/unmerged/SAM/"],
                                                   protocol_domain="wan",
                                                   operation="write",
@@ -1600,9 +1612,6 @@ if __name__ == '__main__':
                 else:
                     continue
                 #
-                if ( rseFlavour == "XROOTD" ):
-                    # skip XROOTD for the time being
-                    continue
                 service = { 'category': "SE", 'hostname': rseHost,
                             'flavour': rseFlavour,
                             'endpoint': "%s:%d" % (rseHost, rseDict['port']),
@@ -1715,7 +1724,7 @@ if __name__ == '__main__':
                     for path in entry['paths']:
                         service['paths'].append( (path[0], path[1]) )
                 elif ( flavour == "XROOTD" ):
-                   service['paths'] = [ ("RD", "/store/mc/SAM/") ]
+                   service['paths'] = [ ("RD", "//store/mc/SAM/") ]
                 logging.debug("   site %s: hostname %s flavour %s" %
                                                 (entry['site'], host, flavour))
                 logging.log(9, "      %s" % str(service))
