@@ -8,8 +8,8 @@
 # 2019-Sep-26   Stephan Lammel
 # ########################################################################### #
 # 'metadata': {
-#     'path':      "sr15min",
-#     'timestamp': 1464871600000
+#     'monit_hdfs_path': "sr15min",
+#     'timestamp':       1464871600000
 # },
 # "data": {
 #      "name":    "T1_DE_KIT",
@@ -326,7 +326,11 @@ class SReadinessMetric:
                             for myLine in fileObj:
                                 myJson = json.loads(myLine.decode('utf-8'))
                                 try:
-                                    metric = myJson['metadata']['path']
+                                    if ( "monit_hdfs_path" not
+                                                       in myJson['metadata'] ):
+                                        myJson['metadata']['monit_hdfs_path'] \
+                                                   = myJson['metadata']['path']
+                                    metric = myJson['metadata']['monit_hdfs_path']
                                     if metric not in SReadinessMetric.interval():
                                         continue
                                     tbin = int( myJson['metadata']['timestamp']
@@ -844,7 +848,11 @@ if __name__ == '__main__':
                             for myLine in fileObj:
                                 myJson = json.loads(myLine.decode('utf-8'))
                                 try:
-                                    metric = myJson['metadata']['path']
+                                    if ( "monit_hdfs_path" not
+                                                       in myJson['metadata'] ):
+                                        myJson['metadata']['monit_hdfs_path'] \
+                                                   = myJson['metadata']['path']
+                                    metric = myJson['metadata']['monit_hdfs_path']
                                     if metric not in sammtrc_interval():
                                         continue
                                     tbin = int( myJson['metadata']['timestamp']
@@ -1197,7 +1205,11 @@ if __name__ == '__main__':
                             for myLine in fileObj:
                                 myJson = json.loads(myLine.decode('utf-8'))
                                 try:
-                                    metric = myJson['metadata']['path']
+                                    if ( "monit_hdfs_path" not
+                                                       in myJson['metadata'] ):
+                                        myJson['metadata']['monit_hdfs_path'] \
+                                                   = myJson['metadata']['path']
+                                    metric = myJson['metadata']['monit_hdfs_path']
                                     if metric not in hcmtrc_interval():
                                         continue
                                     tbin = int( myJson['metadata']['timestamp']
@@ -1609,10 +1621,10 @@ if __name__ == '__main__':
         if ( jsonString == "[\n]\n" ):
             logging.warning("skipping upload of document-devoid JSON string")
             return False
-        cnt_15min = jsonString.count("\"path\": \"sr15min\"")
-        cnt_1hour = jsonString.count("\"path\": \"sr1hour\"")
-        cnt_6hour = jsonString.count("\"path\": \"sr6hour\"")
-        cnt_1day  = jsonString.count("\"path\": \"sr1day\"")
+        cnt_15min = jsonString.count("\"monit_hdfs_path\": \"sr15min\"")
+        cnt_1hour = jsonString.count("\"monit_hdfs_path\": \"sr1hour\"")
+        cnt_6hour = jsonString.count("\"monit_hdfs_path\": \"sr6hour\"")
+        cnt_1day  = jsonString.count("\"monit_hdfs_path\": \"sr1day\"")
         #
         jsonString = jsonString.replace("ssbmetric", "metrictest")
 
