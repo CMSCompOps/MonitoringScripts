@@ -1485,7 +1485,7 @@ if __name__ == '__main__':
                             if ( rseScheme == "root" ):
                                 rseWriteURL = next(iter( \
                                     rseClient.lfns2pfns(rseName,
-                                             ["cms://store/temp/user/cmssam/"],
+                                              ["cms:/store/temp/user/cmssam/"],
                                                   protocol_domain="wan",
                                                   operation="write",
                                                   scheme=rseScheme).values() ))
