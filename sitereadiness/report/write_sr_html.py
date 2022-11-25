@@ -350,7 +350,11 @@ def srhr_monit_SAM_HC_FTS_SR(timestamp, siteDict):
                         for myLine in fileObj:
                             myJson = json.loads(myLine.decode('utf-8'))
                             try:
-                                metric = myJson['metadata']['path']
+                                if ( "monit_hdfs_path" not in
+                                                          myJson['metadata'] ):
+                                    myJson['metadata']['monit_hdfs_path'] \
+                                                   = myJson['metadata']['path']
+                                metric = myJson['metadata']['monit_hdfs_path']
                                 status = myJson['data']['status']
                                 if ( metric == "sam1day" ):
                                     if ( myJson['data']['type'] != "site" ):
@@ -557,7 +561,11 @@ def srhr_monit_down_STS(timestamp, siteDict):
                                 if (( tis < firstTIS ) or ( tis >= limitTIS )):
                                     continue
                                 tbin = int( tis / 900 )
-                                metric = myJson['metadata']['path']
+                                if ( "monit_hdfs_path" not in
+                                                          myJson['metadata'] ):
+                                    myJson['metadata']['monit_hdfs_path'] \
+                                                   = myJson['metadata']['path']
+                                metric = myJson['metadata']['monit_hdfs_path']
                                 if ( metric == "down15min" ):
                                     if ( myJson['data']['type'] != "site" ):
                                         continue
@@ -754,21 +762,27 @@ def srhr_monit_down_STS(timestamp, siteDict):
         for ibin in range(nbin):
             counts = b15mDict[site][ibin]
             mxCnt = max( counts[0], counts[1], counts[2] )
-            if ( counts[0] == mxCnt ):
+            if ( mxCnt < 24 ):
+                siteDict[site]['life1day'][ibin] = ("unknown", "", "")
+            elif ( counts[0] == mxCnt ):
                 siteDict[site]['life1day'][ibin] = ("enabled", "", "")
             elif ( counts[1] == mxCnt ):
                 siteDict[site]['life1day'][ibin] = ("waiting_room", "WR", "")
             elif ( counts[2] == mxCnt ):
                 siteDict[site]['life1day'][ibin] = ("morgue", "M", "")
             mxCnt = max( counts[3], counts[4], counts[5] )
-            if ( counts[3] == mxCnt ):
+            if ( mxCnt < 24 ):
+                siteDict[site]['prod1day'][ibin] = ("unknown", "", "")
+            elif ( counts[3] == mxCnt ):
                 siteDict[site]['prod1day'][ibin] = ("enabled", "", "")
             elif ( counts[4] == mxCnt ):
                 siteDict[site]['prod1day'][ibin] = ("drain", "", "")
             elif ( counts[5] == mxCnt ):
                 siteDict[site]['prod1day'][ibin] = ("disabled", "", "")
             mxCnt = max( counts[6], counts[7] )
-            if ( counts[6] == mxCnt ):
+            if ( mxCnt < 24 ):
+                siteDict[site]['crab1day'][ibin] = ("unknown", "", "")
+            elif ( counts[6] == mxCnt ):
                 siteDict[site]['crab1day'][ibin] = ("enabled", "", "")
             elif ( counts[7] == mxCnt ):
                 siteDict[site]['crab1day'][ibin] = ("disabled", "", "")
