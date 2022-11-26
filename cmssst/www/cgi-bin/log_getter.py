@@ -225,13 +225,13 @@ def lget_grafana_fetch(cfg):
                    "_prod_cmssst_*\"]}\n{\"query\":{\"bool\":{\"must\":[{\"m" +
                    "atch_phrase\":{\"metadata.type\":\"ssbmetric\"}},{\"matc" +
                    "h_phrase\":{\"metadata.type_prefix\":\"raw\"}},{\"match_" +
-                   "phrase\":{\"metadata.path\":\"%s\"}}],\"filter\":{\"rang" +
-                   "e\":{\"metadata.timestamp\":{\"gte\":%d,\"lt\":%d,\"form" +
-                   "at\":\"epoch_second\"}}}}},\"_source\":{\"includes\":[\"" +
-                   "metadata.timestamp\",\"metadata.kafka_timestamp\",\"meta" +
-                   "data._id\",\"data.*\"]},\"size\":8192,\"search_after\":[" +
-                   "\"%%s\"],\"sort\":[{\"metadata._id\":\"asc\"}]}\n") % \
-                                             (cfg['query'], startTIS, limitTIS)
+                   "phrase\":{\"metadata.monit_hdfs_path\":\"%s\"}}],\"filte" +
+                   "r\":{\"range\":{\"metadata.timestamp\":{\"gte\":%d,\"lt" +
+                   "\":%d,\"format\":\"epoch_second\"}}}}},\"_source\":{\"in" +
+                   "cludes\":[\"metadata.timestamp\",\"metadata.kafka_timest" +
+                   "amp\",\"metadata._id\",\"data.*\"]},\"size\":8192,\"sear" +
+                   "ch_after\":[\"%%s\"],\"sort\":[{\"metadata._id\":\"asc\"" +
+                   "}]}\n") % (cfg['query'], startTIS, limitTIS)
 
 
     # loop and fetch 8k docs at a time to get around ElasticSearch limit:

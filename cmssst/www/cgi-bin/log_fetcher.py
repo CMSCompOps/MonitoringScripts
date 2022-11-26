@@ -388,15 +388,22 @@ def lftch_monit_fetch(cfg):
                                         continue
                                 myStatus = myJson['data']['status']
                             elif ( cfg['metric'][:4] == "down" ):
+                                if ( "monit_hdfs_path" not in
+                                                          myJson['metadata'] ):
+                                    if ( "path" in myJson['metadata'] ):
+                                        myJson['metadata']['monit_hdfs_path'] \
+                                                   = myJson['metadata']['path']
+                                    else:
+                                        continue
                                 # check document has required downtime keys:
-                                if (( 'path' not in myJson['metadata'] ) or
-                                    ( 'timestamp' not in myJson['metadata'] ) or
+                                if (( 'timestamp' not in myJson['metadata'] ) or
                                     ( 'name' not in myJson['data'] ) or
                                     ( 'type' not in myJson['data'] ) or
                                     ( 'status' not in myJson['data'] ) or
                                     ( 'duration' not in myJson['data'] )):
                                     continue
-                                if ( myJson['metadata']['path'] != "down15min" ):
+                                if ( myJson['metadata']['monit_hdfs_path'] !=
+                                                                 "down15min" ):
                                     continue
                                 tis = int(myJson['metadata']['timestamp']/1000)
                                 if ( tis < startTIS ):
@@ -424,14 +431,20 @@ def lftch_monit_fetch(cfg):
                                         continue
                                 myStatus = myJson['data']['status']
                             elif ( cfg['metric'][:3] == "sam" ):
+                                if ( "monit_hdfs_path" not in
+                                                          myJson['metadata'] ):
+                                    if ( "path" in myJson['metadata'] ):
+                                        myJson['metadata']['monit_hdfs_path'] \
+                                                   = myJson['metadata']['path']
+                                    else:
+                                        continue
                                 # check document has required CMS-SAM keys:
-                                if (( 'path' not in myJson['metadata'] ) or
-                                    ( 'timestamp' not in myJson['metadata'] ) or
+                                if (( 'timestamp' not in myJson['metadata'] ) or
                                     ( 'name' not in myJson['data'] ) or
                                     ( 'type' not in myJson['data'] ) or
                                     ( 'status' not in myJson['data'] )):
                                     continue
-                                if ( myJson['metadata']['path'] !=
+                                if ( myJson['metadata']['monit_hdfs_path'] !=
                                      cfg['metric'] ):
                                     continue
                                 tis = int(myJson['metadata']['timestamp']/1000)
@@ -461,14 +474,20 @@ def lftch_monit_fetch(cfg):
                                         continue
                                 myStatus = myJson['data']['status']
                             elif ( cfg['metric'][:2] == "hc" ):
+                                if ( "monit_hdfs_path" not in
+                                                          myJson['metadata'] ):
+                                    if ( "path" in myJson['metadata'] ):
+                                        myJson['metadata']['monit_hdfs_path'] \
+                                                   = myJson['metadata']['path']
+                                    else:
+                                        continue
                                 # check document has required CMS-HC keys:
-                                if (( 'path' not in myJson['metadata'] ) or
-                                    ( 'timestamp' not in myJson['metadata'] ) or
+                                if (( 'timestamp' not in myJson['metadata'] ) or
                                     (( 'name' not in myJson['data'] ) and
                                      ( 'site' not in myJson['data'] )) or
                                     ( 'status' not in myJson['data'] )):
                                     continue
-                                if ( myJson['metadata']['path'] !=
+                                if ( myJson['metadata']['monit_hdfs_path'] !=
                                      cfg['metric'] ):
                                     continue
                                 tis = int(myJson['metadata']['timestamp']/1000)
@@ -488,14 +507,20 @@ def lftch_monit_fetch(cfg):
                                 myType = "site"
                                 myStatus = myJson['data']['status']
                             elif ( cfg['metric'][:3] == "fts" ):
+                                if ( "monit_hdfs_path" not in
+                                                          myJson['metadata'] ):
+                                    if ( "path" in myJson['metadata'] ):
+                                        myJson['metadata']['monit_hdfs_path'] \
+                                                   = myJson['metadata']['path']
+                                    else:
+                                        continue
                                 # check document has required CMS-FTS keys:
-                                if (( 'path' not in myJson['metadata'] ) or
-                                    ( 'timestamp' not in myJson['metadata'] ) or
+                                if (( 'timestamp' not in myJson['metadata'] ) or
                                     ( 'name' not in myJson['data'] ) or
                                     ( 'type' not in myJson['data'] ) or
                                     ( 'status' not in myJson['data'] )):
                                     continue
-                                if ( myJson['metadata']['path'] !=
+                                if ( myJson['metadata']['monit_hdfs_path'] !=
                                      cfg['metric'] ):
                                     continue
                                 tis = int(myJson['metadata']['timestamp']/1000)
@@ -526,13 +551,19 @@ def lftch_monit_fetch(cfg):
                                         continue
                                 myStatus = myJson['data']['status']
                             elif ( cfg['metric'][:2] == "sr" ):
+                                if ( "monit_hdfs_path" not in
+                                                          myJson['metadata'] ):
+                                    if ( "path" in myJson['metadata'] ):
+                                        myJson['metadata']['monit_hdfs_path'] \
+                                                   = myJson['metadata']['path']
+                                    else:
+                                        continue
                                 # check document has SiteReadiness keys:
-                                if (( 'path' not in myJson['metadata'] ) or
-                                    ( 'timestamp' not in myJson['metadata'] ) or
+                                if (( 'timestamp' not in myJson['metadata'] ) or
                                     ( 'name' not in myJson['data'] ) or
                                     ( 'status' not in myJson['data'] )):
                                     continue
-                                if ( myJson['metadata']['path'] !=
+                                if ( myJson['metadata']['monit_hdfs_path'] !=
                                      cfg['metric'] ):
                                     continue
                                 tis = int(myJson['metadata']['timestamp']/1000)
@@ -550,15 +581,21 @@ def lftch_monit_fetch(cfg):
                                 myType = "site"
                                 myStatus = myJson['data']['status']
                             elif ( cfg['metric'][:3] == "sts" ):
+                                if ( "monit_hdfs_path" not in
+                                                          myJson['metadata'] ):
+                                    if ( "path" in myJson['metadata'] ):
+                                        myJson['metadata']['monit_hdfs_path'] \
+                                                   = myJson['metadata']['path']
+                                    else:
+                                        continue
                                 # check document has required SiteStatus keys:
-                                if (( 'path' not in myJson['metadata'] ) or
-                                    ( 'timestamp' not in myJson['metadata'] ) or
+                                if (( 'timestamp' not in myJson['metadata'] ) or
                                     ( 'name' not in myJson['data'] ) or
                                     ( 'status' not in myJson['data'] ) or
                                     ( 'prod_status' not in myJson['data'] ) or
                                     ( 'crab_status' not in myJson['data'] )):
                                     continue
-                                if ( myJson['metadata']['path'] !=
+                                if ( myJson['metadata']['monit_hdfs_path'] !=
                                      cfg['metric'] ):
                                     continue
                                 tis = int(myJson['metadata']['timestamp']/1000)
@@ -573,14 +610,20 @@ def lftch_monit_fetch(cfg):
                                 myType = "site"
                                 myStatus = myJson['data']['status']
                             elif ( cfg['metric'][:5] == "links" ):
+                                if ( "monit_hdfs_path" not in
+                                                          myJson['metadata'] ):
+                                    if ( "path" in myJson['metadata'] ):
+                                        myJson['metadata']['monit_hdfs_path'] \
+                                                   = myJson['metadata']['path']
+                                    else:
+                                        continue
                                 # check document has required CMS-FTS keys:
-                                if (( 'path' not in myJson['metadata'] ) or
-                                    ( 'timestamp' not in myJson['metadata'] ) or
+                                if (( 'timestamp' not in myJson['metadata'] ) or
                                     ( 'name' not in myJson['data'] ) or
                                     ( 'type' not in myJson['data'] ) or
                                     ( 'status' not in myJson['data'] )):
                                     continue
-                                if ( myJson['metadata']['path'] !=
+                                if ( myJson['metadata']['monit_hdfs_path'] !=
                                      ("fts" + cfg['metric'][5:]) ):
                                     continue
                                 tis = int(myJson['metadata']['timestamp']/1000)
