@@ -1007,7 +1007,11 @@ def capa__monit_fetch(time15bin=None):
                         for myLine in fileObj:
                             myJson = json.loads(myLine.decode('utf-8'))
                             try:
-                                if ( myJson['metadata']['path'] !=
+                                if ( "monit_hdfs_path" not
+                                                       in myJson['metadata'] ):
+                                        myJson['metadata']['monit_hdfs_path'] \
+                                                   = myJson['metadata']['path']
+                                if ( myJson['metadata']['monit_hdfs_path'] !=
                                                                  "scap15min" ):
                                     continue
                                 tis = int( myJson['metadata']['timestamp']
