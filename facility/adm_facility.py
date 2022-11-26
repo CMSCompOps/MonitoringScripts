@@ -935,7 +935,11 @@ def admf_monit_disk(firstTIS, limitTIS, siteDict, fsssDict):
                         for myLine in fileObj:
                             myJson = json.loads(myLine.decode('utf-8'))
                             try:
-                                if ( myJson['metadata']['path'] !=
+                                if ( "monit_hdfs_path" not in
+                                                          myJson['metadata'] ):
+                                        myJson['metadata']['monit_hdfs_path'] \
+                                                   = myJson['metadata']['path']
+                                if ( myJson['metadata']['monit_hdfs_path'] !=
                                                                  "scap15min" ):
                                     continue
                                 tbin = int( myJson['metadata']['timestamp']
