@@ -653,27 +653,36 @@ def evhc_monit_fetch(tbins15m, tbins1h, tbins6h, tbins1d):
                             if (( 'metadata' not in myJson ) or
                                 ( 'data' not in myJson )):
                                 continue
+                            if ( "monit_hdfs_path" not in myJson['metadata'] ):
+                                if ( "path" in myJson['metadata'] ):
+                                    myJson['metadata']['monit_hdfs_path'] = \
+                                                     myJson['metadata']['path']
+                                else:
+                                    continue
                             if (( 'timestamp' not in myJson['metadata'] ) or
                                 ( 'kafka_timestamp' not in myJson['metadata'] ) or
-                                ( 'path' not in myJson['metadata'] ) or
                                 (( 'name' not in myJson['data'] ) and
                                  ( 'site' not in myJson['data'] )) or
                                 ( 'status' not in myJson['data'] )):
                                 continue
                             tis = int(myJson['metadata']['timestamp']/1000)
-                            if ( myJson['metadata']['path'] == "hc15min" ):
+                            if ( myJson['metadata']['monit_hdfs_path'] ==
+                                                                   "hc15min" ):
                                 tbin = int( tis / 900 )
                                 if tbin not in tbins15m:
                                     continue
-                            elif ( myJson['metadata']['path'] == "hc1hour" ):
+                            elif ( myJson['metadata']['monit_hdfs_path'] ==
+                                                                   "hc1hour" ):
                                 tbin = int( tis / 3600 )
                                 if tbin not in tbins1h:
                                     continue
-                            elif ( myJson['metadata']['path'] == "hc6hour" ):
+                            elif ( myJson['metadata']['monit_hdfs_path'] ==
+                                                                   "hc6hour" ):
                                 tbin = int( tis / 21600 )
                                 if tbin not in tbins6h:
                                     continue
-                            elif ( myJson['metadata']['path'] == "hc1day" ):
+                            elif ( myJson['metadata']['monit_hdfs_path'] ==
+                                                                    "hc1day" ):
                                 tbin = int( tis / 86400 )
                                 if tbin not in tbins1d:
                                     continue
@@ -689,7 +698,7 @@ def evhc_monit_fetch(tbins15m, tbins1h, tbins6h, tbins1d):
                             #
                             version = myJson['metadata']['kafka_timestamp']
                             #
-                            key = ( myJson['metadata']['path'],
+                            key = ( myJson['metadata']['monit_hdfs_path'],
                                     tbin,
                                     myJson['data']['name'] )
                             val = { 'v': version,
@@ -943,10 +952,10 @@ def evhc_monit_upload():
     if ( jsonString == "[\n]\n" ):
         logging.warning("skipping upload of document-devoid JSON string")
         return False
-    cnt_15min = jsonString.count("\"path\": \"hc15min\"")
-    cnt_1hour = jsonString.count("\"path\": \"hc1hour\"")
-    cnt_6hour = jsonString.count("\"path\": \"hc6hour\"")
-    cnt_1day  = jsonString.count("\"path\": \"hc1day\"")
+    cnt_15min = jsonString.count("\"monit_hdfs_path\": \"hc15min\"")
+    cnt_1hour = jsonString.count("\"monit_hdfs_path\": \"hc1hour\"")
+    cnt_6hour = jsonString.count("\"monit_hdfs_path\": \"hc6hour\"")
+    cnt_1day  = jsonString.count("\"monit_hdfs_path\": \"hc1day\"")
     #
     jsonString = jsonString.replace("ssbmetric", "metrictest")
 

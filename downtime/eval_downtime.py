@@ -149,7 +149,11 @@ class DowntimeMetric:
                             for myLine in fileObj:
                                 myJson = json.loads(myLine.decode('utf-8'))
                                 try:
-                                    metric = myJson['metadata']['path']
+                                    if ( "monit_hdfs_path" not
+                                                       in myJson['metadata'] ):
+                                        myJson['metadata']['monit_hdfs_path'] \
+                                                   = myJson['metadata']['path']
+                                    metric = myJson['metadata']['monit_hdfs_path']
                                     if ( metric != "down15min" ):
                                         continue
                                     tis = int( myJson['metadata']['timestamp']
@@ -1138,7 +1142,7 @@ if __name__ == '__main__':
         if ( jsonString == "[\n]\n" ):
             logging.warning("skipping upload of document-devoid JSON string")
             return False
-        cnt_15min = jsonString.count("\"path\": \"down15min\"")
+        cnt_15min = jsonString.count("\"monit_hdfs_path\": \"down15min\"")
         #
         jsonString = jsonString.replace("ssbmetric", "metrictest")
 
