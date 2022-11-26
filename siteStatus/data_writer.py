@@ -3621,7 +3621,11 @@ def ssdw_monit_SAM_HC_FTS_SR():
                         for myLine in fileObj:
                             myJson = json.loads(myLine.decode('utf-8'))
                             try:
-                                metric = myJson['metadata']['path']
+                                if ( "monit_hdfs_path" not in
+                                                          myJson['metadata'] ):
+                                    myJson['metadata']['monit_hdfs_path'] = \
+                                                     myJson['metadata']['path']
+                                metric = myJson['metadata']['monit_hdfs_path']
                                 if ( metric[-4:] == "1day" ):
                                     if (( metric[:3] == "sam" ) and
                                         ( myJson['data']['type'] == "site" )):
@@ -3630,7 +3634,8 @@ def ssdw_monit_SAM_HC_FTS_SR():
                                     elif ( metric[:2] == "hc" ):
                                         label = "HC1day"
                                         if 'name' not in myJson['data']:
-                                            myJson['data']['name'] = myJson['data']['site']
+                                            myJson['data']['name'] = \
+                                                         myJson['data']['site']
                                         site = myJson['data']['name']
                                     elif (( metric[:3] == "fts" ) and
                                           ( myJson['data']['type'] == "site" )):
@@ -3921,11 +3926,15 @@ def ssdw_monit_down_STS():
                         for myLine in fileObj:
                             myJson = json.loads(myLine.decode('utf-8'))
                             try:
+                                if ( "monit_hdfs_path" not in
+                                                          myJson['metadata'] ):
+                                    myJson['metadata']['monit_hdfs_path'] = \
+                                                     myJson['metadata']['path']
                                 tis = int( myJson['metadata']['timestamp']
                                                                        / 1000 )
                                 if (( tis < timeFrst ) or ( tis > timeLast )):
                                     continue
-                                metric = myJson['metadata']['path']
+                                metric = myJson['metadata']['monit_hdfs_path']
                                 if ( metric == "down15min" ):
                                     name = myJson['data']['name']
                                     clss = myJson['data']['type']
