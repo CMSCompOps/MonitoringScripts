@@ -207,13 +207,18 @@ def corr_monit_fetch(corr_cfg):
                             if (( 'metadata' not in myJson ) or
                                 ( 'data' not in myJson )):
                                 continue
-                            if (( 'kafka_timestamp' not in myJson['metadata'] ) or
-                                ( '_id' not in myJson['metadata'] )):
+                            if ( "monit_hdfs_path" not in myJson['metadata'] ):
+                                if ( "path" in myJson['metadata'] ):
+                                    myJson['metadata']['monit_hdfs_path'] =
+                                                     myJson['metadata']['path']
+                                else:
+                                    continue
+                            if (( 'kafka_timestamp' not in myJson['metadata'] )
+                                       or ( '_id' not in myJson['metadata'] )):
                                 continue
                             if ( corr_cfg['family'] == "vofeed" ):
                                 # check document has required vofeed keys:
-                                if (( 'path' not in myJson['metadata'] ) or
-                                    ( 'timestamp' not in myJson['metadata'] ) or
+                                if (( 'timestamp' not in myJson['metadata'] ) or
                                     ( 'gridsite' not in myJson['data'] ) or
                                     ( 'services' not in myJson['data'] ) or
                                     ( 'site' not in myJson['data'] ) or
@@ -221,7 +226,7 @@ def corr_monit_fetch(corr_cfg):
                                     ( 'update' not in myJson['data'] ) or
                                     ( 'vo' not in myJson['data'] )):
                                     continue
-                                if ( myJson['metadata']['path'] !=
+                                if ( myJson['metadata']['monit_hdfs_path'] !=
                                                           corr_cfg['metric'] ):
                                     continue
                                 tis = int(myJson['metadata']['timestamp']/1000)
@@ -247,14 +252,13 @@ def corr_monit_fetch(corr_cfg):
                                 tmpDict[key] = val
                             elif ( corr_cfg['family'] == "down" ):
                                 # check document has required downtime keys:
-                                if (( 'path' not in myJson['metadata'] ) or
-                                    ( 'timestamp' not in myJson['metadata'] ) or
+                                if (( 'timestamp' not in myJson['metadata'] ) or
                                     ( 'name' not in myJson['data'] ) or
                                     ( 'type' not in myJson['data'] ) or
                                     ( 'status' not in myJson['data'] ) or
                                     ( 'duration' not in myJson['data'] )):
                                     continue
-                                if ( myJson['metadata']['path'] !=
+                                if ( myJson['metadata']['monit_hdfs_path'] !=
                                                           corr_cfg['metric'] ):
                                     continue
                                 tis = int(myJson['metadata']['timestamp']/1000)
@@ -273,13 +277,12 @@ def corr_monit_fetch(corr_cfg):
                                 tmpDict[ tbin ].append( val )
                             elif ( corr_cfg['family'] == "sam" ):
                                 # check document has required CMS-SAM keys:
-                                if (( 'path' not in myJson['metadata'] ) or
-                                    ( 'timestamp' not in myJson['metadata'] ) or
+                                if (( 'timestamp' not in myJson['metadata'] ) or
                                     ( 'name' not in myJson['data'] ) or
                                     ( 'type' not in myJson['data'] ) or
                                     ( 'status' not in myJson['data'] )):
                                     continue
-                                if ( myJson['metadata']['path'] !=
+                                if ( myJson['metadata']['monit_hdfs_path'] !=
                                                           corr_cfg['metric'] ):
                                     continue
                                 tis = int(myJson['metadata']['timestamp']/1000)
@@ -320,13 +323,12 @@ def corr_monit_fetch(corr_cfg):
                                 tmpDict[key] = val
                             elif ( corr_cfg['family'] == "hc" ):
                                 # check document has required CMS-HC keys:
-                                if (( 'path' not in myJson['metadata'] ) or
-                                    ( 'timestamp' not in myJson['metadata'] ) or
+                                if (( 'timestamp' not in myJson['metadata'] ) or
                                     (( 'name' not in myJson['data'] ) and
                                      ( 'site' not in myJson['data'] )) or
                                     ( 'status' not in myJson['data'] )):
                                     continue
-                                if ( myJson['metadata']['path'] !=
+                                if ( myJson['metadata']['monit_hdfs_path'] !=
                                                           corr_cfg['metric'] ):
                                     continue
                                 tis = int(myJson['metadata']['timestamp']/1000)
@@ -358,13 +360,12 @@ def corr_monit_fetch(corr_cfg):
                                 tmpDict[key] = val
                             elif ( corr_cfg['family'] == "fts" ):
                                 # check document has required CMS-FTS keys:
-                                if (( 'path' not in myJson['metadata'] ) or
-                                    ( 'timestamp' not in myJson['metadata'] ) or
+                                if (( 'timestamp' not in myJson['metadata'] ) or
                                     ( 'name' not in myJson['data'] ) or
                                     ( 'type' not in myJson['data'] ) or
                                     ( 'status' not in myJson['data'] )):
                                     continue
-                                if ( myJson['metadata']['path'] !=
+                                if ( myJson['metadata']['monit_hdfs_path'] !=
                                                           corr_cfg['metric'] ):
                                     continue
                                 tis = int(myJson['metadata']['timestamp']/1000)
@@ -398,12 +399,11 @@ def corr_monit_fetch(corr_cfg):
                                 tmpDict[key] = val
                             elif ( corr_cfg['family'] == "sr" ):
                                 # check document has required CMS-SR keys:
-                                if (( 'path' not in myJson['metadata'] ) or
-                                    ( 'timestamp' not in myJson['metadata'] ) or
+                                if (( 'timestamp' not in myJson['metadata'] ) or
                                     ( 'name' not in myJson['data'] ) or
                                     ( 'status' not in myJson['data'] )):
                                     continue
-                                if ( myJson['metadata']['path'] !=
+                                if ( myJson['metadata']['monit_hdfs_path'] !=
                                                           corr_cfg['metric'] ):
                                     continue
                                 tis = int(myJson['metadata']['timestamp']/1000)
@@ -433,14 +433,13 @@ def corr_monit_fetch(corr_cfg):
                                 tmpDict[key] = val
                             elif ( corr_cfg['family'] == "sts" ):
                                 # check document has required CMS-STS keys:
-                                if (( 'path' not in myJson['metadata'] ) or
-                                    ( 'timestamp' not in myJson['metadata'] ) or
+                                if (( 'timestamp' not in myJson['metadata'] ) or
                                     ( 'name' not in myJson['data'] ) or
                                     ( 'status' not in myJson['data'] ) or
                                     ( 'prod_status' not in myJson['data'] ) or
                                     ( 'crab_status' not in myJson['data'] )):
                                     continue
-                                if ( myJson['metadata']['path'] !=
+                                if ( myJson['metadata']['monit_hdfs_path'] !=
                                                           corr_cfg['metric'] ):
                                     continue
                                 tis = int(myJson['metadata']['timestamp']/1000)
@@ -474,8 +473,7 @@ def corr_monit_fetch(corr_cfg):
                                 tmpDict[key] = val
                             elif ( corr_cfg['family'] == "scap" ):
                                 # check document has required CMS-SCAP keys:
-                                if (( 'path' not in myJson['metadata'] ) or
-                                    ( 'timestamp' not in myJson['metadata'] ) or
+                                if (( 'timestamp' not in myJson['metadata'] ) or
                                     ( 'name' not in myJson['data'] ) or
                                     ( 'hs06_pledge' not in myJson['data'] ) or
                                     ( 'hs06_per_core' not in myJson['data'] ) or
@@ -492,7 +490,7 @@ def corr_monit_fetch(corr_cfg):
                                     ( 'disk_experiment_use' not in
                                                              myJson['data'] )):
                                     continue
-                                if ( myJson['metadata']['path'] !=
+                                if ( myJson['metadata']['monit_hdfs_path'] !=
                                                           corr_cfg['metric'] ):
                                     continue
                                 tis = int(myJson['metadata']['timestamp']/1000)
