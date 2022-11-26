@@ -209,7 +209,7 @@ def corr_monit_fetch(corr_cfg):
                                 continue
                             if ( "monit_hdfs_path" not in myJson['metadata'] ):
                                 if ( "path" in myJson['metadata'] ):
-                                    myJson['metadata']['monit_hdfs_path'] =
+                                    myJson['metadata']['monit_hdfs_path'] = \
                                                      myJson['metadata']['path']
                                 else:
                                     continue
