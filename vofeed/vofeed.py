@@ -50,7 +50,7 @@ import pydoop.hdfs
 
 
 
-VOFEED_VERSION = "v2.03.00"
+VOFEED_VERSION = "v2.03.02"
 # ########################################################################### #
 
 
@@ -500,8 +500,17 @@ class vofeed:
                     if (( 'paths' in service ) and ( canUpdate == True )):
                         if ( 'paths' not in srv ):
                             srv['paths'] = []
+                        # avoid path duplication in case of more capabilities:
                         for path in service['paths']:
-                            if ( path not in srv['paths'] ):
+                            for indx in range(0, len(srv['paths']) ):
+                                if (( path[0][:2] ==
+                                                srv['paths'][indx][0][:2] ) and
+                                    ( path[1] == srv['paths'][indx][1] )):
+                                    if ( len(path[0]) >
+                                                  len(srv['paths'][indx][0]) ):
+                                        srv['paths'][indx] = path
+                                    break
+                            else:
                                 srv['paths'].append( path )
                 if ( srv['production'] == True ):
                     return
@@ -1724,7 +1733,7 @@ if __name__ == '__main__':
                     for path in entry['paths']:
                         service['paths'].append( (path[0], path[1]) )
                 elif ( flavour == "XROOTD" ):
-                   service['paths'] = [ ("RD", "//store/mc/SAM/") ]
+                   service['paths'] = [ ("RDFED", "//store/mc/SAM/") ]
                 logging.debug("   site %s: hostname %s flavour %s" %
                                                 (entry['site'], host, flavour))
                 logging.log(9, "      %s" % str(service))
@@ -1989,14 +1998,14 @@ if __name__ == '__main__':
     vofd_glideinWMSfactory(vofd, timestamp, hostDict)
 
 
-    # get SE information from Rucio:
-    # ==============================
-    vofd_rucio(vofd, timestamp, emailDict, hostDict)
-
-
     # add extra xrootd/perfSONAR/test endpoints:
     # ==========================================
     vofd_extraCMSendpoints(vofd, timestamp, hostDict)
+
+
+    # get SE information from Rucio:
+    # ==============================
+    vofd_rucio(vofd, timestamp, emailDict, hostDict)
 
 
     # remove sites without services:
