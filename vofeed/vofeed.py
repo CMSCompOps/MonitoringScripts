@@ -50,7 +50,7 @@ import pydoop.hdfs
 
 
 
-VOFEED_VERSION = "v2.03.02"
+VOFEED_VERSION = "v2.03.03"
 # ########################################################################### #
 
 
@@ -1591,9 +1591,10 @@ if __name__ == '__main__':
                 if (( rseHost == "cmseos-gridftp.fnal.gov" ) and
                     ( rseSite == "T1_US_FNAL" )):
                     continue
-                if (( rseHost == \
+                if (( rseProto == "root" ) or
+                    (( rseHost == \
                            "gridftp-vanderbilt.sites.opensciencegrid.org" ) and
-                    ( rseProto == "gsiftp" )):
+                     ( rseProto == "gsiftp" ))):
                     # copy command not implemented
                     try:
                         rseDict['wan'].remove('third_party_copy')
