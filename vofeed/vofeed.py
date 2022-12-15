@@ -50,7 +50,7 @@ import pydoop.hdfs
 
 
 
-VOFEED_VERSION = "v2.03.03"
+VOFEED_VERSION = "v2.03.04"
 # ########################################################################### #
 
 
@@ -1505,9 +1505,19 @@ if __name__ == '__main__':
                                                   protocol_domain="wan",
                                                   operation="write",
                                                   scheme=rseScheme).values() ))
-                            rseWritePath = urllib.parse.urlunparse(
-                                urllib.parse.urlparse( rseWriteURL
-                                )._replace(scheme="", netloc="") )
+                            urlTuple = urllib.parse.urlparse( rseWriteURL )
+                            if (( rseHost == "cmsdcadisk.fnal.gov" ) and
+                                ( rseScheme == "root" )):
+                                rseWritePath = \
+                                   "//dcache/uscmsdisk/store/temp/user/cmssam/"
+                            elif ( urlTuple.netloc.split(":")[0].lower() !=
+                                                             rseHost.lower() ):
+                                logging.error(("Write path of %s at anothe" + \
+                                 "r endpoint %s") % (rseName, urlTuple.netloc))
+                                rseWritePath = None
+                            else:
+                                rseWritePath = urllib.parse.urlunparse(
+                                      urlTuple._replace(scheme="", netloc="") )
                         except:
                             logging.warning("No SAM write path at RSE %s" %
                                                                        rseName)
