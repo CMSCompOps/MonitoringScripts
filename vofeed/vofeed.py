@@ -50,7 +50,7 @@ import pydoop.hdfs
 
 
 
-VOFEED_VERSION = "v2.03.04"
+VOFEED_VERSION = "v2.03.05"
 # ########################################################################### #
 
 
@@ -1622,24 +1622,26 @@ if __name__ == '__main__':
                 if ( rseProto == "srm" ):
                     rseFlavour = "SRM"
                 elif ( rseProto == "gsiftp" ):
-                    rseFlavour="SRM"
+                    rseFlavour = "SRM"
                 elif ( rseProto == "root" ):
-                    rseFlavour="XROOTD"
+                    rseFlavour = "XROOTD"
                 elif ( rseProto == "davs" ):
-                    rseFlavour="WEBDAV"
+                    rseFlavour = "WEBDAV"
                 elif ( rseProto == "https" ):
-                    rseFlavour="WEBDAV"
+                    rseFlavour = "WEBDAV"
                 else:
                     continue
                 #
-                service = { 'category': "SE", 'hostname': rseHost,
+                rseCategory = vofeed.flavour2category( rseFlavour )
+                #
+                service = { 'category': rseCategory, 'hostname': rseHost,
                             'flavour': rseFlavour,
                             'endpoint': "%s:%d" % (rseHost, rseDict['port']),
                             'rse': rseName,
                             'production': rseProduction }
                 #
                 try:
-                    service['gridsite'] = host2grid[ (rseHost, "SE") ]
+                    service['gridsite'] = host2grid[ (rseHost, rseCategory) ]
                 except KeyError:
                     pass
                 #
