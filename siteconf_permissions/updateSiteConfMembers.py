@@ -65,7 +65,7 @@ if __name__ == "__main__":
     gl_url = "https://gitlab.cern.ch"
 
     logging.info("Looking for gitlab token file")
-    with open("./gitlabToken", "r") as f:
+    with open("/data/cmssst/MonitoringScripts/siteconf_permissions/gitlabToken", "r") as f:
     	gl_token = f.read().strip() 
 
     logging.info("Connecting to {}".format(gl_url))

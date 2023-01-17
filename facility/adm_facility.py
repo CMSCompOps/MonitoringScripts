@@ -697,7 +697,6 @@ def admf_compose_json(facilityDict, time15bin):
     timestamp = ( time15bin * 900 ) + 450
     hdrString = ((",\n {\n   \"producer\": \"cmssst\",\n" +
                          "   \"type\": \"ssbmetric\",\n" +
-                         "   \"path\": \"facil15min\",\n" +
                          "   \"monit_hdfs_path\": \"facil15min\",\n" +
                          "   \"timestamp\": %d000,\n" +
                          "   \"type_prefix\": \"raw\",\n" +

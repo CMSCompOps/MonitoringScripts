@@ -418,12 +418,10 @@ class DowntimeMetric:
             timestamp = ( 900 * metric[1] ) + 450
             hdrString = (",\n {\n   \"producer\": \"cmssst\",\n" +
                                 "   \"type\": \"ssbmetric\",\n" +
-                                "   \"path\": \"%s\",\n" +
                                 "   \"monit_hdfs_path\": \"%s\",\n" +
                                 "   \"timestamp\": %d000,\n" +
                                 "   \"type_prefix\": \"raw\",\n" +
-                                "   \"data\": {\n") % (metric[0], metric[0],
-                                                                     timestamp)
+                                "   \"data\": {\n") % (metric[0], timestamp)
             #
             for entry in self.downtimes( metric ):
                 if commaFlag:

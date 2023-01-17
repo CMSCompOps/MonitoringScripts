@@ -60,7 +60,7 @@ EXC_LOCK="/var/tmp/cmssst/evalSAM_wrapper.lock"
 
 # evaluate SAM element/site status and upload JSON to MonIT:
 # ==========================================================
-`dirname $0`/eval_sam.py
+`dirname $0`/eval_sam.py -v
 # #############################################################################
 
 

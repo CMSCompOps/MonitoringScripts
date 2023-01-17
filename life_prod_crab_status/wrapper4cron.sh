@@ -56,7 +56,7 @@ EXC_LOCK="/var/tmp/cmssst/evalSTS_wrapper.lock"
 
 # evaluate Life, Prod, and Crab Status and upload JSON to MonIT:
 # ==============================================================
-`dirname $0`/eval_status.py
+`dirname $0`/eval_status.py -vvv
 # #############################################################################
 
 

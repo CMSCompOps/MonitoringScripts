@@ -61,7 +61,7 @@ EXC_LOCK="/var/tmp/cmssst/evalHC_wrapper.lock"
 # evaluate Hammer Cloud site status and upload JSON to MonIT:
 # ==========================================================
 /usr/bin/aklog 1>/dev/null 2>&1
-`dirname $0`/eval_hc.py
+`dirname $0`/eval_hc.py -vv
 # #############################################################################
 
 

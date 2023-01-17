@@ -115,19 +115,9 @@ fi
 
 
 
-# setup Hadoop environment for pydoop:
-# ------------------------------------
-HADOOP_HOME="/cvmfs/sft.cern.ch/lcg/releases/hadoop/2.7.5.1-1f419/x86_64-centos7-gcc62-opt";export HADOOP_HOME
-#
-HADOOP_CONF_DIR="/cvmfs/sft.cern.ch/lcg/etc/hadoop-confext/etc/hadoop.analytix/conf";export HADOOP_CONF_DIR
-JAVA_HOME="/etc/alternatives/jre/";export JAVA_HOME
-#
-PATH="${PATH}:/cvmfs/sft.cern.ch/lcg/views/LCG_94/x86_64-centos7-gcc62-opt/bin"
-#
-#
 # evaluate downtime status and upload downtime JSON to MonIT:
 # ===========================================================
-`dirname $0`/eval_downtime.py
+`dirname $0`/eval_downtime.py -v
 # #############################################################################
 
 

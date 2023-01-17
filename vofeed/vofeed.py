@@ -720,7 +720,6 @@ class vofeed:
         #
         hdrString = (",\n {\n   \"producer\": \"cmssst\",\n" +
                             "   \"type\": \"ssbmetric\",\n" +
-                            "   \"path\": \"vofeed15min\",\n" +
                             "   \"monit_hdfs_path\": \"vofeed15min\",\n" +
                             "   \"timestamp\": %d000,\n" +
                             "   \"type_prefix\": \"raw\",\n" +

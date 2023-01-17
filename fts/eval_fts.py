@@ -973,12 +973,10 @@ class FTSmetric:
             timestamp = ( interval * metric[1] ) + int( interval / 2 )
             hdrString = (",\n {\n   \"producer\": \"cmssst\",\n" +
                                 "   \"type\": \"ssbmetric\",\n" +
-                                "   \"path\": \"%s\",\n" +
                                 "   \"monit_hdfs_path\": \"%s\",\n" +
                                 "   \"timestamp\": %d000,\n" +
                                 "   \"type_prefix\": \"raw\",\n" +
-                                "   \"data\": {\n") % (metric[0], metric[0],
-                                                                     timestamp)
+                                "   \"data\": {\n") % (metric[0], timestamp)
             #
             for type in ["link", "GSIFTP-link", "WEBDAV-link", "XROOTD-link",
                          "source", "destination",

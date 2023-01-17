@@ -1466,12 +1466,11 @@ def evsam_compose_json():
             key = (metric, timebin)
             hdrString = ((",\n {\n   \"producer\": \"cmssst\",\n" +
                                  "   \"type\": \"ssbmetric\",\n" +
-                                 "   \"path\": \"%s\",\n" +
                                  "   \"monit_hdfs_path\": \"%s\",\n" +
                                  "   \"timestamp\": %d,\n" +
                                  "   \"type_prefix\": \"raw\",\n" +
                                  "   \"data\": {\n") %
-                  (metric, metric, ((timebin*interval) + (interval/2)) * 1000))
+                          (metric, ((timebin*interval) + (interval/2)) * 1000))
             #
             for result in evsam_glbl_evaluations[ key ]:
                 #logging.log(9, "      %s / %s status: %s" % (result['name'],

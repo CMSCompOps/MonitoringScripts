@@ -13,7 +13,7 @@ trap '(/bin/rm -f ${EXC_LOCK} ${ERR_FILE}) 1> /dev/null 2>&1' 0
 
 EMAIL_ADDR="lammel@fnal.gov"
 CACHE_DIR="/data/cmssst/MonitoringScripts/siteStatus/cache"
-SMMRY_FILE="/afs/cern.ch/user/c/cmssst/www/siteStatus/data/summary.js"
+SMMRY_FILE="/afs/cern.ch/user/c/cmssst/eos/www/siteStatus/data/summary.js"
 #
 #
 /bin/rm -f ${ERR_FILE} 1>/dev/null 2>&1
@@ -117,7 +117,7 @@ fi
 # generate siteStatus summary JavaScript and site-detail JSON files:
 # ==================================================================
 /bin/touch ${ERR_FILE}
-/usr/bin/timeout 3000 `dirname $0`/data_writer.py 1>> ${ERR_FILE} 2>&1
+/usr/bin/timeout 1500 `dirname $0`/data_writer.py 1>> ${ERR_FILE} 2>&1
 RC=$?
 if [ ${RC} -eq 124 ]; then
    if [ ! -t 0 ]; then

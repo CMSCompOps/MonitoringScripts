@@ -56,7 +56,7 @@ EXC_LOCK="/var/tmp/cmssst/evalFTS_wrapper.lock"
 
 # evaluate FTS link/source/destination/site status and upload JSON to MonIT:
 # ==========================================================================
-`dirname $0`/eval_fts.py
+`dirname $0`/eval_fts.py -v
 # #############################################################################
 
 

@@ -56,7 +56,7 @@ EXC_LOCK="/var/tmp/cmssst/evalSR_wrapper.lock"
 
 # evaluate Site Readiness status and upload JSON to MonIT:
 # ========================================================
-`dirname $0`/eval_sreadiness.py
+`dirname $0`/eval_sreadiness.py -v
 # #############################################################################
 
 

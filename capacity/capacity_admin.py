@@ -615,7 +615,6 @@ def capa_compose_json(capacityList, time15bin, noWho):
         timestamp = ( time15bin * 900 ) + 450
         hdrString = ((",\n {\n   \"producer\": \"cmssst\",\n" +
                              "   \"type\": \"ssbmetric\",\n" +
-                             "   \"path\": \"scap15min\",\n" +
                              "   \"monit_hdfs_path\": \"scap15min\",\n" +
                              "   \"timestamp\": %d000,\n" +
                              "   \"type_prefix\": \"raw\",\n" +

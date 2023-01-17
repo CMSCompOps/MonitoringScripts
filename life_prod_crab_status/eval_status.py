@@ -406,7 +406,6 @@ class StatusMetric:
             timestamp = ( 900 * metric[1] ) + 450
             hdrString = (",\n {\n   \"producer\": \"cmssst\",\n" +
                                 "   \"type\": \"ssbmetric\",\n" +
-                                "   \"path\": \"sts15min\",\n" +
                                 "   \"monit_hdfs_path\": \"sts15min\",\n" +
                                 "   \"timestamp\": %d000,\n" +
                                 "   \"type_prefix\": \"raw\",\n" +

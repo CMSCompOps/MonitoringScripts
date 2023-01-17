@@ -44,7 +44,7 @@ import pydoop.hdfs
 
 
 #EVSR_BACKUP_DIR = "./junk"
-EVSR_BACKUP_DIR = "/data/cmssst/MonitoringScripts/site_readiness/failed"
+EVSR_BACKUP_DIR = "/data/cmssst/MonitoringScripts/sitereadiness/failed"
 # ########################################################################### #
 
 
@@ -510,12 +510,10 @@ class SReadinessMetric:
             timestamp = ( interval * metric[1] ) + int( interval / 2 )
             hdrString = (",\n {\n   \"producer\": \"cmssst\",\n" +
                                 "   \"type\": \"ssbmetric\",\n" +
-                                "   \"path\": \"%s\",\n" +
                                 "   \"monit_hdfs_path\": \"%s\",\n" +
                                 "   \"timestamp\": %d000,\n" +
                                 "   \"type_prefix\": \"raw\",\n" +
-                                "   \"data\": {\n") % (metric[0], metric[0],
-                                                                     timestamp)
+                                "   \"data\": {\n") % (metric[0], timestamp)
             #
             for entry in self.evaluations( metric ):
             #

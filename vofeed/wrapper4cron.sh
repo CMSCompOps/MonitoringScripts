@@ -98,6 +98,13 @@ fi
 
 
 
+# bind EOS fuse session:
+# ======================
+/usr/bin/eosfusebind -g
+# #############################################################################
+
+
+
 # generate VO-feed from SiteDB, PhEDEx and Glide-in WMS factory information:
 # ==========================================================================
 `/usr/bin/dirname $0`/vofeed.py

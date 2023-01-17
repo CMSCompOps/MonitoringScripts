@@ -718,11 +718,10 @@ def corr_compose_sam_json(metric, timestamp, results):
     jsonString = "["
     hdrString = ((",\n {\n   \"producer\": \"cmssst\",\n" +
                          "   \"type\": \"ssbmetric\",\n" +
-                         "   \"path\": \"%s\",\n" +
                          "   \"monit_hdfs_path\": \"%s\",\n" +
                          "   \"timestamp\": %d000,\n" +
                          "   \"type_prefix\": \"raw\",\n" +
-                         "   \"data\": {\n") % (metric, metric, timestamp))
+                         "   \"data\": {\n") % (metric, timestamp))
 
     commaFlag = False
     for doc in sorted(results, key=lambda k: [k['name'], k['type'],
@@ -772,11 +771,10 @@ def corr_compose_hc_json(metric, timestamp, results):
     jsonString = "["
     hdrString = ((",\n {\n   \"producer\": \"cmssst\",\n" +
                          "   \"type\": \"ssbmetric\",\n" +
-                         "   \"path\": \"%s\",\n" +
                          "   \"monit_hdfs_path\": \"%s\",\n" +
                          "   \"timestamp\": %d000,\n" +
                          "   \"type_prefix\": \"raw\",\n" +
-                         "   \"data\": {\n") % (metric, metric, timestamp))
+                         "   \"data\": {\n") % (metric, timestamp))
 
     commaFlag = False
     for doc in sorted(results, key=lambda k: [k['name'], k['status']]):
@@ -825,11 +823,10 @@ def corr_compose_fts_json(metric, timestamp, results):
     jsonString = "["
     hdrString = ((",\n {\n   \"producer\": \"cmssst\",\n" +
                          "   \"type\": \"ssbmetric\",\n" +
-                         "   \"path\": \"%s\",\n" +
                          "   \"monit_hdfs_path\": \"%s\",\n" +
                          "   \"timestamp\": %d000,\n" +
                          "   \"type_prefix\": \"raw\",\n" +
-                         "   \"data\": {\n") % (metric, metric, timestamp))
+                         "   \"data\": {\n") % (metric, timestamp))
 
     commaFlag = False
     for doc in sorted(results, key=lambda k: [SORT_ORDER[k['type']],k['name']]):
@@ -872,11 +869,10 @@ def corr_compose_sr_json(metric, timestamp, results):
     jsonString = "["
     hdrString = ((",\n {\n   \"producer\": \"cmssst\",\n" +
                          "   \"type\": \"ssbmetric\",\n" +
-                         "   \"path\": \"%s\",\n" +
                          "   \"monit_hdfs_path\": \"%s\",\n" +
                          "   \"timestamp\": %d000,\n" +
                          "   \"type_prefix\": \"raw\",\n" +
-                         "   \"data\": {\n") % (metric, metric, timestamp))
+                         "   \"data\": {\n") % (metric, timestamp))
 
     commaFlag = False
     for doc in sorted(results, key=lambda k: k['name']):
