@@ -1509,6 +1509,9 @@ if __name__ == '__main__':
                                 ( rseScheme == "root" )):
                                 rseWritePath = \
                                    "//dcache/uscmsdisk/store/temp/user/cmssam/"
+                            elif (( rseHost == "eos.cms.rcac.purdue.edu" ) and
+                                ( rseScheme == "davs" )):
+                                rseWritePath = "/store/unmerged/SAM/SAM/"
                             elif ( urlTuple.netloc.split(":")[0].lower() !=
                                                              rseHost.lower() ):
                                 logging.error(("Write path of %s at anothe" + \
