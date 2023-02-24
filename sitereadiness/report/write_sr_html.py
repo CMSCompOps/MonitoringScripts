@@ -254,7 +254,10 @@ def srhr_ggus(siteDict):
     # ============================================================
     for ticket in tickets.findall('ticket'):
         ticketid = ticket.find('Ticket-ID').text
-        cmssite = ticket.find('CMS_Site').text
+        try:
+            cmssite = ticket.find('CMS_Site').text
+        except (KeyError, AttributeError):
+            cmssite = None
         if not cmssite:
            continue
         created  = ticket.findtext('Creation_Date', '')
