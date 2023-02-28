@@ -61,11 +61,8 @@ EVSAM_SERVICE_PROBES = {
                 "org.cms.WN-analysis-/cms/Role=lcgadmin",
                 "org.cms.WN-mc-/cms/Role=lcgadmin" ],
     'SRM':    [ "org.cms.SE-GSIftp-9summary" ],
-    'WEBDAV': [ "org.cms.SE-WebDAV-9summary" ],
-    'XRD':    [ "org.cms.SE-xrootd-connection",
-                "org.cms.SE-xrootd-version",
-                "org.cms.SE-xrootd-read",
-                "org.cms.SE-xrootd-contain" ]
+    'WEBDAV': [ "org.cms.SE-WebDAV-99summary" ],
+    'XRD':    [ "org.cms.SE-XRootD-99summary" ]
     }
 # ########################################################################### #
 
