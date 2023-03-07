@@ -1490,17 +1490,9 @@ if __name__ == '__main__':
                         #
                         # get RSE path of SAM write area:
                         try:
-                            if ( rseScheme == "root" ):
-                                rseWriteURL = next(iter( \
-                                    rseClient.lfns2pfns(rseName,
+                            rseWriteURL = next(iter( \
+                                rseClient.lfns2pfns(rseName,
                                               ["cms:/store/temp/user/cmssam/"],
-                                                  protocol_domain="wan",
-                                                  operation="write",
-                                                  scheme=rseScheme).values() ))
-                            else:
-                                rseWriteURL = next(iter( \
-                                    rseClient.lfns2pfns(rseName,
-                                                  ["cms:/store/unmerged/SAM/"],
                                                   protocol_domain="wan",
                                                   operation="write",
                                                   scheme=rseScheme).values() ))
