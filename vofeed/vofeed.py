@@ -50,7 +50,7 @@ import pydoop.hdfs
 
 
 
-VOFEED_VERSION = "v2.03.05"
+VOFEED_VERSION = "v2.03.06"
 # ########################################################################### #
 
 
@@ -1498,9 +1498,9 @@ if __name__ == '__main__':
                                                   scheme=rseScheme).values() ))
                             urlTuple = urllib.parse.urlparse( rseWriteURL )
                             if (( rseHost == "cmsdcadisk.fnal.gov" ) and
-                                ( rseScheme == "root" )):
-                                rseWritePath = \
-                                   "//dcache/uscmsdisk/store/temp/user/cmssam/"
+                                (( rseScheme == "root" ) or
+                                 ( rseScheme == "srm" ))):
+                                rseWritePath = None
                             elif (( rseHost == "eos.cms.rcac.purdue.edu" ) and
                                 ( rseScheme == "davs" )):
                                 rseWritePath = "/store/unmerged/SAM/SAM/"
