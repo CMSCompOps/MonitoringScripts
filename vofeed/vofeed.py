@@ -89,6 +89,7 @@ class vofeed:
             'XRootD.Redirector':              "XROOTD",
             'XRootD origin server':           "XROOTD",
             'XRootD component':               "XROOTD",
+            'eu.egi.readonly.xrootd':         "XROOTD",
             'org.squid-cache.Squid':          "",
             'perfSONAR':                      "perfSONAR",
             'net.perfSONAR.Bandwidth':        "perfSONAR",
@@ -1159,7 +1160,7 @@ if __name__ == '__main__':
                 'prd': False
             },
             {   'lbl': "FNAL",
-                'uri': "cmssi-factory01.fnal.gov",
+                'uri': "cmssi-factory02.fnal.gov",
                 'prd': True
             } ]
 
