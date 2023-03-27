@@ -114,11 +114,11 @@ OVRD_CAPACITY_DESC = {
                                 "from Rebus if federation is set)",
     'disk_usable':              "Disk space in TBytes usable by CMS",
     'disk_experiment_use':      "Disk space in TBytes available for experi" + \
-                                "ment use (auto-filled from Rucio)",
+                                "ment central operations (used by Rucio)",
     'disk_experiment_fraction': "Percent of disk space for experiment use " + \
                                 "(auto-calculated)",
     'disk_local_use':           "Disk space in TBytes available for local " + \
-                                "use (auto-filled from Rucio)",
+                                "use (used by Rucio)",
     'disk_reserved_free':       "Disk space in TBytes reserved for /store/" + \
                                 "unmerged (auto-filled from Rucio)",
     'tape_pledge':              "Tape space pledge in TBytes (auto-filled " + \
@@ -1474,8 +1474,8 @@ def ovrd_html_capacity(authDict, siteFacility, federationPledge, cgiSITE):
                    "N=\"0\" NAME=\"disk_usable\" VALUE=\"%.1f\">%s<BR>") %
                   (entry['disk_usable'], OVRD_CAPACITY_DESC['disk_usable']))
             print(("      <INPUT TYPE=\"number\" SIZE=\"12\" STEP=\"0.5\" MI" +
-                   "N=\"0\" NAME=\"disk_experiment_use\" VALUE=\"%.1f\" READ" +
-                   "ONLY>%s<BR>") % (entry['disk_experiment_use'],
+                   "N=\"0\" NAME=\"disk_experiment_use\" VALUE=\"%.1f\">%s<B" +
+                   "R>") % (entry['disk_experiment_use'],
                                     OVRD_CAPACITY_DESC['disk_experiment_use']))
             if ( entry['disk_usable'] > 0.0 ):
                 frctn = int( 10000.0 * entry['disk_experiment_use'] /
@@ -1501,8 +1501,8 @@ def ovrd_html_capacity(authDict, siteFacility, federationPledge, cgiSITE):
                    "<BR>") % (frctn, color,
                                OVRD_CAPACITY_DESC['disk_experiment_fraction']))
             print(("      <INPUT TYPE=\"number\" SIZE=\"12\" STEP=\"0.5\" MI" +
-                   "N=\"0\" NAME=\"disk_local_use\" VALUE=\"%.1f\" READONLY>" +
-                   "%s<BR>") % (entry['disk_local_use'],
+                   "N=\"0\" NAME=\"disk_local_use\" VALUE=\"%.1f\">%s<BR>") %
+                  (entry['disk_local_use'],
                                          OVRD_CAPACITY_DESC['disk_local_use']))
             print(("      <INPUT TYPE=\"number\" SIZE=\"12\" STEP=\"0.01\" M" +
                    "IN=\"0\" NAME=\"disk_reserved_free\" VALUE=\"%.2f\" READ" +
@@ -1737,7 +1737,7 @@ def ovrd_post_capacity(authDict, siteFacility, federationPledge,
            "NAME=\"disk_usable\" VALUE=\"%.1f\">%s<BR>") %
                      (entry['disk_usable'], OVRD_CAPACITY_DESC['disk_usable']))
     print(("      <INPUT TYPE=\"number\" SIZE=\"12\" STEP=\"0.5\" MIN=\"0\" " +
-           "NAME=\"disk_experiment_use\" VALUE=\"%.1f\" READONLY>%s<BR>") %
+           "NAME=\"disk_experiment_use\" VALUE=\"%.1f\">%s<BR>") %
           (entry['disk_experiment_use'],
                                     OVRD_CAPACITY_DESC['disk_experiment_use']))
     if ( entry['disk_usable'] > 0.0 ):
@@ -1764,7 +1764,7 @@ def ovrd_post_capacity(authDict, siteFacility, federationPledge,
                                OVRD_CAPACITY_DESC['disk_experiment_fraction']))
 
     print(("      <INPUT TYPE=\"number\" SIZE=\"12\" STEP=\"0.5\" MIN=\"0\" " +
-           "NAME=\"disk_local_use\" VALUE=\"%.1f\" READONLY>%s<BR>") %
+           "NAME=\"disk_local_use\" VALUE=\"%.1f\">%s<BR>") %
           (entry['disk_local_use'], OVRD_CAPACITY_DESC['disk_local_use']))
     print(("      <INPUT TYPE=\"number\" SIZE=\"12\" STEP=\"0.01\" MIN=\"0\"" +
            " NAME=\"disk_reserved_free\" VALUE=\"%.2f\" READONLY>%s<BR>") %
@@ -1810,6 +1810,11 @@ def ovrd_html_trailer(cgiMTRC, msgLog):
 
     timeStrng = time.strftime("%Y-%b-%d %H:%M GMT", time.gmtime(time.time()))
     #
+    if ( cgiMTRC == "SiteCapacity" ):
+        print("For a detailed description of the CMS disk space breakdown, p" +
+              "lease see the <A HREF=\"https://twiki.cern.ch/twiki/bin/view/" +
+              "CMS/SiteSupportDiskSpace\">CMS F&amp;S Site Support Disk Spac" +
+              "e twiki</A>.\n<P>\n\n")
     print(("<TABLE WIDTH=\"100%%\" BORDER=\"0\" CELLPADDING=\"0\" CELLSPACIN" +
            "G=\"2\">\n<TR>\n   <TD STYLE=\"text-align: left; color: blue; fo" +
            "nt-weight: bold; white-space: nowrap;\">Information as of %s\n  " +

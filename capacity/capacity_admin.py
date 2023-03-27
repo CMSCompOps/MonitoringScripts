@@ -801,28 +801,34 @@ def capa_update_jsonfile(siteList, pledgesDict, quotaDict, usageDict):
                             if (( type( quotaDict[myKey] ) is tuple ) or
                                 ( type( quotaDict[myKey] ) is list )):
                                 # experiment and local quota in Rucio:
-                                tmpDict[myKey]['disk_experiment_use'] = \
-                                                            quotaDict[myKey][0]
-                                tmpDict[myKey]['disk_local_use'] = \
-                                                            quotaDict[myKey][1]
+                                #tmpDict[myKey]['disk_experiment_use'] = \
+                                #                            quotaDict[myKey][0]
+                                #tmpDict[myKey]['disk_local_use'] = \
+                                #                            quotaDict[myKey][1]
                                 tmpDict[myKey]['disk_reserved_free'] = \
                                                             quotaDict[myKey][2]
-                                logging.log(15, ("Experiment/local/reserved " \
-                                                 "disk quota for %s updated " \
-                                                 "to: %.1f/%.1f/%.2f") % \
-                                                 (myKey, quotaDict[myKey][0],
-                                     quotaDict[myKey][1], quotaDict[myKey][2]))
+                                #logging.log(15, ("Experiment/local/reserved " \
+                                #                 "disk quota for %s updated " \
+                                #                 "to: %.1f/%.1f/%.2f") % \
+                                #                 (myKey, quotaDict[myKey][0],
+                                #     quotaDict[myKey][1], quotaDict[myKey][2]))
+                                logging.log(15, ("Reserved disk quota for %s" \
+                                                 " updated to: %.2f") % \
+                                                 (myKey, quotaDict[myKey][2]))
                             else:
                                 # experiment quota in DDM:
-                                tmpDict[myKey]['disk_experiment_use'] = \
-                                                               quotaDict[myKey]
-                                logging.log(15, ("Experiment disk quota for " \
-                                                 "%s updated to %.1f") % (myKey,
-                                                             quotaDict[myKey]))
+                                #tmpDict[myKey]['disk_experiment_use'] = \
+                                #                               quotaDict[myKey]
+                                #logging.log(15, ("Experiment disk quota for " \
+                                #                 "%s updated to %.1f") % \
+                                #                     (myKey, quotaDict[myKey]))
+                                logging.warning("Skipping Rucio reserved spa" \
+                                                  "ce updating for %s % myKey")
                         elif (( type( quotaDict[myKey] ) is tuple ) or
                               ( type( quotaDict[myKey] ) is list )):
-                            if (( quotaDict[myKey][0] > 0.0 ) or
-                                ( quotaDict[myKey][1] > 0.0 )):
+                            #if (( quotaDict[myKey][0] > 0.0 ) or
+                            #    ( quotaDict[myKey][1] > 0.0 )):
+                            if ( quotaDict[myKey][2] > 0.0 ):
                                 # experiment and local quota in Rucio:
                                 capacityList.append( {
                                     'name':                     myKey,
@@ -837,43 +843,48 @@ def capa_update_jsonfile(siteList, pledgesDict, quotaDict, usageDict):
                                     'core_io_intensive':        0,
                                     'disk_pledge':              0.0,
                                     'disk_usable':              0.0,
-                                    'disk_experiment_use': quotaDict[myKey][0],
-                                    'disk_local_use':      quotaDict[myKey][1],
+                                    'disk_experiment_use':      0.0,
+                                    'disk_local_use':           0.0,
                                     'disk_reserved_free':  quotaDict[myKey][2],
                                     'tape_pledge':              0.0,
                                     'tape_usable':              0.0,
                                     'when':                     None,
                                     'who':                      None } )
-                                logging.log(15, ("Experiment/local/reserved " \
-                                                 "disk quota for %s set to: " \
-                                                 "%.1f/%.1f/%.2f") % (myKey,
-                                                 quotaDict[myKey][0],
-                                     quotaDict[myKey][1], quotaDict[myKey][2]))
+                                #logging.log(15, ("Experiment/local/reserved " \
+                                #                 "disk quota for %s set to: " \
+                                #                 "%.1f/%.1f/%.2f") % (myKey,
+                                #                 quotaDict[myKey][0],
+                                #     quotaDict[myKey][1], quotaDict[myKey][2]))
+                                logging.log(15, ("Reserved disk quota for %s" \
+                                                 " set to: %.2f") % \
+                                                 (myKey, quotaDict[myKey][2]))
                         elif ( quotaDict[myKey] > 0.0 ):
                             # experiment quota in DDM:
-                            capacityList.append( {
-                                'name':                     myKey,
-                                'wlcg_federation_name':     None,
-                                'wlcg_federation_fraction': 1.000,
-                                'hs06_pledge':              0,
-                                'hs06_per_core':            10.000,
-                                'core_usable':              0,
-                                'core_max_used':            0,
-                                'core_production':          0,
-                                'core_cpu_intensive':       0,
-                                'core_io_intensive':        0,
-                                'disk_pledge':              0.0,
-                                'disk_usable':              0.0,
-                                'disk_experiment_use':    quotaDict[myKey],
-                                'disk_local_use':           0.0,
-                                'disk_reserved_free':       0.00,
-                                'tape_pledge':              0.0,
-                                'tape_usable':              0.0,
-                                'when':                     None,
-                                'who':                      None } )
-                            logging.log(15, ("Experiment disk quota for %s s" +
-                                             "et to: %.1f") % (myKey,
-                                                             quotaDict[myKey]))
+                            #capacityList.append( {
+                            #    'name':                     myKey,
+                            #    'wlcg_federation_name':     None,
+                            #    'wlcg_federation_fraction': 1.000,
+                            #    'hs06_pledge':              0,
+                            #    'hs06_per_core':            10.000,
+                            #    'core_usable':              0,
+                            #    'core_max_used':            0,
+                            #    'core_production':          0,
+                            #    'core_cpu_intensive':       0,
+                            #    'core_io_intensive':        0,
+                            #    'disk_pledge':              0.0,
+                            #    'disk_usable':              0.0,
+                            #    'disk_experiment_use':    quotaDict[myKey],
+                            #    'disk_local_use':           0.0,
+                            #    'disk_reserved_free':       0.00,
+                            #    'tape_pledge':              0.0,
+                            #    'tape_usable':              0.0,
+                            #    'when':                     None,
+                            #    'who':                      None } )
+                            #logging.log(15, ("Experiment disk quota for %s s" +
+                            #                 "et to: %.1f") % (myKey,
+                            #                                 quotaDict[myKey]))
+                            logging.warning("Skipping Rucio reserved spa" \
+                                                  "ce updating for %s" % myKey)
                     del tmpDict
                     #
                     #
