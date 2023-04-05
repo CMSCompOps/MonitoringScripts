@@ -297,7 +297,7 @@ def capa_startd_usage():
     startTIS = ( today - 30 ) * 86400
     limitTIS = today * 86400
     queryString = ("{\"search_type\":\"query_then_fetch\",\"index\":[\"monit" +
-                   "_prod_cms_raw_si_condor_*\"],\"ignore_unavailable\":true" +
+             "_prod_cms_raw_si_condor_startd*\"],\"ignore_unavailable\":true" +
                    "}\n{\"query\":{\"bool\":{\"must\":[{\"match_phrase\":{\"" +
                    "metadata.topic\":\"cms_raw_si_condor_startd\"}}],\"must_" +
                    "not\":[{\"match_phrase\":{\"data.payload.SlotType\":\"Dy" +
