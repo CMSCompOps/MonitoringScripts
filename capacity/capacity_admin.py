@@ -926,6 +926,44 @@ def capa_update_jsonfile(siteList, pledgesDict, quotaDict, usageDict):
                     del tmpDict
                     #
                     #
+                    # add zero entries for new sites:
+                    if siteList is not None:
+                        tmpDict = { e['name']:e for e in capacityList }
+                        for myKey in siteList:
+                            if myKey not in tmpDict:
+                                capacityList.append( {
+                                    'name':                     myKey,
+                                    'wlcg_federation_name':     None,
+                                    'wlcg_federation_fraction': 1.000,
+                                    'hs06_pledge':              0,
+                                    'hs06_per_core':            10.000,
+                                    'core_usable':              0,
+                                    'core_max_used':            0,
+                                    'core_production':          0,
+                                    'core_cpu_intensive':       0,
+                                    'core_io_intensive':        0,
+                                    'disk_pledge':              0.0,
+                                    'disk_usable':              0.0,
+                                    'disk_experiment_use':      0.0,
+                                    'disk_local_use':           0.0,
+                                    'disk_reserved_free':       0.00,
+                                    'tape_pledge':              0.0,
+                                    'tape_usable':              0.0,
+                                    'when':                     None,
+                                    'who':                      None } )
+                                logging.log(15, "Zero entry for %s added" %
+                                                                         myKey)
+                        del tmpDict
+                    #
+                    #
+                    # warn of decommissioned site entries:
+                    if capacityList is not None:
+                        for myEntry in capacityList:
+                            if ( myEntry['name'] not in siteList ):
+                                logging.warning(("Capacity entry for non-e" + \
+                                          "xisting site %s") % myEntry['name'])
+                    #
+                    #
                     jsonString = capa_compose_json(capacityList, None, False)
                     #
                     myFile.seek(0)
