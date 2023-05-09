@@ -313,7 +313,7 @@ def evhc_grafana_jobs(startTIS, limitTIS):
     # ############################################################# #
     global evhc_glbl_jobcondor
     URL_GRAFANA = "https://monit-grafana.cern.ch/api/datasources/proxy/8787/_msearch"
-    HDR_GRAFANA = {'Authorization': "Bearer eyJrIjoiZWRnWXc1bUZWS0kwbWExN011TGNTN2I2S1JpZFFtTWYiLCJuIjoiY21zLXNzYiIsImlkIjoxMX0=", 'Content-Type': "application/json; charset=UTF-8"}
+    HDR_GRAFANA = {'Authorization': "Bearer eyJrIjxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxjoxMX0=", 'Content-Type': "application/json; charset=UTF-8"}
     #
     logging.info("Fetching job records via Grafana, %d (%s) to %d (%s)" %
                  (startTIS, time.strftime("%Y-%m-%d %H:%M",

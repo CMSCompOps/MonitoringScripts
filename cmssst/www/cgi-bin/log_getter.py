@@ -201,7 +201,7 @@ def lget_grafana_fetch(cfg):
     # return dictionary with list of documents from MonIT/ES for each timebin #
     # ####################################################################### #
     URL_GRAFANA = "https://monit-grafana.cern.ch/api/datasources/proxy/9475/_msearch"
-    HDR_GRAFANA = {'Authorization': "Bearer eyJrIjoiZWRnWXc1bUZWS0kwbWExN011TGNTN2I2S1JpZFFtTWYiLCJuIjoiY21zLXNzYiIsImlkIjoxMX0=", 'Content-Type': "application/json; charset=UTF-8"}
+    HDR_GRAFANA = {'Authorization': "Bearer eyJrIjxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxjoxMX0=", 'Content-Type': "application/json; charset=UTF-8"}
     #
     siteRegex = re.compile(r"T\d_[A-Z]{2,2}_\w+")
     #

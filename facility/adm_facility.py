@@ -1068,7 +1068,7 @@ def admf_influxdb_jobmon(firstTIS, limitTIS, siteDict, fsssDict):
     # urllib.parse.unquote(URL_INFLUXDB % (123456789, 987654321))
     # 'https://monit-grafana.cern.ch/api/datasources/proxy/7731/query?db=monit_production_cmsjm&q=SELECT SUM(wavg_count) FROM "long"."condor_1d" WHERE "Status" = \'Running\' AND time >= 123456789s and time < 987654321s GROUP BY "RequestCpus", "Site"'
     # -------------------------------------------------------------------------
-    HDR_GRAFANA = {'Authorization': "Bearer eyJrIjoiZWRnWXc1bUZWS0kwbWExN011TGNTN2I2S1JpZFFtTWYiLCJuIjoiY21zLXNzYiIsImlkIjoxMX0=", 'Content-Type': "application/x-www-form-urlencoded; charset=UTF-8", 'Accept': "application/json"}
+    HDR_GRAFANA = {'Authorization': "Bearer eyJrIjxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxjoxMX0=", 'Content-Type': "application/x-www-form-urlencoded; charset=UTF-8", 'Accept': "application/json"}
     #
     first15m = int( firstTIS / 86400 ) * 96
     limit15m = int( limitTIS / 86400 ) * 96
@@ -1181,7 +1181,7 @@ def admf_grafana_jobmon(firstTIS, limitTIS, siteDict, fsssDict):
     #       the product of number-of-cores and usage for each site.           #
     # ####################################################################### #
     URL_GRAFANA = "https://monit-grafana.cern.ch/api/datasources/proxy/9582/_msearch"
-    HDR_GRAFANA = {'Authorization': "Bearer eyJrIjoiZWRnWXc1bUZWS0kwbWExN011TGNTN2I2S1JpZFFtTWYiLCJuIjoiY21zLXNzYiIsImlkIjoxMX0=", 'Content-Type': "application/json; charset=UTF-8", 'Accept': "application/json"}
+    HDR_GRAFANA = {'Authorization': "Bearer eyJrIjxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxjoxMX0=", 'Content-Type': "application/json; charset=UTF-8", 'Accept': "application/json"}
     #
     first15m = int( firstTIS / 86400 ) * 96
     limit15m = int( limitTIS / 86400 ) * 96
