@@ -50,7 +50,7 @@ import pydoop.hdfs
 
 
 
-VOFEED_VERSION = "v2.03.06"
+VOFEED_VERSION = "v2.03.07"
 # ########################################################################### #
 
 
@@ -1596,6 +1596,10 @@ if __name__ == '__main__':
                 if (( rseHost == "cmseos-gridftp.fnal.gov" ) and
                     ( rseSite == "T1_US_FNAL" )):
                     continue
+                if ((( rseSite == "T2_FR_GRIF_LLR" ) or
+                     ( rseSite == "T2_FR_GRIF_IRFU" )) and
+                    ( rseHost == "eos.grif.fr" )):
+                    rseSite = "T2_FR_GRIF"
                 if (( rseProto == "root" ) or
                     (( rseHost == \
                            "gridftp-vanderbilt.sites.opensciencegrid.org" ) and
