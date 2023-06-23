@@ -54,7 +54,7 @@ for URL in ${URLS}; do
    REPO=`echo "${URL}" | /usr/bin/awk -F/ '{print $(NF-1);exit}'`
    AREA=${DIRS}/${REPO}
    if [ ! -e "${AREA}" ]; then
-       /bin/mkdir "${AREA}"
+      /bin/mkdir "${AREA}"
    fi
 
    /usr/bin/timeout 90 /usr/bin/wget -O ${AREA}/new.cvmfspublished -T 60 ${URL}
