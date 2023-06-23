@@ -8,7 +8,7 @@
 # 2022-Aug-30 Stephan Lammel                                                  #
 # #############################################################################
 URLS="http://cvmfs-stratum-zero.cern.ch/cvmfs/cms.cern.ch/.cvmfspublished http://oasis.opensciencegrid.org:8000/cvmfs/oasis.opensciencegrid.org/.cvmfspublished http://oasis-replica.opensciencegrid.org:8000/cvmfs/singularity.opensciencegrid.org/.cvmfspublished http://cvmfs-stratum-zero.cern.ch/cvmfs/grid.cern.ch/.cvmfspublished"
-DIRS="/eos/user/c/cmssst/www/cvmfs/"
+DIRS="/eos/user/c/cmssst/www/cvmfs"
 #
 umask 022
 EXITCODE=0
@@ -26,6 +26,20 @@ null_cvmfspublished()
    /bin/rm -f ${MY_AREA}/new.cvmfspublished
    echo -e -n "C0000000000000000000000000000000000000000\nB0\nRd41d8cd98f00b204e9800998ecf8427e\nD0\nS0\nGno\nAno\nN${MY_REPO}\nX0000000000000000000000000000000000000000\nH0000000000000000000000000000000000000000\nT0\nM0000000000000000000000000000000000000000\nY0000000000000000000000000000000000000000\n--\n00000000deadbeef00000000deadbeef00000000\n${ERROR_MSG} !!!" 1>${MY_AREA}/new.cvmfspublished 2>/dev/null
    /bin/mv ${MY_AREA}/new.cvmfspublished ${MY_AREA}/.cvmfspublished
+}
+
+keep_revisionsummary()
+{
+   MY_REPO=$1
+   if [ "${MY_REPO}" = "" -o [ "${MY_REPO}" = *" "* ]]; then
+      return
+   fi
+   if [ -f ${DIRS}/revisions.txt ]; then
+      MY_REV=`/usr/bin/awk -vr=${MY_REPO} '{if($1==r){print int($2);exit}}' ${DIRS}/revisions.txt`
+      if [ -n "${MY_REV}" ]; then
+         echo "${MY_REPO} ${MY_REV}" 1>>  ${DIRS}/revisions.txt_new
+      fi
+   fi
 }
 
 
@@ -57,33 +71,41 @@ for URL in ${URLS}; do
       /bin/mkdir "${AREA}"
    fi
 
+   /bin/rm -f ${AREA}/new.cvmfspublished 1>/dev/null 2>&1
    /usr/bin/timeout 90 /usr/bin/wget -O ${AREA}/new.cvmfspublished -T 60 ${URL}
    RC=$?
    if [ ${RC} -eq 124 ]; then
       null_cvmfspublished "${AREA}" "timeout contacting Stratum-0"
+      keep_revisionsummary "${REPO}"
       if [ ${EXITCODE} -eq 0 ]; then
          EXITCODE=1
       fi
       continue
    elif [ ${RC} -ne 0 ]; then
       null_cvmfspublished "${AREA}" "failed to fetch Stratum-0 manifest"
+      keep_revisionsummary "${REPO}"
       if [ ${EXITCODE} -eq 0 ]; then
          EXITCODE=1
       fi
       continue
    fi
 
-   # update revisions summary file:
-   REV=`/usr/bin/awk '$0 ~ /^S/ {print int(substr($0,2));exit}' ${AREA}/new.cvmfspublished`
-   echo "${REPO} ${REV}" 1>>  ${DIRS}/revisions.txt_new
-
    NOW=`/usr/bin/date +"%s"`
    TSP=`/usr/bin/awk -v now=${NOW} 'BEGIN{t=now} $0 ~ /^T/ {t=int(substr($0,2))} END{print int(now-t)}' ${AREA}/new.cvmfspublished`
    TDL=`/usr/bin/awk -v tsp=${TSP} 'BEGIN{t=900} $0 ~ /^D/ {t=2*int(substr($0,2))} END{print int(3600+t-tsp)}' ${AREA}/new.cvmfspublished`
-   if [ ${TDL} -gt 0 ]; then
+   if [ ${TDL} -ge 3600 ]; then
+      # update in next cycle:
+      /bin/rm ${AREA}/new.cvmfspublished
+      keep_revisionsummary "${REPO}"
+      continue
+   elif [ ${TDL} -gt 0 ]; then
       echo "sleeping ${TDL} seconds before update"
       /bin/sleep ${TDL}
    fi
+
+   # update revisions summary file:
+   REV=`/usr/bin/awk '$0 ~ /^S/ {print int(substr($0,2));exit}' ${AREA}/new.cvmfspublished`
+   echo "${REPO} ${REV}" 1>>  ${DIRS}/revisions.txt_new
 
    /bin/mv ${AREA}/new.cvmfspublished ${AREA}/.cvmfspublished
    RC=$?
