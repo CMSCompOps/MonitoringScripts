@@ -79,7 +79,7 @@ for URL in ${URLS}; do
 
    NOW=`/usr/bin/date +"%s"`
    TSP=`/usr/bin/awk -v now=${NOW} 'BEGIN{t=now} $0 ~ /^T/ {t=int(substr($0,2))} END{print int(now-t)}' ${AREA}/new.cvmfspublished`
-   TDL=`/usr/bin/awk -v tsp=${TSP} 'BEGIN{t=900} $0 ~ /^D/ {t=2*int(substr($0,2))} END{print int(t-tsp)}' ${AREA}/new.cvmfspublished`
+   TDL=`/usr/bin/awk -v tsp=${TSP} 'BEGIN{t=900} $0 ~ /^D/ {t=2*int(substr($0,2))} END{print int(3600+t-tsp)}' ${AREA}/new.cvmfspublished`
    if [ ${TDL} -gt 0 ]; then
       echo "sleeping ${TDL} seconds before update"
       /bin/sleep ${TDL}
