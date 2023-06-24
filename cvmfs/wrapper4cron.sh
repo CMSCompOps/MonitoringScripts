@@ -117,7 +117,9 @@ fi
 
 # fetch .cvmfspublished files and write revisions summary file:
 # =============================================================
-`/usr/bin/dirname $0`/cvmfs_manifest.sh
+MY_DIR=`/usr/bin/dirname $0`
+/bin/rm -f ${MY_DIR}/log.txt
+${MY_DIR}/cvmfs_manifest.sh 1>${MY_DIR}/log.txt 2>&1
 # #############################################################################
 
 
