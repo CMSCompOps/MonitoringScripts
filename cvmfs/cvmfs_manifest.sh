@@ -37,7 +37,7 @@ keep_revisionsummary()
    if [ -f ${DIRS}/revisions.txt ]; then
       MY_REV=`/usr/bin/awk -vr=${MY_REPO} '{if($1==r){print int($2);exit}}' ${DIRS}/revisions.txt`
       if [ -n "${MY_REV}" ]; then
-         echo "${MY_REPO} ${MY_REV}" 1>>  ${DIRS}/revisions.txt_new
+         echo "${MY_REPO} ${MY_REV}" 1>> ${DIRS}/revisions.txt_new
       fi
    fi
 }
@@ -61,6 +61,9 @@ fi
 # start new revisions summary file:
 /bin/rm -f ${DIRS}/revisions.txt_new 1>/dev/null 2>&1
 /bin/touch ${DIRS}/revisions.txt_new
+
+MY_NOW=`/usr/bin/date +"%s"`
+MY_SLEEP=0
 
 
 # fetch manifest for repositories:
@@ -90,22 +93,27 @@ for URL in ${URLS}; do
       continue
    fi
 
-   NOW=`/usr/bin/date +"%s"`
-   TSP=`/usr/bin/awk -v now=${NOW} 'BEGIN{t=now} $0 ~ /^T/ {t=int(substr($0,2))} END{print int(now-t)}' ${AREA}/new.cvmfspublished`
+   TSP=`/usr/bin/awk -v now=${MY_NOW} 'BEGIN{t=now} $0 ~ /^T/ {t=int(substr($0,2))} END{print int(now-t)}' ${AREA}/new.cvmfspublished`
    TDL=`/usr/bin/awk -v tsp=${TSP} 'BEGIN{t=900} $0 ~ /^D/ {t=2*int(substr($0,2))} END{print int(3600+t-tsp)}' ${AREA}/new.cvmfspublished`
-   if [ ${TDL} -ge 3600 ]; then
-      # update in next cycle:
-      /bin/rm ${AREA}/new.cvmfspublished
-      keep_revisionsummary "${REPO}"
-      continue
-   elif [ ${TDL} -gt 0 ]; then
-      echo "sleeping ${TDL} seconds before update"
-      /bin/sleep ${TDL}
+   if [ ${TDL} -gt 0 ]; then
+      echo "update needs ${TDL} seconds to propagate"
+      MY_SLEEP=`echo "${TDL}" | /usr/bin/awk -vs=${MY_SLEEP} '{if(s<$0){print $0}else{print s};exit}'`
    fi
 
    # update revisions summary file:
    REV=`/usr/bin/awk '$0 ~ /^S/ {print int(substr($0,2));exit}' ${AREA}/new.cvmfspublished`
    echo "${REPO} ${REV}" 1>>  ${DIRS}/revisions.txt_new
+done
+
+NOW=`/usr/bin/date +"%s"`
+MY_SLEEP=`echo "${MY_NOW} + ${MY_SLEEP} - ${NOW}" | /usr/bin/bc`
+if [ ${MY_SLEEP} -gt 0 ]; then
+   echo "sleeping ${MY_SLEEP} seconds for updates to propagate through"
+   /bin/sleep ${MY_SLEEP}
+fi
+
+for FILE in ${DIRS}/*/new.cvmfspublished; do
+   AREA=${FILE%*/new.cvmfspublished}
 
    /bin/mv ${AREA}/new.cvmfspublished ${AREA}/.cvmfspublished
    RC=$?
