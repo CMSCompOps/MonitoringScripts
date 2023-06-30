@@ -1142,11 +1142,11 @@ def evsam_evaluate(timebin):
                                                     service['ctgry'], myStatus)
                     if ( service['ctgry'] == "CE" ):
                         # one CE needs to be working:
-                        if (( downStatus == "downtime" ) and
-                            (( myStatus == "error" ) or
-                             ( myStatus == "unknown" ))):
-                            pass
-                        elif ceStatus is None:
+                        if ( downStatus == "downtime" ):
+                            if ( ceStatus is None ):
+                                ceStatus = downStatus
+                        elif (( ceStatus is None ) or
+                              ( ceStatus == "downtime" )):
                             ceStatus = myStatus
                         elif ( myStatus == "ok" ):
                             ceStatus = "ok"
@@ -1154,45 +1154,54 @@ def evsam_evaluate(timebin):
                               ( ceStatus != "ok" )):
                             ceStatus = "warning"
                         elif (( myStatus == "error" ) and
-                              ( ceStatus == "unknown" )):
+                              (( ceStatus == "unknown" ) or
+                               ( ceStatus == "downtime" ))):
                             ceStatus = "error"
                     elif ( service['ctgry'] == "SRM" ):
                         # all SRM endpoints must be working:
-                        if (( downStatus == "downtime" ) and
-                            (( myStatus == "error" ) or
-                             ( myStatus == "unknown" ))):
-                            pass
-                        elif srmStatus is None:
+                        if ( downStatus == "downtime" ):
+                            if ( srmStatus is None ):
+                                srmStatus = downStatus
+                        elif (( srmStatus is None ) or
+                              ( srmStatus == "downtime" )):
                             srmStatus = myStatus
                         elif ( myStatus == "error" ):
                             srmStatus = "error"
                         elif (( myStatus == "unknown" ) and
                               (( srmStatus == "warning" ) or
-                               ( srmStatus == "ok" ))):
+                               ( srmStatus == "ok" ) or
+                               ( srmStatus == "downtime" ))):
                             srmStatus = "unknown"
                         elif (( myStatus == "warning" ) and
-                              ( srmStatus == "ok" )):
+                              (( srmStatus == "ok" ) or
+                               ( srmStatus == "downtime" ))):
                             srmStatus = "warning"
                     elif ( service['ctgry'] == "WEBDAV" ):
                         # all WebDAV endpoints must be working:
-                        if webdavStatus is None:
+                        if ( downStatus == "downtime" ):
+                            if ( webdavStatus is None ):
+                                webdavStatus = downStatus
+                        elif (( webdavStatus is None ) or
+                              ( webdavStatus == "downtime" )):
                             webdavStatus = myStatus
                         elif ( myStatus == "error" ):
                             webdavStatus = "error"
                         elif (( myStatus == "unknown" ) and
                               (( webdavStatus == "warning" ) or
-                               ( webdavStatus == "ok" ))):
+                               ( webdavStatus == "ok" ) or
+                               ( webdavStatus == "downtime" ))):
                             webdavStatus = "unknown"
                         elif (( myStatus == "warning" ) and
-                              ( webdavStatus == "ok" )):
+                              (( webdavStatus == "ok" ) or
+                               ( webdavStatus == "downtime" ))):
                             webdavStatus = "warning"
                     elif ( service['ctgry'] == "XRD" ):
                         # one xrootd-endpoint must be working:
-                        if (( downStatus == "downtime" ) and
-                            (( myStatus == "error" ) or
-                             ( myStatus == "unknown" ))):
-                            pass
-                        elif xrootdStatus is None:
+                        if ( downStatus == "downtime" ):
+                            if ( xrootdStatus is None ):
+                                xrootdStatus = downStatus
+                        elif (( xrootdStatus is None ) or
+                              ( xrootdStatus == "downtime" )):
                             xrootdStatus = myStatus
                         elif ( myStatus == "ok" ):
                             xrootdStatus = "ok"
@@ -1200,7 +1209,8 @@ def evsam_evaluate(timebin):
                               ( xrootdStatus != "ok" )):
                             xrootdStatus = "warning"
                         elif (( myStatus == "error" ) and
-                              ( xrootdStatus == "unknown" )):
+                              (( xrootdStatus == "unknown" ) or
+                               ( xrootdStatus == "downtime" ))):
                             xrootdStatus = "error"
         #
         # add site evaluation to evsam_glbl_evaluations:
@@ -1232,7 +1242,7 @@ def evsam_evaluate(timebin):
                 if (( myStatus is None ) or
                     ( myStatus == "error" ) or ( myStatus == "unknown" )):
                     myStatus = "downtime"
-                myReliability = None
+                    myReliability = None
         #
         # add site evaluation to evsam_glbl_evaluations:
         if ( siteDetail[-1:] == "\n" ):
