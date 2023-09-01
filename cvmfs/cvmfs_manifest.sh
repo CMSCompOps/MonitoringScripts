@@ -97,7 +97,7 @@ for MY_URL in ${MY_URLS}; do
          echo "[E] no revision and/or release date information"
       else
 
-         MY_48H=`echo "${SWN_START} - (48*60*60)" | /usr/bin/bc`
+         MY_48H=`echo "${MY_START} - (48*60*60)" | /usr/bin/bc`
          #
          echo "${MY_REVN}:${MY_REVT}" 1> ${MY_OUT_DIR}/revisions.tmp
          /bin/cat ${MY_OUT_DIR}/revisions.txt 1>> ${MY_OUT_DIR}/revisions.tmp
