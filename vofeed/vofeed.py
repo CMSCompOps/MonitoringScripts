@@ -50,7 +50,7 @@ import pydoop.hdfs
 
 
 
-VOFEED_VERSION = "v2.03.07"
+VOFEED_VERSION = "v2.03.08"
 # ########################################################################### #
 
 
@@ -1244,6 +1244,9 @@ if __name__ == '__main__':
                 gkeeper = classAd['GLIDEIN_Gatekeeper'].split()[-1]
                 gkeeper = gkeeper.split("://")[-1]
                 host = gkeeper.split(":")[0].lower()
+                if ( host == "ce-test.gla.scotgrid.ac.uk" ):
+                    # skip ARM test setup as old WN probes are x86 specific
+                    continue
                 if ( host[-8:] == ".invalid" ):
                     continue
                 if classAd['GLIDEIN_GridType'] == 'cream':
