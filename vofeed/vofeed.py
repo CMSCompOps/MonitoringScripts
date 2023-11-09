@@ -50,7 +50,7 @@ import pydoop.hdfs
 
 
 
-VOFEED_VERSION = "v2.03.08"
+VOFEED_VERSION = "v2.03.09"
 # ########################################################################### #
 
 
@@ -1297,7 +1297,7 @@ if __name__ == '__main__':
 
                 # add CERN Tier-2 production factory entries also under Tier-0
                 if (( classAd['GLIDEIN_CMSSite'] == "T2_CH_CERN" ) and
-                    ( factory['prd'] == True )):
+                    ( factory['prd'] == True ) and ( host[:4] == "cet0")):
                     try:
                         vofeedObj.add1service(timestamp, "T0_CH_CERN", service)
                     except:
