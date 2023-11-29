@@ -364,7 +364,7 @@ def evsam_monit_etf(startTIS, limitTIS):
                                 ( 'status' not in myJson['data'] ) or
                                 ( 'vo' not in myJson['data'] )):
                                 continue
-                            if ( myJson['metadata']['topic'] != "sam3_raw_metric" ):
+                            if ( myJson['metadata']['topic'][-15:] != "sam3_raw_metric" ):
                                 continue
                             #
                             if ( myJson['data']['vo'] != "cms" ):

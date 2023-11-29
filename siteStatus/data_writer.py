@@ -4461,7 +4461,7 @@ def ssdw_monit_etf():
                         for myLine in fileObj:
                             myJson = json.loads(myLine.decode('utf-8'))
                             try:
-                                if ( myJson['metadata']['topic'] !=
+                                if ( myJson['metadata']['topic'][-15:] !=
                                                            "sam3_raw_metric" ):
                                     continue
                                 if ( myJson['data']['vo'] != "cms" ):
