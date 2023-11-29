@@ -341,7 +341,7 @@ def lftch_monit_fetch(cfg):
                                     ( 'status' not in myJson['data'] ) or
                                     ( 'vo' not in myJson['data'] )):
                                     continue
-                                if (( myJson['metadata']['topic'] !=
+                                if (( myJson['metadata']['topic'][-15:] !=
                                       "sam3_raw_metric" ) or
                                     ( myJson['data']['vo'] != "cms" )):
                                     continue
