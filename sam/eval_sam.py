@@ -355,7 +355,8 @@ def evsam_monit_etf(startTIS, limitTIS):
                             if (( 'metadata' not in myJson ) or
                                 ( 'data' not in myJson )):
                                 continue
-                            if (( 'topic' not in myJson['metadata'] ) or
+                            if (( 'type_prefix' not in myJson['metadata'] ) or
+                                ( 'producer' not in myJson['metadata'] ) or
                                 ( 'kafka_timestamp' not in myJson['metadata'] ) or
                                 ( 'timestamp' not in myJson['data'] ) or
                                 ( 'dst_hostname' not in myJson['data'] ) or
@@ -364,7 +365,8 @@ def evsam_monit_etf(startTIS, limitTIS):
                                 ( 'status' not in myJson['data'] ) or
                                 ( 'vo' not in myJson['data'] )):
                                 continue
-                            if ( myJson['metadata']['topic'][-15:] != "sam3_raw_metric" ):
+                            if (( myJson['metadata']['type_prefix'] != "raw" ) or
+                                ( myJson['metadata']['producer'] != "sam3" )):
                                 continue
                             #
                             if ( myJson['data']['vo'] != "cms" ):

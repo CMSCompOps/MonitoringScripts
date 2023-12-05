@@ -298,24 +298,22 @@ def capa_startd_usage():
     limitTIS = today * 86400
     queryString = ("{\"search_type\":\"query_then_fetch\",\"index\":[\"monit" +
              "_prod_cms_raw_si_condor_startd*\"],\"ignore_unavailable\":true" +
-                   "}\n{\"query\":{\"bool\":{\"must\":[{\"match_phrase\":{\"" +
-                   "metadata.topic\":\"cms_raw_si_condor_startd\"}}],\"must_" +
-                   "not\":[{\"match_phrase\":{\"data.payload.SlotType\":\"Dy" +
-                   "namic\"}}],\"filter\":{\"range\":{\"metadata.timestamp\"" +
-                   ":{\"gte\":%d,\"lt\":%d,\"format\":\"epoch_second\"}}}}}," +
-                   "\"size\":0,\"aggs\":{\"cpus_per_site\":{\"terms\":{\"fie" +
-                   "ld\":\"data.payload.GLIDEIN_CMSSite\",\"size\":512},\"ag" +
-                   "gs\":{\"cpus_per_report_a\":{\"date_histogram\":{\"field" +
-                   "\":\"metadata.timestamp\",\"interval\":\"360s\",\"offset" +
-                   "\":\"0s\"},\"aggs\":{\"cpus\":{\"sum\":{\"field\":\"data" +
-                   ".payload.TotalSlotCpus\"}}}},\"cpus_per_report_b\":{\"da" +
-                   "te_histogram\":{\"field\":\"metadata.timestamp\",\"inter" +
-                   "val\":\"360s\",\"offset\":\"180s\"},\"aggs\":{\"cpus\":{" +
-                   "\"sum\":{\"field\":\"data.payload.TotalSlotCpus\"}}}},\"" +
-                   "max_cpus_a\":{\"max_bucket\":{\"buckets_path\":\"cpus_pe" +
-                   "r_report_a>cpus\"}},\"max_cpus_b\":{\"max_bucket\":{\"bu" +
-                   "ckets_path\":\"cpus_per_report_b>cpus\"}}}}}}\n") % \
-                                                           (startTIS, limitTIS)
+                   "}\n{\"query\":{\"bool\":{\"must_not\":[{\"match_phrase\"" +
+                   ":{\"data.payload.SlotType\":\"Dynamic\"}}],\"filter\":{" +
+                   "\"range\":{\"metadata.timestamp\":{\"gte\":%d,\"lt\":%d," +
+                   "\"format\":\"epoch_second\"}}}}},\"size\":0,\"aggs\":{\"" +
+                   "cpus_per_site\":{\"terms\":{\"field\":\"data.payload.GLI" +
+                   "DEIN_CMSSite\",\"size\":512},\"aggs\":{\"cpus_per_report" +
+                   "_a\":{\"date_histogram\":{\"field\":\"metadata.timestamp" +
+                   "\",\"interval\":\"360s\",\"offset\":\"0s\"},\"aggs\":{\"" +
+                   "cpus\":{\"sum\":{\"field\":\"data.payload.TotalSlotCpus" +
+                   "\"}}}},\"cpus_per_report_b\":{\"date_histogram\":{\"fiel" +
+                   "d\":\"metadata.timestamp\",\"interval\":\"360s\",\"offse" +
+                   "t\":\"180s\"},\"aggs\":{\"cpus\":{\"sum\":{\"field\":\"d" +
+                   "ata.payload.TotalSlotCpus\"}}}},\"max_cpus_a\":{\"max_bu" +
+                   "cket\":{\"buckets_path\":\"cpus_per_report_a>cpus\"}},\"" +
+                   "max_cpus_b\":{\"max_bucket\":{\"buckets_path\":\"cpus_pe" +
+                   "r_report_b>cpus\"}}}}}}\n") % (startTIS, limitTIS)
 
     # fetch startd max core usage count from ElasticSearch:
     # =====================================================

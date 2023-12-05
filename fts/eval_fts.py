@@ -1190,8 +1190,8 @@ if __name__ == '__main__':
                                 try:
                                     myJson = json.loads(myLine.decode('utf-8'))
                                     #
-                                    if (( myJson['metadata']['topic'][-16:] !=
-                                                        "fts_raw_complete" ) or
+                                    if (( myJson['metadata']['type_prefix'] != "raw" ) or
+                                        ( myJson['metadata']['producer'] != "fts" ) or
                                         (( myJson['data']['vo'] != "cms" ) and
                                          ( myJson['data']['vo'][:4] != "cms/" ))):
                                         continue

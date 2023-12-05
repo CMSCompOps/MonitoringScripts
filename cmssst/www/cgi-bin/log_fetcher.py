@@ -333,7 +333,8 @@ def lftch_monit_fetch(cfg):
                                                      myJson['metadata']['_id'])
                             if ( cfg['metric'][:3] == "etf" ):
                                 # check document has required SAM-ETF keys:
-                                if (( 'topic' not in myJson['metadata'] ) or
+                                if (( 'type_prefix' not in myJson['metadata'] ) or
+                                    ( 'producer' not in myJson['metadata'] ) or
                                     ( 'timestamp' not in myJson['data'] ) or
                                     ( 'dst_hostname' not in myJson['data'] ) or
                                     ( 'service_flavour' not in myJson['data'] ) or
@@ -341,8 +342,8 @@ def lftch_monit_fetch(cfg):
                                     ( 'status' not in myJson['data'] ) or
                                     ( 'vo' not in myJson['data'] )):
                                     continue
-                                if (( myJson['metadata']['topic'][-15:] !=
-                                      "sam3_raw_metric" ) or
+                                if (( myJson['metadata']['type_prefix'] != "raw" ) or
+                                    ( myJson['metadata']['producer'] != "sam3" ) or
                                     ( myJson['data']['vo'] != "cms" )):
                                     continue
                                 tis = int(myJson['data']['timestamp']/1000)
@@ -350,8 +351,9 @@ def lftch_monit_fetch(cfg):
                                     continue
                                 if ( tis >= limitTIS ):
                                     continue
-                                logging.log(9, "      %s within time range" %
-                                                   myJson['metadata']['topic'])
+                                logging.log(9, "      %s/%s within time range"
+                                          % (myJson['metadata']['type_prefix'],
+                                               myJson['metadata']['producer']))
                                 myName = myJson['data']['dst_hostname'].lower()
                                 if ( cfg['name'] != "*" ):
                                     if ( myName != cfg['name'] ):
