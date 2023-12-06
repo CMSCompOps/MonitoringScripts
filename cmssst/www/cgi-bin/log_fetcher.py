@@ -1,4 +1,5 @@
-#!/eos/user/c/cmssst/packages/bin/python3.7
+#!/eos/user/c/cmssst/el9packages/bin/python3.9
+# /eos/user/c/cmssst/packages/bin/python3.7
 # ########################################################################### #
 # python script to retrieve SAM-ETF logs and CMS SSB metric documents from
 #    CERN MonIT HDFS. The cmssst log retrieval Bourne shell script will use

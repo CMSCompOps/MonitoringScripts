@@ -62,6 +62,8 @@ METRIC_SUPPORT_EOF
 LOGSECTION_URL="https://cmssst.web.cern.ch/cache"
 LOGSECTION_DIR="/eos/user/c/cmssst/www/cache"
 #
+SCRIPT_SUBDIR=`/usr/bin/awk -F= '{if($1=="PLATFORM_ID"){gsub(/"/,":",$2);i=index($2,":el");if(i!=0){print substr($2,i+1,3)};exit}}' /etc/os-release 2>/dev/null`
+#
 KRB5_KEYTAB="/eos/user/c/cmssst/private/cmssstro.keytab"
 # ########################################################################### #
 
@@ -95,10 +97,10 @@ if [ $? -ne 0 -a "${REQUEST_MTHD}" = "grafana" ]; then
    (echo "${REQUEST_OPTN}" | /bin/grep ":debug:") 1>/dev/null 2>&1
    if [ $? -eq 0 ]; then
       echo -e "Content-type: text/plain\n\n"
-      /usr/bin/timeout 900 /eos/user/c/cmssst/www/cgi-bin/log_getter.py -vvvv -p ${REQUEST_PATH} -H
+      /usr/bin/timeout 900 /eos/user/c/cmssst/www/cgi-bin/${SCRIPT_SUBDIR}/log_getter.py -vvvv -p ${REQUEST_PATH} -H
    else
       echo -e "Content-type: text/html\n\n"
-      /usr/bin/timeout 900 /eos/user/c/cmssst/www/cgi-bin/log_getter.py -p ${REQUEST_PATH} -H
+      /usr/bin/timeout 900 /eos/user/c/cmssst/www/cgi-bin/${SCRIPT_SUBDIR}/log_getter.py -p ${REQUEST_PATH} -H
    fi
    exit 0
 fi
@@ -215,16 +217,16 @@ if [ $? -eq 0 ]; then
    (while true; do /bin/sleep 5; echo -e "\x00"; done) 2>/dev/null &
    CPID=$!
    #
-   echo -e "\n/usr/bin/timeout 900 /eos/user/c/cmssst/www/cgi-bin/log_fetcher.py -vvvv -p ${REQUEST_PATH} -H ${LOGSECTION_DIR}/${CONTENT_FILE}"
+   echo -e "\n/usr/bin/timeout 900 /eos/user/c/cmssst/www/cgi-bin/${SCRIPT_SUBDIR}/log_fetcher.py -vvvv -p ${REQUEST_PATH} -H ${LOGSECTION_DIR}/${CONTENT_FILE}"
    /bin/date +"%Y-%b-%d %H:%M:%S"
-   /usr/bin/timeout 900 /eos/user/c/cmssst/www/cgi-bin/log_fetcher.py -vvvv -p ${REQUEST_PATH} -H ${LOGSECTION_DIR}/${CONTENT_FILE}
+   /usr/bin/timeout 900 /eos/user/c/cmssst/www/cgi-bin/${SCRIPT_SUBDIR}/log_fetcher.py -vvvv -p ${REQUEST_PATH} -H ${LOGSECTION_DIR}/${CONTENT_FILE}
    #
    echo -e "\Stopping keep-alive background process"
    kill -9 ${CPID}
    /usr/bin/find ${LOGSECTION_DIR} -inum ${LOCK_INO} -exec /bin/rm -f {} \;
 else
    (
-   /usr/bin/timeout 900 /eos/user/c/cmssst/www/cgi-bin/log_fetcher.py -v -p ${REQUEST_PATH} -H ${LOGSECTION_DIR}/${CONTENT_FILE} -L ${LOGSECTION_DIR}/${PID}
+   /usr/bin/timeout 900 /eos/user/c/cmssst/www/cgi-bin/${SCRIPT_SUBDIR}/log_fetcher.py -v -p ${REQUEST_PATH} -H ${LOGSECTION_DIR}/${CONTENT_FILE} -L ${LOGSECTION_DIR}/${PID}
    /usr/bin/find ${LOGSECTION_DIR} -inum ${LOCK_INO} -exec /bin/rm -f {} \;
    /bin/rm -f ${LOGSECTION_DIR}/${PID} 1>/dev/null 2>&1
    ) 1>/dev/null 2>&1 &

@@ -1,4 +1,5 @@
-#!/eos/user/c/cmssst/packages/bin/python3.7
+#!/eos/user/c/cmssst/el9packages/bin/python3.9
+# /eos/user/c/cmssst/packages/bin/python3.7
 # ########################################################################### #
 # python CGI script to display the override status of sites and allow to set  #
 #    a manual override for LifeStatus, ProdStatus, or CrabStatus. The script  #

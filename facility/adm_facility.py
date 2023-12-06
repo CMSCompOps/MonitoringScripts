@@ -1,4 +1,5 @@
-#!/eos/user/c/cmssst/packages/bin/python3.7
+#!/eos/user/c/cmssst/el9packages/bin/python3.9
+# /eos/user/c/cmssst/packages/bin/python3.7
 # ########################################################################### #
 # python CGI script to display theefacility information, allow to change it,  #
 #    upload to MonIT, and compile a acknowledgement LaTeX file.               #
