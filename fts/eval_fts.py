@@ -2128,6 +2128,7 @@ if __name__ == '__main__':
                     #
                     site_quality = min( site_quality, rse_quality )
                     if (( rse_name != "T1_RU_JINR_Tape" ) and
+                        ( rse_name != "T1_DE_KIT_Tape" ) and
                         ( rse_name != "T1_US_FNAL_Tape" )):
                         # patch for broken _Tape LoadTest
                         if ( site_status is None ):
