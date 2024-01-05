@@ -110,11 +110,9 @@ fi
 
 # check/acquire kerberos ticket:
 # ==============================
-KRB5CCNAME="FILE:/tmp/krb5cc_122350";export KRB5CCNAME
-#
-KRB5_LIFETIME=`(/usr/bin/klist -c | /usr/bin/awk 'BEGIN{tis=0}{if($NF=="krbtgt/CERN.CH@CERN.CH"){split($(NF-2),d,"/");if(length(d[3])==2){d[3]="20"d[3]};split($(NF-1),t,":");ds=d[3]" "d[1]" "d[2]" "t[1]" "t[2]" "t[3];tis=mktime(ds)-systime();exit}}END{print tis}') 2>/dev/null`
+KRB5_LIFETIME=`(/usr/bin/klist -c /tmp/krb5cc_122350 | /usr/bin/awk 'BEGIN{tis=0}{if($NF=="krbtgt/CERN.CH@CERN.CH"){split($(NF-2),d,"/");if(length(d[3])==2){d[3]="20"d[3]};split($(NF-1),t,":");ds=d[3]" "d[1]" "d[2]" "t[1]" "t[2]" "t[3];tis=mktime(ds)-systime();exit}}END{print tis}') 2>/dev/null`
 if [ ${KRB5_LIFETIME} -lt 900 ]; then
-   /usr/bin/kinit -kt ${KRB5_KEYTAB} cmssstro 1>/dev/null 2>&1
+   /usr/bin/kinit -kt ${KRB5_KEYTAB} -c /tmp/krb5cc_122350 cmssstro 1>/dev/null 2>&1
    if [ $? -ne 0 ]; then
       ERROR_MSG="Kerberos initialization failed"
    fi
@@ -189,6 +187,12 @@ elif [ -n "${LOCK_INFO}" ]; then
       exit 0
    fi
 fi
+
+
+
+# switch Kerberos credentials to cmssstro:
+# ========================================
+KRB5CCNAME="FILE:/tmp/krb5cc_122350";export KRB5CCNAME
 
 
 
