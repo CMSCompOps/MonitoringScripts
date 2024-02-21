@@ -50,7 +50,7 @@ import pydoop.hdfs
 
 
 
-VOFEED_VERSION = "v2.03.09"
+VOFEED_VERSION = "v2.03.10"
 # ########################################################################### #
 
 
@@ -82,6 +82,7 @@ class vofeed:
             'globus-GRIDFTP':                 "SRM",
             'GridFtp':                        "SRM",
             'webdav':                         "WEBDAV",
+            'webdav.tape':                    "WEBDAV",
             'WebDAV':                         "WEBDAV",
             'WEBDAV':                         "WEBDAV",
             'XROOTD':                         "XROOTD",
@@ -1143,25 +1144,25 @@ if __name__ == '__main__':
         # fill vofeedObj with CE information from glide-in WMS factories #
         # ############################################################## #
         DICT_GLIDEIN_FACTORIES = [
+            {   'lbl': "CERN",
+                'uri': "vocms0207.cern.ch",
+                'prd': True
+            },
             {   'lbl': "UCSD",
                 'uri': "gfactory-2.opensciencegrid.org",
+                'prd': True
+            },
+            {   'lbl': "FNAL",
+                'uri': "cmssi-factory02.fnal.gov",
                 'prd': True
             },
             {   'lbl': "UCSDitb",
                 'uri': "gfactory-itb-1.opensciencegrid.org",
                 'prd':False
             },
-            {   'lbl': "CERN",
-                'uri': "vocms0207.cern.ch",
-                'prd': True
-            },
             {   'lbl': "CERNint",
                 'uri': "vocms0205.cern.ch",
                 'prd': False
-            },
-            {   'lbl': "FNAL",
-                'uri': "cmssi-factory02.fnal.gov",
-                'prd': True
             } ]
 
         # loop over factories and get list of CEs:
@@ -1170,7 +1171,7 @@ if __name__ == '__main__':
             logging.info("Fetching entries from %s factory" % factory['lbl'])
             try:
                 collector = htcondor.Collector(factory['uri'])
-                classAds = collector.query(htcondor.AdTypes.Any, "(MyType =?= \"glidefactory\") && (GLIDEIN_CMSSite isnt Undefined) && (GLIDEIN_Gatekeeper isnt Undefined) && (GLIDEIN_GridType isnt Undefined) && (GLIDEIN_Supported_VOs isnt Undefined)", ['GLIDEIN_CMSSite', 'GLIDEIN_Gatekeeper', 'GLIDEIN_GridType', 'GLIDEIN_GlobusRSL', 'GLIDEIN_In_Downtime', 'GLIDEIN_Supported_VOs'])
+                classAds = collector.query(htcondor.AdTypes.Any, "(MyType =?= \"glidefactory\") && (GLIDEIN_CMSSite isnt Undefined) && (GLIDEIN_Gatekeeper isnt Undefined) && (GLIDEIN_GridType isnt Undefined) && (GLIDEIN_Supported_VOs isnt Undefined)", ['GLIDEIN_CMSSite', 'GLIDEIN_Gatekeeper', 'GLIDEIN_GridType', 'GLIDEIN_In_Downtime', 'GLIDEIN_Supported_VOs', 'GlideinSubmitbatch_queue', 'GlideinSubmit_PLUS_remote_queue', 'GlideinSubmit_PLUS_batch_queue', 'GlideinSubmit_PLUS_queue', 'GlideinSubmit_PLUS_default_queue'])
                 # catch HT Condor's faulty error handling:
                 if not classAds:
                     raise IOError("Empty Collector ClassAd List")
@@ -1182,20 +1183,38 @@ if __name__ == '__main__':
                     if ( classAd['GLIDEIN_Gatekeeper'] == "" ):
                         continue
                     try:
-                        globusRSL = classAd['GLIDEIN_GlobusRSL']
-                    except KeyError:
-                        globusRSL = ""
-                    try:
                         inDowntime = classAd['GLIDEIN_In_Downtime']
                     except KeyError:
                         inDowntime = "False"
+                    if ( classAd['GLIDEIN_GridType'] == "arc" ):
+                        try:
+                            submitqueue = classAd['GlideinSubmitbatch_queue']
+                        except KeyError:
+                            submitqueue = ""
+                    elif ( classAd['GLIDEIN_GridType'] == "condor" ):
+                        try:
+                            submitqueue = classAd['GlideinSubmit_PLUS_remote_queue']
+                        except KeyError:
+                            try:
+                                submitqueue = classAd['GlideinSubmit_PLUS_batch_queue']
+                            except KeyError:
+                                try:
+                                    submitqueue = classAd['GlideinSubmit_PLUS_queue']
+                                except KeyError:
+                                    try:
+                                        submitqueue = classAd['GlideinSubmit_PLUS_default_queue']
+                                    except KeyError:
+                                        submitqueue = ""
+                        submitqueue = submitqueue.strip("\'\" ")
+                    else:
+                        submitqueue = ""
                     myData.append( {
                         'GLIDEIN_GridType': classAd['GLIDEIN_GridType'],
                         'GLIDEIN_Gatekeeper': classAd['GLIDEIN_Gatekeeper'],
-                        'GLIDEIN_GlobusRSL': globusRSL,
                         'GLIDEIN_In_Downtime': inDowntime,
                         'GLIDEIN_Supported_VOs': classAd['GLIDEIN_Supported_VOs'],
-                        'GLIDEIN_CMSSite': classAd['GLIDEIN_CMSSite']
+                        'GLIDEIN_CMSSite': classAd['GLIDEIN_CMSSite'],
+                        'GlideinSubmitbatch_queue': submitqueue
                         } )
                 #
                 # update cache:
@@ -1238,7 +1257,7 @@ if __name__ == '__main__':
                 if ( classAd['GLIDEIN_In_Downtime'] == "True" ):
                     # exclude entries set to indefinite downtime
                     continue
-                if 'CMS' not in classAd['GLIDEIN_Supported_VOs']:
+                if ( "CMS" not in classAd['GLIDEIN_Supported_VOs'].split(",") ):
                     continue
                 #
                 gkeeper = classAd['GLIDEIN_Gatekeeper'].split()[-1]
@@ -1277,13 +1296,9 @@ if __name__ == '__main__':
                         if ( batch.find("-") != batch.rfind("-") ):
                             service['queue'] = batch.split("-")[2]
                         service['batch'] = batch.split("-")[1]
-                if 'queue' not in service:
-                    globusRSL = classAd['GLIDEIN_GlobusRSL']
-                    indx1 = globusRSL.find("(queue=")
-                    if ( indx1 >= 0 ):
-                        indx1 += 7
-                        indx2 = globusRSL.find(")", indx1)
-                        service['queue'] = globusRSL[indx1:indx2]
+                if (( 'queue' not in service ) and
+                    ( classAd['GlideinSubmitbatch_queue'] != "" )):
+                    service['queue'] = classAd['GlideinSubmitbatch_queue']
                 logging.debug("   site %s: host %s flavour %s" %
                               (classAd['GLIDEIN_CMSSite'], service['hostname'],
                                service['flavour']))
