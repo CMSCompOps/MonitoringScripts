@@ -83,6 +83,7 @@ class vofeed:
             'GridFtp':                        "SRM",
             'webdav':                         "WEBDAV",
             'webdav.tape':                    "WEBDAV",
+            'wlcg.webdav.tape':               "WEBDAV",
             'WebDAV':                         "WEBDAV",
             'WEBDAV':                         "WEBDAV",
             'XROOTD':                         "XROOTD",
