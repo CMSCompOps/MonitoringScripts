@@ -1,4 +1,4 @@
-#! /usr/bin/python3
+#!/usr/bin/python3
 import gitlab
 import requests
 import json
@@ -43,10 +43,14 @@ def create_group(name, gl):
         logging.info("{} group already exists".format(name))
     except GitlabGetError:
         logging.info("{} group does not exists, creating it".format(name))
-        group = gl.groups.create({"name": name, "path": name})
-        group.add_ldap_group_link(name, gitlab.DEVELOPER_ACCESS, "ldapmain")
-        group.ldap_sync()
-        group.save()
+        try:
+            group = gl.groups.create({"name": name, "path": name})
+            group.add_ldap_group_link(name, gitlab.DEVELOPER_ACCESS, "ldapmain")
+            group.ldap_sync()
+            group.save()
+        except Exception as excptn:
+            logging.info("failed to create %s group, %s" % (name, str(excptn)))
+            group = None
     return group
 
 
@@ -92,8 +96,9 @@ if __name__ == "__main__":
             for group_name in group_names:
                 if not any(group["group_name"] == group_name for group in groups):
                     group = create_group(group_name, gl)
-                    logging.info("Sharing the {} SITECONF project with {}".format(site, group_name))
-                    project.share(group.get_id(), gitlab.DEVELOPER_ACCESS)
+                    if ( group is not None ):
+                        logging.info("Sharing the {} SITECONF project with {}".format(site, group_name))
+                        project.share(group.get_id(), gitlab.DEVELOPER_ACCESS)
                 else:
                     logging.info("The {} SITECONF project was already shared with {}".format(site, group_name))
             project.save()
