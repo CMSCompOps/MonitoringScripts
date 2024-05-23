@@ -1,4 +1,4 @@
-#!/data/cmssst/packages/bin/python3.7
+#!/data/cmssst/packages/bin/python3.9
 # ########################################################################### #
 # python script to query the FTS results in ElasticSearch via the grafana
 #    front-end or read documents from HDFS in MonIT, evaluate link and site
@@ -54,9 +54,11 @@ import re
 import gzip
 #
 # setup the Java/HDFS/PATH environment for pydoop to work properly:
-os.environ["HADOOP_CONF_DIR"] = "/opt/hadoop/conf/etc/analytix/hadoop.analytix"
-os.environ["JAVA_HOME"]       = "/etc/alternatives/jre"
-os.environ["HADOOP_PREFIX"]   = "/usr/hdp/hadoop"
+os.environ["HADOOP_CONF_DIR"] = "/data/cmssst/packages/etc/hadoop.analytix.conf/hadoop.analytix"
+os.environ["JAVA_HOME"]       = "/data/cmssst/packages/lib/jvm/java-11-openjdk-11.0.23.0.9-3.el9.x86_64"
+os.environ["HADOOP_HOME"]     = "/data/cmssst/packages/hadoop/3.3.5-1ba16/x86_64-el9-gcc11-opt"
+os.environ["LD_LIBRARY_PATH"] ="/data/cmssst/packages/hadoop/3.3.5-1ba16/x86_64-el9-gcc11-opt/lib/native"
+os.environ["PATH"]            ="/data/cmssst/packages/hadoop/3.3.5-1ba16/x86_64-el9-gcc11-opt/bin:" + os.environ["PATH"]
 import pydoop.hdfs
 # ########################################################################### #
 
@@ -1480,7 +1482,7 @@ if __name__ == '__main__':
                         f_dst += linkDict[key][plink][classfcn][0]
                         b_dst += linkDict[key][plink][classfcn][1]
                     #
-                    if ( detail is not "" ):
+                    if ( detail != "" ):
                         detail += "\n"
                     detail += ("%s: %d files, %.1f GB [%s]" %
                                (CLASSIFICATION_STRING[classfcn],
@@ -2129,6 +2131,7 @@ if __name__ == '__main__':
                     site_quality = min( site_quality, rse_quality )
                     if (( rse_name != "T1_RU_JINR_Tape" ) and
                         ( rse_name != "T1_DE_KIT_Tape" ) and
+                        ( rse_name != "T1_FR_CCIN2P3_Tape" ) and
                         ( rse_name != "T1_UK_RAL_Tape" ) and
                         ( rse_name != "T1_US_FNAL_Tape" )):
                         # patch for broken _Tape LoadTest
