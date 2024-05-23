@@ -74,7 +74,7 @@ for MY_URL in ${MY_URLS}; do
    # fetch .cvmfspublished file of Stratum-0:
    # ----------------------------------------
    /bin/rm -f ${MY_OUT_DIR}/new.cvmfspublished 1>/dev/null 2>&1
-   /usr/bin/timeout 90 /usr/bin/wget -O ${MY_OUT_DIR}/new.cvmfspublished -T 60 ${MY_URL}
+   /usr/bin/timeout 90 /usr/bin/wget -o /dev/null -O ${MY_OUT_DIR}/new.cvmfspublished -T 60 ${MY_URL}
    RC=$?
    if [ ${RC} -eq 124 ]; then
       echo "[E] timeout contacting Stratum-0"

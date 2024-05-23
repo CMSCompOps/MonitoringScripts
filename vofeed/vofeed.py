@@ -1,4 +1,4 @@
-#!/data/cmssst/packages/bin/python3.7
+#!/data/cmssst/packages/bin/python3.9
 # ########################################################################### #
 # python script to write the CMS VO-feed XML and JSON files. The script is    #
 #    based on earlier versions that run inside the SAM3 dashboard.            #
