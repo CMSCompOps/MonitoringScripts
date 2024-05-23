@@ -82,9 +82,9 @@ class vofeed:
             'globus-GRIDFTP':                 "SRM",
             'GridFtp':                        "SRM",
             'webdav':                         "WEBDAV",
-            'webdav.tape':                    "WEBDAV",
             'wlcg.webdav.tape':               "WEBDAV",
             'WebDAV':                         "WEBDAV",
+            'WebDAV.tape':                    "WEBDAV",
             'WEBDAV':                         "WEBDAV",
             'XROOTD':                         "XROOTD",
             'XRootD':                         "XROOTD",
@@ -864,6 +864,9 @@ if __name__ == '__main__':
     import http.client
     from OpenSSL import crypto
     import ssl
+    os.environ["_condor_SEC_CLIENT_AUTHENTICATION"]   = "OPTIONAL"
+    os.environ["_condor_SEC_CLIENT_INTEGRITY"]   = "OPTIONAL"
+    os.environ["_condor_SEC_CLIENT_ENCRYPTION"]   = "OPTIONAL"
     import htcondor
 
     #VOFD_CACHE_DIR = "./cache"
@@ -1458,8 +1461,8 @@ if __name__ == '__main__':
                     rseAttributes = rseClient.list_rse_attributes(rseName)
                     if ( rseAttributes['cms_type'] == "real" ):
                         rseIgnore = False
-                    elif ( rseAttributes['cms_type'] == "test" ):
-                        rseIgnore = True
+                    #elif ( rseAttributes['cms_type'] == "test" ):
+                    #    rseIgnore = True
                     else:
                         continue
                     if ( rseAttributes['sitestatus_ignore'] == True ):

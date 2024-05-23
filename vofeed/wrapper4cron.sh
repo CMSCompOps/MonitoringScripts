@@ -11,7 +11,7 @@ trap '(/bin/rm -f ${EXC_LOCK} ${ERR_FILE}) 1> /dev/null 2>&1' 0
 
 
 
-EMAIL_ADDR="lammel@fnal.gov"
+EMAIL_ADDR="lammel@cern.ch"
 CACHE_DIR=`/usr/bin/dirname $0`/cache
 #
 #
