@@ -1,4 +1,4 @@
-#!/data/cmssst/packages/bin/python3.7
+#!/data/cmssst/packages/bin/python3.9
 # ########################################################################### #
 # python script to query the VO-feed, downtime, SAM, HammerCloud, and FTS
 #    metrics and derive a Site Readiness evaluation for sites. The script
@@ -35,9 +35,11 @@ import re
 import gzip
 #
 # setup the Java/HDFS/PATH environment for pydoop to work properly:
-os.environ["HADOOP_CONF_DIR"] = "/opt/hadoop/conf/etc/analytix/hadoop.analytix"
-os.environ["JAVA_HOME"]       = "/etc/alternatives/jre"
-os.environ["HADOOP_PREFIX"]   = "/usr/hdp/hadoop"
+os.environ["HADOOP_CONF_DIR"] = "/data/cmssst/packages/etc/hadoop.analytix.conf/hadoop.analytix"
+os.environ["JAVA_HOME"]       = "/data/cmssst/packages/lib/jvm/java-11-openjdk-11.0.23.0.9-3.el9.x86_64"
+os.environ["HADOOP_HOME"]     = "/data/cmssst/packages/hadoop/3.3.5-1ba16/x86_64-el9-gcc11-opt"
+os.environ["LD_LIBRARY_PATH"] ="/data/cmssst/packages/hadoop/3.3.5-1ba16/x86_64-el9-gcc11-opt/lib/native"
+os.environ["PATH"]            ="/data/cmssst/packages/hadoop/3.3.5-1ba16/x86_64-el9-gcc11-opt/bin:" + os.environ["PATH"]
 import pydoop.hdfs
 # ########################################################################### #
 
