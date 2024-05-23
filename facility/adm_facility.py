@@ -1,5 +1,4 @@
 #!/eos/user/c/cmssst/el9packages/bin/python3.9
-# /eos/user/c/cmssst/packages/bin/python3.7
 # ########################################################################### #
 # python CGI script to display theefacility information, allow to change it,  #
 #    upload to MonIT, and compile a acknowledgement LaTeX file.               #
@@ -58,9 +57,11 @@ import argparse
 import logging
 #
 # setup the Java/HDFS/PATH environment for pydoop to work properly:
-os.environ["HADOOP_CONF_DIR"] = "/opt/hadoop/conf/etc/analytix/hadoop.analytix"
-os.environ["JAVA_HOME"]       = "/etc/alternatives/jre"
-os.environ["HADOOP_PREFIX"]   = "/usr/hdp/hadoop"
+os.environ["HADOOP_CONF_DIR"] = "/eos/user/c/cmssst/el9packages/etc/hadoop.analytix.conf/hadoop.analytix"
+os.environ["JAVA_HOME"]       = "/eos/user/c/cmssst/el9packages/lib/jvm/java-11-openjdk-11.0.21.0.9-2.el9.x86_64"
+os.environ["HADOOP_HOME"]     = "/eos/user/c/cmssst/el9packages/hadoop/3.3.5-1ba16/x86_64-el9-gcc11-opt"
+os.environ["LD_LIBRARY_PATH"] ="/eos/user/c/cmssst/el9packages/hadoop/3.3.5-1ba16/x86_64-el9-gcc11-opt/lib/native"
+os.environ["PATH"]            = "/eos/user/c/cmssst/el9packages/hadoop/3.3.5-1ba16/x86_64-el9-gcc11-opt/bin:" + os.environ["PATH"]
 # ########################################################################### #
 
 
@@ -2199,6 +2200,7 @@ if __name__ == '__main__':
         cgiRegex = re.compile("[^a-zA-Z0-9_.=/+*-]")
         #
         cgiMTHD = None
+        cgiPATH = None
         cgiFACLTY = None
         try:
             cgiMTHD = cgiRegex.sub("", os.environ['REQUEST_METHOD'])

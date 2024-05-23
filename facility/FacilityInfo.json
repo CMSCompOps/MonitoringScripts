@@ -4,7 +4,7 @@
    "institute": "Institut fuer Hochenergiephysik",
    "location": "Wien, Austria",
    "timezone": [ "+01:00", "Europe/Vienna" ],
-   "acknowledge": "Institut für Hochenergiephysik, Wien, Austria",
+   "acknowledge": "Institut für Hochenergiephysik (HEPHY) using the Cloud Infrastructure Platform (CLIP), Vienna, Austria",
    "doi": "",
    "exec": "cms-AT_Vienna-exec@cern.ch",
    "admin": "cms-AT_Vienna-admin@cern.ch",
@@ -21,7 +21,7 @@
    "institute": "Inter-University Institute for High Energies",
    "location": "Bruxelles, Belgium",
    "timezone": [ "+01:00", "Europe/Brussels" ],
-   "acknowledge": "Inter University Institute For High Energies, Brussel, Belgium",
+   "acknowledge": "Inter-University Institute for High Energies, Brussels, Belgium",
    "doi": "",
    "exec": "cms-BE_IIHE-exec@cern.ch",
    "admin": "cms-BE_IIHE-admin@cern.ch",
@@ -30,8 +30,8 @@
        "site": "T2_BE_IIHE"
      }
    ],
-   "who": null,
-   "when": null
+   "who": "odevroed",
+   "when": "2021-Jun-04 09:40:38"
  },
  {
    "name": "BE_UCL",
@@ -69,11 +69,11 @@
  },
  {
    "name": "BR_SPRACE",
-   "institute": "Sao Paulo Research and Analysis Center",
+   "institute": "Universidade Estadual Paulista",
    "location": "Sao Paulo, Brazil",
    "timezone": [ "-03:00", "America/Sao_Paulo" ],
    "acknowledge": "São Paulo Research and Analysis Center, São Paulo, Brazil",
-   "doi": "",
+   "doi": "http://dx.doi.org/10.13039/501100009568",
    "exec": "cms-BR_SPRACE-exec@cern.ch",
    "admin": "cms-BR_SPRACE-admin@cern.ch",
    "sites": [
@@ -81,8 +81,8 @@
        "site": "T2_BR_SPRACE"
      }
    ],
-   "who": null,
-   "when": null
+   "who": "jmsilva",
+   "when": "2021-Jun-08 01:53:29"
  },
  {
    "name": "BR_UERJ",
@@ -107,7 +107,7 @@
    "location": "Porto Alegre, Brazil",
    "timezone": [ "-03:00", "America/Sao_Paulo" ],
    "acknowledge": "University of Rio Grande do Sul, Porto Alegre, Brazil",
-   "doi": "",
+   "doi": "http://dx.doi.org/10.13039/501100004909",
    "exec": "cms-BR_UFRGS-exec@cern.ch",
    "admin": "cms-BR_UFRGS-admin@cern.ch",
    "sites": [
@@ -115,8 +115,8 @@
        "site": "T3_BR_UFRGS"
      }
    ],
-   "who": null,
-   "when": null
+   "who": "silveira",
+   "when": "2021-Jun-03 18:12:03"
  },
  {
    "name": "BY_NCPHEP",
@@ -331,6 +331,23 @@
    "who": null,
    "when": null
  },
+{
+   "name": "CY_UCY",
+   "institute": "University of Cyprus",
+   "location": "Nicosia, Cyprus",
+   "timezone": [ "+02:00", "Asia/Nicosia" ],
+   "acknowledge": "Physics Department, University of Cyprus, Nicosia, Cyprus",
+   "doi": "",
+   "exec": "cms-CY_UCY-exec@cern.ch",
+   "admin": "cms-CY_UCY-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T3_CY_UCY"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
  {
    "name": "DE_DESY",
    "institute": "Deutsches Elektronen-Synchrotron",
@@ -439,7 +456,7 @@
    "location": "Oviedo, Spain",
    "timezone": [ "+01:00", "Europe/Madrid" ],
    "acknowledge": "Universidad de Oviedo, Instituto Universitario de Ciencias y Tecnologías Espaciales de Asturias (ICTEA), Oviedo, Spain",
-   "doi": "",
+   "doi": "http://dx.doi.org/10.13039/501100006382",
    "exec": "cms-ES_Oviedo-exec@cern.ch",
    "admin": "cms-ES_Oviedo-admin@cern.ch",
    "sites": [
@@ -447,8 +464,8 @@
        "site": "T3_ES_Oviedo"
      }
    ],
-   "who": null,
-   "when": null
+   "who": "jfernan",
+   "when": "2021-Jun-04 11:11:15"
  },
  {
    "name": "ES_PIC",
@@ -499,6 +516,23 @@
      },
      {
        "site": "T2_FR_CCIN2P3"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "FR_GRIF",
+   "institute": "Grille de Recherche d'Ile de France",
+   "location": "Orsay, France",
+   "timezone": [ "+01:00", "Europe/Paris" ],
+   "acknowledge": "Grille de Recherche d'Ile de France (GRIF), Institut de recherche sur les lois fondamentales de l'Univers, CEA, Université Paris-Saclay, Gif-sur-Yvette, France and Laboratoire Leprince-Ringuet, CNRS/IN2P3, Ecole Polytechnique, Institut Polytechnique de Paris, France",
+   "doi": "",
+   "exec": "cms-FR_GRIF-exec@cern.ch",
+   "admin": "cms-FR_GRIF-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T2_FR_GRIF"
      }
    ],
    "who": null,
@@ -812,7 +846,7 @@
    "location": "Bologna, Italy",
    "timezone": [ "+01:00", "Europe/Rome" ],
    "acknowledge": "INFN CNAF, Bologna, Italy",
-   "doi": "",
+   "doi": "http://dx.doi.org/10.13039/501100004007",
    "exec": "cms-IT_CNAF-exec@cern.ch",
    "admin": "cms-IT_CNAF-admin@cern.ch",
    "sites": [
@@ -820,8 +854,8 @@
        "site": "T1_IT_CNAF"
      }
    ],
-   "who": null,
-   "when": null
+   "who": "spiga",
+   "when": "2021-Jun-24 05:37:18"
  },
  {
    "name": "IT_Firenze",
@@ -1048,6 +1082,23 @@
    "when": null
  },
  {
+   "name": "PL_Cyfronet",
+   "institute": "Akademickie Centrum Komputerowe Cyfronet AGH",
+   "location": "Krakow, Poland",
+   "timezone": [ "+01:00", "Europe/Warsaw" ],
+   "acknowledge": "Akademickie Centrum Komputerowe Cyfronet AGH, Krakow, Poland",
+   "doi": "",
+   "exec": "cms-PL_Cyfronet-exec@cern.ch",
+   "admin": "cms-PL_Cyfronet-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T2_PL_Cyfronet"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
    "name": "PL_Swierk",
    "institute": "Centrum Informatyczne Swierk ",
    "location": "Swierk, Poland",
@@ -1246,9 +1297,9 @@
  {
    "name": "TW_NCHC",
    "institute": "National Center for High-performance Computing",
-   "location": "Tainan City, Taiwan",
+   "location": "Hsinchu City, Taiwan",
    "timezone": [ "+08:00", "Asia/Taipei" ],
-   "acknowledge": "National Center for High-performance Computing (NCHC), Tainan City, Taiwan",
+   "acknowledge": "National Center for High-performance Computing (NCHC), Hsinchu City, Taiwan",
    "doi": "",
    "exec": "cms-TW_NCHC-exec@cern.ch",
    "admin": "cms-TW_NCHC-admin@cern.ch",
@@ -1257,8 +1308,8 @@
        "site": "T2_TW_NCHC"
      }
    ],
-   "who": null,
-   "when": null
+   "who": "chunyu",
+   "when": "2021-Jun-25 09:51:17"
  },
  {
    "name": "TW_NCU",
@@ -1289,6 +1340,23 @@
    "sites": [
      {
        "site": "T3_TW_NTU_HEP"
+     }
+   ],
+   "who": null,
+   "when": null
+ },
+ {
+   "name": "TW_TIDC",
+   "institute": "Instrumentation and Detector Consortium",
+   "location": "Taipei City, Taiwan",
+   "timezone": [ "+08:00", "Asia/Taipei" ],
+   "acknowledge": "Instrumentation and Detector Consortium, Taipei, Taiwan",
+   "doi": "",
+   "exec": "cms-TW_TIDC-exec@cern.ch",
+   "admin": "cms-TW_TIDC-admin@cern.ch",
+   "sites": [
+     {
+       "site": "T3_TW_TIDC"
      }
    ],
    "who": null,
@@ -1459,7 +1527,7 @@
    "location": "Didcot, UK",
    "timezone": [ "+00:00", "Europe/London" ],
    "acknowledge": "GridPP, Rutherford Appleton Laboratory, Didcot, United Kingdom",
-   "doi": "",
+   "doi": "http://dx.doi.org/10.13039/100014570",
    "exec": "cms-UK_SGrid_RALPP-exec@cern.ch",
    "admin": "cms-UK_SGrid_RALPP-admin@cern.ch",
    "sites": [
@@ -1475,7 +1543,7 @@
    "institute": "University of Glasgow",
    "location": "Glasgow, Scotland, UK",
    "timezone": [ "+00:00", "Europe/London" ],
-   "acknowledge": "GridPP, University of Glasgow, Glasgow, UK",
+   "acknowledge": "GridPP, University of Glasgow, Glasgow, United Kingdom",
    "doi": "",
    "exec": "cms-UK_ScotGrid_GLA-exec@cern.ch",
    "admin": "cms-UK_ScotGrid_GLA-admin@cern.ch",
@@ -1923,8 +1991,8 @@
        "site": "T3_US_Rutgers"
      }
    ],
-   "who": null,
-   "when": null
+   "who": "jacques",
+   "when": "2021-Jun-03 18:10:40"
  },
  {
    "name": "US_TAMU",
