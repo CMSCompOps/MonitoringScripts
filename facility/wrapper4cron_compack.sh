@@ -7,7 +7,7 @@ EXC_LOCK=""
 trap 'exit 1' 1 2 3 15
 trap '(/bin/rm -f ${EXC_LOCK}) 1> /dev/null 2>&1' 0
 
-EMAIL_ADDR="lammel@fnal.gov George.Alverson@cern.ch"
+EMAIL_ADDR="lammel@cern.ch George.Alverson@cern.ch"
 # #############################################################################
 
 
@@ -89,7 +89,7 @@ fi
 `dirname $0`/adm_facility.py -a -vv
 #
 if [ -e `dirname $0`/log.txt ]; then
-   /usr/bin/Mail -s "$0 new compack" lammel@fnal.gov < `dirname $0`/log.txt
+   /usr/bin/Mail -s "$0 new compack" lammel@cern.ch < `dirname $0`/log.txt
 fi
 #
 #

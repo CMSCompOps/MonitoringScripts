@@ -9,7 +9,7 @@ trap '(/bin/rm -f ${EXC_LOCK}) 1> /dev/null 2>&1' 0
 
 
 
-EMAIL_ADDR="lammel@fnal.gov"
+EMAIL_ADDR="lammel@cern.ch"
 # #############################################################################
 
 

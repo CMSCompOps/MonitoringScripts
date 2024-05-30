@@ -163,7 +163,7 @@ def evsam_kerberos_check():
                                            (myDate, myAcnt, myNode, secLeft))
                         mimeObj['Subject'] = sys.argv[0] + " Kerberos warning"
                         mimeObj['From'] = "cmssst@cern.ch"
-                        mimeObj['To'] = "lammel@fnal.gov"
+                        mimeObj['To'] = "lammel@cern.ch"
                         smtpConnection = smtplib.SMTP('localhost')
                         smtpConnection.sendmail(mimeObj['From'], mimeObj['To'],
                                                            mimeObj.as_string())

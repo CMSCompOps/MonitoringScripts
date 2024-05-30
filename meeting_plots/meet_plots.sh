@@ -13,7 +13,7 @@ trap '(/bin/rm -f ${EXC_LOCK} ${TMP_FILE} ${ERR_FILE}) 1> /dev/null 2>&1' 0
 
 
 PLOT_DIR="/eos/home-c/cmssst/www/meet_plots"
-EMAIL_ADDR="lammel@fnal.gov"
+EMAIL_ADDR="lammel@cern.ch"
 if [ -z "${HOME}" ]; then
    HOME="/afs/cern.ch/user/c/cmssst"
 fi
