@@ -37,8 +37,10 @@ SSWP_CACHE_DIR = "/data/cmssst/MonitoringScripts/siteStatus/cache"
 
 #SSWP_CERTIFICATE_CRT = '/afs/cern.ch/user/l/lammel/.globus/usercert.pem'
 #SSWP_CERTIFICATE_KEY = '/afs/cern.ch/user/l/lammel/.globus/userkey.pem'
-SSWP_CERTIFICATE_CRT = '/tmp/x509up_u79522'
-SSWP_CERTIFICATE_KEY = '/tmp/x509up_u79522'
+#SSWP_CERTIFICATE_CRT = '/tmp/x509up_u79522'
+#SSWP_CERTIFICATE_KEY = '/tmp/x509up_u79522'
+SSWP_CERTIFICATE_CRT = '/afs/cern.ch/user/c/cmssst/.globus/usercert.pem'
+SSWP_CERTIFICATE_KEY = '/afs/cern.ch/user/c/cmssst/.globus/userkey977.pem'
 # ########################################################################### #
 
 
@@ -58,8 +60,12 @@ class HTTPSClientCertHandler(urllib.request.HTTPSHandler):
     'urllib.request.HTTPSHandler class with certificate access'
 
     def __init__(self):
+        with open("/etc/machine-id", 'r') as myfile:
+            mydata = myfile.read().replace('\n', '')
+        #
         sslContext = ssl.create_default_context(purpose=ssl.Purpose.CLIENT_AUTH)
-        sslContext.load_cert_chain(SSWP_CERTIFICATE_CRT, SSWP_CERTIFICATE_KEY)
+        sslContext.load_cert_chain(SSWP_CERTIFICATE_CRT, \
+                                   SSWP_CERTIFICATE_KEY, password=mydata)
         urllib.request.HTTPSHandler.__init__(self, context=sslContext)
 # ########################################################################### #
 
