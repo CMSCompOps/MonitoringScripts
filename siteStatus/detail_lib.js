@@ -92,13 +92,19 @@ var srvcMetricOrder = [ "Downtime",
                            "ETF_SE-XRootD-99summary",
                         "ETF_SE-xrootd-version", "ETF_SE-xrootd-connection",
                            "ETF_SE-xrootd-read", "ETF_SE-xrootd-contain",
-                        "ETF_CONDOR-JobSubmit",
+                        "ETF_CONDOR-JobSubmit/x509",
                            "ETF_WN-env", "ETF_WN-basic", "ETF_WN-cvmfs",
                            "ETF_WN-squid", "ETF_WN-frontier",
                            "ETF_WN-isolation",
                            "ETF_WN-xrootd-access", "ETF_WN-xrootd-fallback",
                            "ETF_WN-analysis", "ETF_WN-mc",
                         "ETF_DNS-IPv6",
+                        "ETF_CONDOR-JobSubmit/token",
+                           "ETF_WN-01basic", "ETF_WN-02cvmfs",
+                           "ETF_WN-03siteconf", "ETF_WN-05apptainer",
+                           "ETF_WN-21squid", "ETF_WN-22frontier",
+                           "ETF_WN-25dataaccess",
+                           "ETF_WN-99summary",
                         "***Othr***" ];
 var sizeCnvs;
 var noBins;
@@ -385,13 +391,21 @@ function writeTable() {
       noBins  = [ 3, 2, 3, 5, 1 ];
    }
 
+   // add a line in case there is a message:
+   if ( myData.msg != '' ) {
+      var myTableStr = '<SPAN STYLE="color:blue; font-weight:bold;">' +
+                          myData.msg + '</SPAN>\n<BR>\n<BR>\n';
+   } else {
+      var myTableStr = ''
+   }
+
    // compose table header:
-   var myTableStr = '<TABLE BORDER="0" CELLPADDING="0" CELLSPACING="0">\n<TR' +
-      '>\n   <TH NOWRAP ALIGN="left"><SPAN STYLE="' + fontHdrSite + '">Metri' +
-      'c</SPAN>\n   <TH NOWRAP><BIG>&nbsp;</BIG>\n   <TH NOWRAP ALIGN="cente' +
-      'r"><SPAN STYLE="' + fontHdrOthr + '">Prev. Month</SPAN>\n   <TH NOWRA' +
-      'P ALIGN="center"><SPAN STYLE="' + fontHdrOthr + '">Previous Week</SPA' +
-      'N>\n   <TH NOWRAP ALIGN="center"><SPAN STYLE="' + fontHdrOthr +
+   myTableStr += '<TABLE BORDER="0" CELLPADDING="0" CELLSPACING="0">\n<TR>\n' +
+      '   <TH NOWRAP ALIGN="left"><SPAN STYLE="' + fontHdrSite + '">Metric</' +
+      'SPAN>\n   <TH NOWRAP><BIG>&nbsp;</BIG>\n   <TH NOWRAP ALIGN="center">' +
+      '<SPAN STYLE="' + fontHdrOthr + '">Prev. Month</SPAN>\n   <TH NOWRAP A' +
+      'LIGN="center"><SPAN STYLE="' + fontHdrOthr + '">Previous Week</SPAN>' +
+      '\n   <TH NOWRAP ALIGN="center"><SPAN STYLE="' + fontHdrOthr +
       '">Yesterday</SPAN>\n   <TH NOWRAP ALIGN="center"><SPAN STYLE="' +
       fontHdrOthr + '">UTC Today</SPAN>\n   <TH NOWRAP ALIGN="center"><SPAN ' +
       'STYLE="' + fontHdrOthr + '">Following Week</SPAN>\n';
@@ -880,12 +894,6 @@ function writeTable() {
             }
          }
       }
-   }
-
-   // add a row/line in case there is a message:
-   if ( myData.msg != '' ) {
-      myTableStr += '<TR>\n   <TD COLSPAN="7" ALIGN="left"><SPAN STYLE="colo' +
-         'r:blue; font-weight:bold;">' + myData.msg + '</SPAN>\n';
    }
 
    // compose table trailer:

@@ -92,13 +92,19 @@ var srvcMetricOrder = [ "Downtime",
                            "ETF_SE-XRootD-99summary",
                         "ETF_SE-xrootd-version", "ETF_SE-xrootd-connection",
                            "ETF_SE-xrootd-read", "ETF_SE-xrootd-contain",
-                        "ETF_CONDOR-JobSubmit",
+                        "ETF_CONDOR-JobSubmit/x509",
                            "ETF_WN-env", "ETF_WN-basic", "ETF_WN-cvmfs",
                            "ETF_WN-squid", "ETF_WN-frontier",
                            "ETF_WN-isolation",
                            "ETF_WN-xrootd-access", "ETF_WN-xrootd-fallback",
                            "ETF_WN-analysis", "ETF_WN-mc",
                         "ETF_DNS-IPv6",
+                        "ETF_CONDOR-JobSubmit/token",
+                           "ETF_WN-01basic", "ETF_WN-02cvmfs",
+                           "ETF_WN-03siteconf", "ETF_WN-05apptainer",
+                           "ETF_WN-21squid", "ETF_WN-22frontier",
+                           "ETF_WN-25dataaccess",
+                           "ETF_WN-99summary",
                         "***Othr***" ];
 
 
@@ -338,10 +344,18 @@ function canvas_clicked(id, event) {
 
 function writePmonthTable() {
 
+   // add a line in case there is a message:
+   if ( myData.msg != '' ) {
+      var myTableStr = '<SPAN STYLE="color:blue; font-weight:bold;">' +
+                          myData.msg + '</SPAN>\n<BR>\n<BR>\n';
+   } else {
+      var myTableStr = ''
+   }
+
    // compose table header:
-   var myTableStr = '<TABLE BORDER="0" CELLPADDING="0" CELLSPACING="0">\n<TR' +
-      '>\n   <TH NOWRAP ALIGN="left"><BIG><B>Metric</B></BIG>\n   <TH NOWRAP' +
-      '><BIG>&nbsp;</BIG>\n   <TH NOWRAP ALIGN="left"><BIG><B>' +
+   myTableStr += '<TABLE BORDER="0" CELLPADDING="0" CELLSPACING="0">\n<TR>\n' +
+      '   <TH NOWRAP ALIGN="left"><BIG><B>Metric</B></BIG>\n   <TH NOWRAP><B' +
+      'IG>&nbsp;</BIG>\n   <TH NOWRAP ALIGN="left"><BIG><B>' +
       dateString2(myData.time - 38 * 86400) + '</B></BIG>\n   <TH NOWRAP ALI' +
       'GN="center"><BIG><B>Previous Month</B></BIG>\n   <TH NOWRAP ALIGN="ri' +
       'ght"><BIG><B>' + dateString2(myData.time - 9 * 86400) + '</B></BIG>\n';
@@ -463,12 +477,6 @@ function writePmonthTable() {
       }
    }
 
-   // add a row/line in case there is a message:
-   if ( myData.msg != '' ) {
-      myTableStr += '<TR>\n   <TD COLSPAN="5" ALIGN="left"><SPAN STYLE="colo' +
-         'r:blue; font-weight:bold;">' + myData.msg + '</SPAN>\n';
-   }
-
    // compose table trailer:
    myTableStr += '</TABLE>\n';
 
@@ -479,10 +487,18 @@ function writePmonthTable() {
 
 function writePweekTable() {
 
+   // add a line in case there is a message:
+   if ( myData.msg != '' ) {
+      var myTableStr = '<SPAN STYLE="color:blue; font-weight:bold;">' +
+                          myData.msg + '</SPAN>\n<BR>\n<BR>\n';
+   } else {
+      var myTableStr = ''
+   }
+
    // compose table header:
-   var myTableStr = '<TABLE BORDER="0" CELLPADDING="0" CELLSPACING="0">\n<TR' +
-      '>\n   <TH NOWRAP ALIGN="left"><BIG><B>Metric</B></BIG>\n   <TH NOWRAP' +
-      '><BIG>&nbsp;</BIG>\n   <TH NOWRAP ALIGN="left"><BIG><B>' +
+   myTableStr += '<TABLE BORDER="0" CELLPADDING="0" CELLSPACING="0">\n<TR>\n' +
+      '   <TH NOWRAP ALIGN="left"><BIG><B>Metric</B></BIG>\n   <TH NOWRAP><B' +
+      'IG>&nbsp;</BIG>\n   <TH NOWRAP ALIGN="left"><BIG><B>' +
       dateString2(myData.time - 8 * 86400) + '</B></BIG>\n   <TH NOWRAP ALIG' +
       'N="center"><BIG><B>Previous Week</B></BIG>\n   <TH NOWRAP ALIGN="righ' +
       't"><BIG><B>' + dateString2(myData.time - 2 * 86400) + '</B></BIG>\n';
@@ -604,12 +620,6 @@ function writePweekTable() {
       }
    }
 
-   // add a row/line in case there is a message:
-   if ( myData.msg != '' ) {
-      myTableStr += '<TR>\n   <TD COLSPAN="5" ALIGN="left"><SPAN STYLE="colo' +
-         'r:blue; font-weight:bold;">' + myData.msg + '</SPAN>\n';
-   }
-
    // compose table trailer:
    myTableStr += '</TABLE>\n';
 
@@ -620,10 +630,18 @@ function writePweekTable() {
 
 function writeYesterdayTable() {
 
+   // add a line in case there is a message:
+   if ( myData.msg != '' ) {
+      var myTableStr = '<SPAN STYLE="color:blue; font-weight:bold;">' +
+                          myData.msg + '</SPAN>\n<BR>\n<BR>\n';
+   } else {
+      var myTableStr = ''
+   }
+
    // compose table header:
-   var myTableStr = '<TABLE BORDER="0" CELLPADDING="0" CELLSPACING="0">\n<TR' +
-      '>\n   <TH NOWRAP ALIGN="left"><BIG><B>Metric</B></BIG>\n   <TH NOWRAP' +
-      '><BIG>&nbsp;</BIG>\n   <TH NOWRAP ALIGN="left"><BIG><B>00:00</B></BIG' +
+   myTableStr += '<TABLE BORDER="0" CELLPADDING="0" CELLSPACING="0">\n<TR>\n' +
+      '   <TH NOWRAP ALIGN="left"><BIG><B>Metric</B></BIG>\n   <TH NOWRAP><B' +
+      'IG>&nbsp;</BIG>\n   <TH NOWRAP ALIGN="left"><BIG><B>00:00</B></BIG' +
       '>\n   <TH NOWRAP ALIGN="center"><BIG><B>Yesterday, ' +
       dateString2( myData.time - 86400 ) + '</B></BIG>\n   <TH NOWRAP ALIGN=' +
       '"right"><BIG><B>24:00</B></BIG>\n';
@@ -745,12 +763,6 @@ function writeYesterdayTable() {
       }
    }
 
-   // add a row/line in case there is a message:
-   if ( myData.msg != '' ) {
-      myTableStr += '<TR>\n   <TD COLSPAN="5" ALIGN="left"><SPAN STYLE="colo' +
-         'r:blue; font-weight:bold;">' + myData.msg + '</SPAN>\n';
-   }
-
    // compose table trailer:
    myTableStr += '</TABLE>\n';
 
@@ -761,12 +773,20 @@ function writeYesterdayTable() {
 
 function writeTodayTable() {
 
+   // add a line in case there is a message:
+   if ( myData.msg != '' ) {
+      var myTableStr = '<SPAN STYLE="color:blue; font-weight:bold;">' +
+                          myData.msg + '</SPAN>\n<BR>\n<BR>\n';
+   } else {
+      var myTableStr = ''
+   }
+
    // compose table header:
-   var myTableStr = '<TABLE BORDER="0" CELLPADDING="0" CELLSPACING="0">\n<TR' +
-      '>\n   <TH NOWRAP ALIGN="left"><BIG><B>Metric</B></BIG>\n   <TH NOWRAP' +
-      '><BIG>&nbsp;</BIG>\n   <TH NOWRAP ALIGN="left"><BIG><B>00:00</B></BIG' +
-      '>\n   <TH NOWRAP ALIGN="center"><BIG><B>UTC Today</B></BIG>\n   <TH N' +
-      'OWRAP ALIGN="right"><BIG><B>24:00</B></BIG>\n';
+   myTableStr += '<TABLE BORDER="0" CELLPADDING="0" CELLSPACING="0">\n<TR>\n' +
+      '   <TH NOWRAP ALIGN="left"><BIG><B>Metric</B></BIG>\n   <TH NOWRAP><B' +
+      'IG>&nbsp;</BIG>\n   <TH NOWRAP ALIGN="left"><BIG><B>00:00</B></BIG>\n' +
+      '   <TH NOWRAP ALIGN="center"><BIG><B>UTC Today</B></BIG>\n   <TH NOWR' +
+      'AP ALIGN="right"><BIG><B>24:00</B></BIG>\n';
 
 
    // loop over metrics in siteMetricOrder and write a table row for each:
@@ -884,12 +904,6 @@ function writeTodayTable() {
       }
    }
 
-   // add a row/line in case there is a message:
-   if ( myData.msg != '' ) {
-      myTableStr += '<TR>\n   <TD COLSPAN="5" ALIGN="left"><SPAN STYLE="colo' +
-         'r:blue; font-weight:bold;">' + myData.msg + '</SPAN>\n';
-   }
-
    // compose table trailer:
    myTableStr += '</TABLE>\n';
 
@@ -900,10 +914,18 @@ function writeTodayTable() {
 
 function writeFweekTable() {
 
+   // add a line in case there is a message:
+   if ( myData.msg != '' ) {
+      var myTableStr = '<SPAN STYLE="color:blue; font-weight:bold;">' +
+                          myData.msg + '</SPAN>\n<BR>\n<BR>\n';
+   } else {
+      var myTableStr = ''
+   }
+
    // compose table header:
-   var myTableStr = '<TABLE BORDER="0" CELLPADDING="0" CELLSPACING="0">\n<TR' +
-      '>\n   <TH NOWRAP ALIGN="left"><BIG><B>Metric</B></BIG>\n   <TH NOWRAP' +
-      '><BIG>&nbsp;</BIG>\n   <TH NOWRAP ALIGN="left"><BIG><B>' +
+   myTableStr += '<TABLE BORDER="0" CELLPADDING="0" CELLSPACING="0">\n<TR>\n' +
+      '   <TH NOWRAP ALIGN="left"><BIG><B>Metric</B></BIG>\n   <TH NOWRAP><B' +
+      'IG>&nbsp;</BIG>\n   <TH NOWRAP ALIGN="left"><BIG><B>' +
       dateString2(myData.time + 86400) + '</B></BIG>\n   <TH NOWRAP ALIGN="c' +
       'enter"><BIG><B>Following Week</B></BIG>\n   <TH NOWRAP ALIGN="right">' +
       '<BIG><B>' + dateString2(myData.time + 7 * 86400) + '</B></BIG>\n';
@@ -1022,12 +1044,6 @@ function writeFweekTable() {
             }
          }
       }
-   }
-
-   // add a row/line in case there is a message:
-   if ( myData.msg != '' ) {
-      myTableStr += '<TR>\n   <TD COLSPAN="5" ALIGN="left"><SPAN STYLE="colo' +
-         'r:blue; font-weight:bold;">' + myData.msg + '</SPAN>\n';
    }
 
    // compose table trailer:

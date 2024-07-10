@@ -6,9 +6,9 @@
 /* ************************************************************************* */
 /* data:                                                                     */
 /* ************************************************************************* */
-var siteMetricLabel = { downtime:         "Downtime(s)",
+var siteMetricLabel = { Downtime:         "Downtime(s)",
                         wlcgSAMdowntime:  "SAM Downtime(s)" };
-var siteMetricOrder = [ "downtime",
+var siteMetricOrder = [ "Downtime",
                         "***LINE***",
                         "**Elmnts**" ];
 
@@ -69,14 +69,22 @@ function dateString2(timeInSeconds) {
 
 function writeTable() {
 
+   // add a line in case there is a message:
+   if ( siteStatusInfo['msg'] != '' ) {
+      var myTableStr = '<SPAN STYLE="color:blue; font-weight:bold;">' +
+                          siteStatusInfo['msg'] + '</SPAN>\n<BR>\n<BR>\n';
+   } else {
+      var myTableStr = ''
+   }
+
    // compose table header:
-   var myTableStr = '<TABLE BORDER="0" CELLPADDING="0" CELLSPACING="0">\n<TR' +
-      '>\n   <TH NOWRAP ALIGN="left"><BIG><B>Sitename</B></BIG>\n   <TH COLS' +
-      'PAN="3" NOWRAP ALIGN="center"><BIG><B>GGUS</B></BIG>\n   <TH NOWRAP A' +
-      'LIGN="center"><BIG><B>Previous Week</B></BIG>\n   <TH NOWRAP ALIGN="c' +
-      'enter"><BIG><B>Yesterday</B></BIG>\n   <TH NOWRAP ALIGN="center" BGCO' +
-      'LOR="#FFFF50"><BIG><B>UTC Today</B></BIG>\n   <TH NOWRAP ALIGN="cente' +
-      'r"><BIG><B>Following Week</B></BIG>\n';
+   myTableStr += '<TABLE BORDER="0" CELLPADDING="0" CELLSPACING="0">\n<TR>\n' +
+      '   <TH NOWRAP ALIGN="left"><BIG><B>Sitename</B></BIG>\n   <TH COLSPAN' +
+      '="3" NOWRAP ALIGN="center"><BIG><B>GGUS</B></BIG>\n   <TH NOWRAP ALIG' +
+      'N="center"><BIG><B>Previous Week</B></BIG>\n   <TH NOWRAP ALIGN="cent' +
+      'er"><BIG><B>Yesterday</B></BIG>\n   <TH NOWRAP ALIGN="center" BGCOLOR' +
+      '="#FFFF50"><BIG><B>UTC Today</B></BIG>\n   <TH NOWRAP ALIGN="center">' +
+      '<BIG><B>Following Week</B></BIG>\n';
 
 
    // loop over site summary data and write a table row for each site:
@@ -181,12 +189,6 @@ function writeTable() {
          '</TABLE></SPAN></A>\n';
    }
 
-   // add a row/line in case there is a message:
-   if ( siteStatusInfo['msg'] != '' ) {
-      myTableStr += '<TR>\n   <TD COLSPAN="8" ALIGN=\"left\"><SPAN STYLE="co' +
-         'lor:blue; font-weight:bold;">' + siteStatusInfo['msg'] + '</SPAN>\n';
-   }
-
 
    // compose table trailer:
    myTableStr += '</TABLE>\n';
@@ -198,12 +200,20 @@ function writeTable() {
 
 function writeTodayTable() {
 
+   // add a line in case there is a message:
+   if ( myData.msg != '' ) {
+      var myTableStr = '<SPAN STYLE="color:blue; font-weight:bold;">' +
+                          myData.msg + '</SPAN>\n<BR>\n<BR>\n';
+   } else {
+      var myTableStr = ''
+   }
+
    // compose table header:
-   var myTableStr = '<TABLE BORDER="0" CELLPADDING="0" CELLSPACING="0">\n<TR' +
-      '>\n   <TH NOWRAP ALIGN="left"><BIG><B>Metric</B></BIG>\n   <TH NOWRAP' +
-      '><BIG>&nbsp;</BIG>\n   <TH NOWRAP ALIGN="left"><BIG><B>00:00</B></BIG' +
-      '>\n   <TH NOWRAP ALIGN="center"><BIG><B>UTC Today</B></BIG>\n   <TH N' +
-      'OWRAP ALIGN="right"><BIG><B>24:00</B></BIG>\n';
+   myTableStr += '<TABLE BORDER="0" CELLPADDING="0" CELLSPACING="0">\n<TR>\n' +
+      '   <TH NOWRAP ALIGN="left"><BIG><B>Metric</B></BIG>\n   <TH NOWRAP><B' +
+      'IG>&nbsp;</BIG>\n   <TH NOWRAP ALIGN="left"><BIG><B>00:00</B></BIG>\n' +
+      '   <TH NOWRAP ALIGN="center"><BIG><B>UTC Today</B></BIG>\n   <TH NOWR' +
+      'AP ALIGN="right"><BIG><B>24:00</B></BIG>\n';
 
 
    // loop over metrics in siteMetricOrder and write a table row for each:
@@ -242,7 +252,7 @@ function writeTodayTable() {
             eName = eName.replace(' ', '');
             // loop over metrics of element:
             for ( var mName in myData.elements[cnt].metrics ) {
-               if ( mName =="downtime" ) {
+               if ( mName =="Downtime" ) {
                   myTableStr += '<TR>\n   <TD NOWRAP ALIGN="left"> &nbsp &nb' +
                      'sp ' + lName + '\n   <TD NOWRAP>&nbsp;\n';
                   myTableStr += '   <TD COLSPAN="3"><CANVAS ID="cnvs_' +
@@ -252,12 +262,6 @@ function writeTodayTable() {
             }
          }
       }
-   }
-
-   // add a row/line in case there is a message:
-   if ( myData.msg != '' ) {
-      myTableStr += '<TR>\n   <TD COLSPAN="5" ALIGN="left"><SPAN STYLE="colo' +
-         'r:blue; font-weight:bold;">' + siteStatusInfo['msg'] + '</SPAN>\n';
    }
 
    // compose table trailer:
@@ -601,7 +605,7 @@ function fillTodayCanvases() {
    var mData;
 
    // loop over site metrics and for each fill the s4 canvases:
-   var mName = "downtime";
+   var mName = "Downtime";
 
       // s4 canvas, today, 24*4 quarter-hour entries:
       cData = myData.metrics[mName].today.split("");
@@ -656,7 +660,7 @@ function fillTodayCanvases() {
       var eName = myData.elements[cnt].host + '/' + myData.elements[cnt].type;
       eName = eName.replace(' ', '');
       // loop over metrics of element:
-      mName = "downtime";
+      mName = "Downtime";
          // s4 canvas, today, 24*4 quarter-hour entries:
          cData = myData.elements[cnt].metrics[mName].today.split("");
          cDom = document.getElementById('cnvs_' + eName + '_' + mName + '_s4');

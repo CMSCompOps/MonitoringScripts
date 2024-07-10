@@ -59,6 +59,11 @@ sswp_other = {}    # non-data item dictionary, url, msg, alert, ...           #
 class HTTPSClientCertHandler(urllib.request.HTTPSHandler):
     'urllib.request.HTTPSHandler class with certificate access'
 
+    def xxxxxxxx_init_with_proxy_xxxxxxxxxx__init__(self):
+        sslContext = ssl.create_default_context(purpose=ssl.Purpose.CLIENT_AUTH)
+        sslContext.load_cert_chain(SSWP_CERTIFICATE_CRT, SSWP_CERTIFICATE_KEY)
+        urllib.request.HTTPSHandler.__init__(self, context=sslContext)
+
     def __init__(self):
         with open("/etc/machine-id", 'r') as myfile:
             mydata = myfile.read().replace('\n', '')
@@ -4471,8 +4476,10 @@ def ssdw_monit_etf():
                         for myLine in fileObj:
                             myJson = json.loads(myLine.decode('utf-8'))
                             try:
-                                if (( myJson['metadata']['type_prefix'] != "raw" ) or
-                                    ( myJson['metadata']['producer'] != "sam3" )):
+                                if (( myJson['metadata']['type_prefix'] !=
+                                                                     "raw" ) or
+                                    ( myJson['metadata']['producer'] !=
+                                                                     "sam3" )):
                                     continue
                                 if ( myJson['data']['vo'] != "cms" ):
                                     continue
@@ -4484,7 +4491,11 @@ def ssdw_monit_etf():
                                 service = hostname + "/" + flavour
                                 if service not in hostflavourSet:
                                     continue
-                                probe = myJson['data']['metric_name'][8:].split("-/cms/Role=",1)[0]
+                                probe = myJson['data']['metric_name'][8:]\
+                  .replace("-JobSubmit-/cms/Role=lcgadmin", "-JobSubmit/x509")\
+                      .replace("-JobSubmit-/cms-ce-token", "-JobSubmit/token")\
+                                           .replace("-/cms/Role=lcgadmin", "")\
+                                                .replace("-/cms-ce-token", "")
                                 status = myJson['data']['status']
                                 if ( status == "OK" ):
                                     code = "o"

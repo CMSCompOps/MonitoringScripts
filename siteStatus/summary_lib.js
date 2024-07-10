@@ -113,10 +113,18 @@ function writeTable() {
       noBins  = [ 3, 2, 3, 5, 1 ];
    }
 
+   // add a line in case there is a message:
+   if ( siteStatusInfo['msg'] != '' ) {
+      var myTableStr = '<SPAN STYLE="color:blue; font-weight:bold;">' +
+                          siteStatusInfo['msg'] + '</SPAN>\n<BR>\n<BR>\n';
+   } else {
+      var myTableStr = ''
+   }
+
    // compose table header:
-   var myTableStr = '<TABLE BORDER="0" CELLPADDING="0" CELLSPACING="0">\n<TR' +
-      '>\n   <TH NOWRAP ALIGN="left"><SPAN STYLE="' + fontHdrSite + '">Siten' +
-      'ame</SPAN>\n   <TH COLSPAN="3" NOWRAP ALIGN="center"><SPAN STYLE="' +
+   myTableStr += '<TABLE BORDER="0" CELLPADDING="0" CELLSPACING="0">\n<TR>\n' +
+      '   <TH NOWRAP ALIGN="left"><SPAN STYLE="' + fontHdrSite + '">Sitename' +
+      '</SPAN>\n   <TH COLSPAN="3" NOWRAP ALIGN="center"><SPAN STYLE="' +
       fontHdrGGUS + '">GGUS</SPAN>\n   <TH NOWRAP ALIGN="center"><SPAN STYLE' +
       '="' + fontHdrOthr + '">Prev. Month</SPAN>\n   <TH NOWRAP ALIGN="cente' +
       'r"><SPAN STYLE="' + fontHdrOthr + '">Previous Week</SPAN>\n   <TH NOW' +
@@ -249,12 +257,6 @@ function writeTable() {
          '<TD ALIGN="right">' +
          dateString2( siteStatusInfo['time'] + 7 * 86400 ) +
          '</TABLE></SPAN></A>\n';
-   }
-
-   // add a row/line in case there is a message:
-   if ( siteStatusInfo['msg'] != '' ) {
-      myTableStr += '<TR>\n   <TD COLSPAN="9" ALIGN=\"left\"><SPAN STYLE="co' +
-         'lor:blue; font-weight:bold;">' + siteStatusInfo['msg'] + '</SPAN>\n';
    }
 
 
