@@ -64,7 +64,9 @@ corr_glbl_types = { 'CE': "CE",
                     'globus-GRIDFTP': "SRM",
                     'GridFtp': "SRM",
                     'webdav': "WEBDAV",
+                    'wlcg.webdav.tape': "WEBDAV",
                     'WebDAV': "WEBDAV",
+                    'WebDAV.tape': "WEBDAV",
                     'WEBDAV': "WEBDAV",
                     'XROOTD': "XROOTD",
                     'XRootD': "XROOTD",
@@ -454,12 +456,16 @@ def corr_monit_fetch(corr_cfg):
                                     if ( corr_cfg['nameFilter'] != myName ):
                                         continue
                                 #
+                                if 'rucio_status' not in myJson['data']:
+                                    myJson['data']['rucio_status'] = None
                                 if 'manual_life' not in myJson['data']:
                                     myJson['data']['manual_life'] = None
                                 if 'manual_prod' not in myJson['data']:
                                     myJson['data']['manual_prod'] = None
                                 if 'manual_crab' not in myJson['data']:
                                     myJson['data']['manual_crab'] = None
+                                if 'manual_rucio' not in myJson['data']:
+                                    myJson['data']['manual_rucio'] = None
                                 if 'detail' not in myJson['data']:
                                     myJson['data']['detail'] = None
                                 #
@@ -608,7 +614,6 @@ def corr_compose_vofeed_json(timestamp, topology):
     jsonString = "["
     hdrString = ((",\n {\n   \"producer\": \"cmssst\",\n" +
                          "   \"type\": \"ssbmetric\",\n" +
-                         "   \"path\": \"vofeed15min\",\n" +
                          "   \"monit_hdfs_path\": \"vofeed15min\",\n" +
                          "   \"timestamp\": %d000,\n" +
                          "   \"type_prefix\": \"raw\",\n" +
@@ -674,7 +679,6 @@ def corr_compose_down_json(timestamp, downtimes):
     jsonString = "["
     hdrString = ((",\n {\n   \"producer\": \"cmssst\",\n" +
                          "   \"type\": \"ssbmetric\",\n" +
-                         "   \"path\": \"down15min\",\n" +
                          "   \"monit_hdfs_path\": \"down15min\",\n" +
                          "   \"timestamp\": %d000,\n" +
                          "   \"type_prefix\": \"raw\",\n" +
@@ -916,7 +920,6 @@ def corr_compose_sts_json(timestamp, results):
     jsonString = "["
     hdrString = ((",\n {\n   \"producer\": \"cmssst\",\n" +
                          "   \"type\": \"ssbmetric\",\n" +
-                         "   \"path\": \"sts15min\",\n" +
                          "   \"monit_hdfs_path\": \"sts15min\",\n" +
                          "   \"timestamp\": %d000,\n" +
                          "   \"type_prefix\": \"raw\",\n" +
@@ -935,6 +938,9 @@ def corr_compose_sts_json(timestamp, results):
                         "      \"crab_status\": \"%s\",\n") %
                        (doc['name'], doc['status'], doc['prod_status'],
                                                            doc['crab_status']))
+        if doc['rucio_status'] is not None:
+            jsonString += ("      \"rucio_status\": \"%s\",\n" %
+                                                           doc['rucio_status'])
         if doc['manual_life'] is not None:
             jsonString += ("      \"manual_life\": \"%s\",\n" %
                                                             doc['manual_life'])
@@ -944,6 +950,9 @@ def corr_compose_sts_json(timestamp, results):
         if doc['manual_crab'] is not None:
             jsonString += ("      \"manual_crab\": \"%s\",\n" %
                                                             doc['manual_crab'])
+        if doc['manual_rucio'] is not None:
+            jsonString += ("      \"manual_rucio\": \"%s\",\n" %
+                                                           doc['manual_rucio'])
         if doc['detail'] is not None:
             jsonString += ("      \"detail\": \"%s\"" %
                                              doc['detail'].replace('\n','\\n'))
@@ -970,7 +979,6 @@ def corr_compose_scap_json(timestamp, results):
     jsonString = "["
     hdrString = ((",\n {\n   \"producer\": \"cmssst\",\n" +
                          "   \"type\": \"ssbmetric\",\n" +
-                         "   \"path\": \"scap15min\",\n" +
                          "   \"monit_hdfs_path\": \"scap15min\",\n" +
                          "   \"timestamp\": %d000,\n" +
                          "   \"type_prefix\": \"raw\",\n" +
@@ -1243,7 +1251,8 @@ def corr_parse_files(corr_cfg):
                     if (( 'name' not in myJson['data'] ) or
                         ( 'status' not in myJson['data'] ) or
                         ( 'prod_status' not in myJson['data'] ) or
-                        ( 'crab_status' not in myJson['data'] )):
+                        ( 'crab_status' not in myJson['data'] ) or
+                        ( 'rucio_status' not in myJson['data'] )):
                         continue
                     #
                     if 'manual_life' not in myJson['data']:
@@ -1252,6 +1261,8 @@ def corr_parse_files(corr_cfg):
                         myJson['data']['manual_prod'] = None
                     if 'manual_crab' not in myJson['data']:
                         myJson['data']['manual_crab'] = None
+                    if 'manual_rucio' not in myJson['data']:
+                        myJson['data']['manual_rucio'] = None
                     if 'detail' not in myJson['data']:
                         myJson['data']['detail'] = None
                 elif ( corr_cfg['family'] == "scap" ):
