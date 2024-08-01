@@ -52,7 +52,7 @@ import pydoop.hdfs
 
 
 
-VOFEED_VERSION = "v2.03.10"
+VOFEED_VERSION = "v2.03.11"
 # ########################################################################### #
 
 
@@ -1151,7 +1151,7 @@ if __name__ == '__main__':
         # ############################################################## #
         DICT_GLIDEIN_FACTORIES = [
             {   'lbl': "CERN",
-                'uri': "vocms0207.cern.ch",
+                'uri': "vocms0206.cern.ch",
                 'prd': True
             },
             {   'lbl': "UCSD",
@@ -1167,7 +1167,7 @@ if __name__ == '__main__':
                 'prd':False
             },
             {   'lbl': "CERNint",
-                'uri': "vocms0205.cern.ch",
+                'uri': "vocms0204.cern.ch",
                 'prd': False
             } ]
 
