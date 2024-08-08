@@ -1159,7 +1159,7 @@ if __name__ == '__main__':
                 'prd': True
             },
             {   'lbl': "FNAL",
-                'uri': "cmssi-factory02.fnal.gov",
+                'uri': "cmssi-factory01.fnal.gov",
                 'prd': True
             },
             {   'lbl': "UCSDitb",
