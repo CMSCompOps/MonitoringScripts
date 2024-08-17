@@ -4001,6 +4001,21 @@ def ssdw_monit_down_STS():
                                         crab = "e"
                                     else:
                                         crab = "u"
+                                    try:
+                                        status = myJson['data']['crab_status']
+                                        if (( status == "dependable" ) or
+                                            ( status == "enabled" )):
+                                            rucio = "o"
+                                        elif (( status == "new_data_stop" ) or
+                                              ( status == "downtime_stop" ) or
+                                              ( status == "parked" )):
+                                            rucio = "w"
+                                        elif ( status == "disabled" ):
+                                            rucio = "e"
+                                        else:
+                                            rucio = "u"
+                                    except:
+                                        rucio = "u"
                                     if "manual_life" not in myJson['data']:
                                         myJson['data']['manual_life'] = None
                                     if myJson['data']['manual_life'] is None:
@@ -4042,9 +4057,27 @@ def ssdw_monit_down_STS():
                                             mCrab = "e"
                                         else:
                                             mCrab = "u"
+                                    if "manual_rucio" not in myJson['data']:
+                                        myJson['data']['manual_rucio'] = None
+                                    if myJson['data']['manual_rucio'] is None:
+                                        mRucio = "u"
+                                    else:
+                                        status = myJson['data']['manual_rucio']
+                                        if (( status == "dependable" ) or
+                                            ( status == "enabled" )):
+                                            mRucio = "o"
+                                        elif (( status == "new_data_stop" ) or
+                                              ( status == "downtime_stop" ) or
+                                              ( status == "parked" )):
+                                            mRucio = "w"
+                                        elif ( status == "disabled" ):
+                                            mRucio = "e"
+                                        else:
+                                            mRucio = "u"
                                     vrsn = myJson['metadata']['kafka_timestamp']
-                                    value = ( vrsn, life, prod, crab,
-                                                    mLife, mProd, mCrab )
+                                    value = ( vrsn,
+                                              life, prod, crab, rucio,
+                                              mLife, mProd, mCrab, mRucio )
                                 else:
                                     continue
                                 tbin = int( tis / 900 )
@@ -4236,9 +4269,11 @@ def ssdw_monit_down_STS():
     lifeDict = {}
     prodDict = {}
     crabDict = {}
+    rucioDict = {}
     manLifeDict = {}
     manProdDict = {}
     manCrabDict = {}
+    manRucioDict = {}
     endTIS = tis_start['fweek']
     for mtrcKey in sorted( [ m for m in tmpDict.keys()
                              if ( m[0] == "sts15min" ) ], reverse=True ):
@@ -4249,18 +4284,22 @@ def ssdw_monit_down_STS():
                 lifeDict[name] = (30+7+1+1+7)*24*4*['u']
                 prodDict[name] = (30+7+1+1+7)*24*4*['u']
                 crabDict[name] = (30+7+1+1+7)*24*4*['u']
+                rucioDict[name] = (30+7+1+1+7)*24*4*['u']
                 manLifeDict[name] = (30+7+1+1+7)*24*4*['u']
                 manProdDict[name] = (30+7+1+1+7)*24*4*['u']
                 manCrabDict[name] = (30+7+1+1+7)*24*4*['u']
+                manRucioDict[name] = (30+7+1+1+7)*24*4*['u']
             sIndx = max(0, int( (startTIS - tis_start['month']) / 900 ))
             eIndx = min(4416, int( (endTIS - tis_start['month'] + 900) / 900 ))
             for indx in range(sIndx, eIndx):
                 lifeDict[name][indx] = tmpDict[mtrcKey][evalKey][1]
                 prodDict[name][indx] = tmpDict[mtrcKey][evalKey][2]
                 crabDict[name][indx] = tmpDict[mtrcKey][evalKey][3]
-                manLifeDict[name][indx] = tmpDict[mtrcKey][evalKey][4]
-                manProdDict[name][indx] = tmpDict[mtrcKey][evalKey][5]
-                manCrabDict[name][indx] = tmpDict[mtrcKey][evalKey][6]
+                rucioDict[name][indx] = tmpDict[mtrcKey][evalKey][4]
+                manLifeDict[name][indx] = tmpDict[mtrcKey][evalKey][5]
+                manProdDict[name][indx] = tmpDict[mtrcKey][evalKey][6]
+                manCrabDict[name][indx] = tmpDict[mtrcKey][evalKey][7]
+                manRucioDict[name][indx] = tmpDict[mtrcKey][evalKey][8]
         endTIS = startTIS
     #
     for name in lifeDict:
@@ -4269,9 +4308,11 @@ def ssdw_monit_down_STS():
             life_cnt = [0, 0, 0, 0]
             prod_cnt = [0, 0, 0, 0]
             crab_cnt = [0, 0, 0, 0]
+            rucio_cnt = [0, 0, 0, 0]
             manLife_cnt = [0, 0, 0]
             manProd_cnt = [0, 0, 0]
             manCrab_cnt = [0, 0, 0]
+            manRucio_cnt = [0, 0, 0]
             for bTIS in range(startTIS, endTIS, 900):
                 indx = int( (bTIS - tis_start['month']) / 900)
                 code = lifeDict[name][indx]
@@ -4304,6 +4345,16 @@ def ssdw_monit_down_STS():
                 else:
                    crab_cnt[0] += 1
                 #
+                code = rucioDict[name][indx]
+                if ( code == "o" ):
+                   rucio_cnt[1] += 1
+                elif ( code == "w" ):
+                   rucio_cnt[2] += 1
+                elif ( code == "e" ):
+                   rucio_cnt[3] += 1
+                else:
+                   rucio_cnt[0] += 1
+                #
                 code = manLifeDict[name][indx]
                 if ( code == "o" ):
                    manLife_cnt[0] += 1
@@ -4327,6 +4378,14 @@ def ssdw_monit_down_STS():
                    manCrab_cnt[1] += 1
                 elif ( code == "e" ):
                    manCrab_cnt[2] += 1
+                #
+                code = manRucioDict[name][indx]
+                if ( code == "o" ):
+                   manRucio_cnt[0] += 1
+                elif ( code == "w" ):
+                   manRucio_cnt[1] += 1
+                elif ( code == "e" ):
+                   manRucio_cnt[2] += 1
             mx = max(life_cnt)
             if ( life_cnt[3] == mx ):
                code = "M"
@@ -4360,6 +4419,17 @@ def ssdw_monit_down_STS():
                code = "u"
             glbSites.setBin("CrabStatus", name, bin, code)
             #
+            mx = max(rucio_cnt)
+            if ( rucio_cnt[3] == mx ):
+               code = "e"
+            elif ( rucio_cnt[2] == mx ):
+               code = "w"
+            elif ( rucio_cnt[1] == mx ):
+               code = "o"
+            else:
+               code = "u"
+            glbSites.setBin("RucioStatus", name, bin, code)
+            #
             mx = max(manLife_cnt)
             if ( mx == 0 ):
                code = "u"
@@ -4392,6 +4462,17 @@ def ssdw_monit_down_STS():
             else:
                code = "o"
             glbSites.setBin("manCrabStatus", name, bin, code)
+            #
+            mx = max(manRucio_cnt)
+            if ( mx == 0 ):
+               code = "u"
+            elif ( manRucio_cnt[2] == mx ):
+               code = "e"
+            elif ( manRucio_cnt[1] == mx ):
+               code = "w"
+            else:
+               code = "o"
+            glbSites.setBin("manRucioStatus", name, bin, code)
     del manCrabDict
     del manProdDict
     del manLifeDict

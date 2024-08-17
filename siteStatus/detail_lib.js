@@ -24,6 +24,8 @@ var siteMetricLabel = { Downtime:         "Downtime(s)",
                         manProdStatus:    " &nbsp; &nbsp; Prod Override",
                         CrabStatus:       "Crab Status",
                         manCrabStatus:    " &nbsp; &nbsp; Crab Override",
+                        RucioStatus:      "Rucio Status",
+                        manRucioStatus:   " &nbsp; &nbsp; Rucio Override",
                         newSummary:       "<B>Summary:</B>" };
 var siteMetricOrder = [ "Downtime", "SAM1day", "HC1day", "FTS1day",
                         "***LINE***",
@@ -32,6 +34,7 @@ var siteMetricOrder = [ "Downtime", "SAM1day", "HC1day", "FTS1day",
                         "LifeStatus", "manLifeStatus",
                         "ProdStatus", "manProdStatus",
                         "CrabStatus", "manCrabStatus",
+                        "RucioStatus", "manRucioStatus",
                         "***LINE***",
                         "***GGUS***",
                         "***LINE***", "***LINE***",
@@ -298,6 +301,11 @@ function canvas_clicked(id, event) {
    } else if ( myMetric == "manCrabStatus" ) {
       if ( mySecton == "today" ) {
          id.href = 'https://cmssst.web.cern.ch/cgi-bin/set/CrabStatus/' +
+            mySitHst;
+      }
+   } else if ( myMetric == "manRucioStatus" ) {
+      if ( mySecton == "today" ) {
+         id.href = 'https://cmssst.web.cern.ch/cgi-bin/set/RucioStatus/' +
             mySitHst;
       }
    } else if ( myMetric == "SAMsite" ) {
