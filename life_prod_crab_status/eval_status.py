@@ -13,13 +13,17 @@
 #     'timestamp':       1464871600000
 # },
 # "data": {
-#      "name":        "T1_DE_KIT",
-#      "status":      "enabled | waiting_room | morgue"
-#      "prod_status": "enabled | drain | disabled | test"
-#      "crab_status": "enabled | disabled"
-#      "manual_life": "enabled | waiting_room | morgue"
-#      "manual_prod": "enabled | drain | disabled | test"
-#      "manual_crab": "enabled | disabled"
+#      "name":         "T1_DE_KIT",
+#      "status":       "enabled | waiting_room | morgue"
+#      "prod_status":  "enabled | drain | disabled | test"
+#      "crab_status":  "enabled | disabled"
+#      "rucio_status": "dependable | enabled |
+#                       new_data_stop | downtime_stop | parked | disabled"
+#      "manual_life":  "enabled | waiting_room | morgue"
+#      "manual_prod":  "enabled | drain | disabled | test"
+#      "manual_crab":  "enabled | disabled"
+#      "manual_rucio": "dependable | enabled |
+#                       new_data_stop | downtime_stop | parked | disabled"
 #      "detail":      "Life: approaching downtime\n
 #                     "Prod: LifeStatus change to Waiting Room\n
 #                     "CRAB: manual override"
@@ -160,12 +164,17 @@ class StatusMetric:
                                     if (( tis < timeFrst ) or
                                         ( tis > timeLast )):
                                         continue
+                                    if 'rucio_status' not in myJson['data']:
+                                        myJson['data']['rucio_status'] = \
+                                                                      "unknown"
                                     if 'manual_life' not in myJson['data']:
                                         myJson['data']['manual_life'] = None
                                     if 'manual_prod' not in myJson['data']:
                                         myJson['data']['manual_prod'] = None
                                     if 'manual_crab' not in myJson['data']:
                                         myJson['data']['manual_crab'] = None
+                                    if 'manual_rucio' not in myJson['data']:
+                                        myJson['data']['manual_rucio'] = None
                                     if 'detail' not in myJson['data']:
                                         myJson['data']['detail'] = None
                                     tbin = int( tis / 900 )
@@ -251,7 +260,7 @@ class StatusMetric:
 
 
     def status(self, metric, name):
-        """function to return the Site Status triple of a site"""
+        """function to return the Site Status quadruple of a site"""
         # ################################################################### #
         # metric is a tuple of metric-name and time-bin: ("sts15min", 67816)  #
         # and name is a CMS site name: Tn_CC_*                                #
@@ -274,12 +283,16 @@ class StatusMetric:
                     mCrab = entry['manual_crab']
                 else:
                     mCrab = "unknown"
-                return ( entry['status'], \
-                         entry['prod_status'], entry['crab_status'], \
-                         mLife, mProd, mCrab )
+                if entry['manual_rucio'] is not None:
+                    mRucio = entry['manual_rucio']
+                else:
+                    mRucio = "unknown"
+                return ( entry['status'], entry['prod_status'], \
+                         entry['crab_status'], entry['rucio_status'], \
+                         mLife, mProd, mCrab, mRucio )
         #
-        return ( "unknown", "unknown", "unknown", \
-                 "unknown", "unknown", "unknown" )
+        return ( "unknown", "unknown", "unknown", "unknown", \
+                 "unknown", "unknown", "unknown", "unknown" )
 
 
     def get1entry(self, metric, name):
@@ -322,7 +335,8 @@ class StatusMetric:
         #
         # check entry has mandatory keys:
         if (( 'name' not in entry ) or ( 'status' not in entry ) or
-            ( 'prod_status' not in entry ) or ( 'crab_status' not in entry )):
+            ( 'prod_status' not in entry ) or ( 'crab_status' not in entry ) or
+            ( 'rucio_status' not in entry )):
             raise ValueError("Mandatory keys missing in entry %s" %
                              str(entry))
         #
@@ -336,6 +350,8 @@ class StatusMetric:
             entry['manual_prod'] = None
         if 'manual_crab' not in entry:
             entry['manual_crab'] = None
+        if 'manual_rucio' not in entry:
+            entry['manual_rucio'] = None
         if 'detail' not in entry:
             entry['detail'] = None
         elif ( entry['detail'] == "" ):
@@ -371,6 +387,8 @@ class StatusMetric:
             entry['manual_prod'] = None
         if 'manual_crab' not in entry:
             entry['manual_crab'] = None
+        if 'manual_rucio' not in entry:
+            entry['manual_rucio'] = None
         if 'detail' not in entry:
             entry['detail'] = None
         elif ( entry['detail'] == "" ):
@@ -422,9 +440,11 @@ class StatusMetric:
                 jsonString += (("      \"name\": \"%s\",\n" +
                                 "      \"status\": \"%s\",\n" +
                                 "      \"prod_status\": \"%s\",\n" +
-                                "      \"crab_status\": \"%s\",\n") %
+                                "      \"crab_status\": \"%s\",\n" +
+                                "      \"rucio_status\": \"%s\",\n") %
                                (entry['name'], entry['status'],
-                                   entry['prod_status'], entry['crab_status']))
+                                  entry['prod_status'], entry['crab_status'], \
+                                                        entry['rucio_status']))
                 if entry['manual_life'] is not None:
                     jsonString += ("      \"manual_life\": \"%s\",\n" %
                                                           entry['manual_life'])
@@ -434,6 +454,9 @@ class StatusMetric:
                 if entry['manual_crab'] is not None:
                     jsonString += ("      \"manual_crab\": \"%s\",\n" %
                                                           entry['manual_crab'])
+                if entry['manual_rucio'] is not None:
+                    jsonString += ("      \"manual_rucio\": \"%s\",\n" %
+                                                         entry['manual_rucio'])
                 if entry['detail'] is not None:
                     jsonString += ("      \"detail\": \"%s\"\n   }\n }" %
                                            entry['detail'].replace('\n','\\n'))
@@ -470,14 +493,19 @@ class StatusMetric:
                     mCrab = entry['manual_crab']
                 else:
                     mCrab = "unknown"
+                if entry['manual_rucio'] is not None:
+                    mRucio = entry['manual_rucio']
+                else:
+                    mRucio = "unknown"
                 if entry['detail'] is not None:
                     detail = entry['detail'].replace('\n','\n           ')
                 else:
                     detail = "null"
-                file.write("%s: %s/%s/%s %s/%s/%s\n   detail: %s\n" %
+                file.write("%s: %s/%s/%s/%s %s/%s/%s/%s\n   detail: %s\n" %
                            (entry['name'], entry['status'],
-                           entry['prod_status'], entry['crab_status'],
-                           mLife, mProd, mCrab, detail))
+                            entry['prod_status'], entry['crab_status'],
+                            entry['rucio_status'],
+                           mLife, mProd, mCrab, mRucio, detail))
         file.write("=======================================================\n")
         file.write("\n")
         file.flush()
@@ -499,6 +527,280 @@ if __name__ == '__main__':
     import eval_downtime
     import eval_sreadiness
 
+
+
+    def sammtrc_interval(metric_name=None):
+        SAM_METRICS = {'sam15min': 900, 'sam1hour': 3600, 'sam6hour': 21600,
+                       'sam1day': 86400 }
+        #
+        if metric_name is None:
+            return SAM_METRICS
+        #
+        try:
+            return SAM_METRICS[ metric_name ]
+        except KeyError:
+            return 0
+
+
+    def fetch_samSE(metricList):
+        """function to fetch SAM evaluation documents from MonIT"""
+        # ################################################################# #
+        # Retrieve all SAM WebDAV service evaluations for the metric tuples #
+        # (metric-name, time-bin) in the metricList from MonIT/HDFS.        #
+        # return a dictionary of lists of SAM evaluation results, i.e.      #
+        # { ('sam15min', 16954): [ {'name':, 'type':, 'status':, ...},      #
+        #                          {...}, ... ],                            #
+        #   ('sam1hour', 1695):  [ {'name':, 'type':, 'status':, ...},      #
+        #                          {...}, ... ] }                           #
+        # ################################################################# #
+        HDFS_PREFIX = "/project/monitoring/archive/cmssst/raw/ssbmetric/"
+
+
+        # retrieve specific SAM WebDAV evaluation documents from MonIT/HDFS:
+        # ==================================================================
+        t15mFrst = min( [ e[1] for e in metricList \
+                                    if ( e[0] == "sam15min" ) ], default=None )
+        t1hFrst = min( [ e[1] for e in metricList \
+                                    if ( e[0] == "sam1hour" ) ], default=None )
+        t6hFrst = min( [ e[1] for e in metricList \
+                                    if ( e[0] == "sam6hour" ) ], default=None )
+        t1dFrst = min( [ e[1] for e in metricList \
+                                     if ( e[0] == "sam1day" ) ], default=None )
+        timeFrst = min( [ ( e[1] * sammtrc_interval( e[0] ) ) \
+                                                        for e in metricList ] )
+        timeLast = max( [ ( (e[1] + 1) * sammtrc_interval( e[0] ) ) \
+                                                    for e in metricList ] ) - 1
+        #
+        logging.info("Retrieving SAM WebDAV evaluation docs from MonIT")
+        logging.log(15, "   between %s and %s" %
+                       (time.strftime("%Y-%m-%d %H:%M", time.gmtime(timeFrst)),
+                    time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime(timeLast))))
+
+
+        # prepare HDFS subdirectory list:
+        # ===============================
+        now = int( time.time() )
+        #
+        dirList = set()
+        lowestTbin = now
+        for mtrc in metricList:
+            tisDir = mtrc[1] * sammtrc_interval( mtrc[0] )
+            if ( tisDir < lowestTbin ):
+                lowestTbin = tisDir
+            dirList.add( mtrc[0] + time.strftime("/%Y/%m/%d",
+                                              time.gmtime( tisDir )) )
+        #
+        tisDay = 24*60*60
+        sixDaysAgo = calendar.timegm( time.gmtime(now - (6 * tisDay)) )
+        midnight = ( int( now / tisDay ) * tisDay )
+        limitLclTmpArea = calendar.timegm( time.localtime( midnight + 86399 ) )
+        if t15mFrst is not None:
+            startLclTmpArea = max( calendar.timegm(time.localtime(sixDaysAgo)),
+                                   calendar.timegm(time.localtime(t15mFrst)) )
+            for tisDir in range(startLclTmpArea, limitLclTmpArea, tisDay):
+                dirList.add( time.strftime("sam15min/%Y/%m/%d.tmp",
+                                           time.gmtime( tisDir )) )
+        if t1hFrst is not None:
+            startLclTmpArea = max( calendar.timegm(time.localtime(sixDaysAgo)),
+                                   calendar.timegm(time.localtime(t1hFrst)) )
+            for tisDir in range(startLclTmpArea, limitLclTmpArea, tisDay):
+                dirList.add( time.strftime("sam1hour/%Y/%m/%d.tmp",
+                                            time.gmtime( tisDir )) )
+        if t6hFrst is not None:
+            startLclTmpArea = max( calendar.timegm(time.localtime(sixDaysAgo)),
+                                   calendar.timegm(time.localtime(t6hFrst)) )
+            for tisDir in range(startLclTmpArea, limitLclTmpArea, tisDay):
+                dirList.add( time.strftime("sam6hour/%Y/%m/%d.tmp",
+                                           time.gmtime( tisDir )) )
+        if t1dFrst is not None:
+            startLclTmpArea = max( calendar.timegm(time.localtime(sixDaysAgo)),
+                                   calendar.timegm(time.localtime(t1dFrst)) )
+            for tisDir in range(startLclTmpArea, limitLclTmpArea, tisDay):
+                dirList.add( time.strftime("sam1day/%Y/%m/%d.tmp",
+                                           time.gmtime( tisDir )) )
+        del tisDir
+        dirList = sorted(dirList)
+
+
+        # connect to HDFS, loop over directories and read SAM evaluation docs:
+        # ====================================================================
+        tmpDict = {}
+        try:
+            with pydoop.hdfs.hdfs() as myHDFS:
+                for subDir in dirList:
+                    logging.debug("   checking HDFS subdirectory %s" % subDir)
+                    if not myHDFS.exists( HDFS_PREFIX + subDir ):
+                        continue
+                    # get list of files in directory:
+                    myList = myHDFS.list_directory( HDFS_PREFIX + subDir )
+                    fileNames = [ d['name'] for d in myList
+                                  if (( d['kind'] == "file" ) and
+                                      ( d['size'] != 0 )) ]
+                    del myList
+                    for fileName in fileNames:
+                        logging.debug("   reading file %s" %
+                                      os.path.basename(fileName))
+                        fileHndl = fileObj = None
+                        try:
+                            if ( os.path.splitext(fileName)[-1] == ".gz" ):
+                                fileHndl = myHDFS.open_file(fileName)
+                                fileObj = gzip.GzipFile(fileobj=fileHndl)
+                            else:
+                                fileObj = myHDFS.open_file(fileName)
+                            # read SAM evaluation documents in file:
+                            for myLine in fileObj:
+                                myJson = json.loads(myLine.decode('utf-8'))
+                                try:
+                                    metric = \
+                                          myJson['metadata']['monit_hdfs_path']
+                                    if metric not in sammtrc_interval():
+                                        continue
+                                    tbin = int( myJson['metadata']['timestamp']
+                                          / (sammtrc_interval(metric) * 1000) )
+                                    mKey = (metric, tbin)
+                                    if mKey not in metricList:
+                                        continue
+                                    srvc = myJson['data']['name']
+                                    type = myJson['data']['type']
+                                    ctgry = vofeed.vofeed.type2category( type )
+                                    if ( ctgry != "SE" ):
+                                        continue
+                                    vrsn = myJson['metadata']['kafka_timestamp']
+                                    #
+                                    value = (vrsn, myJson['data'])
+                                    #
+                                    if mKey not in tmpDict:
+                                        tmpDict[mKey] = {}
+                                    if srvc in tmpDict[mKey]:
+                                        if ( vrsn <= tmpDict[mKey][srvc][0] ):
+                                            continue
+                                    tmpDict[mKey][srvc] = value
+                                except KeyError:
+                                    continue
+                        except json.decoder.JSONDecodeError as excptn:
+                            logging.error("JSON decoding failure, file %s: %s"
+                                                     % (fileName, str(excptn)))
+                        except FileNotFoundError as excptn:
+                            logging.error("HDFS file not found, %s: %s" %
+                                                       (fileName, str(excptn)))
+                        except IOError as excptn:
+                            logging.error("IOError accessing HDFS file %s: %s"
+                                                     % (fileName, str(excptn)))
+                        finally:
+                            if fileObj is not None:
+                                fileObj.close()
+                            if fileHndl is not None:
+                                fileHndl.close()
+        except Exception as excptn:
+            logging.error("Failed to fetch HC documents from MonIT HDFS: %s" %
+                          str(excptn))
+
+
+        # load SAM WebDAV evaluations information into object:
+        # ====================================================
+        MTRC = {}
+        cnt_docs = 0
+        cnt_mtrc = len(tmpDict)
+        for mtrcKey in tmpDict:
+            if mtrcKey not in MTRC:
+                MTRC[mtrcKey] = []
+            for evalKey in tmpDict[mtrcKey]:
+                cnt_docs += 1
+                MTRC[mtrcKey].append( tmpDict[mtrcKey][evalKey][1] )
+        del tmpDict
+
+        logging.info("   found %d relevant SAM docs for %d metric-tuples" %
+                                                          (cnt_docs, cnt_mtrc))
+        #
+        return MTRC
+
+
+    def convert_samSE(samSE6hMtrc, seSiteDict, ystr6h):
+        """function to convert SAM evaluation documents to a dictionary"""
+        # ################################################################ #
+        # Convert a metric tuple dictionary into a dictonary of sites with #
+        # an array of status for each of the 120 6hour metric time bins in #
+        # the metric tuple dictionary.                                     #
+        # { site-A: [ "?", "o", "w", "e", "u", ... ],                      #
+        #   site-B: [ <120 characters, newest time bin first> ], ... }     #
+        # ################################################################ #
+
+        samDict = {}
+
+
+        # loop over metrics, i.e. 6 hour time bins of the last 30 days:
+        for mtrc in samSE6hMtrc:
+            aIndx = mtrc[1] - ystr6h + 119
+
+            # weekend check (for Tier-2,3):
+            weekday = ( int( mtrc[1] / 4 ) + 4 ) % 7
+
+            # loop over SAM evaluations in the time bin:
+            for entry in samSE6hMtrc[ mtrc ]:
+                try:
+                    ctgry = vofeed.vofeed.type2category( entry['type'] )
+                    if ( ctgry != "SE" ):
+                        continue
+                    service = entry['name']
+                    status = entry['status']
+                except KeyError:
+                    logging.error("Missing keyword in SAM evaluation doc: %s"
+                                                                 % str(excptn))
+                    continue
+                # translate service/hostname to site:
+                try:
+                    site = seSiteDict[ service ]
+                    tier = site[1:2]
+                except (KeyError, IndexError):
+                    continue
+                #
+                if ( site not in samDict ):
+                    samDict[site] = list( 120 * "?" )
+                #
+                # we are interested in the highest error state of any SE
+                if ( status == "error" ):
+                    if (( tier == "0" ) or ( tier == "1" )):
+                        samDict[site][aIndx] = "e"
+                    elif (( weekday >= 1 ) and ( weekday <= 5 )):
+                        samDict[site][aIndx] = "e"
+                    else:
+                        samDict[site][aIndx] = "E"
+                elif (( status == "unknown" ) and
+                      ( samDict[site][aIndx] in "?ow" )):
+                    if (( tier == "0" ) or ( tier == "1" )):
+                        samDict[site][aIndx] = "u"
+                    elif (( weekday >= 1 ) and ( weekday <= 5 )):
+                        samDict[site][aIndx] = "u"
+                    else:
+                        samDict[site][aIndx] = "U"
+                elif (( status == "warning" ) and
+                      ( samDict[site][aIndx] in "?o" )):
+                    samDict[site][aIndx] = "w"
+                elif (( status == "ok" ) and
+                      ( samDict[site][aIndx] == "?" )):
+                    samDict[site][aIndx] = "o"
+
+
+        # set bin to ignore if status is unknown for all services/sites:
+        for indx in range(0, 120, 1):
+            allUnknown = True
+            for site in samDict:
+                if (( samDict[site][indx] != "?" ) and
+                    ( samDict[site][indx] != "u" ) and
+                    ( samDict[site][indx] != "U" )):
+                    allUnknown = False
+                    break
+            #
+            if ( allUnknown == True ):
+                for site in samDict:
+                    samDict[site][indx] = "I"
+
+
+        logging.info("   converted SAM SE docs to dictionary of %d sites" %
+                                                                  len(samDict))
+        #
+        return samDict
+    # ####################################################################### #
 
 
     def hcmtrc_interval(metric_name=None):
@@ -853,6 +1155,7 @@ if __name__ == '__main__':
     # ####################################################################### #
 
 
+
     def emergent_downtimes(downObj, timestamp):
         """find next scheduled or unscheduled downtime of sites"""
         # ################################################################# #
@@ -913,10 +1216,81 @@ if __name__ == '__main__':
             if ( len( downDict[site] ) == 0 ):
                 del downDict[site]
             else:
-                logging.debug("   %s: %s downtime(s)", (site,
-                                                          str(downDict[site])))
+                logging.debug("   %s: %s downtime(s)" % (site,
+                                          str(downDict[site]).replace("'","")))
 
         return downDict
+
+
+
+    def emergent_se_downtimes(downObj, srvcSiteDict, timestamp):
+        """find next scheduled or unscheduled SRMv2/WebDAV downtime of sites"""
+        # ################################################################# #
+        # downObj is a filled downtime metric object, timestamp is the time #
+        # used to discriminate past from current/future downtimes           #
+        # function returns a site: list-of-string dictionary of sites with  #
+        # an upcoming downtime, scheduled or adhoc, of over 24 hours        #
+        # ################################################################# #
+        time15m = int( timestamp / 900 )
+
+        # latest downtime metric:
+        mtrc = downObj.metrics()[-1]
+
+        # loop over entris in metric and build site dictionary:
+        seDownDict = {}
+        for entry in downObj.downtimes( mtrc ):
+            if ( entry['category'] != "SE" ):
+                continue
+            if (( entry['status'] != "downtime" ) and
+                ( entry['status'] != "adhoc" )):
+                continue
+            if ( entry['duration'][1] <  timestamp ):
+                continue
+            try:
+                site = srvcSiteDict[ entry['name'] ]
+            except KeyError:
+                continue
+            frst15m = int( entry['duration'][0] / 900 )
+            last15m = int( (entry['duration'][1] - 1) / 900 )
+            if site not in seDownDict:
+                seDownDict[ site ] = []
+            seDownDict[ site ].append( [ frst15m, last15m ] )
+        #
+        # loop over sites and combine downtimes if possible:
+        for site in seDownDict:
+            seDownDict[site].sort()
+            for indx in range(len(seDownDict[site])-1, 0, -1):
+                if ( (seDownDict[site][indx-1][1] + 1) >=
+                                                   seDownDict[site][indx][0] ):
+                    seDownDict[site][indx-1][1] = seDownDict[site][indx][1]
+                    del seDownDict[site][indx]
+        #
+        # filter out future downtimes of less than 24 hours:
+        for site in list( seDownDict ):
+            for indx in range(len(seDownDict[site])-1, -1, -1):
+                if (( seDownDict[site][indx][0] > time15m ) and
+                    ( seDownDict[site][indx][1] - seDownDict[site][indx][0] < \
+                                                                         95 )):
+                    del seDownDict[site][indx]
+            if ( len( seDownDict[site] ) == 0 ):
+                del seDownDict[site]
+        #
+        # filter out any site without current or downtime within 6 hours:
+        for site in list( seDownDict ):
+            for indx in range(len(seDownDict[site])-1, -1, -1):
+                if ( seDownDict[site][indx][0] <= time15m ):
+                    seDownDict[site][indx] = "current"
+                elif ( seDownDict[site][indx][0] <= time15m + 24 ):
+                    seDownDict[site][indx] = "future"
+                else:
+                    del seDownDict[site][indx]
+            if ( len( seDownDict[site] ) == 0 ):
+                del seDownDict[site]
+            else:
+                logging.debug("   %s: %s downtime(s)" % (site,
+                                        str(seDownDict[site]).replace("'","")))
+
+        return seDownDict
     # ####################################################################### #
 
 
@@ -1213,7 +1587,7 @@ if __name__ == '__main__':
         time15m = int( timestamp / 900 )
         frst15m = ( int( time15m / 96 ) - 45 ) * 96
         #
-        logging.info("List sites in Waiting Room state all of last 45 days")
+        logging.info("Listing sites in WaitingRoom state for the last 45 days")
 
         # reverse-sorted list of relevant Site Status metrics:
         stsList = sorted( [ m for m in stsObj.metrics()
@@ -1252,6 +1626,113 @@ if __name__ == '__main__':
 
 
 
+    def sam6hSE_bad3days(samDict):
+        """number of bad SAM 6hour SRMv2/WebDAV evaluations in last 3 days"""
+        # ################################################################## #
+        # samDict is a site -- status array dictionary with the status array #
+        # having a ?,o,w,e,u character for each 6hour bin. The first bin of  #
+        # the array is 30 days ago and the last 6hour bin previous to now.   #
+        # ################################################################## #
+
+        badDict = {}
+
+        for site in samDict:
+            #
+            # include only sites with current SAM 6hour SE error state:
+            if ( samDict[site][119] not in "euEU" ):
+                continue
+            #
+            badDict[site] = 0
+            for indx in range(108, 120, 1):
+                if ( samDict[site][indx] in "eu" ):
+                    badDict[site] += 1
+
+        return badDict
+
+
+
+
+    def sam6hSE_good7days(samDict):
+        """number of good SAM 6hour SRMv2/WebDAV evaluations in a row"""
+        # ################################################################## #
+        # samDict is a site -- status array dictionary with the status array #
+        # having a ?,o,w,e,u character for each 6hour bin. The first bin of  #
+        # the array is 30 days ago and the last 6hour bin previous to now.   #
+        # ################################################################## #
+
+        goodDict = {}
+
+        for site in samDict:
+            #
+            # include only sites with current SAM 6hour SE ok/warning state:
+            if ( samDict[site][119] not in "ow" ):
+                continue
+            #
+            goodDict[site] = 0
+            for indx in range(119, 91, -1):
+                if ( samDict[site][indx] in "ow" ):
+                    goodDict[site] += 1
+                elif ( samDict[site][indx] in "IEU" ):
+                    # skip over all-unknown bins and Tier-2,3 weekend errors
+                    pass
+                else:
+                    break
+
+        return goodDict
+
+
+
+    def sam6hSE_bad30days(samDict):
+        """number of bad SAM 6hour SRMv2/WebDAV evaluations in last 30 days"""
+        # ################################################################## #
+        # samDict is a site -- status array dictionary with the status array #
+        # having a ?,o,w,e,u character for each 6hour bin. The first bin of  #
+        # the array is 30 days ago and the last 6hour bin previous to now.   #
+        # ################################################################## #
+
+        badDict = {}
+
+        for site in samDict:
+            #
+            # include only sites with current SAM 6hour SE error state:
+            if ( samDict[site][119] not in "euEU" ):
+                continue
+            #
+            badDict[site] = 0
+            for indx in range(0, 120, 1):
+                if ( samDict[site][indx] in "eu" ):
+                    badDict[site] += 1
+
+        return badDict
+
+
+
+    def sam6hSE_good30days(samDict):
+        """number of good SAM 6hour SRMv2/WebDAV evaluations in last 30 days"""
+        # ################################################################## #
+        # samDict is a site -- status array dictionary with the status array #
+        # having a ?,o,w,e,u character for each 6hour bin. The first bin of  #
+        # the array is 30 days ago and the last 6hour bin previous to now.   #
+        # ################################################################## #
+
+        goodDict = {}
+
+        for site in samDict:
+            #
+            # include only sites with current SAM 6hour SE ok/warning state:
+            if ( samDict[site][119] not in "ow" ):
+                continue
+            #
+            goodDict[site] = 0
+            for indx in range(0, 120, 1):
+                if ( samDict[site][indx] in "ow" ):
+                    goodDict[site] += 1
+
+        return goodDict
+    # ####################################################################### #
+
+
+
     def read_override(filename):
         """read in override file and return contents in dictionary"""
         # ################################################################ #
@@ -1264,7 +1745,7 @@ if __name__ == '__main__':
                 try:
                     fcntl.lockf(lckFile, fcntl.LOCK_EX | fcntl.LOCK_NB)
                 except BlockingIOError:
-                    sleep(0.250)
+                    time.sleep(0.250)
                     remainWait -= 0.250
                     continue
                 #
@@ -1277,7 +1758,7 @@ if __name__ == '__main__':
                 except Exception as excptn:
                     logging.error("Error reading override file %s: %s" %
                                                        (filename, str(excptn)))
-                    sleep(1.000)
+                    time.sleep(1.000)
                     remainWait -= 1.000
                     continue
                 #
@@ -1377,7 +1858,7 @@ if __name__ == '__main__':
                 try:
                     fcntl.lockf(lckFile, fcntl.LOCK_EX | fcntl.LOCK_NB)
                 except BlockingIOError:
-                    sleep(0.250)
+                    time.sleep(0.250)
                     remainWait -= 0.250
                     continue
                 #
@@ -1404,7 +1885,7 @@ if __name__ == '__main__':
                 except Exception as excptn:
                     logging.warning("Error updating override file %s: %s" %
                                                        (filename, str(excptn)))
-                    sleep(1.000)
+                    time.sleep(1.000)
                     remainWait -= 1.000
                     continue
                 #
@@ -1478,7 +1959,8 @@ if __name__ == '__main__':
                 entry = evalObj.get1entry(metric, site)
             except KeyError:
                 entry = { 'name': site, 'detail': "",
-                          'prod_status': "unknown", 'crab_status': "unknown" }
+                          'prod_status': "unknown", 'crab_status': "unknown",
+                          'rucio_status': "unknown" }
             #
             # get previous LifeStatus:
             # ========================
@@ -1665,7 +2147,8 @@ if __name__ == '__main__':
                     entry['detail'] = ""
             except KeyError:
                 entry = { 'name': site, 'detail': "",
-                          'status': "unknown", 'crab_status': "unknown" }
+                          'status': "unknown", 'crab_status': "unknown",
+                          'rucio_status': "unknown" }
             #
             # get current LifeStatus:
             # ========================
@@ -1849,7 +2332,8 @@ if __name__ == '__main__':
                     entry['detail'] = ""
             except KeyError:
                 entry = { 'name': site, 'detail': "",
-                          'status': "unknown", 'prod_status': "unknown" }
+                          'status': "unknown", 'prod_status': "unknown",
+                          'rucio_status': "unknown" }
             #
             # get current LifeStatus:
             # ========================
@@ -1942,6 +2426,265 @@ if __name__ == '__main__':
                 nChange += 1
 
         logging.info("CrabStatus evaluation led to %d state changes" % nChange)
+        return
+    # ####################################################################### #
+
+
+
+    def eval_ruciostatus(evalObj, stsObj, samDict, downObj, srvcSiteDict):
+        """function to evaluate Prod Status of sites"""
+        # ################################################################### #
+        RUCIO_FILE = "/eos/home-c/cmssst/www/override/RucioStatus.json"
+        #
+        metric = evalObj.metrics()[0]
+        timestamp = metric[1] * 900
+        #
+        logging.info("Evaluating Rucio Status for %d (%s)" % (metric[1],
+                      time.strftime("%Y-%b-%d %H:%M", time.gmtime(timestamp))))
+
+
+        # get previous ProdStatus evaluations:
+        # ====================================
+        mtrc = stsObj.metrics()[-1]
+        logging.debug("Previous RucioStatus metric from %d (%s)" % (mtrc[1],
+                  time.strftime("%Y-%b-%d %H:%M", time.gmtime(mtrc[1] * 900))))
+        prevDict = {}
+        for entry in stsObj.evaluations( mtrc ):
+            prevDict[ entry['name'] ] = entry
+
+
+        # get a dictionary with bad SAM SE states during last 3 days:
+        # ===========================================================
+        sam3badDict = sam6hSE_bad3days(samDict)
+
+        # get a dictionary with good SAM SE states in a row:
+        # ==================================================
+        sam7goodDict = sam6hSE_good7days(samDict)
+
+        # get a dictionary with bad SAM SE states during last 30 days:
+        # ============================================================
+        sam30badDict = sam6hSE_bad30days(samDict)
+
+        # get a dictionary with bad SAM SE states during last 30 days:
+        # ============================================================
+        sam30goodDict = sam6hSE_good30days(samDict)
+
+
+        # get a dictionary of sites with emerging downtime:
+        # =================================================
+        down24hDict = emergent_se_downtimes(downObj, srvcSiteDict, timestamp)
+
+
+        # get manual override information:
+        # ================================
+        overrideDict = read_override(RUCIO_FILE)
+
+
+        # get list of sites for evaluation from VO-feed SE dictionary:
+        # ============================================================
+        siteList = sorted( set( list( seSiteDict.values() ) +
+                                list( overrideDict.keys() ) ) )
+
+
+        # loop over sites and evaluate RucioStatus:
+        # ========================================
+        nChange = 0
+        for site in siteList:
+            newOverride = None
+            #
+            # fetch existing entry in status metric:
+            # ======================================
+            try:
+                entry = evalObj.get1entry(metric, site)
+                if entry['detail'] is None:
+                    entry['detail'] = ""
+            except KeyError:
+                entry = { 'name': site, 'detail': "",
+                          'status': "unknown", 'prod_status': "unknown",
+                          'crab_status': "unknown" }
+            #
+            # get current LifeStatus:
+            # ========================
+            try:
+                lStatus = entry['status']
+            except KeyError:
+                # take previous LifeStatus:
+                try:
+                    lStatus = prevDict[site]['status']
+                except KeyError:
+                    lStatus = "unknown"
+            #
+            # get previous RucioStatus:
+            # ========================
+            try:
+                pStatus = prevDict[site]['rucio_status']
+            except KeyError:
+                pStatus = "unknown"
+            logging.log(15, "%s previous RucioStatus = %s" % (site, pStatus))
+            nStatus = pStatus
+            oStatus = None
+            detail = ""
+
+            # process state changes:
+            # ======================
+            if ( pStatus == "dependable" ):
+                # check if bad and 24 or more bad states in 30 days:
+                try:
+                    cnt = sam30badDict[site]
+                    logging.log(15, "   30-day bad SAM 6hour SE = %d" % cnt)
+                    if ( cnt >= 24 ):
+                        nStatus = "enabled"
+                        detail = "Rucio: >=24 SAM bad 6hour SE in 30 days"
+                except KeyError:
+                    pass
+            #
+            if ( pStatus == "enabled" ):
+                # check if good and 108 or more good states in 30 days:
+                try:
+                    cnt = sam30goodDict[site]
+                    logging.log(15, "   30-day good SAM 6hour SE = %d" % cnt)
+                    if ( cnt >= 108 ):
+                        nStatus = "dependable"
+                        detail = "Rucio: >=108 good SAM 6hour SE in 30 days"
+                except KeyError:
+                    pass
+            #
+            try:
+                cnt = sam3badDict[site]
+                logging.log(15, "   3-day bad SAM 6hour SE = %d" % cnt)
+                #
+                if (( pStatus == "dependable" ) or ( pStatus == "enabled" ) or
+                    ( pStatus == "unknown" )):
+                    # check for 4th bad states in 3 days:
+                    if ( cnt >= 4 ):
+                        nStatus = "new_data_stop"
+                        detail = "Rucio: >=4 bad SAM 6hour SE in 3 days"
+                #
+                if (( pStatus == "dependable" ) or ( pStatus == "enabled" ) or
+                    ( pStatus == "new_data_stop") or ( pStatus == "unknown" )):
+                    # check for 8th error states in 3 days:
+                    if ( cnt >= 8 ):
+                        nStatus = "parked"
+                        detail = "Rucio: >=8 bad SAM 6hour SE in 3 days"
+            except KeyError:
+                pass
+            #
+            if (( pStatus == "downtime_stop") or ( pStatus == "parked" )):
+                # check if bad and 84 or more bad states in 30 days:
+                try:
+                    cnt = sam30badDict[site]
+                    logging.log(15, "   30-day bad SAM 6hour SE = %d" % cnt)
+                    if ( cnt >= 84 ):
+                        nStatus = "disabled"
+                        detail = "Rucio: >=84 SAM bad 6hour SE in 30 days"
+                except KeyError:
+                    pass
+            #
+            try:
+                cnt = sam7goodDict[site]
+                logging.log(15, "   good SAM 6hour SE iaR = %d" % cnt)
+                #
+                if ( pStatus == "downtime_stop" ):
+                    if ( cnt >= 1 ):
+                        nStatus = "enabled"
+                        detail = "Rucio: good SAM 6hour SE after downtime"
+                if ( pStatus == "new_data_stop" ):
+                    # check for 4th good states in a row:
+                    if ( cnt >= 4 ):
+                        nStatus = "enabled"
+                        detail = "Rucio: >=4 good SAM 6hour SE in a row"
+                #
+                elif (( pStatus == "parked" ) or ( pStatus == "unknown" )):
+                    # check for 8th good states in a row:
+                    if ( cnt >= 8 ):
+                        nStatus = "enabled"
+                        detail = "Rucio: >=8 good SAM 6hour SE in a row"
+                #
+                elif ( pStatus == "disabled" ):
+                    # check for 12th good states in a row:
+                    if ( cnt >= 12 ):
+                        nStatus = "enabled"
+                        detail = "Rucio: >=12 good SAM 6hour SE in a row"
+            except KeyError:
+                pass
+            #
+            try:
+                # check for 24 hour or longer downtime within next 6 hours:
+                downStrng = str(down24hDict[site]).replace("'","")
+                logging.log(15, "   emerging downtime = %s" % downStrng)
+                if (( pStatus == "dependable" ) or ( pStatus == "enabled" ) or
+                    ( pStatus == "new_data_stop")):
+                    nStatus = "downtime_stop"
+                    detail = "Rucio: Emerging downtime, %s" % downStrng
+            except KeyError:
+                pass
+            #
+            if (( pStatus != "disabled" ) and
+                ( lStatus == "waiting_room" )):
+                logging.log(15, "   Waiting Room state")
+                nStatus = "parked"
+                detail = "Rucio: site in Waiting Room state"
+            #
+            if ( lStatus == "morgue" ):
+                logging.log(15, "   Morgue state")
+                nStatus = "disabled"
+                detail = "Rucio: site in Morgue state"
+            #
+            # apply any manual override:
+            # ==========================
+            try:
+                manOverride = overrideDict[site]
+                if manOverride['status'] is None:
+                    raise KeyError("Cleared override")
+                if ( manOverride['status'] == "" ):
+                    raise KeyError("Cleared override")
+                logging.log(15, "   manual override = %s (%s)" %
+                                  (manOverride['status'], manOverride['mode']))
+                oStatus = manOverride['status']
+                if ( manOverride['mode'] == "oneday" ):
+                    theDay = int( calendar.timegm( time.strptime(
+                          manOverride['when'], "%Y-%b-%d %H:%M:%S") ) / 86400 )
+                    if ( theDay >= mtrc[1] ):
+                        nStatus = manOverride['status']
+                        detail = "Rucio: manual override by %s (%s)" % \
+                                                ("someone", manOverride['why'])
+                    else:
+                        newOverride = { 'name': site, 'status': None }
+                elif ( manOverride['mode'] == "toggle" ):
+                    if ( nStatus != manOverride['status'] ):
+                        nStatus = manOverride['status']
+                        detail = "Rucio: manual override by %s (%s)" % \
+                                                ("someone", manOverride['why'])
+                    else:
+                        newOverride = { 'name': site, 'status': None }
+                else:
+                    nStatus = manOverride['status']
+                    detail = "Rucio: manual override by %s (%s)" % \
+                                                ("someone", manOverride['why'])
+                    newOverride = None
+            except KeyError:
+                pass
+            #
+            # update manual override file if needed:
+            # ======================================
+            if newOverride is not None:
+                update_override(RUCIO_FILE, newOverride)
+            #
+            #
+            # update metric entry:
+            # ====================
+            entry['rucio_status'] = nStatus
+            if oStatus is not None:
+                entry['manual_rucio'] = oStatus
+            if ( entry['detail'] != "" ):
+                entry['detail'] += ",\n"
+            entry['detail'] += detail
+            evalObj.update1entry(metric, entry)
+            #
+            if ( pStatus != nStatus ):
+                nChange += 1
+
+        logging.info("RucioStatus evaluation led to %d state changes" % nChange)
         return
     # ####################################################################### #
 
@@ -2300,6 +3043,21 @@ if __name__ == '__main__':
     srDocs.fetch( mtrcList )
 
 
+    # fetch SRMv2/WebDAV site information of current topology:
+    # ========================================================
+    vofd = vofeed.vofeed()
+    vofd.load()
+    # build service to site dictionary:
+    seSiteDict = {}
+    for mySite in vofd.topo[0].keys():
+        for myService in vofd.topo[0][mySite]:
+            if ( myService['production'] != True ):
+                continue
+            if ( myService['category'] != "SE" ):
+                continue
+            seSiteDict[ myService['hostname'] ] = mySite
+
+
     # fetch current downtime information:
     # ===================================
     ystrTIS = ystr1d * 86400
@@ -2307,21 +3065,41 @@ if __name__ == '__main__':
     downDocs = eval_downtime.DowntimeMetric()
     downDocs.fetch( (ystrTIS, b15mTIS) )
     #
-    # trim downtime information to scheduled downtimes of sites
+    # trim downtime information to scheduled downtimes of sites/SEs and enrich
     cnt_docs = 0
     for mtrc in downDocs.metrics():
         for dntm in downDocs.downtimes( mtrc ):
-            if (( dntm['type'] != "site" ) or
+            try:
+                ctgry = vofeed.vofeed.type2category( dntm['type'] )
+            except KeyError:
+                ctgry = ""
+            if ((( dntm['type'] != "site" ) and ( ctgry != "SE" )) or
                 ( dntm['status'] != "downtime" )):
                 downDocs.del1entry(mtrc, dntm)
+            elif ( 'category' not in dntm ):
+                dntm['category'] = ctgry
         cnt_docs += len( downDocs.downtimes(mtrc) )
-    logging.info("   %d site scheduled downtime entries" % cnt_docs)
+    logging.info("   %d SE/site scheduled downtime entries" % cnt_docs)
 
 
     # fetch HammerCloud metrics of previous 6 days:
     # =============================================
     mtrcList = [ ("hc1day", e) for e in range(ystr1d, ystr1d - 6, -1) ]
     hcMtrc = fetch_hc( mtrcList )
+
+
+    # fetch SAM SRMv2/WebDAV metrics of previous 30 days:
+    # ===================================================
+    # starting with time bin that ended 4 hours ago, i.e. started 10 hours ago
+    ystr6h = int( (now15m - 40) / 24 )
+    mtrcList = [ ("sam6hour", e) for e in range(ystr6h, ystr6h - 120, -1) ]
+    samSE6hMtrc = fetch_samSE(mtrcList)
+
+    # convert SAM SRMv2/WebDAV metrics into site--SE status array dictionary:
+    # =======================================================================
+    samSE6hDict = convert_samSE(samSE6hMtrc, seSiteDict, ystr6h)
+    # release space of metric tuple dictionary
+    del samSE6hMtrc
 
 
     # fetch Site Status metrics of previous 46 days:
@@ -2347,6 +3125,9 @@ if __name__ == '__main__':
     #
     # evaluate CrabStatus:
     eval_crabstatus(evalDocs, stsDocs, srDocs, hcMtrc)
+    #
+    # evaluate RucioStatus:
+    eval_ruciostatus(evalDocs, stsDocs, samSE6hDict, downDocs, seSiteDict)
 
 
 
@@ -2364,11 +3145,13 @@ if __name__ == '__main__':
         if site not in prvDict:
             cnt_docs += 1
         elif (( eval['status'] != prvDict[site]['status'] ) or
-              ( eval['prod_status'] != prvDict[site]['prod_status'] ) or
-              ( eval['crab_status'] != prvDict[site]['crab_status'] ) or
-              ( eval['manual_life'] != prvDict[site]['manual_life'] ) or
-              ( eval['manual_prod'] != prvDict[site]['manual_prod'] ) or
-              ( eval['manual_crab'] != prvDict[site]['manual_crab'] )):
+              ( eval['prod_status']  != prvDict[site]['prod_status'] ) or
+              ( eval['crab_status']  != prvDict[site]['crab_status'] ) or
+              ( eval['rucio_status'] != prvDict[site]['rucio_status'] ) or
+              ( eval['manual_life']  != prvDict[site]['manual_life'] ) or
+              ( eval['manual_prod']  != prvDict[site]['manual_prod'] ) or
+              ( eval['manual_crab']  != prvDict[site]['manual_crab'] ) or
+              ( eval['manual_rucio'] != prvDict[site]['manual_rucio'] )):
             cnt_docs += 1
 
 
