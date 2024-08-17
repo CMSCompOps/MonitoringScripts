@@ -184,7 +184,7 @@ class DowntimeMetric:
                                         if ( vrsn <= tmpDict[mKey][dKey][0] ):
                                             continue
                                     tmpDict[mKey][dKey] = value
-                                except KeyError:
+                                except KeyError as excptn:
                                     logging.error(("Incomplete downtime reco" +
                                                    "rd, file %s: %s") %
                                                        (fileName, str(excptn)))
