@@ -2359,6 +2359,7 @@ if __name__ == '__main__':
             # ===========================
             try:
                 cnt = hc3goodDict[site]
+                logging.log(15, "   3-day good HammerCloud = %d" % cnt)
                 if ( cnt >= 1 ):
                     nStatus = "enabled"
                     detail = "Crab: %d Hammer Cloud ok state(s) in 3 days" % cnt
@@ -2381,6 +2382,8 @@ if __name__ == '__main__':
                     raise KeyError("Cleared override")
                 if ( manOverride['status'] == "" ):
                     raise KeyError("Cleared override")
+                logging.log(15, "   manual override = %s (%s)" %
+                                  (manOverride['status'], manOverride['mode']))
                 oStatus = manOverride['status']
                 if ( manOverride['mode'] == "oneday" ):
                     theDay = int( calendar.timegm( time.strptime(
