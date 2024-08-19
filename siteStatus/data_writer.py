@@ -4002,7 +4002,7 @@ def ssdw_monit_down_STS():
                                     else:
                                         crab = "u"
                                     try:
-                                        status = myJson['data']['crab_status']
+                                        status = myJson['data']['rucio_status']
                                         if (( status == "dependable" ) or
                                             ( status == "enabled" )):
                                             rucio = "o"
