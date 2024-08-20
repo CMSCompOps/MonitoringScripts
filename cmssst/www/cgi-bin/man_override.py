@@ -60,7 +60,8 @@ OVRD_AUTH_EGROUP = {
                       'cms-comp-ops-workflow-team':     "ALL",
                       'cms-tier0-operations':           ["T0_CH_CERN",
                                                          "T2_CH_CERN",
-                                                         "T2_CH_CERN_HLT" ],
+                                                         "T2_CH_CERN_HLT",
+                                                         "T2_CH_CERN_P5" ],
                     'cms-comp-ops-site-support-team': "ALL" },
     'CrabStatus':   { 'cms-zh':                         "",
                       'cms-members':                    "",
@@ -68,7 +69,16 @@ OVRD_AUTH_EGROUP = {
                       'cms-comp-ops':                   "",
                       'cms-service-crab3htcondor':      "ALL",
                       'cms-tier0-operations':           ["T0_CH_CERN",
-                                                         "T2_CH_CERN_HLT" ],
+                                                         "T2_CH_CERN_HLT",
+                                                         "T2_CH_CERN_P5" ],
+                      'cms-comp-ops-site-support-team': "ALL" },
+    'RucioStatus':  { 'cms-zh':                         "",
+                      'cms-members':                    "",
+                      'cms-authorized-users':           "",
+                      'cms-comp-ops':                   "",
+                      'cms-comp-ops-transfer-team':     "ALL",
+                      'cms-tier0-operations':           ["T0_CH_CERN",
+                                                         "T2_CH_CERN" ],
                       'cms-comp-ops-site-support-team': "ALL" },
     'SiteCapacity': { 'cms-zh':                         "",
                       'cms-members':                    "",
@@ -77,20 +87,27 @@ OVRD_AUTH_EGROUP = {
                       'cms-comp-ops-site-support-team': "ALL" }
 }
 OVRD_STATUS_DESC = {
-    'LifeStatus': { 'enabled':      "Enabled",
-                    'waiting_room': "Waiting Room",
-                    'morgue':       "Morgue state" },
-    'ProdStatus': { 'enabled':      "Enabled",
-                    'drain':        "Drain",
-                    'disabled':     "Disabled",
-                    'test':         "Testing" },
-    'CrabStatus': { 'enabled':      "Enabled",
-                    'disabled':     "Disabled" }
+    'LifeStatus':  { 'enabled':       "Enabled",
+                     'waiting_room':  "Waiting Room",
+                     'morgue':        "Morgue state" },
+    'ProdStatus':  { 'enabled':       "Enabled",
+                     'drain':         "Drain",
+                     'disabled':      "Disabled",
+                     'test':          "Testing" },
+    'CrabStatus':  { 'enabled':       "Enabled",
+                     'disabled':      "Disabled" },
+    'RucioStatus': { 'dependable':    "Dependable",
+                     'enabled':       "Enabled",
+                     'new_data_stop': "New Data Stop",
+                     'downtime_stop': "Downtime Stop",
+                     'parked':        "Parked",
+                     'disabled':      "Disabled" }
 }
 OVRD_MODE_DESC = {
-    'LifeStatus': [ "latched", "oneday", "toggle" ],
-    'ProdStatus': [ "latched", "oneday", "toggle" ],
-    'CrabStatus': [ "latched", "oneday", "toggle" ]
+    'LifeStatus':  [ "latched", "oneday", "toggle" ],
+    'ProdStatus':  [ "latched", "oneday", "toggle" ],
+    'CrabStatus':  [ "latched", "oneday", "toggle" ],
+    'RucioStatus': [ "latched", "oneday", "toggle" ]
 }
 OVRD_CAPACITY_DESC = {
     'name':                     "CMS Site Name",
@@ -132,12 +149,14 @@ OVRD_LOCK_PATH = {
     'LifeStatus':   "/eos/user/c/cmssst/www/override/status.lock",
     'ProdStatus':   "/eos/user/c/cmssst/www/override/status.lock",
     'CrabStatus':   "/eos/user/c/cmssst/www/override/status.lock",
+    'RucioStatus':  "/eos/user/c/cmssst/www/override/status.lock",
     'SiteCapacity': "/eos/user/c/cmssst/www/capacity/update.lock"
 }
 OVRD_FILE_PATH = {
     'LifeStatus':   "/eos/user/c/cmssst/www/override/LifeStatus.json",
     'ProdStatus':   "/eos/user/c/cmssst/www/override/ProdStatus.json",
     'CrabStatus':   "/eos/user/c/cmssst/www/override/CrabStatus.json",
+    'RucioStatus':  "/eos/user/c/cmssst/www/override/RucioStatus.json",
     'SiteCapacity': "/eos/user/c/cmssst/www/capacity/SiteCapacity.json"
 }
 OVRD_CGIURL = "https://cmssst.web.cern.ch/cgi-bin/set"
@@ -898,6 +917,7 @@ def ovrd_html_header(cgiMTHD, cgiMTRC, cgiSITE):
         'LifeStatus':  "Life Status Manual Override",
         'ProdStatus':  "Production Status Manual Override",
         'CrabStatus':  "Analysis Status Manual Override",
+        'RucioStatus': "Transfer Status Manual Override",
         'SiteCapacity': "Site Capacity Update"
     }
 
@@ -1026,10 +1046,14 @@ def ovrd_html_override(authDict, cgiMTRC, siteFacility, cgiSITE):
             #
             if (( mstrFlag == False ) and ( site not in siteAuth )):
                 bckgnd = "#F4F4F4"
-            elif ( entry['status'] == "enabled" ):
+            elif (( entry['status'] == "enabled" ) or
+                  ( entry['status'] == "dependable" )):
                 bckgnd = "#E8FFE8"
             elif (( entry['status'] == "waiting_room" ) or
                   ( entry['status'] == "drain" ) or
+                  ( entry['status'] == "new_data_stop" ) or
+                  ( entry['status'] == "downtime_stop" ) or
+                  ( entry['status'] == "parked" ) or
                   ( entry['status'] == "test" )):
                 bckgnd = "#FFFFD0"
             elif (( entry['status'] == "morgue" ) or
@@ -1186,10 +1210,14 @@ def ovrd_post_override(authDict, cgiMTRC, siteFacility, cgiSITE, cgiPOST):
            "ide:\n") % cgiMTRC)
     #
     if cgiSITE in overrideDict:
-        if ( overrideDict[cgiSITE]['status'] == "enabled" ):
+        if (( overrideDict[cgiSITE]['status'] == "enabled" ) or
+            ( overrideDict[cgiSITE]['status'] == "dependable" )):
             bckgnd = "#E8FFE8"
         elif (( overrideDict[cgiSITE]['status'] == "waiting_room" ) or
               ( overrideDict[cgiSITE]['status'] == "drain" ) or
+              ( overrideDict[cgiSITE]['status'] == "new_data_stop" ) or
+              ( overrideDict[cgiSITE]['status'] == "downtime_stop" ) or
+              ( overrideDict[cgiSITE]['status'] == "parked" ) or
               ( overrideDict[cgiSITE]['status'] == "test" )):
             bckgnd = "#FFFFD0"
         elif (( overrideDict[cgiSITE]['status'] == "morgue" ) or
