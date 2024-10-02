@@ -1155,7 +1155,7 @@ if __name__ == '__main__':
                 'prd': True
             },
             {   'lbl': "UCSD",
-                'uri': "gfactory-2.opensciencegrid.org",
+                'uri': "gfactory-1.osg-htc.org",
                 'prd': True
             },
             {   'lbl': "FNAL",
