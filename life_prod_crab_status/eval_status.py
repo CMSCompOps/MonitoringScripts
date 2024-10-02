@@ -1626,6 +1626,27 @@ if __name__ == '__main__':
 
 
 
+    def ruciostatus_predowntime(stsObj, site):
+        """identify rucio_status of a site prior to downtime"""
+        # ################################################################# #
+        preDowntimeStatus = "unknown"
+
+        tmpList = []
+        for mtrc in stsObj.metrics():
+            for entry in stsObj.evaluations( mtrc ):
+                if ( entry['name'] == site ):
+                    tmpList.append( (mtrc[1], entry['rucio_status']) )
+        tmpList = sorted( tmpList, key=lambda t: t[0], reverse=True )
+        for tpl in tmpList:
+            if ( tpl[1] != "downtime_stop" ):
+                preDowntimeStatus = tpl[1]
+                break
+
+        return preDowntimeStatus
+    # ####################################################################### #
+
+
+
     def sam6hSE_bad3days(samDict):
         """number of bad SAM 6hour SRMv2/WebDAV evaluations in last 3 days"""
         # ################################################################## #
@@ -2446,8 +2467,8 @@ if __name__ == '__main__':
                       time.strftime("%Y-%b-%d %H:%M", time.gmtime(timestamp))))
 
 
-        # get previous ProdStatus evaluations:
-        # ====================================
+        # get previous RucioStatus evaluations:
+        # =====================================
         mtrc = stsObj.metrics()[-1]
         logging.debug("Previous RucioStatus metric from %d (%s)" % (mtrc[1],
                   time.strftime("%Y-%b-%d %H:%M", time.gmtime(mtrc[1] * 900))))
@@ -2530,6 +2551,15 @@ if __name__ == '__main__':
 
             # process state changes:
             # ======================
+            if ( pStatus == "downtime_stop" ):
+                # check downtime concluded:
+                if ( site not in down24hDict ):
+                    # find RucioStatus before downtime:
+                    nStatus = ruciostatus_predowntime(stsObj, site)
+                    detail = "Rucio: Downtime concluded"
+                    logging.log(15, "   downtime concluded, back to %s" %
+                                                                       nStatus)
+            #
             if ( pStatus == "dependable" ):
                 # check if bad and 24 or more bad states in 30 days:
                 try:
@@ -2564,7 +2594,7 @@ if __name__ == '__main__':
                         detail = "Rucio: >=4 bad SAM 6hour SE in 3 days"
                 #
                 if (( pStatus == "dependable" ) or ( pStatus == "enabled" ) or
-                    ( pStatus == "new_data_stop") or ( pStatus == "unknown" )):
+                    ( pStatus == "new_data_stop" ) or ( pStatus == "unknown" )):
                     # check for 8th error states in 3 days:
                     if ( cnt >= 8 ):
                         nStatus = "parked"
@@ -2572,7 +2602,7 @@ if __name__ == '__main__':
             except KeyError:
                 pass
             #
-            if (( pStatus == "downtime_stop") or ( pStatus == "parked" )):
+            if (( pStatus == "downtime_stop" ) or ( pStatus == "parked" )):
                 # check if bad and 84 or more bad states in 30 days:
                 try:
                     cnt = sam30badDict[site]
@@ -2616,7 +2646,8 @@ if __name__ == '__main__':
                 downStrng = str(down24hDict[site]).replace("'","")
                 logging.log(15, "   emerging downtime = %s" % downStrng)
                 if (( pStatus == "dependable" ) or ( pStatus == "enabled" ) or
-                    ( pStatus == "new_data_stop")):
+                    ( pStatus == "new_data_stop" ) or
+                    ( pStatus == "downtime_stop" )):
                     nStatus = "downtime_stop"
                     detail = "Rucio: Emerging downtime, %s" % downStrng
             except KeyError:
