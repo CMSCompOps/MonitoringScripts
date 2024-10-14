@@ -2653,7 +2653,7 @@ if __name__ == '__main__':
             except KeyError:
                 pass
             #
-            if (( pStatus != "disabled" ) and
+            if (( nStatus != "disabled" ) and
                 ( lStatus == "waiting_room" )):
                 logging.log(15, "   Waiting Room state")
                 nStatus = "parked"
