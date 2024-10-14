@@ -1992,7 +1992,7 @@ if __name__ == '__main__':
             logging.log(15, "%s previous LifeStatus = %s" % (site, pStatus))
             nStatus = pStatus
             oStatus = None
-            detail = ""
+            detail = None
 
             # process state changes:
             # ======================
@@ -2090,11 +2090,12 @@ if __name__ == '__main__':
             # update metric entry:
             # ====================
             entry['status'] = nStatus
-            if oStatus is not None:
+            if ( oStatus is not None ):
                 entry['manual_life'] = oStatus
-            if ( entry['detail'] != "" ):
-                entry['detail'] += ",\n"
-            entry['detail'] += detail
+            if ( detail is not None ):
+                if ( entry['detail'] != "" ):
+                    entry['detail'] += ",\n"
+                entry['detail'] += detail
             evalObj.update1entry(metric, entry)
             #
             if ( pStatus != nStatus ):
@@ -2191,7 +2192,7 @@ if __name__ == '__main__':
             logging.log(15, "%s previous ProdStatus = %s" % (site, pStatus))
             nStatus = pStatus
             oStatus = None
-            detail = ""
+            detail = None
 
             # process state changes:
             # ======================
@@ -2284,11 +2285,12 @@ if __name__ == '__main__':
             # update metric entry:
             # ====================
             entry['prod_status'] = nStatus
-            if oStatus is not None:
+            if ( oStatus is not None ):
                 entry['manual_prod'] = oStatus
-            if ( entry['detail'] != "" ):
-                entry['detail'] += ",\n"
-            entry['detail'] += detail
+            if ( detail is not None ):
+                if ( entry['detail'] != "" ):
+                    entry['detail'] += ",\n"
+                entry['detail'] += detail
             evalObj.update1entry(metric, entry)
             #
             if ( pStatus != nStatus ):
@@ -2375,6 +2377,7 @@ if __name__ == '__main__':
                 pStatus = "unknown"
 
             oStatus = None
+            detail = None
 
             # check Hammer Cloud results:
             # ===========================
@@ -2439,11 +2442,12 @@ if __name__ == '__main__':
             # update metric entry:
             # ====================
             entry['crab_status'] = nStatus
-            if oStatus is not None:
+            if ( oStatus is not None ):
                 entry['manual_crab'] = oStatus
-            if ( entry['detail'] != "" ):
-                entry['detail'] += ",\n"
-            entry['detail'] += detail
+            if ( detail is not None ):
+                if ( entry['detail'] != "" ):
+                    entry['detail'] += ",\n"
+                entry['detail'] += detail
             evalObj.update1entry(metric, entry)
             #
             if ( pStatus != nStatus ):
@@ -2547,7 +2551,7 @@ if __name__ == '__main__':
             logging.log(15, "%s previous RucioStatus = %s" % (site, pStatus))
             nStatus = pStatus
             oStatus = None
-            detail = ""
+            detail = None
 
             # process state changes:
             # ======================
@@ -2708,11 +2712,12 @@ if __name__ == '__main__':
             # update metric entry:
             # ====================
             entry['rucio_status'] = nStatus
-            if oStatus is not None:
+            if ( oStatus is not None ):
                 entry['manual_rucio'] = oStatus
-            if ( entry['detail'] != "" ):
-                entry['detail'] += ",\n"
-            entry['detail'] += detail
+            if ( detail is not None ):
+                if ( entry['detail'] != "" ):
+                    entry['detail'] += ",\n"
+                entry['detail'] += detail
             evalObj.update1entry(metric, entry)
             #
             if ( pStatus != nStatus ):

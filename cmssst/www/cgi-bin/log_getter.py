@@ -385,6 +385,8 @@ def lget_grafana_fetch(cfg):
                                 ( 'prod_status' not in myJson['data'] ) or
                                 ( 'crab_status' not in myJson['data'] )):
                                 continue
+                            if ( 'rucio_status' not in myJson['data'] ):
+                                myJson['data']['rucio_status'] = "unknown"
                             myName = myJson['data']['name']
                             if ( cfg['name'] != "*" ):
                                 if ( myName != cfg['name'] ):
@@ -1097,9 +1099,11 @@ def lget_compose_sts(cfg, docs):
             jsonString += (("      \"site\": \"%s\",\n" +
                             "      \"status\": \"%s\",\n" +
                             "      \"prod_status\": \"%s\",\n" +
-                            "      \"crab_status\": \"%s\",\n") %
+                            "      \"crab_status\": \"%s\",\n" +
+                            "      \"rucio_status\": \"%s\",\n") %
                            (myDoc['name'], myDoc['status'],
-                            myDoc['prod_status'], myDoc['crab_status']))
+                            myDoc['prod_status'], myDoc['crab_status'],
+                            myDoc['rucio_status']))
             if 'detail' in myDoc:
                 if myDoc['detail'] is not None:
                     jsonString += ("      \"detail\": \"%s\"" %
@@ -2376,6 +2380,26 @@ def lget_maindvi_sts(cfg, docs):
                                       "sis Status\n         <TD BGCOLOR=\"%s" +
                                       "\" NOWRAP>%s\n") %
                                      (myColor, myDoc['crab_status']))
+                        if ( myDoc['***ORDER***'] > 0 ):
+                            myColor = "#DCDCDC"
+                        elif ( myDoc['rucio_status'] == "dependable" ):
+                            myColor = "#CDFFD4"
+                        elif ( myDoc['rucio_status'] == "enabled" ):
+                            myColor = "#CDFFD4"
+                        elif ( myDoc['rucio_status'] == "new_data_stop" ):
+                            myColor = "#FFFFCC"
+                        elif ( myDoc['rucio_status'] == "downtime_stop" ):
+                            myColor = "#FFFFCC"
+                        elif ( myDoc['rucio_status'] == "parked" ):
+                            myColor = "#FFFFCC"
+                        elif ( myDoc['rucio_status'] == "disabled" ):
+                            myColor = "#FFCCCC"
+                        else:
+                            myColor = "#FFFFFF"
+                        myFile.write(("      <TR>\n         <TD NOWRAP>Rucio" +
+                                      " Status\n         <TD BGCOLOR=\"%s\" " +
+                                      "NOWRAP>%s\n") %
+                                     (myColor, myDoc['rucio_status']))
                         if 'detail' in myDoc:
                             if (( myDoc['detail'] is not None ) and
                                 ( myDoc['detail'] != "" )):

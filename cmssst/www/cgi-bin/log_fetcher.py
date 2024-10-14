@@ -1,5 +1,4 @@
 #!/eos/user/c/cmssst/el9packages/bin/python3.9
-# /eos/user/c/cmssst/packages/bin/python3.7
 # ########################################################################### #
 # python script to retrieve SAM-ETF logs and CMS SSB metric documents from
 #    CERN MonIT HDFS. The cmssst log retrieval Bourne shell script will use
@@ -46,9 +45,10 @@ import json
 import gzip
 #
 # setup the Java/HDFS/PATH environment for pydoop to work properly:
-os.environ["HADOOP_CONF_DIR"] = "/eos/user/c/cmssst/packages/etc/hadoop/conf/hadoop.analytix"
-os.environ["JAVA_HOME"]       = "/eos/user/c/cmssst/packages/lib/jvm/java-1.8.0-openjdk-1.8.0.201.b09-2.el7_6.x86_64/jre"
-os.environ["HADOOP_PREFIX"]   = "/eos/user/c/cmssst/packages/hadoop/hadoop-2.7.5"
+os.environ["HADOOP_CONF_DIR"] = "/eos/user/c/cmssst/el9packages/etc/hadoop.analytix.conf/hadoop.analytix"
+os.environ["JAVA_HOME"]       = "/eos/user/c/cmssst/el9packages/lib/jvm/java-11-openjdk-11.0.21.0.9-2.el9.x86_64"
+os.environ["HADOOP_HOME"]     = "/eos/user/c/cmssst/el9packages/hadoop/3.3.5-1ba16/x86_64-el9-gcc11-opt"
+os.environ["PATH"]            = "/eos/user/c/cmssst/el9packages/hadoop/3.3.5-1ba16/x86_64-el9-gcc11-opt/bin:" + os.environ["PATH"]
 import pydoop.hdfs
 # ########################################################################### #
 
@@ -598,6 +598,8 @@ def lftch_monit_fetch(cfg):
                                     ( 'prod_status' not in myJson['data'] ) or
                                     ( 'crab_status' not in myJson['data'] )):
                                     continue
+                                if ( 'rucio_status' not in myJson['data'] ):
+                                    myJson['data']['rucio_status'] = "unknown"
                                 if ( myJson['metadata']['monit_hdfs_path'] !=
                                      cfg['metric'] ):
                                     continue
@@ -1459,9 +1461,11 @@ def lftch_compose_sts(cfg, docs):
             jsonString += (("      \"site\": \"%s\",\n" +
                             "      \"status\": \"%s\",\n" +
                             "      \"prod_status\": \"%s\",\n" +
-                            "      \"crab_status\": \"%s\",\n") %
+                            "      \"crab_status\": \"%s\",\n" +
+                            "      \"rucio_status\": \"%s\",\n") %
                            (myDoc['name'], myDoc['status'],
-                            myDoc['prod_status'], myDoc['crab_status']))
+                            myDoc['prod_status'], myDoc['crab_status'],
+                            myDoc['rucio_status']))
             if 'detail' in myDoc:
                 if myDoc['detail'] is not None:
                     jsonString += ("      \"detail\": \"%s\"" %
@@ -2920,6 +2924,26 @@ def lftch_maindvi_sts(cfg, docs):
                                       "sis Status\n         <TD BGCOLOR=\"%s" +
                                       "\" NOWRAP>%s\n") %
                                      (myColor, myDoc['crab_status']))
+                        if ( myDoc['***ORDER***'] > 0 ):
+                            myColor = "#DCDCDC"
+                        elif ( myDoc['rucio_status'] == "dependable" ):
+                            myColor = "#CDFFD4"
+                        elif ( myDoc['rucio_status'] == "enabled" ):
+                            myColor = "#CDFFD4"
+                        elif ( myDoc['rucio_status'] == "new_data_stop" ):
+                            myColor = "#FFFFCC"
+                        elif ( myDoc['rucio_status'] == "downtime_stop" ):
+                            myColor = "#FFFFCC"
+                        elif ( myDoc['rucio_status'] == "parked" ):
+                            myColor = "#FFFFCC"
+                        elif ( myDoc['rucio_status'] == "disabled" ):
+                            myColor = "#FFCCCC"
+                        else:
+                            myColor = "#FFFFFF"
+                        myFile.write(("      <TR>\n         <TD NOWRAP>Rucio" +
+                                      " Status\n         <TD BGCOLOR=\"%s\" " +
+                                      "NOWRAP>%s\n") %
+                                     (myColor, myDoc['rucio_status']))
                         if 'detail' in myDoc:
                             if (( myDoc['detail'] is not None ) and
                                 ( myDoc['detail'] != "" )):
