@@ -52,7 +52,7 @@ import pydoop.hdfs
 
 
 
-VOFEED_VERSION = "v2.03.11"
+VOFEED_VERSION = "v2.03.12"
 # ########################################################################### #
 
 
@@ -1505,6 +1505,9 @@ if __name__ == '__main__':
                             rseReadPath = urllib.parse.urlunparse(
                                 urllib.parse.urlparse( rseReadURL
                                 )._replace(scheme="", netloc="") )
+                            # strip out potential extra trailing query:
+                            rseReadPath = \
+                                    rseReadPath[:rseReadPath.rindex("/SAM/")+5]
                         except:
                             logging.warning("No SAM read path at RSE %s" %
                                                                        rseName)
@@ -1537,6 +1540,9 @@ if __name__ == '__main__':
                             else:
                                 rseWritePath = urllib.parse.urlunparse(
                                       urlTuple._replace(scheme="", netloc="") )
+                                # strip out potential extra trailing query:
+                                rseWritePath = \
+                               rseWritePath[:rseWritePath.rindex("/cmssam/")+8]
                         except:
                             logging.warning("No SAM write path at RSE %s" %
                                                                        rseName)
