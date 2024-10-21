@@ -214,6 +214,7 @@ class FTSmetric:
                ( eLwr.find("no free space") >= 0 ) or
                (( eLwr.find("copy failed with mode 3rd push") >= 0 ) and
                 ( eMsg.find("507 status code: 507") >= 0 )) or
+               ( eMsg.find("failed with status code 507") >= 0 ) or
                ( eMsg.find("Insufficient Storage") >= 0 ))):
             return "trn_usr"
         elif (( error_scope == "TRANSFER" ) and
