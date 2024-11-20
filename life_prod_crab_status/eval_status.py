@@ -3026,6 +3026,78 @@ if __name__ == '__main__':
 
 
 
+    def compose_crab_usablerucio(evalObj):
+        """compose CRAB backward compatible usableRucio.json string"""
+        # ########################################################## #
+
+        jsonString = "["
+        commaFlag = False
+        #
+        mtrc = evalObj.metrics()[0]
+        timestamp = ( 900 * mtrc[1] ) + 450
+        #
+        for entry in evalObj.evaluations( mtrc ):
+            if commaFlag:
+                jsonString += ","
+            if (( entry['rucio_status'] == "dependable" ) or
+                ( entry['rucio_status'] == "enabled" )):
+                my_colour = "green"
+                my_value  = "usable"
+            else:
+                my_colour = "red"
+                my_value  = "not_usable"
+            jsonString += (("\n  {\n" +
+                            "    \"name\": \"%s\",\n" +
+                            "    \"nvalue\": null,\n" +
+                            "    \"color\": \"%s\",\n" +
+                            "    \"value\": \"%s\",\n" +
+                            "    \"url\": \"https://twiki.cern.ch/twiki/bin/" +
+                           "view/CMS/SiteSupportSiteStatusSiteReadiness\",\n" +
+                            "    \"date\": %d\n" +
+                            "  }" ) % (entry['name'], my_colour, my_value,
+                                       timestamp))
+            commaFlag = True
+        jsonString += "\n]\n"
+        #
+        return jsonString
+
+
+
+    def write_crab_usablerucio(evalObj):
+        """function to write backward compatible usableRucio.json for CRAB"""
+        # ############################################################### #
+        # write RucioStatus information as usableRucio.json file for CRAB #
+        # ############################################################### #
+        #USABLE_FILE = "./junk/usableRucio.json"
+        USABLE_FILE = "/eos/home-c/cmssst/www/ssb_metric/usableRucio.json"
+
+        logging.info("Writing CRAB usableRucio JSON file")
+
+        # compose usableRucio JSON string:
+        # ================================
+        jsonString = compose_crab_usablerucio(evalObj)
+        if ( jsonString == "[\n]\n" ):
+            logging.warning("skipping writing of RSE site-devoid JSON string")
+            return False
+
+
+        # write string to file:
+        # =====================
+        try:
+            with open(USABLE_FILE + "_new", 'w') as myFile:
+                myFile.write( jsonString )
+            #
+            # move file into place:
+            os.rename(USABLE_FILE + "_new", USABLE_FILE)
+        except Exception as excptn:
+            logging.critical("Failed to write CRAB usableRucio JSON file, %s" %
+                                                                   str(excptn))
+
+        return
+    # ####################################################################### #
+
+
+
     parserObj = argparse.ArgumentParser(description="Script to evaluate Site" +
         " Status, i.e. LifeStatus, ProdStatus, and CrabStatus, for the curre" +
         "nt 15 minute bin.")
@@ -3208,5 +3280,6 @@ if __name__ == '__main__':
         #
         write_prod_ssbmetric(evalDocs)
         write_crab_usablesites(evalDocs)
+        write_crab_usablerucio(evalDocs)
 
     #import pdb; pdb.set_trace()
