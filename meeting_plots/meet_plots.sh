@@ -251,14 +251,14 @@ fi
 # now cut out Tier-1 and Tier-2 CERN images:
 if [ -f ${TMP_FILE} ]; then
    if [ ! -f ${PLOT_DIR}/T2_CH_CERN_sr.png ]; then
-      /usr/bin/convert -crop 1086x448+7+689 ${TMP_FILE} ${PLOT_DIR}/T1_DE_KIT_sr.png
-      /usr/bin/convert -crop 1086x448+7+1225 ${TMP_FILE} ${PLOT_DIR}/T1_ES_PIC_sr.png
-      /usr/bin/convert -crop 1086x448+7+1761 ${TMP_FILE} ${PLOT_DIR}/T1_FR_CCIN2P3_sr.png
-      /usr/bin/convert -crop 1086x448+7+2297 ${TMP_FILE} ${PLOT_DIR}/T1_IT_CNAF_sr.png
-      /usr/bin/convert -crop 1086x448+7+2833 ${TMP_FILE} ${PLOT_DIR}/T1_RU_JINR_sr.png
-      /usr/bin/convert -crop 1086x448+7+3369 ${TMP_FILE} ${PLOT_DIR}/T1_UK_RAL_sr.png
-      /usr/bin/convert -crop 1086x448+7+3905 ${TMP_FILE} ${PLOT_DIR}/T1_US_FNAL_sr.png
-      /usr/bin/convert -crop 1086x448+7+7121 ${TMP_FILE} ${PLOT_DIR}/T2_CH_CERN_sr.png
+      /usr/bin/convert -crop 1086x471+7+714 ${TMP_FILE} ${PLOT_DIR}/T1_DE_KIT_sr.png
+      /usr/bin/convert -crop 1086x471+7+1275 ${TMP_FILE} ${PLOT_DIR}/T1_ES_PIC_sr.png
+      /usr/bin/convert -crop 1086x471+7+1836 ${TMP_FILE} ${PLOT_DIR}/T1_FR_CCIN2P3_sr.png
+      /usr/bin/convert -crop 1086x471+7+2397 ${TMP_FILE} ${PLOT_DIR}/T1_IT_CNAF_sr.png
+      /usr/bin/convert -crop 1086x471+7+2958 ${TMP_FILE} ${PLOT_DIR}/T1_RU_JINR_sr.png
+      /usr/bin/convert -crop 1086x471+7+3519 ${TMP_FILE} ${PLOT_DIR}/T1_UK_RAL_sr.png
+      /usr/bin/convert -crop 1086x471+7+4080 ${TMP_FILE} ${PLOT_DIR}/T1_US_FNAL_sr.png
+      /usr/bin/convert -crop 1086x471+7+7446 ${TMP_FILE} ${PLOT_DIR}/T2_CH_CERN_sr.png
    else
       echo "t1_de_kit/pic/ccin2p3/cnaf/jinr/ral/fnal/cern.png exist, skipping"
    fi
