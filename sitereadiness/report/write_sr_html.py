@@ -706,7 +706,7 @@ def srhr_monit_down_STS(timestamp, siteDict):
         else:
             del stsDict[mKey]
     #
-    # fill status dictionary with Life,Prod,Crab Status information:
+    # fill status dictionary with Life,Prod,Crab,Rucio Status information:
     end15m = ( last1d * 96 ) + 95
     b15mDict = {}
     for mKey in sorted( stsDict.keys(), reverse=True ):
@@ -714,12 +714,13 @@ def srhr_monit_down_STS(timestamp, siteDict):
             lifeStatus = stsDict[mKey][site][1]['status']
             prodStatus = stsDict[mKey][site][1]['prod_status']
             crabStatus = stsDict[mKey][site][1]['crab_status']
+            rucioStatus = stsDict[mKey][site][1]['rucio_status']
             if stsDict[mKey][site][1]['detail'] is not None:
                 detail = stsDict[mKey][site][1]['detail'].replace("\n","<BR>")
             else:
                 detail = ""
             if site not in b15mDict:
-                b15mDict[site] = [ [ 0, 0, 0, 0, 0, 0, 0, 0 ]
+                b15mDict[site] = [ [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
                                    for i in range(nbin) ]
             start1d = int(mKey[1] / 96) - first1d
             end1d = int(end15m / 96) - first1d
@@ -743,6 +744,15 @@ def srhr_monit_down_STS(timestamp, siteDict):
                     b15mDict[site][ibin][6] += d15m
                 elif ( crabStatus == "disabled" ):
                     b15mDict[site][ibin][7] += d15m
+                if (( rucioStatus == "dependable" ) or
+                    ( rucioStatus == "enabled" )):
+                    b15mDict[site][ibin][8] += d15m
+                elif (( rucioStatus == "new_data_stop" ) or
+                      ( rucioStatus == "downtime_stop" ) or
+                      ( rucioStatus == "parked" )):
+                    b15mDict[site][ibin][9] += d15m
+                elif ( rucioStatus == "disabled" ):
+                    b15mDict[site][ibin][10] += d15m
         end15m = mKey[1]
     del stsDict
     #
@@ -764,6 +774,11 @@ def srhr_monit_down_STS(timestamp, siteDict):
                                             "",
                                             "No inforrmation available")
                                            for i in range(nbin) ]
+        if 'rucio1day' not in siteDict[site]:
+            siteDict[site]['rucio1day'] = [ ("none",
+                                             "",
+                                             "No inforrmation available")
+                                            for i in range(nbin) ]
         for ibin in range(nbin):
             counts = b15mDict[site][ibin]
             mxCnt = max( counts[0], counts[1], counts[2] )
@@ -791,6 +806,15 @@ def srhr_monit_down_STS(timestamp, siteDict):
                 siteDict[site]['crab1day'][ibin] = ("enabled", "", "")
             elif ( counts[7] == mxCnt ):
                 siteDict[site]['crab1day'][ibin] = ("disabled", "", "")
+            mxCnt = max( counts[8], counts[9], counts[10] )
+            if ( mxCnt < 24 ):
+                siteDict[site]['rucio1day'][ibin] = ("unknown", "", "")
+            elif ( counts[8] == mxCnt ):
+                siteDict[site]['rucio1day'][ibin] = ("enabled", "", "")
+            elif ( counts[9] == mxCnt ):
+                siteDict[site]['rucio1day'][ibin] = ("parked", "", "")
+            elif ( counts[10] == mxCnt ):
+                siteDict[site]['rucio1day'][ibin] = ("disabled", "", "")
     del b15mDict
     #
     return siteDict
@@ -1320,6 +1344,43 @@ def srhr_write_html(timestamp, statusDict):
                     myFile.write(("<TR>\n   <TD CLASS=\"tdLabel1\">CRAB Stat" +
                                   "us:\n   <TD COLSPAN=\"%d\" CLASS=\"tdCell" +
                                   "1\">\n") % total1d)
+                #
+                # Rucio Status Information:
+                if 'rucio1day' in statusDict[site]:
+                    myFile.write("<TR>\n   <TD CLASS=\"tdLabel1\">Rucio Stat" +
+                                  "us:\n")
+                    for dbin in range( len( statusDict[site]['rucio1day'] ) ):
+                        entry = statusDict[site]['rucio1day'][dbin]
+                        if ( dbin <= 4 ):
+                            ttip_strng = "toolTip1"
+                        elif ( dbin > 10 ):
+                            ttip_strng = "toolTip3"
+                        else:
+                            ttip_strng = "toolTip2"
+                        if ( entry[0] == "enabled" ):
+                            rgb_strng = "#80FF80"
+                        elif ( entry[0] == "parked" ):
+                            rgb_strng = "#FFFF00"
+                        elif ( entry[0] == "disabled" ):
+                            rgb_strng = "#FF0000"
+                        else:
+                            rgb_strng = "#F4F4F4"
+                        if (( entry[0] != "none" ) and ( entry[2] != "" )):
+                            myFile.write(("   <TD CLASS=\"tdCell1\" STYLE=\"" +
+                                          "background-color: %s\"><DIV CLASS" +
+                                          "=\"%s\">%s<SPAN>%s</SPAN></DIV>\n")
+                                         % (rgb_strng, ttip_strng,
+                                                           entry[1], entry[2]))
+                        elif (( entry[0] != "none" ) and ( entry[2] == "" )):
+                            myFile.write(("   <TD CLASS=\"tdCell1\" STYLE=\"" +
+                                          "background-color: %s\">%s\n") %
+                                                         (rgb_strng, entry[1]))
+                        else:
+                            myFile.write("   <TD CLASS=\"tdCell1\">\n")
+                else:
+                    myFile.write(("<TR>\n   <TD CLASS=\"tdLabel1\">Rucio Sta" +
+                                  "tus:\n   <TD COLSPAN=\"%d\" CLASS=\"tdCel" +
+                                  "l1\">\n") % total1d)
                 #
                 # Date Information:
                 myFile.write(("<TR HEIGHT=\"4\">\n   <TD>\n   <TD COLSPAN=\"" +
