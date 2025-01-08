@@ -1075,7 +1075,7 @@ if __name__ == '__main__':
         try:
             urlRequest = urllib.request.Request(URL_EGI_ENDPNT)
             urlOpener = urllib.request.build_opener( HTTPSNoCertCheckHandler() )
-            with urlOpener.open ( urlRequest ) as urlHandle:
+            with urlOpener.open ( urlRequest, timeout=300 ) as urlHandle:
                 urlCharset = urlHandle.headers.get_content_charset()
                 if urlCharset is None:
                     urlCharset = "utf-8"

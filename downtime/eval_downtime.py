@@ -733,8 +733,8 @@ if __name__ == '__main__':
         urlHndl = None
         try:
             myContext = ssl._create_unverified_context()
-            urlHndl = urllib.request.urlopen(EGI_DOWNTIME_URL,
-                                             context=myContext)
+            urlHndl = urllib.request.urlopen(EGI_DOWNTIME_URL, timeout=300,
+                                                             context=myContext)
             myCharset = urlHndl.headers.get_content_charset()
             if myCharset is None:
                 myCharset = "utf-8"
