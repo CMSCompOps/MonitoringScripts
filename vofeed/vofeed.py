@@ -1162,10 +1162,6 @@ if __name__ == '__main__':
                 'uri': "cmssi-factory01.fnal.gov",
                 'prd': True
             },
-            {   'lbl': "UCSDitb",
-                'uri': "gfactory-itb-1.opensciencegrid.org",
-                'prd':False
-            },
             {   'lbl': "CERNint",
                 'uri': "vocms0204.cern.ch",
                 'prd': False
