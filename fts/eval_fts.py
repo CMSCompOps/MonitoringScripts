@@ -2133,6 +2133,7 @@ if __name__ == '__main__':
                     if (( rse_name != "T1_RU_JINR_Tape" ) and
                         ( rse_name != "T1_DE_KIT_Tape" ) and
                         ( rse_name != "T1_FR_CCIN2P3_Tape" ) and
+                        ( rse_name != "T1_FR_CNAF_Tape" ) and
                         ( rse_name != "T1_UK_RAL_Tape" ) and
                         ( rse_name != "T1_US_FNAL_Tape" )):
                         # patch for broken _Tape LoadTest
