@@ -2130,13 +2130,20 @@ if __name__ == '__main__':
                                              'detail': detail } )
                     #
                     site_quality = min( site_quality, rse_quality )
-                    if (( rse_name != "T1_RU_JINR_Tape" ) and
-                        ( rse_name != "T1_DE_KIT_Tape" ) and
-                        ( rse_name != "T1_FR_CCIN2P3_Tape" ) and
-                        ( rse_name != "T1_FR_CNAF_Tape" ) and
-                        ( rse_name != "T1_UK_RAL_Tape" ) and
-                        ( rse_name != "T1_US_FNAL_Tape" )):
-                        # patch for broken _Tape LoadTest
+                    if ( rse_name[-5:] == "_Tape" ):
+                        # _Tape RSEs have no LoadTests, ignore "unknown" status
+                        if ( rse_status == "error" ):
+                            site_status = "error"
+                        elif ( rse_status == "unknown" ):
+                            pass
+                        elif (( rse_status == "warning" ) and
+                              (( site_status is None ) or
+                               ( site_status == "ok" ))):
+                            site_status = "warning"
+                        elif (( rse_status == "ok" ) and
+                              ( site_status is None )):
+                            site_status = "ok"
+                    else:
                         if ( site_status is None ):
                             site_status = rse_status
                         elif ( rse_status == "error" ):
