@@ -45,14 +45,13 @@ import gzip
 os.environ["HADOOP_CONF_DIR"] = "/data/cmssst/packages/etc/hadoop.analytix.conf/hadoop.analytix"
 os.environ["JAVA_HOME"]       = "/data/cmssst/packages/lib/jvm/java-11-openjdk-11.0.23.0.9-3.el9.x86_64"
 os.environ["HADOOP_HOME"]     = "/data/cmssst/packages/hadoop/3.3.5-1ba16/x86_64-el9-gcc11-opt"
-os.environ["LD_LIBRARY_PATH"] ="/data/cmssst/packages/hadoop/3.3.5-1ba16/x86_64-el9-gcc11-opt/lib/native"
 os.environ["PATH"]            ="/data/cmssst/packages/hadoop/3.3.5-1ba16/x86_64-el9-gcc11-opt/bin:" + os.environ["PATH"]
 import pydoop.hdfs
 # ########################################################################### #
 
 
 
-VOFEED_VERSION = "v2.03.12"
+VOFEED_VERSION = "v2.04.01"
 # ########################################################################### #
 
 
@@ -205,6 +204,8 @@ class vofeed:
                         srvc['batch'] = resource.attrib['batch_system']
                     if 'queue' in resource.attrib:
                         srvc['queue'] = resource.attrib['queue']
+                    if 'run_env' in resource.attrib:
+                        srvc['run_env'] = resource.attrib['run_env']
                     if (( 'id' in resource.attrib ) and
                         ( 'path' in resource.attrib )):
                         if ( 'paths' not in srvc ):
@@ -682,9 +683,13 @@ class vofeed:
                     xmlString += (">\n         <ce_resource batch_system=\"" +
                                   "%s\" queue=\"%s\"/>\n      </service>\n") \
                                  % (srvc['batch'], srvc['queue'])
-                elif ( 'queue' in srvc ):
-                    xmlString += (">\n         <ce_resource queue=\"%s\"/>\n" +
-                                  "      </service>\n") % srvc['queue']
+                elif (( 'queue' in srvc ) or ( 'run_env' in srvc )):
+                    xmlString += ">\n         <ce_resource"
+                    if ( 'queue' in srvc ):
+                        xmlString += " queue=\"%s\"" % srvc['queue']
+                    if ( 'run_env' in srvc ):
+                        xmlString += " run_env=\"%s\"" % srvc['run_env']
+                    xmlString += "/>\n      </service>\n"
                 elif (( srvc['flavour'] in ["GLOBUS", "CREAM-CE"] ) and
                       ( 'batch' in srvc )):
                     xmlString += (">\n         <ce_resource batch_system=\"" +
@@ -786,6 +791,9 @@ class vofeed:
                     if 'queue' in srvc:
                         jsonString += ",\n         \"queue\": \"%s\"" % \
                                       srvc['queue']
+                    if 'run_env' in srvc:
+                        jsonString += ",\n         \"run_env\": \"%s\"" % \
+                                      srvc['run_env']
                     if 'batch' in srvc:
                         jsonString += ",\n         \"batch\": \"%s\"" % \
                                       srvc['batch']
@@ -1173,7 +1181,7 @@ if __name__ == '__main__':
             logging.info("Fetching entries from %s factory" % factory['lbl'])
             try:
                 collector = htcondor.Collector(factory['uri'])
-                classAds = collector.query(htcondor.AdTypes.Any, "(MyType =?= \"glidefactory\") && (GLIDEIN_CMSSite isnt Undefined) && (GLIDEIN_Gatekeeper isnt Undefined) && (GLIDEIN_GridType isnt Undefined) && (GLIDEIN_Supported_VOs isnt Undefined)", ['GLIDEIN_CMSSite', 'GLIDEIN_Gatekeeper', 'GLIDEIN_GridType', 'GLIDEIN_In_Downtime', 'GLIDEIN_Supported_VOs', 'GlideinSubmitbatch_queue', 'GlideinSubmit_PLUS_remote_queue', 'GlideinSubmit_PLUS_batch_queue', 'GlideinSubmit_PLUS_queue', 'GlideinSubmit_PLUS_default_queue'])
+                classAds = collector.query(htcondor.AdTypes.Any, "(MyType =?= \"glidefactory\") && (GLIDEIN_CMSSite isnt Undefined) && (GLIDEIN_Gatekeeper isnt Undefined) && (GLIDEIN_GridType isnt Undefined) && (GLIDEIN_Supported_VOs isnt Undefined)", ['GLIDEIN_CMSSite', 'GLIDEIN_Gatekeeper', 'GLIDEIN_GridType', 'GLIDEIN_In_Downtime', 'GLIDEIN_Supported_VOs', 'GlideinSubmitbatch_queue', 'GlideinSubmit_PLUS_remote_queue', 'GlideinSubmit_PLUS_batch_queue', 'GlideinSubmit_PLUS_queue', 'GlideinSubmit_PLUS_default_queue', 'GlideinSubmitarc_rte'])
                 # catch HT Condor's faulty error handling:
                 if not classAds:
                     raise IOError("Empty Collector ClassAd List")
@@ -1188,11 +1196,16 @@ if __name__ == '__main__':
                         inDowntime = classAd['GLIDEIN_In_Downtime']
                     except KeyError:
                         inDowntime = "False"
+                    submitrtenv = ""
                     if ( classAd['GLIDEIN_GridType'] == "arc" ):
                         try:
                             submitqueue = classAd['GlideinSubmitbatch_queue']
                         except KeyError:
                             submitqueue = ""
+                        try:
+                            submitrtenv = classAd['GlideinSubmitarc_rte']
+                        except KeyError:
+                            pass
                     elif ( classAd['GLIDEIN_GridType'] == "condor" ):
                         try:
                             submitqueue = classAd['GlideinSubmit_PLUS_remote_queue']
@@ -1216,7 +1229,8 @@ if __name__ == '__main__':
                         'GLIDEIN_In_Downtime': inDowntime,
                         'GLIDEIN_Supported_VOs': classAd['GLIDEIN_Supported_VOs'],
                         'GLIDEIN_CMSSite': classAd['GLIDEIN_CMSSite'],
-                        'GlideinSubmitbatch_queue': submitqueue
+                        'GlideinSubmitbatch_queue': submitqueue,
+                        'GlideinSubmitarc_rte': submitrtenv
                         } )
                 #
                 # update cache:
@@ -1301,6 +1315,9 @@ if __name__ == '__main__':
                 if (( 'queue' not in service ) and
                     ( classAd['GlideinSubmitbatch_queue'] != "" )):
                     service['queue'] = classAd['GlideinSubmitbatch_queue']
+                if (( 'run_env' not in service ) and
+                    ( classAd['GlideinSubmitarc_rte'] != "" )):
+                    service['run_env'] = classAd['GlideinSubmitarc_rte']
                 logging.debug("   site %s: host %s flavour %s" %
                               (classAd['GLIDEIN_CMSSite'], service['hostname'],
                                service['flavour']))
