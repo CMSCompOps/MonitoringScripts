@@ -13,7 +13,7 @@ import threading
 import time, calendar
 import ssl
 import http.client
-import urllib.request
+import urllib.request, urllib.parse
 import gzip
 import json
 import xml.etree.ElementTree as ET
@@ -1516,7 +1516,7 @@ class sswpTickets:
         for site in sorted(self.store.keys()):
             file.write("%s%s has GGUS ticket(s):\n" % (off, site))
             for ticket in self.store[site]:
-                file.write("%s   %s with data %d = %s\n" % (off, ticket['id'],
+                file.write("%s   %d with date %d = %s\n" % (off, ticket['id'],
                     ticket['date'], time.strftime("%Y-%m-%d %H:%M:%S",
                     time.gmtime(ticket['date']))))
 # ########################################################################### #
@@ -1696,7 +1696,7 @@ def sswp_vofeed():
 
 
 
-def sswp_ggus():
+def sswp_old_ggus():
     # ########################################################### #
     # fill sswp_sites site ggus array with GGUS ticket informaton #
     # ########################################################### #
@@ -1770,7 +1770,7 @@ def sswp_ggus():
     #
     # loop over ticket elements:
     for ticket in tickets.findall('ticket'):
-        ticketid = ticket.find('Ticket-ID').text
+        ticketid = int( ticket.find('Ticket-ID').text )
         try:
             cmssite = ticket.find('CMS_Site').text
         except (KeyError, AttributeError):
@@ -1785,8 +1785,141 @@ def sswp_ggus():
         created  = ticket.findtext('Creation_Date', '')     # time is in UTC
         ts = time.strptime(created + ' UTC', "%Y-%m-%d %H:%M:%S %Z")
         tis = calendar.timegm(ts)
-        #logging.debug("CMS site %s has ticket %s (%d)", cmssite, ticketid, tis)
+        #logging.debug("CMS site %s has ticket %d (%d)", cmssite, ticketid, tis)
         glbTickets.add(cmssite, ticketid, tis)
+
+    glbLock.release()
+
+
+
+def sswp_ggus():
+    # ########################################################### #
+    # fill sswp_sites site ggus array with GGUS ticket informaton #
+    # ########################################################### #
+    GGUS_API_URL = "https://helpdesk.ggus.eu/api/v1/tickets/search"
+    GGUS_QUERY   = "(vo_support:cms AND !((state.name:solved) OR " + \
+                   "(state.name:unsolved)) AND id:>%d)"
+    GGUS_PARAM   = "&sort_by=id&order_by=asc&limit=32&expand=false"
+    GGUS_HEADER = { 'User-Agent': "CMS siteStatus", \
+                    'Authorization': "Token xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", \
+                    'Content-Type': "application/json; charset=UTF-8" }
+
+    # get list of all tickets for VO CMS from GGUS:
+    # =============================================
+    logging.info("Querying Zammad GGUS for Ticket information")
+    try:
+        ticketList = []
+        lastTicket = 0
+        for myParts in range(0, 64, 1):
+            try:
+                ggusQuery = '?query=' + \
+                            urllib.parse.quote_plus(GGUS_QUERY % lastTicket)
+                requestURL = GGUS_API_URL + ggusQuery + GGUS_PARAM
+                requestObj = urllib.request.Request(requestURL, \
+                                                        headers=GGUS_HEADER)
+            except Exception as excptn:
+                logging.error("Failed to prepare GGUS query: %s" % str(excptn))
+                raise excptn
+            #
+            for myRetry in range(0, 2, 1):
+                try:
+                    responseObj = urllib.request.urlopen(requestObj, timeout=90)
+                    if ( responseObj.status == http.HTTPStatus.OK ):
+                        break
+                except Exception as excptn:
+                    pass
+            #
+            try:
+                myCharset = responseObj.headers.get_content_charset()
+                if ( myCharset is None ):
+                    myCharset = "utf-8"
+                ggusData = responseObj.read().decode( myCharset )
+                if (( ggusData is None ) or
+                    ( ggusData == "[]" ) or ( ggusData == "" )):
+                    break
+                #
+                ggusList = json.loads(ggusData)
+                #
+                ticketList.extend( ggusList )
+                #
+                lastTicket = int( ggusList[-1]['id'] )
+            except Exception as excptn:
+                logging.error("Failed to decode GGUS result: %s" % str(excptn))
+                raise excptn
+        myData = json.dumps( ticketList, indent=" " )
+        del ticketList
+        #
+        # update cache:
+        try:
+            myFile = open("%s/cache_ggus.json_new" % SSWP_CACHE_DIR, 'w')
+            try:
+                myFile.write(myData)
+                renameFlag = True
+            except:
+                renameFlag = False
+            finally:
+                myFile.close()
+                del myFile
+            if renameFlag:
+                os.rename("%s/cache_ggus.json_new" % SSWP_CACHE_DIR,
+                          "%s/cache_ggus.json" % SSWP_CACHE_DIR)
+                logging.info("   cache of Zammad GGUS updated")
+            del renameFlag
+        except:
+            pass
+    except:
+        if 'stale' not in glbInfo:
+            glbInfo['stale'] = "No/stale information (GGUS"
+        else:
+            glbInfo['stale'] += ", GGUS"
+        logging.warning("   failed to fetch Zammad GGUS ticket data")
+        try:
+            myFile = open("%s/cache_ggus.json" % SSWP_CACHE_DIR, 'r')
+            try:
+                myData = myFile.read()
+                logging.info("   using cached Zammad GGUS ticket data")
+            except:
+                logging.error("   failed to access cached GGUS ticket data")
+                return
+            finally:
+                myFile.close()
+                del myFile
+        except:
+            logging.error("   no Zammad GGUS ticket cache available")
+            return
+
+    glbLock.acquire()
+
+    # unpack JSON data of GGUS:
+    tickets = json.loads( myData )
+    del myData
+    #
+    # loop over tickets:
+    siteRegex = re.compile(r"T\d_[A-Z]{2,2}_\w+")
+    for ticket in tickets:
+        cmsSite = None
+        try:
+            ticketId = int( ticket['id'] )
+            cmsSite = ticket['cms_site_names']
+        except (KeyError, AttributeError):
+            continue
+        if (( cmsSite is None ) or ( cmsSite == "" )):
+            continue
+            try:
+                for myGroup in ticket['notified_groups']:
+                   if ( siteRegex.match(myGroup) is not None ):
+                       cmsSite = myGroup
+                       break
+                if (( cmsSite is None ) or ( cmsSite == "" )):
+                    continue
+            except (KeyError, AttributeError):
+                continue
+        ticketCreated = ticket['created_at']
+        ts = time.strptime(ticketCreated[:19] + " UTC", "%Y-%m-%dT%H:%M:%S %Z")
+        tis = calendar.timegm(ts)
+        logging.debug("CMS site %s has ticket %d (%d)" % \
+                                                      (cmsSite, ticketId, tis))
+        glbTickets.add(cmsSite, ticketId, tis)
 
     glbLock.release()
 
@@ -5099,12 +5232,12 @@ def sswp_write_detail_json():
             mycnt = 0
             for ticket in glbTickets.getTickets(cmssite):
                 if ( mycnt == 0 ):
-                    myfile.write("[%s, %d]" % (ticket[0], ticket[1]))
+                    myfile.write("[%d, %d]" % (ticket[0], ticket[1]))
                 elif ( mycnt % 3 == 0 ):
                     myfile.write(",\n          [%s, %d]" % (ticket[0],
                         ticket[1]))
                 else:
-                    myfile.write(", [%s, %d]" % (ticket[0], ticket[1]))
+                    myfile.write(", [%d, %d]" % (ticket[0], ticket[1]))
                 mycnt += 1
             myfile.write("],\n")
 
