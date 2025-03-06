@@ -441,13 +441,13 @@ function writeTable() {
             if ( myData.ggus[iTckt][1] < midnight - 3283200 ) {
                if ( fDiv == 0 ) {
                   myTableStr += '<DIV STYLE="text-align: left">[<A HREF="htt' +
-                     'ps://ggus.eu/?mode=ticket_info&ticket_id=' +
+                     'ps://helpdesk.ggus.eu/#ticket/zoom/' +
                      myData.ggus[iTckt][0] + '">' + myData.ggus[iTckt][0] +
                      '</A>]';
                   fDiv = 1;
                } else {
-                  myTableStr += '&nbsp;[<A HREF="https://ggus.eu/?mode=ticke' +
-                     't_info&ticket_id=' + myData.ggus[iTckt][0] + '">' +
+                  myTableStr += '&nbsp;[<A HREF="https://helpdesk.ggus.eu/#t' +
+                     'icket/zoom/' + myData.ggus[iTckt][0] + '">' +
                      myData.ggus[iTckt][0] + '</A>]';
                }
                iTckt += 1;
@@ -464,13 +464,13 @@ function writeTable() {
             if ( myData.ggus[iTckt][1] < midnight - 691200 ) {
                if ( fDiv == 0 ) {
                   myTableStr += '<DIV STYLE="text-align: center">[<A HREF="h' +
-                     'ttps://ggus.eu/?mode=ticket_info&ticket_id=' +
+                     'ttps://helpdesk.ggus.eu/#ticket/zoom/' +
                      myData.ggus[iTckt][0] + '">' + myData.ggus[iTckt][0] +
                      '</A>]';
                   fDiv = 1;
                } else {
-                  myTableStr += '&nbsp;[<A HREF="https://ggus.eu/?mode=ticke' +
-                     't_info&ticket_id=' + myData.ggus[iTckt][0] + '">' +
+                  myTableStr += '&nbsp;[<A HREF="https://helpdesk.ggus.eu/#t' +
+                     'icket/zoom/' + myData.ggus[iTckt][0] + '">' +
                      myData.ggus[iTckt][0] + '</A>]';
                }
                iTckt += 1;
@@ -488,13 +488,13 @@ function writeTable() {
             if ( myData.ggus[iTckt][1] < midnight - 86400 ) {
                if ( fDiv == 0 ) {
                   myTableStr += '<DIV STYLE="text-align: center">[<A HREF="h' +
-                     'ttps://ggus.eu/?mode=ticket_info&ticket_id=' +
+                     'ttps://helpdesk.ggus.eu/#ticket/zoom/' +
                      myData.ggus[iTckt][0] + '">' + myData.ggus[iTckt][0] +
                      '</A>]';
                   fDiv = 1;
                } else {
-                  myTableStr += '&nbsp;[<A HREF="https://ggus.eu/?mode=ticke' +
-                     't_info&ticket_id=' + myData.ggus[iTckt][0] + '">' +
+                  myTableStr += '&nbsp;[<A HREF="https://helpdesk.ggus.eu/#t' +
+                     'icket/zoom/' + myData.ggus[iTckt][0] + '">' +
                      myData.ggus[iTckt][0] + '</A>]';
                }
                iTckt += 1;
@@ -512,13 +512,13 @@ function writeTable() {
             if ( myData.ggus[iTckt][1] < midnight ) {
                if ( fDiv == 0 ) {
                   myTableStr += '<DIV STYLE="text-align: center">[<A HREF="h' +
-                     'ttps://ggus.eu/?mode=ticket_info&ticket_id=' +
+                     'ttps://helpdesk.ggus.eu/#ticket/zoom/' +
                      myData.ggus[iTckt][0] + '">' + myData.ggus[iTckt][0] +
                      '</A>]';
                   fDiv = 1;
                } else {
-                  myTableStr += '&nbsp;[<A HREF="https://ggus.eu/?mode=ticke' +
-                     't_info&ticket_id=' + myData.ggus[iTckt][0] + '">' +
+                  myTableStr += '&nbsp;[<A HREF="https://helpdesk.ggus.eu/#t' +
+                     'icket/zoom/' + myData.ggus[iTckt][0] + '">' +
                      myData.ggus[iTckt][0] + '</A>]';
                }
                iTckt += 1;
@@ -535,13 +535,13 @@ function writeTable() {
          while ( iTckt < myData.ggus.length ) {
             if ( fDiv == 0 ) {
                myTableStr += '<DIV STYLE="text-align: center">[<A HREF="http' +
-                  's://ggus.eu/?mode=ticket_info&ticket_id=' +
+                  's://helpdesk.ggus.eu/#ticket/zoom/' +
                   myData.ggus[iTckt][0] + '">' + myData.ggus[iTckt][0] +
                   '</A>]';
                fDiv = 1;
             } else {
-               myTableStr += '&nbsp;[<A HREF="https://ggus.eu/?mode=ticket_i' +
-                  'nfo&ticket_id=' + myData.ggus[iTckt][0] + '">' +
+               myTableStr += '&nbsp;[<A HREF="https://helpdesk.ggus.eu/#tick' +
+                  'et/zoom/' + myData.ggus[iTckt][0] + '">' +
                   myData.ggus[iTckt][0] + '</A>]';
             }
             iTckt += 1;

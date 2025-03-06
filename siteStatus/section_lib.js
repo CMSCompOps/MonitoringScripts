@@ -98,6 +98,7 @@ var srvcMetricOrder = [ "Downtime",
                            "ETF_WN-isolation",
                            "ETF_WN-xrootd-access", "ETF_WN-xrootd-fallback",
                            "ETF_WN-analysis", "ETF_WN-mc",
+                           "ETF_WN-psst-test", "ETF_CONDOR-Ping",
                         "ETF_DNS-IPv6",
                         "ETF_CONDOR-JobSubmit/token",
                            "ETF_WN-01basic", "ETF_WN-02cvmfs",
@@ -380,8 +381,8 @@ function writePmonthTable() {
          for ( var iTckt = 0; iTckt < myData.ggus.length; iTckt += 1 ) {
             if (( myData.ggus[iTckt][1] >= midnight - 3283200 ) &&
                 ( myData.ggus[iTckt][1] <= midnight - 691200 )) {
-               myTableStr += '[<A HREF="https://ggus.eu/?mode=ticket_info&ti' +
-                  'cket_id=' + myData.ggus[iTckt][0] + '">' +
+               myTableStr += '[<A HREF="https://helpdesk.ggus.eu/#ticket/zoo' +
+                  'm/' + myData.ggus[iTckt][0] + '">' +
                   myData.ggus[iTckt][0] + '</A>]&nbsp;';
             }
          }
@@ -523,8 +524,8 @@ function writePweekTable() {
          for ( var iTckt = 0; iTckt < myData.ggus.length; iTckt += 1 ) {
             if (( myData.ggus[iTckt][1] >= midnight - 691200 ) &&
                 ( myData.ggus[iTckt][1] <= midnight - 86400 )) {
-               myTableStr += '[<A HREF="https://ggus.eu/?mode=ticket_info&ti' +
-                  'cket_id=' + myData.ggus[iTckt][0] + '">' +
+               myTableStr += '[<A HREF="https://helpdesk.ggus.eu/#ticket/zoo' +
+                  'm/' + myData.ggus[iTckt][0] + '">' +
                   myData.ggus[iTckt][0] + '</A>]&nbsp;';
             }
          }
@@ -666,8 +667,8 @@ function writeYesterdayTable() {
          for ( var iTckt = 0; iTckt < myData.ggus.length; iTckt += 1 ) {
             if (( myData.ggus[iTckt][1] >= midnight - 86400 ) &&
                 ( myData.ggus[iTckt][1] <= midnight )) {
-               myTableStr += '[<A HREF="https://ggus.eu/?mode=ticket_info&ti' +
-                  'cket_id=' + myData.ggus[iTckt][0] + '">' +
+               myTableStr += '[<A HREF="https://helpdesk.ggus.eu/#ticket/zoo' +
+                  'm/' + myData.ggus[iTckt][0] + '">' +
                   myData.ggus[iTckt][0] + '</A>]&nbsp;';
             }
          }
@@ -807,8 +808,8 @@ function writeTodayTable() {
             '>&nbsp;';
          for ( var iTckt = 0; iTckt < myData.ggus.length; iTckt += 1 ) {
             if ( myData.ggus[iTckt][1] >= midnight ) {
-               myTableStr += '[<A HREF="https://ggus.eu/?mode=ticket_info&ti' +
-                  'cket_id=' + myData.ggus[iTckt][0] + '">' +
+               myTableStr += '[<A HREF="https://helpdesk.ggus.eu/#ticket/zoo' +
+                  'm/' + myData.ggus[iTckt][0] + '">' +
                   myData.ggus[iTckt][0] + '</A>]&nbsp;';
             }
          }
@@ -949,8 +950,8 @@ function writeFweekTable() {
             '>&nbsp;';
          for ( var iTckt = 0; iTckt < myData.ggus.length; iTckt += 1 ) {
             if ( myData.ggus[iTckt][1] >= midnight + 86400 ) {
-               myTableStr += '[<A HREF="https://ggus.eu/?mode=ticket_info&ti' +
-                  'cket_id=' + myData.ggus[iTckt][0] + '">' +
+               myTableStr += '[<A HREF="https://helpdesk.ggus.eu/#ticket/zoo' +
+                  'm/' + myData.ggus[iTckt][0] + '">' +
                   myData.ggus[iTckt][0] + '</A>]&nbsp;';
             }
          }
