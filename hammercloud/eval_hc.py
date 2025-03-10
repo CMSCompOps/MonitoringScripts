@@ -404,6 +404,8 @@ def evhc_grafana_jobs(startTIS, limitTIS):
                         matchObj = wfRegex.match(CRABworkflow)
                         if matchObj is not None:
                             status = None
+                            if ( 'CRAB_Retry' not in hitData ):
+                                hitData['CRAB_Retry'] = 0
                             tmpltID = matchObj.group(1)
                             siteName = matchObj.group(2)
                             if (( tmpltID not in evhc_glbl_templates ) or
