@@ -404,8 +404,6 @@ def evhc_grafana_jobs(startTIS, limitTIS):
                         matchObj = wfRegex.match(CRABworkflow)
                         if matchObj is not None:
                             status = None
-                            if ( 'CRAB_Retry' not in hitData ):
-                                hitData['CRAB_Retry'] = 0
                             tmpltID = matchObj.group(1)
                             siteName = matchObj.group(2)
                             if (( tmpltID not in evhc_glbl_templates ) or
@@ -520,9 +518,9 @@ def evhc_grafana_jobs(startTIS, limitTIS):
                                      siteName, status, hitData['GlobalJobId']))
                         if ( currentTImS != lastTImS ):
                             previous_TImS = currentTImS
-                    except KeyError:
-                        logging.error("No or incomplete job record in query " +
-                                      "hit")
+                    except KeyError as excptn:
+                        logging.error(("No or incomplete job record in query" +
+                                                     " hit, %s") % str(excptn))
             except KeyError:
                 logging.error("No query hits keys in ElasticSearch response")
 
