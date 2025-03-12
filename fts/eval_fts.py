@@ -1742,7 +1742,8 @@ if __name__ == '__main__':
                 try:
                     quality = round( max( cnt_ok/cnt_links,
                                           sum_quality/cnt_links), 3)
-                    if ( ((cnt_ok - 1) / cnt_links) > 0.500 ):
+                    if (( cnt_ok == cnt_links ) or
+                        ( ((cnt_ok - 1) / cnt_links) > 0.500 )):
                         status = "ok"
                     elif ( ((cnt_ok + 1) / cnt_links) < 0.500 ):
                         status = "error"
@@ -1832,7 +1833,8 @@ if __name__ == '__main__':
                 try:
                     quality = round( max( cnt_ok/cnt_links,
                                           sum_quality/cnt_links), 3)
-                    if ( ((cnt_ok - 1) / cnt_links) > 0.500 ):
+                    if (( cnt_ok == cnt_links ) or
+                        ( ((cnt_ok - 1) / cnt_links) > 0.500 )):
                         status = "ok"
                     elif ( ((cnt_ok + 1) / cnt_links) < 0.500 ):
                         status = "error"
@@ -2057,7 +2059,8 @@ if __name__ == '__main__':
                     try:
                         rse_src_quality = round( max( src_ok/src_links,
                                                       src_quality/src_links), 3)
-                        if ( ((src_ok - 1) / src_links) > 0.500 ):
+                        if (( src_ok == src_links ) or
+                            ( ((src_ok - 1) / src_links) > 0.500 )):
                             rse_src_status = "ok"
                         elif ( ((src_ok + 1) / src_links) < 0.500 ):
                             rse_src_status = "error"
@@ -2071,7 +2074,8 @@ if __name__ == '__main__':
                         rse_dst_quality = round( max( dst_ok/dst_links,
                                                       dst_quality/dst_links), 3)
                         rse_quality = min( rse_src_quality, rse_dst_quality )
-                        if ( ((dst_ok - 1) / dst_links) > 0.500 ):
+                        if (( dst_ok == dst_links ) or
+                            ( ((dst_ok - 1) / dst_links) > 0.500 )):
                             rse_dst_status = "ok"
                         elif ( ((dst_ok + 1) / dst_links) < 0.500 ):
                             rse_dst_status = "error"
