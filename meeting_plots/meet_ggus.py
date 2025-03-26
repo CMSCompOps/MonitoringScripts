@@ -54,6 +54,8 @@ def meet_fetch_vofeed():
         if ( cmsSite is None ):
             continue
         gridSite = myAtpsite.attrib['name']
+        if (( gridSite is None ) or ( gridSite == "" )):
+            continue
         if ( gridSite not in gridDict ):
              gridDict[gridSite] = cmsSite
 
@@ -148,7 +150,8 @@ def meet_ticket2site(ticketList, gridDict = None):
                 voSupport = myTicket['vo_support']
             except KeyError:
                 continue
-            if ( voSupport != "cms" ):
+            if (( cmsSite is None ) or ( cmsSite == "" ) or
+                ( voSupport != "cms" )):
                 continue
             try:
                 cmsSite = gridDict[gridSite]
