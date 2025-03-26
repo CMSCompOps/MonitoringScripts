@@ -139,6 +139,9 @@ def meet_ticket2site(ticketList, gridDict = None):
     for myTicket in ticketList:
         try:
             cmsSite = myTicket['cms_site_names']
+            voSupport = myTicket['vo_support']
+            if (( voSupport != "cms" ) and ( voSupport != "" )):
+                continue
         except KeyError:
             cmsSite = None
         #
