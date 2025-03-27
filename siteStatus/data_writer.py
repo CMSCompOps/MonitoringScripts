@@ -1901,12 +1901,14 @@ def sswp_ggus():
         try:
             ticketId = int( ticket['id'] )
             cmsSite = ticket['cms_site_names']
+            notifiedGroups = ticket['notified_groups']
+            ticketCreated = ticket['created_at']
         except (KeyError, AttributeError):
             continue
         if (( cmsSite is None ) or ( cmsSite == "" )):
             continue
             try:
-                for myGroup in ticket['notified_groups']:
+                for myGroup in notifiedGroups:
                    if ( siteRegex.match(myGroup) is not None ):
                        cmsSite = myGroup
                        break
@@ -1914,7 +1916,6 @@ def sswp_ggus():
                     continue
             except (KeyError, AttributeError):
                 continue
-        ticketCreated = ticket['created_at']
         ts = time.strptime(ticketCreated[:19] + " UTC", "%Y-%m-%dT%H:%M:%S %Z")
         tis = calendar.timegm(ts)
         logging.debug("CMS site %s has ticket %d (%d)" % \
