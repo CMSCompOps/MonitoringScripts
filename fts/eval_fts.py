@@ -192,7 +192,7 @@ class FTSmetric:
 
     @staticmethod
     def classify(error_scope, error_code, error_message, link_name, \
-                 file_size, transfer_activity):
+                 file_size, transfer_activity, file_metadata):
         """function to classify transfer results into counting classes"""
 
         eMsg = error_message
@@ -200,21 +200,34 @@ class FTSmetric:
         #
         if ( error_code == 0 ):
             return "trn_ok"
-        elif (( file_size >= 21474836480 ) or
-              ( eLwr.find("certificate has expired") >= 0 ) or
-              ( eLwr.find("operation canceled by user") >= 0 ) or
-              ( eLwr.find("path/url invalid") >= 0 ) or
-              ( eLwr.find("file exists and overwrite is not enabled") >= 0 ) or
-              ( eLwr.find("request cancellation was requested") >= 0 )):
+        elif ( eMsg.find("Destination file exists and") >= 0 ):
+            if (( eMsg.find("exists and is on tape") >= 0 ) or
+                ( eMsg.find("exists and overwrite is not enabled") >= 0 )):
+                try:
+                    if (( file_metadata['filesize'] ==
+                                   file_metadata['dst_file']['file_size'] ) and
+                        ( file_metadata['dst_file']['checksum_type'] ==
+                                                                "ADLER32" ) and
+                        ( file_metadata['adler32'] ==
+                                file_metadata['dst_file']['checksum_value'] )):
+                        return "trn_ok"
+                except KeyError:
+                    pass
+        #
+        if (( file_size >= 21474836480 ) or
+            ( eLwr.find("certificate has expired") >= 0 ) or
+            ( eLwr.find("operation canceled by user") >= 0 ) or
+            ( eLwr.find("path/url invalid") >= 0 ) or
+            ( eLwr.find("file exists and overwrite is not enabled") >= 0 ) or
+            ( eLwr.find("request cancellation was requested") >= 0 )):
             return "trn_usr"
         elif (( transfer_activity == "ASO" ) and
-              (( eLwr.find("disk quota exceeded") >= 0 ) or
+              (( eMsg.find("HTTP 507") >= 0 ) or
+               ( eMsg.find("status code 507") >= 0 ) or
+               ( eLwr.find("disk quota exceeded") >= 0 ) or
                ( eMsg.find("NoFreeSpaceException") >= 0 ) or
                ( eLwr.find("not enough space") >= 0 ) or
                ( eLwr.find("no free space") >= 0 ) or
-               (( eLwr.find("copy failed with mode 3rd push") >= 0 ) and
-                ( eMsg.find("507 status code: 507") >= 0 )) or
-               ( eMsg.find("failed with status code 507") >= 0 ) or
                ( eMsg.find("Insufficient Storage") >= 0 ))):
             return "trn_usr"
         elif (( error_scope == "TRANSFER" ) and
@@ -1234,6 +1247,13 @@ if __name__ == '__main__':
                                     except:
                                         myActivity = "unknown"
                                     #
+                                    # file_metadata not mandatory:
+                                    try:
+                                        myFileMetadata = \
+                                                myJson['data']['file_metadata']
+                                    except:
+                                        myFileMetadata = {}
+                                    #
                                     # fix up log file URL:
                                     logfile = myJson['data']['log_link'].replace("Imperial-FTS-IPv6", "fts00.grid.hep.ph.ic.ac.uk")
                                     logfile = logfile.replace("FTS-MIT", "t3serv019.mit.edu")
@@ -1246,7 +1266,8 @@ if __name__ == '__main__':
                                         myJson['data']['t_error_code'],
                                         myJson['data']['t__error_message'],
                                         plink,
-                                        myJson['data']['f_size'], myActivity)
+                                        myJson['data']['f_size'], myActivity,
+                                        myFileMetadata)
                                     #
                                     # file size:
                                     nb = max(0, myJson['data']['f_size'])
