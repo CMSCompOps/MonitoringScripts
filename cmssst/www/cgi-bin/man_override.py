@@ -115,9 +115,9 @@ OVRD_CAPACITY_DESC = {
                                 "e site pledge",
     'wlcg_federation_fraction': "Fraction of WLCG federation pledge fulfil" + \
                                 "led by site",
-    'hs06_pledge':              "CPU pledge in HS06 (auto-calculated from " + \
+    'hs06_pledge':              "CPU pledge in HS23 (auto-calculated from " + \
                                 "Rebus and core performance)",
-    'hs06_per_core':            "Average HS06 performance of a core at the" + \
+    'hs06_per_core':            "Average HS23 performance of a core at the" + \
                                 " site",
     'core_usable':              "Number of cores usable by CMS",
     'core_max_used':            "Max number of cores used recently by CMS " + \
