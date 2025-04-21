@@ -2466,6 +2466,7 @@ if __name__ == '__main__':
         #
         metric = evalObj.metrics()[0]
         timestamp = metric[1] * 900
+        yesterday = int( timestamp / 86400 ) - 1
         #
         logging.info("Evaluating Rucio Status for %d (%s)" % (metric[1],
                       time.strftime("%Y-%b-%d %H:%M", time.gmtime(timestamp))))
@@ -2682,7 +2683,7 @@ if __name__ == '__main__':
                 if ( manOverride['mode'] == "oneday" ):
                     theDay = int( calendar.timegm( time.strptime(
                           manOverride['when'], "%Y-%b-%d %H:%M:%S") ) / 86400 )
-                    if ( theDay >= mtrc[1] ):
+                    if ( theDay >= yesterday ):
                         nStatus = manOverride['status']
                         detail = "Rucio: manual override by %s (%s)" % \
                                                 ("someone", manOverride['why'])
