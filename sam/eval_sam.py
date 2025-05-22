@@ -61,7 +61,8 @@ EVSAM_SERVICE_PROBES = {
                 "org.cms.WN-xrootd-fallback-/cms/Role=lcgadmin",
 # !!!!!!!!!!!!! "org.cms.WN-remotestageout-/cms/Role=lcgadmin",
                 "org.cms.WN-analysis-/cms/Role=lcgadmin",
-                "org.cms.WN-mc-/cms/Role=lcgadmin" ],
+                "org.cms.WN-mc-/cms/Role=lcgadmin",
+                "|org.cms.WN-99summary-/cms-ce-token" ],
     'SRM':    [ "org.cms.SE-GSIftp-9summary" ],
     'WEBDAV': [ "org.cms.SE-WebDAV-99summary" ],
     'XRD':    [ "org.cms.SE-XRootD-99summary" ]
@@ -865,6 +866,12 @@ def evsam_evaluate_service_status(etfResults, service):
 
     srvKey = ( service['host'], service['ctgry'] )
     for probe in EVSAM_SERVICE_PROBES[ service['ctgry'] ]:
+        if ( probe[0] == "|" ):
+            orFlag = True
+            probe = probe[1:]
+        else:
+            orFlag = False
+        #
         try:
             noInside = len( etfResults['inside'][srvKey][probe] )
         except KeyError:
@@ -919,6 +926,10 @@ def evsam_evaluate_service_status(etfResults, service):
         if ( pStat == status ):
             if ( pStat != "ok" ):
                 detail = "%s, %s" % (probe.split("-/cms/Role=",1)[0], detail)
+        elif ( orFlag == True ):
+            if (( status == "unknown" ) and ( pStat == "ok" )):
+                status = "ok"
+                detail = "%s (ok)" % probe.split("-/cms-ce-token",1)[0]
         else:
             if status is None:
                 status = pStat
