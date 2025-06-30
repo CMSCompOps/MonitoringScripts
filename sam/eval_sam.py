@@ -50,19 +50,9 @@ import pydoop.hdfs
 EVSAM_BACKUP_DIR = "/data/cmssst/MonitoringScripts/sam/failed"
 #
 EVSAM_SERVICE_PROBES = {
-    'CE':     [ "org.sam.CONDOR-JobSubmit-/cms/Role=lcgadmin",
-                "org.cms.WN-env-/cms/Role=lcgadmin",
-                "org.cms.WN-basic-/cms/Role=lcgadmin",
-# !!!!!!!!!!!!! "org.cms.WN-cvmfs-/cms/Role=lcgadmin",
-                "org.cms.WN-isolation-/cms/Role=lcgadmin",
-                "org.cms.WN-frontier-/cms/Role=lcgadmin",
-                "org.cms.WN-squid-/cms/Role=lcgadmin",
-                "org.cms.WN-xrootd-access-/cms/Role=lcgadmin",
-                "org.cms.WN-xrootd-fallback-/cms/Role=lcgadmin",
-# !!!!!!!!!!!!! "org.cms.WN-remotestageout-/cms/Role=lcgadmin",
-                "org.cms.WN-analysis-/cms/Role=lcgadmin",
-                "org.cms.WN-mc-/cms/Role=lcgadmin",
-                "|org.cms.WN-99summary-/cms-ce-token" ],
+    'CE':     [ "org.sam.CONDOR-JobSubmit-/cms-ce-token",
+                "org.cms.WN-99summary-/cms-ce-token",
+                "|org.sam.CONDOR-JobSubmit-/cms/Role=lcgadmin" ],
     'SRM':    [ "org.cms.SE-GSIftp-9summary" ],
     'WEBDAV': [ "org.cms.SE-WebDAV-99summary" ],
     'XRD':    [ "org.cms.SE-XRootD-99summary" ]
@@ -396,7 +386,7 @@ def evsam_monit_etf(startTIS, limitTIS):
                             versions[key] =  version
                             logging.log(9, ("      adding %s result of %s / " +
                                             "%s") %
-                                            (key[3].split("-/cms/Role=",1)[0],
+                                          (key[3].split("-/cms-ce-token",1)[0],
                                              key[1], key[2]))
                             evsam_glbl_etf[key] = myJson['data']['status']
 
@@ -881,7 +871,7 @@ def evsam_evaluate_service_status(etfResults, service):
         except KeyError:
             noBefore = 0
         logging.log(9, "       |%d][%d] results for %s" %
-                       (noBefore, noInside, probe.split("-/cms/Role=",1)[0]))
+                       (noBefore, noInside, probe.split("-/cms-ce-token",1)[0]))
         #
         pStat = None
         if ( noInside == 1 ):
@@ -925,27 +915,28 @@ def evsam_evaluate_service_status(etfResults, service):
         #
         if ( pStat == status ):
             if ( pStat != "ok" ):
-                detail = "%s, %s" % (probe.split("-/cms/Role=",1)[0], detail)
+                detail = "%s, %s" % (probe.split("-/cms-ce-token",1)[0], detail)
         elif ( orFlag == True ):
             if (( status == "unknown" ) and ( pStat == "ok" )):
                 status = "ok"
-                detail = "%s (ok)" % probe.split("-/cms-ce-token",1)[0]
+                detail = "%s (ok)" % probe.split("-/cms/Role=",1)[0]
         else:
             if status is None:
                 status = pStat
                 if ( pStat == "ok" ):
                    detail = "all ok"
                 else:
-                   detail = "%s (%s)" % (probe.split("-/cms/Role=",1)[0], pStat)
+                   detail = "%s (%s)" % (probe.split("-/cms-ce-token",1)[0],
+                                                                         pStat)
             elif ( pStat == "error" ):
                 status = "error"
-                detail = "%s (error)" % probe.split("-/cms/Role=",1)[0]
+                detail = "%s (error)" % probe.split("-/cms-ce-token",1)[0]
             elif (( pStat == "unknown" ) and ( status != "error" )):
                 status = "unknown"
-                detail = "%s (unknown)" % probe.split("-/cms/Role=",1)[0]
+                detail = "%s (unknown)" % probe.split("-/cms-ce-token",1)[0]
             elif (( pStat == "warning" ) and ( status == "ok" )):
                 status = "warning"
-                detail = "%s (warning)" % probe.split("-/cms/Role=",1)[0]
+                detail = "%s (warning)" % probe.split("-/cms-ce-token",1)[0]
 
     logging.debug("      service status: %s" % status)
 
