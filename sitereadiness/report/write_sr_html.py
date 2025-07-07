@@ -19,8 +19,8 @@ import xml.etree.ElementTree
 import re
 #
 # setup the Java/HDFS/PATH environment for pydoop to work properly:
-os.environ["HADOOP_CONF_DIR"] = "/data/cmssst/packages/etc/hadoop.analytix.conf/hadoop.analytix"
-os.environ["JAVA_HOME"]       = "/data/cmssst/packages/lib/jvm/java-11-openjdk-11.0.23.0.9-3.el9.x86_64"
+os.environ["HADOOP_CONF_DIR"] = "/data/cmssst/packages/etc/hadoop-analytix/hadoop.hadoop-analytix"
+os.environ["JAVA_HOME"]       = "/data/cmssst/packages/java/11.0.21p9-cabd2/x86_64-el9-gcc13-opt"
 os.environ["HADOOP_HOME"]     = "/data/cmssst/packages/hadoop/3.3.5-1ba16/x86_64-el9-gcc11-opt"
 os.environ["LD_LIBRARY_PATH"] ="/data/cmssst/packages/hadoop/3.3.5-1ba16/x86_64-el9-gcc11-opt/lib/native"
 os.environ["PATH"]            ="/data/cmssst/packages/hadoop/3.3.5-1ba16/x86_64-el9-gcc11-opt/bin:" + os.environ["PATH"]
