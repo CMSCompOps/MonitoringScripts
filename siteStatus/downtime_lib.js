@@ -99,15 +99,8 @@ function writeTable() {
       myTableStr += '<TR>\n   <TD ALIGN=\"left\"><BIG>' + sName + '</BIG>\n';
 
       // compose URL for GGUS site-tickets-of-CMS search:
-      urlStr = 'https://ggus.eu/?mode=ticket_search&show_columns_check[]=TIC' +
-         'KET_TYPE&show_columns_check[]=AFFECTED_SITE&show_columns_check[]=P' +
-         'RIORITY&show_columns_check[]=RESPONSIBLE_UNIT&show_columns_check[]' +
-         '=CMS_SU&show_columns_check[]=STATUS&show_columns_check[]=DATE_OF_C' +
-         'HANGE&show_columns_check[]=SHORT_DESCRIPTION&supportunit=&su_hiera' +
-         'rchy=0&vo=cms&cms_site=' + sName + '&specattrib=none&status=open&&' +
-         'typeofproblem=all&ticket_category=all&date_type=creation+date&tf_r' +
-         'adio=1&timeframe=any&orderticketsby=REQUEST_ID&orderhow=desc&searc' +
-         'h_submit=GO!';
+      urlStr = 'https://helpdesk.ggus.eu/#search/cms_site_names%3A' + sName +
+         '%20AND%20!((state.name%3Asolved)%20OR%20(state.name%3Aunsolved))';
       // select background colour for GGUS ticket count of site:
       if ( siteStatusData[sCnt].ggus[0] < 0 ) {
          // grey background if no valid GGUS ticket information
