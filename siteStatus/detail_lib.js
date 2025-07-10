@@ -432,7 +432,7 @@ function writeTable() {
          var myTime = new Date( myData.time * 1000 );
          myTime.setUTCHours(0, 0, 0, 0);
          var midnight = Math.trunc( myTime.valueOf() / 1000 );
-         myData.ggus.sort();
+         myData.ggus.sort(function(a,b){return a-b});
          var iTckt = 0;
          // GGUS tickets opened more than 38 days ago:
          myTableStr += '\n   <TD>';

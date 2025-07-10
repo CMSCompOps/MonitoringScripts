@@ -374,7 +374,7 @@ function writePmonthTable() {
          var myTime = new Date( myData.time * 1000 );
          myTime.setUTCHours(0, 0, 0, 0);
          var midnight = Math.trunc( myTime.valueOf() / 1000 );
-         myData.ggus.sort();
+         myData.ggus.sort(function(a,b){return a-b});
          // GGUS tickets opened the previous month:
          myTableStr += '\n   <TD COLSPAN="3"><DIV STYLE="text-align: center"' +
             '>&nbsp;';
