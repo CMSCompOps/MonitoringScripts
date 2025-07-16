@@ -1195,11 +1195,10 @@ if __name__ == '__main__':
                     downDict[site][indx-1][1] = downDict[site][indx][1]
                     del downDict[site][indx]
         #
-        # filter out future downtimes of less than 24 hours:
+        # filter out downtimes of less than 24 hours:
         for site in list( downDict ):
             for indx in range(len(downDict[site])-1, -1, -1):
-                if (( downDict[site][indx][0] > time15m ) and
-                    ( downDict[site][indx][1] - downDict[site][indx][0] < 95 )):
+                if ( downDict[site][indx][1] - downDict[site][indx][0] < 95 ):
                     del downDict[site][indx]
             if ( len( downDict[site] ) == 0 ):
                 del downDict[site]
