@@ -51,7 +51,7 @@ import pydoop.hdfs
 
 
 
-VOFEED_VERSION = "v2.04.01"
+VOFEED_VERSION = "v2.05.01"
 # ########################################################################### #
 
 
@@ -620,29 +620,36 @@ class vofeed:
                               VOFEED_VERSION)
         #
         # write special, multi-CMS and multi-grid site, ahead of other sites:
-        siteList = RECORD_FIRST.copy()
+        siteList = []
         for site in sorted( self.topo[timestamp].keys() ):
-            gridSet = set()
+            gridCnt = {}
             for srvc in self.topo[timestamp][site]:
                 try:
-                    gridSet.add( srvc['gridsite'] )
+                    if ( srvc['gridsite'] in gridCnt ):
+                        gridCnt[ srvc['gridsite'] ] += 1
+                    else:
+                        gridCnt[ srvc['gridsite'] ] = 1
                 except:
-                    gridSet.add( "" )
-            if "" in gridSet:
-                gridSet.remove( "" )
-                gridList = sorted( gridSet )
-                gridList.append( "" )
-            else:
-                gridList = sorted( gridSet )
-            del gridSet
-            for gridsite in gridList:
-                tuple = (site, gridsite)
+                    gridCnt[ "" ] = 0
+            gridList = sorted( gridCnt.items(), key=lambda item: item[1],
+                                                                  reverse=True)
+            del gridCnt
+            firstGrid = True
+            for gridTuple in gridList:
+                if ( gridTuple[0] == "" ):
+                    tuple = (site, gridTuple[0], "")
+                elif ( firstGrid == True ):
+                    tuple = (site, gridTuple[0], site)
+                    firstGrid = False
+                else:
+                    tuple = (site, gridTuple[0], site + ":" + gridTuple[0] )
                 if tuple not in siteList:
                     siteList.append( tuple )
         #
         for tuple in siteList:
             site = tuple[0]
             grid = tuple[1]
+            ggus = tuple[2]
             #
             tier = site[1:2]
             if tier not in ['0', '1', '2', '3']:
@@ -708,6 +715,9 @@ class vofeed:
             for group in SAM3_GROUPS[tier]:
                 xmlString += "      <group name=\"%s\" type=\"%s\"/>\n" % \
                              (site, group)
+            if ( ggus != "" ):
+                xmlString += ("      <group name=\"%s\" type=\"GGUS_Site\"" + \
+                              "/>\n") % ggus
             xmlString += "   </atp_site>\n"
         #
         xmlString += "</root>\n"
