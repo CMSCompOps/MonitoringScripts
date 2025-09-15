@@ -48,10 +48,10 @@ def meet_fetch_vofeed():
         cmsSite = None
         for myGroup in myAtpsite.findall('group'):
             if ( 'type' in myGroup.attrib ):
-                if ( myGroup.attrib['type'] == "CMS_Site" ):
-                    cmsSite = myGroup.attrib['name']
+                if ( myGroup.attrib['type'] == "GGUS_Site" ):
+                    cmsSite = myGroup.attrib['name'].split(":")[0]
                     break
-        if ( cmsSite is None ):
+        if (( cmsSite is None ) or ( cmsSite == "" )):
             continue
         gridSite = myAtpsite.attrib['name']
         if (( gridSite is None ) or ( gridSite == "" )):
@@ -70,8 +70,8 @@ def meet_fetch_vofeed():
 def meet_ggus_query(queryStrng = None):
     # #########################################################################
     GGUS_API_URL = "https://helpdesk.ggus.eu/api/v1/tickets/search"
-    GGUS_QUERY   = "(cms_site_names:T AND !((state.name:solved) OR " + \
-                   "(state.name:unsolved)) AND id:>%d)"
+    GGUS_QUERY   = "(!((state.name:solved) OR (state.name:unsolved)) " + \
+                   "AND id:>%d)"
     GGUS_PARAM   = "&sort_by=id&order_by=asc&limit=32&expand=false"
     GGUS_HEADER = { 'User-Agent': "CMS siteStatus", \
                     'Authorization': "Token xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", \
@@ -129,45 +129,111 @@ def meet_ggus_query(queryStrng = None):
 
 def meet_ticket2site(ticketList, gridDict = None):
     # #########################################################################
+    GGUS_API_URL = "https://helpdesk.ggus.eu/api/v1/groups"
+    GGUS_HEADER = { 'User-Agent': "CMS siteStatus", \
+                    'Authorization': "Token xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", \
+                    'Content-Type': "application/json; charset=UTF-8" }
+    #
     siteRegex = re.compile(r"T\d_[A-Z]{2,2}_\w+")
 
     if (( ticketList is None ) or ( len(ticketList) == 0 )):
         return {}
 
+    # fetch group information:
+    groupDict = {}
+    try:
+        requestObj = urllib.request.Request(GGUS_API_URL, headers=GGUS_HEADER)
+        for myRetry in range(0, 2, 1):
+            try:
+                responseObj = urllib.request.urlopen(requestObj, timeout=90)
+                if ( responseObj.status == http.HTTPStatus.OK ):
+                    break
+            except Exception as excptn:
+                time.sleep(0.250 + (myRetry * 0.500))
+        if ( responseObj.status != http.HTTPStatus.OK ):
+            raise URLError("%d \"%s\"" %
+                                      (responseObj.status, responseObj.reason))
+
+        myCharset = responseObj.headers.get_content_charset()
+        if ( myCharset is None ):
+            myCharset = "utf-8"
+        ggusData = responseObj.read().decode( myCharset )
+        if (( ggusData is None ) or
+            ( ggusData == "[]" ) or ( ggusData == "" )):
+            raise ValueError("empty return data")
+        #
+        ggusGroups = json.loads(ggusData)
+        del ggusData
+        for ggusGroup in ggusGroups:
+            try:
+                groupID = int( ggusGroup['id'] )
+                groupDict[ groupID ] = \
+                                       ggusGroup['cms_site_name'].split(":")[0]
+            except (KeyError, AttributeError, TypeError):
+                try:
+                    if ( ggusGroup['name_last'][:4] == "CMS " ):
+                        groupDict[ groupID ] = "cms"
+                except (KeyError, AttributeError, TypeError):
+                    pass
+
+    except Exception as excptn:
+        print("Failed to fetch GGUS group information: %s" % str(excptn))
+
     siteDict = {}
     cmsTickets = 0
     for myTicket in ticketList:
+        voSupport = None
         try:
-            cmsSite = myTicket['cms_site_names']
-            voSupport = myTicket['vo_support']
-            if (( voSupport != "cms" ) and ( voSupport != "" )):
-                continue
-        except KeyError:
-            cmsSite = None
+            if ( myTicket['vo_support'] == "cms" ):
+                voSupport = "cms"
+        except (KeyError, TypeError):
+            pass
+        cmsSite = None
+        try:
+            cmsSite = myTicket['cms_site_names'].split(":")[0]
+            if ( cmsSite == "" ):
+                cmsSite = None
+                raise KeyError
+        except (KeyError, AttributeError, TypeError):
+            try:
+                for ggusGroup in myTicket['notified_groups']:
+                    groupID = int(ggusGroup)
+                    try:
+                        if ( groupDict[ groupID ] == "cms" ):
+                            voSupport = "cms"
+                        else:
+                            cmsSite = groupDict[ groupID ]
+                            myTicket['type'] = "Other"
+                            break
+                    except (KeyError, TypeError):
+                        pass
+            except (KeyError, AttributeError, TypeError):
+                pass
         #
-        if (( cmsSite is None ) or ( cmsSite == "" )):
+        if (( voSupport != "cms" ) or ( cmsSite is None )):
+            # not a CMS site related ticket
+            continue
+        #
+        if ( cmsSite is None ):
             if (( gridDict is None ) or ( len(gridDict) == 0 )):
                 continue
             try:
                 gridSite = myTicket['wlcg_sites']
-                voSupport = myTicket['vo_support']
             except KeyError:
                 continue
-            if (( cmsSite is None ) or ( cmsSite == "" ) or
-                ( voSupport != "cms" )):
-                continue
             try:
-                cmsSite = gridDict[gridSite]
+                cmsSite = gridDict[ gridSite ]
                 if (( cmsSite is None ) or ( cmsSite == "" )):
                     continue
-                # override CMS site seting in ticket
-                myTicket['cms_site_names'] = cmsSite
             except KeyError:
                 continue
         if ( siteRegex.match(cmsSite) is None ):
             print("Illegal CMS sitename \"%s\" in GGUS ticket %s, skipping" %
                                                      (cmsSite, myTicket['id']))
             continue
+        #
+        # override CMS site setting in ticket
+        myTicket['cms_site_names'] = cmsSite
         #
         if ( cmsSite not in siteDict ):
             siteDict[cmsSite] = []
@@ -332,3 +398,6 @@ if __name__ == '__main__':
     # write Tier-2,3 twiki section:
     meet_twiki_table(siteList, siteDict, "/eos/home-c/cmssst/www/meet_plots",
                                                                          False)
+
+
+    #import pdb; pdb.set_trace()

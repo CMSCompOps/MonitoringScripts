@@ -587,10 +587,6 @@ class vofeed:
 
     def convert2XML(self, timestamp, owner, site2email):
         """function to extract a VO-feed time entry into an XML string"""
-        RECORD_FIRST = [ ("T0_CH_CERN",     "CERN-PROD"),
-                         ("T2_CH_CSCS",     "CSCS-LCG2"),
-                         ("T2_US_Nebraska", "Nebraska"),
-                         ("T2_US_Purdue",   "Purdue-Hammer") ]
         SAM3_GROUPS = {
             '0': ['AllGroups', 'Tier1s + Tier0', 'Tier2s + Tier1s + Tier0'],
             '1': ['AllGroups', 'Tier1s + Tier0', 'Tier2s + Tier1s + Tier0',
