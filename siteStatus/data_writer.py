@@ -1796,13 +1796,128 @@ def sswp_ggus():
     # ########################################################### #
     # fill sswp_sites site ggus array with GGUS ticket informaton #
     # ########################################################### #
+    GGUS_GRP_URL = "https://helpdesk.ggus.eu/api/v1/groups"
     GGUS_API_URL = "https://helpdesk.ggus.eu/api/v1/tickets/search"
-    GGUS_QUERY   = "(vo_support:cms AND !((state.name:solved) OR " + \
-                   "(state.name:unsolved)) AND id:>%d)"
+    GGUS_QUERY   = "(!((state.name:solved) OR (state.name:unsolved)) " + \
+                   "AND id:>%d)"
     GGUS_PARAM   = "&sort_by=id&order_by=asc&limit=32&expand=false"
-    GGUS_HEADER = { 'User-Agent': "CMS siteStatus", \
-                    'Authorization': "Token xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", \
-                    'Content-Type': "application/json; charset=UTF-8" }
+    GGUS_HEADER  = { 'User-Agent': "CMS siteStatus", \
+                     'Authorization': "Token xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", \
+                     'Content-Type': "application/json; charset=UTF-8" }
+    #
+    siteRegex = re.compile(r"T\d_[A-Z]{2,2}_\w+")
+
+
+    # assemble grid site dictionary:
+    # ==============================
+    gridDict = {}
+    try:
+        for cmsSite in sorted(glbTopology.sites()):
+            try:
+                for myElement in glbTopology.getElements(cmsSite):
+                    try:
+                        gridSite = myElement['site']
+                        if (( gridSite is not None ) and ( gridSite != "" )):
+                            gridDict[ gridSite ] = cmsSite
+                    except Exception as excptn:
+                        pass
+            except Exception as excptn:
+                pass
+    except Exception as excptn:
+        logging.error("   failed to assemble grid site dictionary: %s" %
+                                                                   str(excptn))
+    del cmsSite
+
+
+    # fetch group information:
+    # ========================
+    logging.info("Querying Zammad/GGUS for group information")
+    try:
+        requestObj = urllib.request.Request(GGUS_GRP_URL, headers=GGUS_HEADER)
+        for myRetryDelay in [0.250, 0.500, 0.000]:
+            try:
+                responseObj = urllib.request.urlopen(requestObj, timeout=90)
+                if ( responseObj.status == http.HTTPStatus.OK ):
+                    break
+            except Exception as excptn:
+                time.sleep(myRetryDelay)
+        if ( responseObj.status != http.HTTPStatus.OK ):
+            raise URLError("%d \"%s\"" %
+                                      (responseObj.status, responseObj.reason))
+
+        myCharset = responseObj.headers.get_content_charset()
+        if ( myCharset is None ):
+            myCharset = "utf-8"
+        myData = responseObj.read().decode( myCharset )
+        if (( myData is None ) or ( myData == "[]" ) or ( myData == "" )):
+            raise ValueError("empty return data")
+
+        myData = json.dumps( json.loads(myData), indent=" " )
+
+        # update cache:
+        try:
+            myFile = open("%s/cache_ggus_grp.json_new" % SSWP_CACHE_DIR, 'w')
+            try:
+                myFile.write(myData)
+                renameFlag = True
+            except:
+                renameFlag = False
+            finally:
+                myFile.close()
+                del myFile
+            if renameFlag:
+                os.rename("%s/cache_ggus_grp.json_new" % SSWP_CACHE_DIR,
+                          "%s/cache_ggus_grp.json" % SSWP_CACHE_DIR)
+                logging.info("   cache of Zammad/GGUS group updated")
+            del renameFlag
+        except:
+            logging.warning("   failed to update Zammad/GGUS group cache")
+
+    except Exception as excptn:
+        if 'stale' not in glbInfo:
+            glbInfo['stale'] = "No/stale information (GGUS-groups"
+        else:
+            glbInfo['stale'] += ", GGUS-groups"
+        logging.warning("   failed to fetch Zammad/GGUS group information")
+        try:
+            myFile = open("%s/cache_ggus_grp.json" % SSWP_CACHE_DIR, 'r')
+            try:
+                myData = myFile.read()
+                logging.info("   using cached Zammad/GGUS group information")
+            except:
+                logging.error("   failed to access Zammad/GGUS group cache")
+            finally:
+                myFile.close()
+                del myFile
+        except:
+            logging.error("   no Zammad/GGUS group cache available")
+
+
+    glbLock.acquire()
+
+    groupDict = {}
+    try:
+        if (( myData is None ) or ( myData == "[]" ) or ( myData == "" )):
+            raise ValueError("empty Zammad/GGUS group information")
+        #
+        myGroups = json.loads(myData)
+        #
+        for myGroup in myGroups:
+            try:
+                groupID = int( myGroup['id'] )
+                groupDict[ groupID ] = myGroup['cms_site_name'].split(":")[0]
+            except (KeyError, AttributeError, TypeError):
+                try:
+                    if ( myGroup['name_last'][:4] == "CMS " ):
+                        groupDict[ groupID ] = "cms"
+                except (KeyError, AttributeError, TypeError):
+                    pass
+    except Exception as excptn:
+        logging.error("   failed to decode GGUS group data: %s" % str(excptn))
+    del myData
+
+    glbLock.release()
+
 
     # get list of all tickets for VO CMS from GGUS:
     # =============================================
@@ -1816,18 +1931,18 @@ def sswp_ggus():
                             urllib.parse.quote_plus(GGUS_QUERY % lastTicket)
                 requestURL = GGUS_API_URL + ggusQuery + GGUS_PARAM
                 requestObj = urllib.request.Request(requestURL, \
-                                                        headers=GGUS_HEADER)
+                                                           headers=GGUS_HEADER)
             except Exception as excptn:
                 logging.error("Failed to prepare GGUS query: %s" % str(excptn))
                 raise excptn
             #
-            for myRetry in range(0, 2, 1):
+            for myRetryDelay in [0.250, 0.500, 0.000]:
                 try:
                     responseObj = urllib.request.urlopen(requestObj, timeout=90)
                     if ( responseObj.status == http.HTTPStatus.OK ):
                         break
                 except Exception as excptn:
-                    pass
+                    time.sleep(myRetryDelay)
             #
             try:
                 myCharset = responseObj.headers.get_content_charset()
@@ -1888,41 +2003,87 @@ def sswp_ggus():
             logging.error("   no Zammad GGUS ticket cache available")
             return
 
+
     glbLock.acquire()
 
-    # unpack JSON data of GGUS:
-    tickets = json.loads( myData )
-    del myData
-    #
-    # loop over tickets:
-    siteRegex = re.compile(r"T\d_[A-Z]{2,2}_\w+")
-    for ticket in tickets:
-        cmsSite = None
-        try:
-            ticketId = int( ticket['id'] )
-            cmsSite = ticket['cms_site_names']
-            notifiedGroups = ticket['notified_groups']
-            ticketCreated = ticket['created_at']
-        except (KeyError, AttributeError):
-            continue
-        if (( cmsSite is None ) or ( cmsSite == "" )):
-            continue
+    # unpack JSON data of GGUS tickets:
+    try:
+        if (( myData is None ) or ( myData == "[]" ) or ( myData == "" )):
+            raise ValueError("empty Zammad/GGUS ticket information")
+        #
+        myTickets = json.loads( myData )
+        #
+        # loop over tickets:
+        for myTicket in myTickets:
+            voSupport = None
             try:
-                for myGroup in notifiedGroups:
-                   if ( siteRegex.match(myGroup) is not None ):
-                       cmsSite = myGroup
-                       break
-                if (( cmsSite is None ) or ( cmsSite == "" )):
+                if ( myTicket['vo_support'] == "cms" ):
+                    voSupport = "cms"
+            except (KeyError, TypeError):
+                pass
+            cmsSite = None
+            try:
+                cmsSite = myTicket['cms_site_names'].split(":")[0]
+                if ( cmsSite == "" ):
+                    cmsSite = None
+                    raise KeyError
+            except (KeyError, AttributeError, TypeError):
+                try:
+                    for ggusGroup in myTicket['notified_groups']:
+                        groupID = int(ggusGroup)
+                        try:
+                            if ( groupDict[ groupID ] == "cms" ):
+                                voSupport = "cms"
+                            else:
+                                cmsSite = groupDict[ groupID ]
+                                myTicket['type'] = "Other"
+                                break
+                        except (KeyError, TypeError):
+                            pass
+                except (KeyError, AttributeError, TypeError):
+                    pass
+            #
+            if ( voSupport != "cms" ):
+                # not a CMS related ticket
+                continue
+            #
+            if ( cmsSite is None ):
+                if (( gridDict is None ) or ( len(gridDict) == 0 )):
                     continue
+                try:
+                    gridSite = myTicket['wlcg_sites']
+                except KeyError:
+                    continue
+                try:
+                    cmsSite = gridDict[ gridSite ]
+                    if (( cmsSite is None ) or ( cmsSite == "" )):
+                        continue
+                except KeyError:
+                    continue
+            if ( siteRegex.match(cmsSite) is None ):
+                print(("Illegal CMS sitename \"%s\" in GGUS ticket %s, ski" + \
+                       "pping") % (cmsSite, myTicket['id']))
+                continue
+            #
+            try:
+                myId = int( myTicket['id'] )
+                myCreated = myTicket['created_at']
             except (KeyError, AttributeError):
                 continue
-        ts = time.strptime(ticketCreated[:19] + " UTC", "%Y-%m-%dT%H:%M:%S %Z")
-        tis = calendar.timegm(ts)
-        logging.debug("CMS site %s has ticket %d (%d)" % \
-                                                      (cmsSite, ticketId, tis))
-        glbTickets.add(cmsSite, ticketId, tis)
+            #
+            ts = time.strptime(myCreated[:19] + " UTC", "%Y-%m-%dT%H:%M:%S %Z")
+            tis = calendar.timegm(ts)
+            logging.debug("CMS site %s has ticket %d (%d)" % \
+                                                          (cmsSite, myId, tis))
+            glbTickets.add(cmsSite, myId, tis)
+
+    except Exception as excptn:
+        logging.error("   failed to decode GGUS ticket data: %s" % str(excptn))
+    del myData
 
     glbLock.release()
+
+    return
 
 
 
