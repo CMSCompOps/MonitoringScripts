@@ -1,6 +1,6 @@
 #!/eos/user/c/cmssst/el9packages/bin/python3.9
 # ########################################################################### #
-# python CGI script to display theefacility information, allow to change it,  #
+# python CGI script to display the facility information, allow to change it,  #
 #    upload to MonIT, and compile a acknowledgement LaTeX file.               #
 #                                                                             #
 # 2020-Mar-23   Stephan Lammel                                                #
@@ -201,6 +201,8 @@ ADMF_TIMEZONES = { 'AT': [ ( "+00:00", "UTC" ),
                            ( "+11:00", "Asia/Srednekolymsk" ),
                            ( "+12:00", "Asia/Kamchatka" ),
                            ( "+12:00", "Asia/Anadyr" ) ],
+                   'RS': [ ( "+00:00", "UTC" ),
+                           ( "+01:00", "Europe/Belgrade" ) ],
                    'TH': [ ( "+00:00", "UTC" ),
                            ( "+07:00", "Asia/Bangkok" ) ],
                    'TR': [ ( "+00:00", "UTC" ),
@@ -2007,7 +2009,7 @@ def admf_make_tzlist():
     ADMF_COUNTRIES = [ "AT", "BE", "BG", "BR", "BY", "CH", "CN", "CY", "DE",
                        "EE", "EG", "ES", "FI", "FR", "GR", "HR", "HU", "IN",
                        "IR", "IT", "KR", "LB", "LV", "MX", "PK", "PL", "PT",
-                       "RU", "TH", "TR", "TW", "UA", "UK", "US" ]
+                       "RU", "RS", "TH", "TR", "TW", "UA", "UK", "US" ]
     # no CMS sites in southern hemisphere with daylight-savings timezone
     noDayLightSavingsDate = datetime.datetime(2020,1,1)
     print("ADMF_TIMEZONES = {")
@@ -2036,7 +2038,7 @@ if __name__ == '__main__':
     os.umask(0o022)
     #
     parserObj = argparse.ArgumentParser(description="Script to display and s" +
-        "et the manual LifeStatus, ProdStatus, or CrabStatus override.")
+        "et facility information.")
     parserObj.add_argument("-v", action="count", default=0,
                                  help="increase logging verbosity")
     parserObj.add_argument("-u", dest="upload", default=False,
