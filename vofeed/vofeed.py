@@ -51,7 +51,7 @@ import pydoop.hdfs
 
 
 
-VOFEED_VERSION = "v2.05.01"
+VOFEED_VERSION = "v2.05.02"
 # ########################################################################### #
 
 
@@ -1508,13 +1508,13 @@ if __name__ == '__main__':
                     rseOper = []
                     for rseOps in rseProto['domains']['wan']:
                         if (( rseProto['domains']['wan'][rseOps] is not None )
-                            and ( rseProto['domains']['wan'][rseOps] > 0 )):
+                            and ( rseProto['domains']['wan'][rseOps] >= 0 )):
                             rseOper.append(rseOps)
                     #
                     # check read operation is enabled:
                     rseReadPath = None
                     if (( rseProto['domains']['wan']['read'] is not None ) and
-                        ( rseProto['domains']['wan']['read'] > 0 )):
+                        ( rseProto['domains']['wan']['read'] >= 0 )):
                         # get RSE path of SAM read area:
                         try:
                             rseReadURL = next(iter( \
@@ -1536,7 +1536,7 @@ if __name__ == '__main__':
                     # check write operation is enabled:
                     rseWritePath = None
                     if (( rseProto['domains']['wan']['write'] is not None ) and
-                        ( rseProto['domains']['wan']['write'] > 0 )):
+                        ( rseProto['domains']['wan']['write'] >= 0 )):
                         #
                         # get RSE path of SAM write area:
                         try:
