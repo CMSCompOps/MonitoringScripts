@@ -1507,12 +1507,14 @@ if __name__ == '__main__':
                     rsePort = rseProto['port']
                     rseOper = []
                     for rseOps in rseProto['domains']['wan']:
-                        if ( rseProto['domains']['wan'][rseOps] > 0 ):
+                        if (( rseProto['domains']['wan'][rseOps] is not None )
+                            and ( rseProto['domains']['wan'][rseOps] > 0 )):
                             rseOper.append(rseOps)
                     #
                     # check read operation is enabled:
                     rseReadPath = None
-                    if ( rseProto['domains']['wan']['read'] > 0 ):
+                    if (( rseProto['domains']['wan']['read'] is not None ) and
+                        ( rseProto['domains']['wan']['read'] > 0 )):
                         # get RSE path of SAM read area:
                         try:
                             rseReadURL = next(iter( \
@@ -1533,7 +1535,8 @@ if __name__ == '__main__':
                     #
                     # check write operation is enabled:
                     rseWritePath = None
-                    if ( rseProto['domains']['wan']['write'] > 0 ):
+                    if (( rseProto['domains']['wan']['write'] is not None ) and
+                        ( rseProto['domains']['wan']['write'] > 0 )):
                         #
                         # get RSE path of SAM write area:
                         try:
@@ -1599,8 +1602,8 @@ if __name__ == '__main__':
                 pass
             #
             del jsonStrng
-        except:
-            logging.error("Failed to fetch Rucio-RSE data")
+        except Exception as excptn:
+            logging.error("Failed to fetch Rucio-RSE data, %s" % str(excptn))
             try:
                 with open("%s/Rucio.json" % VOFD_CACHE_DIR, 'r') as myFile:
                     myData = myFile.read()
