@@ -70,8 +70,8 @@ def meet_fetch_vofeed():
 def meet_ggus_query(queryStrng = None):
     # #########################################################################
     GGUS_API_URL = "https://helpdesk.ggus.eu/api/v1/tickets/search"
-    GGUS_QUERY   = "(!((state.name:solved) OR (state.name:unsolved)) " + \
-                   "AND id:>%d)"
+    GGUS_QUERY   = "(!((state.name:solved) OR (state.name:unsolved) OR " + \
+                    "(state.name:closed) OR (state.name:verified)) AND id:>%d)"
     GGUS_PARAM   = "&sort_by=id&order_by=asc&limit=32&expand=false"
     GGUS_HEADER = { 'User-Agent': "CMS siteStatus", \
                     'Authorization': "Token xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", \
@@ -376,7 +376,7 @@ def meet_twiki_table(siteList, ticketDict, outputDir, flagT12notT23 = True):
 
 if __name__ == '__main__':
     #
-    bruteForce = "!((state.name:solved) OR (state.name:unsolved))"
+    bruteForce = "!((state.name:solved) OR (state.name:unsolved) OR (state.name:closed) OR (state.name:verified))"
     #
     gridDict = meet_fetch_vofeed()
     siteSet = set()

@@ -149,7 +149,8 @@ function writeTable() {
 
       // compose URL for GGUS site-tickets-of-CMS search:
       urlStr = 'https://helpdesk.ggus.eu/#search/cms_site_names%3A' + sName +
-         '%20AND%20!((state.name%3Asolved)%20OR%20(state.name%3Aunsolved))';
+         '%20AND%20!((state.name%3Asolved)%20OR%20(state.name%3Aunsolved)%20' +
+         'OR%20(state.name%3Aclosed)%20OR%20(state.name%3Averified))';
       // select background colour for GGUS ticket count of site:
       if ( siteStatusData[sCnt].ggus[0] < 0 ) {
          // grey background if no valid GGUS ticket information
