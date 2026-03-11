@@ -348,10 +348,13 @@ def evsam_monit_etf(startTIS, limitTIS):
                             if (( 'metadata' not in myJson ) or
                                 ( 'data' not in myJson )):
                                 continue
+                            if ( 'timestamp' not in myJson['metadata'] ):
+                                myJson['metadata']['timestamp'] = \
+                                                    myJson['data']['timestamp']
                             if (( 'type_prefix' not in myJson['metadata'] ) or
                                 ( 'producer' not in myJson['metadata'] ) or
+                                ( 'timestamp' not in myJson['metadata'] ) or
                                 ( 'kafka_timestamp' not in myJson['metadata'] ) or
-                                ( 'timestamp' not in myJson['data'] ) or
                                 ( 'dst_hostname' not in myJson['data'] ) or
                                 ( 'service_flavour' not in myJson['data'] ) or
                                 ( 'metric_name' not in myJson['data'] ) or
@@ -365,7 +368,7 @@ def evsam_monit_etf(startTIS, limitTIS):
                             if ( myJson['data']['vo'] != "cms" ):
                                 continue
                             #
-                            probeTIS = int(myJson['data']['timestamp']/1000)
+                            probeTIS = int(myJson['metadata']['timestamp']/1000)
                             if ( probeTIS < startTIS ):
                                 continue
                             if ( probeTIS >= limitTIS ):
@@ -398,6 +401,10 @@ def evsam_monit_etf(startTIS, limitTIS):
                                                        (fileName, str(excptn)))
                     except IOError as excptn:
                         logging.error("HDFS access failure, file %s: %s" %
+                                                       (fileName, str(excptn)))
+                    except Exception as excptn:
+                        logging.error(("SAM document interpretation failur" + \
+                                       "e, file %s: %s") %
                                                        (fileName, str(excptn)))
                     finally:
                         if fileObj is not None:

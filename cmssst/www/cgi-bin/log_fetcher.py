@@ -350,7 +350,10 @@ def lftch_monit_fetch(cfg):
                                     ( myJson['metadata']['producer'] != "sam3" ) or
                                     ( myJson['data']['vo'] != "cms" )):
                                     continue
-                                tis = int(myJson['data']['timestamp']/1000)
+                                if ( 'timestamp' in myJson['metadata'] ):
+                                    tis = int(myJson['metadata']['timestamp']/1000)
+                                else:
+                                    tis = int(myJson['data']['timestamp']/1000)
                                 if ( tis < startTIS ):
                                     continue
                                 if ( tis >= limitTIS ):
