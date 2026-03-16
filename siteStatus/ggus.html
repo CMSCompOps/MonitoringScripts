@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<HTML lang=en>
+<HEAD>
+   <META charset="UTF-8">
+   <TITLE>CMS Site GGUS Tickets</TITLE>
+
+   <SCRIPT async type="text/javascript" language="javascript"
+           src="//cmssst.web.cern.ch/siteStatus/data/ggus.js">
+   </SCRIPT>
+
+   <SCRIPT async type="text/javascript" language="javascript"
+           src="//cmssst.web.cern.ch/siteStatus/ggus_lib.js">
+   </SCRIPT>
+
+   <STYLE TYPE="text/css">
+      BODY {
+         background-color: white
+      }
+      TD A, TD A:LINK, TD A:VISITED {
+         color:black; text-decoration:none
+      }
+      .tableCellRound {
+         border-radius: 12px;
+      }
+      .toolTip2 {
+         text-decoration:none; position:relative;
+      }
+      .toolTip2 span {
+         display:none;
+         border-radius:6px; -moz-border-radius:6px; -webkit-border-radius:6px;
+         color:black; background:white; 
+      }
+      .toolTip2:hover span {
+         display:block;
+         position:absolute;
+         top:0; left:0;
+         z-index:1000;
+         width:auto; max-width:740px; min-height:76px;
+         border:1px solid black; padding:6px;
+         margin-top:40px; margin-left:-268px;
+         overflow:hidden;
+      }
+      .toolTip3 {
+         text-decoration:none; position:relative;
+      }
+      .toolTip3 span {
+         display:none;
+         border-radius:6px; -moz-border-radius:6px; -webkit-border-radius:6px;
+         color:black; background:white;
+      }
+      .toolTip3:hover span {
+         display:block;
+         position:absolute;
+         top:0; left:0;
+         z-index:1000;
+         width:auto; max-width:444px; min-height:76px;
+         border:1px solid black; padding:6px;
+         margin-top:40px; margin-left:-132px;
+         overflow:hidden;
+      }
+      .toolTip4 {
+         text-decoration:none; position:relative;
+      }
+      .toolTip4 span {
+         display:none;
+         border-radius:6px; -moz-border-radius:6px; -webkit-border-radius:6px;
+         color:black; background:white;
+      }
+      .toolTip4:hover span {
+         display:block;
+         position:absolute;
+         top:0; left:0;
+         z-index:1000;
+         width:auto; max-width:540px; min-height:76px;
+         border:1px solid black; padding:6px;
+         margin-top:40px; margin-left:-140px;
+         overflow:hidden;
+      }
+      .toolTip5 {
+         text-decoration:none; position:relative;
+      }
+      .toolTip5 span {
+         display:none;
+         border-radius:6px; -moz-border-radius:6px; -webkit-border-radius:6px;
+         color:black; background:white;
+      }
+      .toolTip5:hover span {
+         display:block;
+         position:absolute;
+         top:0; left:0;
+         z-index:1000;
+         width:auto; max-width:740px; min-height:76px;
+         border:1px solid black; padding:6px;
+         margin-top:40px; margin-left:-548px;
+         overflow:hidden;
+      }
+   </STYLE>
+</HEAD>
+
+<BODY ONLOAD="fillPage()">
+<H1>
+   <CENTER>CMS Site GGUS Tickets
+      <SPAN ID="titleSPAN" STYLE="white-space:nowrap; font-size:90%;"></SPAN>
+   </CENTER>
+</H1>
+
+<SPAN ID="topSPAN" STYLE="color:red; font-weight:bold; font-size:20px;"></SPAN>
+<DIV ID="mainDIV"></DIV>
+<HR>
+
+<SMALL>
+   <TABLE BORDER="0" CELLPADDING="0" CELLSPACING="1">
+   <TR>
+      <TD>Page maintained by the
+          <A HREF="mailto:cms-comp-ops-site-support-team(AT)cern.ch"><I>CMS
+          Site Support Team</I></A>.
+      <TD WIDTH="32" NOWRAP>&nbsp;
+      <TD STYLE="text-align:right; white-space:nowrap;"><BUTTON
+         ONCLICK="location.reload(true)">Update</BUTTON>
+         &nbsp;
+         <BUTTON ID="updateButton" ONCLICK="toggleUpdate()">Auto-Update</BUTTON>
+   <TR>
+   <TD COLSPAN="3">
+      <TABLE WIDTH="100%" BORDER="0" CELLPADDING="0" CELLSPACING="1">
+      <TR>
+         <TD><CANVAS ID='cnvs_lgn_Ok' WIDTH="6" HEIGHT="18"></CANVAS>
+         <TD STYLE="white-space:nowrap;">Site in good state (ok)
+         <TD STYLE="width:24px; white-space: nowrap;">&nbsp; &nbsp;
+         <TD><CANVAS ID="cnvs_lgn_PartDowntime" WIDTH="6" HEIGHT="18"></CANVAS>
+         <TD STYLE="white-space:nowrap;">Site in partial downtime
+         <TD STYLE="width:24px; white-space: nowrap;">&nbsp; &nbsp;
+         <TD><CANVAS ID='cnvs_lgn_WaitingRoom' WIDTH="6" HEIGHT="18"></CANVAS>
+         <TD STYLE="white-space:nowrap;">Site not in service (Waiting Room)
+         <TD STYLE="width:32px; white-space: nowrap;">&nbsp; &nbsp; &nbsp;
+         <TD>
+      <TR>
+         <TD><CANVAS ID='cnvs_lgn_Warning' WIDTH="6" HEIGHT="18"></CANVAS>
+         <TD STYLE="white-space:nowrap;">Site working with issues (warning)
+         <TD STYLE="width:24px; white-space: nowrap;">&nbsp; &nbsp;
+         <TD><CANVAS ID="cnvs_lgn_FullDowntime" WIDTH="6" HEIGHT="18"></CANVAS>
+         <TD STYLE="white-space:nowrap;">Site in full downtime
+         <TD STYLE="width:24px; white-space: nowrap;">&nbsp; &nbsp;
+         <TD><CANVAS ID='cnvs_lgn_Morgue' WIDTH="6" HEIGHT="18"></CANVAS>
+         <TD STYLE="white-space:nowrap;">Site not in service (Morgue)
+         <TD STYLE="width:32px; white-space: nowrap;">&nbsp; &nbsp; &nbsp;
+         <TD STYLE="text-align:right; color:blue; font-weight:bold;
+            white-space:nowrap;">information as of
+      <TR>
+         <TD><CANVAS ID='cnvs_lgn_Error' WIDTH="6" HEIGHT="18"></CANVAS>
+         <TD STYLE="white-space:nowrap;">Site with failed service (error)
+         <TD STYLE="width:24px; white-space: nowrap;">&nbsp; &nbsp;
+         <TD><CANVAS ID="cnvs_lgn_AdhocDowntime" WIDTH="6" HEIGHT="18"></CANVAS>
+         <TD STYLE="white-space:nowrap;">Site in unscheduled downtime
+         <TD STYLE="width:24px; white-space: nowrap;">&nbsp; &nbsp;
+         <TD><CANVAS ID='cnvs_lgn_Unknown' WIDTH="6" HEIGHT="18"></CANVAS>
+         <TD STYLE="white-space:nowrap;">Site status unknown
+         <TD STYLE="width:32px; white-space: nowrap;">&nbsp; &nbsp; &nbsp;
+         <TD STYLE="text-align:right; color:blue; font-weight:bold;
+            white-space:nowrap;"><SPAN ID="legendSPAN"></SPAN>
+      <TR>
+         <TD>
+         <TD>
+         <TD>
+         <TD><CANVAS ID="cnvs_lgn_AtriskDowntime" WIDTH="6" HEIGHT="18"></CANVAS>
+         <TD STYLE="white-space:nowrap;">Site at risk of downtime
+         <TD STYLE="width:24px; white-space: nowrap;">&nbsp; &nbsp;
+         <TD>
+         <TD>
+         <TD>
+         <TD STYLE="text-align:right; white-space:nowrap;">
+            <A HREF="http://cern.ch/copyright">&copy; Copyright author, CMS,
+            Fermilab, and others 2026</A>
+      </TABLE>
+   </TABLE>
+</SMALL>
+
+<SCRIPT type="text/javascript" language="javascript">
+   "use strict";
+
+   var myTimer = null;
+
+   function fillPage() {
+      // handle auto update:
+      var qIdx = window.location.href.indexOf('?');
+      if ( qIdx >= 0 ) {
+         var qOpts = (window.location.href.substring(qIdx+1)).split('&');
+         for ( var oCnt=0; oCnt < qOpts.length; oCnt+=1 ) {
+            if ( qOpts[oCnt] == 'update=auto' ) {
+               myTimer = setInterval(function () {location.reload(true);}, siteStatusInfo['reload'] * 1000);
+               document.getElementById("updateButton").innerHTML = 'Stop Update';
+               break;
+             }
+         }
+      }
+
+      // write alert at top of page:
+      if ( siteStatusInfo['alert'] != '' ) {
+         document.getElementById("topSPAN").innerHTML = siteStatusInfo['alert'];
+      }
+
+      // write/update page in browser:
+      writeTable();
+      fillLegend();
+      updateTimestamps();
+   }
+
+   function toggleUpdate() {
+      var myURL;
+      if( myTimer == null ) {
+         if ( window.location.href.indexOf('?') >= 0 ) {
+            myURL = window.location.href + '&update=auto';
+         } else {
+            myURL = window.location.href + '?update=auto';
+         }
+         window.location.href = myURL;
+      } else {
+         clearInterval(myTimer);
+         myTimer = null;
+         myURL = window.location.href.replace(/&update=auto/g, '');
+         if ( myURL.slice(-12) == '?update=auto' ) {
+            myURL = myURL.slice(0, -12);
+         }
+         window.location.href = myURL;
+      }
+   }
+</SCRIPT>
+
+</BODY>
+</HTML>

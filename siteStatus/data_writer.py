@@ -5373,6 +5373,60 @@ def sswp_write_downtime_js():
 
 
 
+def sswp_write_ggus_js():
+    # ####################################################################### #
+
+    myfile = open("%s/ggus.js_new" % SSWP_DATA_DIR, 'w')
+    try:
+        myfile.write("/* JavaScript */\n\"use strict\";\n\n\n")
+        myfile.write("var siteStatusInfo = {\n   time: %d,   // %s\n" %
+            (glbInfo['timestamp'], time.strftime("%Y-%m-%d %H:%M:%S",
+                                 time.gmtime(glbInfo['timestamp']))))
+        if 'stale' in glbInfo:
+            myfile.write("   alert: \"%s)\",\n" % glbInfo['stale'])
+        else:
+            myfile.write("   alert: \"\",\n")
+        if 'msg' in glbInfo:
+            myfile.write("   msg: \"%s\",\n" % glbInfo['msg'])
+        else:
+            myfile.write("   msg: \"\",\n")
+        myfile.write("   url: \"%s\",\n" % glbInfo['url'])
+        myfile.write("   reload: 900\n};\n\n")
+
+        myfile.write("var siteGGUSData = [")
+        mypreceding = False
+        for cmssite in sorted(glbTopology.sites()):
+            if mypreceding:
+                myfile.write(",\n   { site: \"%s\",\n" % cmssite)
+            else:
+                myfile.write("\n   { site: \"%s\",\n" % cmssite)
+            #
+            myfile.write("     ggus: [")
+            mycnt = 0
+            for ticket in glbTickets.getTickets(cmssite):
+                if ( mycnt == 0 ):
+                    myfile.write("[%d, %d]" % (ticket[0], ticket[1]))
+                elif ( mycnt % 3 == 0 ):
+                    myfile.write(",\n            [%s, %d]" % (ticket[0],
+                        ticket[1]))
+                else:
+                    myfile.write(", [%d, %d]" % (ticket[0], ticket[1]))
+                mycnt += 1
+            myfile.write("]\n   }")
+            mypreceding = True
+        myfile.write("\n]")
+        renameFlag = True
+    except:
+        renameFlag = False
+    finally:
+        myfile.close()
+
+    if renameFlag:
+        os.rename("%s/ggus.js_new" % SSWP_DATA_DIR,
+                  "%s/ggus.js" % SSWP_DATA_DIR)
+
+
+
 def sswp_write_detail_json():
     # ####################################################################### #
 
@@ -5681,6 +5735,7 @@ if __name__ == '__main__':
 
     sswp_write_summary_js()
     sswp_write_downtime_js()
+    sswp_write_ggus_js()
     sswp_write_detail_json()
     #
     #glbTopology.write()
