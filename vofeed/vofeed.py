@@ -1179,6 +1179,10 @@ if __name__ == '__main__':
             {   'lbl': "CERNint",
                 'uri': "vocms0204.cern.ch",
                 'prd': False
+            },
+            {   'lbl': "OSGitb",
+                'uri': "gfactory-itb-1.osg-htc.org",
+                'prd': False
             } ]
 
         # loop over factories and get list of CEs:
