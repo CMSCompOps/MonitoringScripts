@@ -1514,11 +1514,11 @@ def ovrd_html_capacity(authDict, siteFacility, federationPledge, cgiSITE):
                                                  entry['disk_pledge'] ) / 100.0
             else:
                 frctn = 0.0
-            if (( frctn >= 85.0 ) or
-                (( frctn >= 75.0 ) and ( site[0:2] != "T1" ))):
+            if (( frctn >= 90.0 ) or
+                (( frctn >= 85.0 ) and ( site[0:2] != "T1" ))):
                 color = "#E8FFE8"
-            elif (( frctn >= 75.0 ) or
-                  (( frctn >= 66.6 ) and ( site[0:2] != "T1" ))):
+            elif (( frctn >= 85.0 ) or
+                  (( frctn >= 80.0 ) and ( site[0:2] != "T1" ))):
                 color = "#FFFFE8"
             elif ( frctn > 0.0 ):
                 color = "#FFF0F8"
