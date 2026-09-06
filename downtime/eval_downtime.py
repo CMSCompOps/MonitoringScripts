@@ -633,7 +633,8 @@ if __name__ == '__main__':
                 if ( end < startTIS ):
                     continue
                 #
-                severity = downtime.findtext('Severity', default="").lower()
+                severity = downtime.findtext('Severity',
+                                                default="").split()[-1].lower()
                 if (( severity == 'outage' ) or ( severity == 'severe' )):
                     schedld = downtime.findtext('Class', default="").upper()
                     timeStr = downtime.findtext('CreatedTime', default="")
