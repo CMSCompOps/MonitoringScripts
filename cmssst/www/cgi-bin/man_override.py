@@ -339,7 +339,7 @@ def ovrd_cric_federation_pledge():
             for federation in sorted( federationDict.keys() ):
                 if commaFlag:
                     jsonString += ","
-                jsonString += "\n   \'%s\': %s" % (federation,
+                jsonString += "\n   \"%s\": %s" % (federation,
                                                str(federationDict[federation]))
                 commaFlag = True
             jsonString += "\n}\n"
